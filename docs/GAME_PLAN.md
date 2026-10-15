@@ -1,17 +1,19 @@
 # Game Plan — Speedrun Action Platformer (working title: **RUSHBLADE**)
 
-> Draft v6. Read it over and mark anything you want changed. Every section is
+> Draft v7. Read it over and mark anything you want changed. Every section is
 > numbered so you can say things like "change 6.2" or "cut section 10".
 
-### What changed in v6 (from your notes)
-- The heavy hitter class is called **Tank** → 4.2
-- The Tank can use **both hammers**: its own War Maul and the Wizard's Storm Hammer. The Storm Hammer counts as a class weapon for both, but its throw takes **5s to recharge** for everyone except Wizards → 4.2, 5.3
-- Section 15 is now **what's left to discuss**: decisions needed before building, topics we haven't covered, and quick checks on my guesses → 15
+### What changed in v7 (from your notes)
+- **For now: no online features, no co-op, PC only** (played in the browser) → 0
+- **New journey:** you travel to the enemy kingdom. A run is **4 stages** with a fork: Plains & Forest → **Caves & Mountains or Dark Forest & Swamps** → Enemy Kingdom → King's Castle → 7.1, 7.2
+- **Dragon special event:** shows up in **30% of runs** and drops great loot. It replaces the 4 roaming bosses (the Dragon comes in 4 elements instead) → 7.4
+- **Every biome has its own mobs** → 7.3
+- **Villages between stages:** shop there, then **sleep at the inn** to restore HP and start the next stage → 9.1
+- **Abilities:** you carry only 2. Everything you find or buy is **Level 1**. You level them up at village shops (up to **Lv5**) and can **sell** them. Prices depend on the level → 5.5, 9.3
+- Grade odds are now per stage (4 stages instead of 6 worlds) → 8.3
 
-### From v5
-- **Thief is no longer a class.** It's the **hybrid** you get from a Swordsman ability + an Archer ability, with speed perks (Silent Steps, Lockpick) → 4.3
-- Classes are **Swordsman, Tank, Archer, Wizard**. You combine classes through your abilities → 4.3
-- New hybrids: **Thief** (Swordsman + Archer), **Thunderlord** (Tank + Wizard, the full Thor combo), **Gladiator** (Swordsman + Tank) → 4.3
+### From v6
+- The heavy hitter class is called **Tank**. It can use both hammers: its own War Maul and the Wizard's Storm Hammer (slower 5s throw recharge without a Wizard ability) → 4.2
 
 ---
 
@@ -19,54 +21,58 @@
 
 **Decided**
 - Dead Cells–style 2D side-view action platformer, built for speed.
-- Has its own ideas, so it's not a copy: ability-based classes with Connection bonuses and hybrids, weapon grades + elements, ability levels, kill-charged flask, Lucky Blocks, Guardians, roaming bosses, Rush meter.
+- Has its own ideas, so it's not a copy: ability-based classes with Connection bonuses and hybrids, weapon grades + elements, ability levels you buy, kill-charged flask, Lucky Blocks, Guardians, the Dragon event, villages between stages, Rush meter.
 - 4 classes: Swordsman, Tank, Archer, Wizard. Thief is a hybrid (Swordsman + Archer), not a class. Any class can use any weapon.
+- A run is 4 stages with a fork after Stage 1, and a village between every stage.
+- **For now:** single player only, no online features (scores are saved on your computer), PC only, played in the browser with keyboard or controller.
 
 **Still my assumptions. Change any of these:**
 
 | # | My assumption | Other option |
 |---|---|---|
-| A2 | It's a **roguelite**: if you die, the run restarts from World 1. | Restart only the current world |
-| A3 | **6 worlds**, each world is **one stage**. | More or fewer worlds |
-| A4 | Stage layouts are **hand-made and the same every run** (so speedrunners can learn routes). Only loot, Lucky Blocks and roaming bosses are random. | Random layouts like Dead Cells |
+| A2 | It's a **roguelite**: if you die, the run restarts from Stage 1. | Restart only the current stage |
+| A4 | Stage layouts are **hand-made and the same every run** (so speedrunners can learn routes). Only loot, Lucky Blocks and the Dragon are random. | Random layouts like Dead Cells |
 | A5 | **Pixel art**, 2D, side view. | |
-| A6 | Plays on **PC in the browser**, keyboard or controller. | |
-| A7 | Single player only. | |
 
 ---
 
 ## 1. The pitch
 
-Dead Cells–style combat and loot, but built around **going fast**. Pick a
-starting class, then build your character from the weapons and abilities you
-find. Two abilities from the same class connect and get stronger. Two from
-different classes turn you into a hybrid with a new playstyle. Cut through each
-world in one continuous stage, gamble on Lucky Blocks, open chests, and find
-better graded weapons that pick up fire, ice and lightning powers. Your heal
-flask only refills by killing, so the best defense is staying aggressive. A
-timer is always on screen.
+Dead Cells–style combat and loot, but built around **going fast**. You set out
+from your home village on the road to the enemy kingdom to take down its King.
+Pick a starting class, then build your character from the weapons and
+abilities you find. Two abilities from the same class connect and get
+stronger; two from different classes turn you into a hybrid with a new
+playstyle. Each stage is one leg of the journey: one big biome, one boss, then
+a village to shop and sleep before the next leg. Pick your road at the
+crossroads, and maybe run into a dragon. A timer is always on screen.
 
-**Run length targets**
+### 1.1 Story
+- You start in your **home village** and travel to the **enemy kingdom** to defeat its **King**.
+- The journey: **Plains & Forest** → **Caves & Mountains** *or* **Dark Forest & Swamps** → **Enemy Kingdom** → **King's Castle**.
+- Villages along the road are where you rest, shop, and pick your route.
+- Why you're in a hurry is still open (see 15.2).
 
-| | One world | Full run (6 worlds) |
+### 1.2 Run length targets
+
+| | One stage | Full run (4 stages + villages) |
 |---|---|---|
-| First time playing | 4–6 min | 30–40 min |
-| Average player who knows it | 2.5–3.5 min | 15–20 min |
-| Good speedrunner | ~1:30 | ~9–10 min |
+| First time playing | 5–7 min | 25–35 min |
+| Average player who knows it | 3–4 min | 13–18 min |
+| Good speedrunner | ~1:45 | ~7–8 min |
 
 ---
 
 ## 2. Core loop
 
-1. Start run → **pick a starting class** → get its starting ability and pick its starting weapon (1 of 2, C grade).
-2. Play through the world's stage: kill (this also refills your flask), move, hit Lucky Blocks, grab keys, open chests, decide on detours.
+1. Start in your **home village** → **pick a starting class** → get its starting ability (Lv1) and pick its starting weapon (1 of 2, C grade). Walk out the gate.
+2. Play through the stage: kill (this also refills your flask), move, hit Lucky Blocks, grab keys, open chests, decide on detours.
 3. Every ability you pick up shapes your class: stay pure for a **Connection bonus**, or mix for a **hybrid**.
-4. Maybe run into a **roaming boss**. Fight it for top loot, or skip it to save time.
-5. Shop room before the end of the world → spend gold.
-6. Beat the **Guardian** (or a big boss in Worlds 3 and 6) → world split time shows (green = faster than your best, red = slower).
-7. Short transition (pick 1 of 3 stat upgrades) → next world. Loot odds go up.
-8. Beat the final boss → run time, summary screen, personal best saved.
-9. Die → instant restart from World 1 (one button, no menus).
+4. If this run has the **Dragon**, it shows up in Stage 2 or 3. Fight it for top loot, or skip it to save time.
+5. Beat the stage's boss → stage split time shows (green = faster than your best, red = slower) → pick 1 of 3 stat upgrades.
+6. Arrive at a **village**: shop, upgrade or sell abilities, then **sleep at the inn** to restore your HP and start the next stage. After Stage 1, choose your road.
+7. Beat the King in Stage 4 → run time, summary screen, personal best saved.
+8. Die → instant restart from Stage 1 with the same class (one button, no menus).
 
 ---
 
@@ -96,7 +102,7 @@ Movement has to feel great before anything else gets built.
 
 ### 4.1 How classes work
 - **Every weapon and every ability belongs to a class.** A few abilities (like Vampire) are **neutral** and don't belong to any class.
-- At the start of a run you pick a **starting class**. You get its starting ability (Lv1) and pick 1 of 2 starting weapons (C grade). Your second ability slot starts empty.
+- In your home village you pick a **starting class**. You get its starting ability (Lv1) and pick 1 of 2 starting weapons (C grade). Your second ability slot starts empty.
 - After that, **your class is whatever your 2 abilities are.** Pick up abilities from other classes to combine classes. The HUD shows your current class name (e.g. "Tank", or "Thief" for the Swordsman + Archer hybrid).
 - **Any class can use any weapon.** Weapons that match your class just work better (4.4).
 
@@ -145,7 +151,7 @@ Your 2 ability slots decide what you are:
 
 | Abilities from | Hybrid | Combo perk |
 |---|---|---|
-| Swordsman + Archer | **Thief** | **Silent Steps:** +20% move speed, enemies take longer to notice you, and your first hit on an enemy that hasn't noticed you is a crit. **Lockpick:** open 1 key chest per world without a key |
+| Swordsman + Archer | **Thief** | **Silent Steps:** +20% move speed, enemies take longer to notice you, and your first hit on an enemy that hasn't noticed you is a crit. **Lockpick:** open 1 key chest per stage without a key |
 | Swordsman + Tank | **Gladiator** | Switching weapons mid-combo keeps the combo going, and the next hit does +50% |
 | Swordsman + Wizard | **Spellblade** | Every melee hit makes your abilities recharge 0.5s faster |
 | Tank + Archer | **Warden** | Melee hit → next shot does +50%. Shot hit → next melee hit does +50% |
@@ -166,7 +172,7 @@ Your 2 ability slots decide what you are:
 
 ### 5.1 Loadout
 - **2 weapon slots**: any mix of melee, ranged, magic, or shield.
-- **2 ability slots**: these decide your class (4.3).
+- **2 ability slots**: these decide your class (4.3). You can never carry more than 2 abilities.
 - **Heal flask**: see 5.2.
 
 ### 5.2 Healing: the flask recharges from kills
@@ -177,14 +183,15 @@ Your 2 ability slots decide what you are:
 |---|---|
 | Regular enemy | 5% (20 kills = 1 charge) |
 | Elite enemy | 15% |
-| Guardian / big boss / roaming boss | Refills the whole flask |
-| **Vampire** (neutral ability, 5.4) | **+2%** extra per kill at Lv1, **+3%** at Lv2, **+5%** at Lv3 |
+| Guardian / big boss / Dragon | Refills the whole flask |
+| **Vampire** (neutral ability, 5.4) | **+2%** extra per kill at Lv1, rising to **+3%** at Lv3 and **+5%** at Lv5 |
 | Scythe | +3% extra per kill made with it |
 | Bloodthirst stat upgrade | +2% extra per kill |
 
-- With everything stacked (Vampire Lv3 + Scythe + Bloodthirst) it's 15% per kill, about 7 kills per charge.
-- You start every run with a full flask. It does **not** refill on its own between worlds, so you have to keep killing.
-- Shops sell a **flask upgrade** (+1 max charge, up to 4) and an expensive instant refill.
+- With everything stacked (Vampire Lv5 + Scythe + Bloodthirst) it's 15% per kill, about 7 kills per charge.
+- You start every run with a full flask.
+- **Sleeping at a village inn restores all your HP, but not the flask.** The flask only refills from kills, so you have to keep killing.
+- Village shops sell a **flask upgrade** (+1 max charge, up to 4) and an expensive instant refill (9.3).
 
 ### 5.3 Weapons (first version, 19)
 Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
@@ -231,68 +238,68 @@ Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
 **Speed twist on big weapons:** heavy weapons get **faster while your Rush meter is high** (see 6.1), so big weapons reward staying aggressive.
 
 ### 5.4 Abilities (first version, 17)
-Each ability levels from 1 to 3 (5.5). The last column says what levels improve.
+Every ability starts at **Lv1** and can be upgraded up to **Lv5** (5.5). The last column says what upgrading improves.
 
 **Swordsman**
 
-| Ability | What it does | Lv2 / Lv3 |
+| Ability | What it does (Lv1) | Upgrading to Lv5 |
 |---|---|---|
-| Blade Dash | An extra dash that slices through every enemy in its path | More damage / 2 charges |
-| Whirlwind | Spin forward through enemies | Longer spin, pulls enemies in |
-| Blade Flurry | Swords spin around you for a few seconds | More blades |
-| Riposte | Stance for 1s: if you get hit, block it and counter with a big slash | Wider counter / also refunds dash |
+| Blade Dash | An extra dash that slices through every enemy in its path | More damage; 2 charges at Lv5 |
+| Whirlwind | Spin forward through enemies | Longer spin; pulls enemies in at Lv5 |
+| Blade Flurry | Swords spin around you for a few seconds | More blades, lasts longer |
+| Riposte | Stance for 1s: if you get hit, block it and counter with a big slash | Wider counter; also refunds your dash at Lv5 |
 
 **Tank**
 
-| Ability | What it does | Lv2 / Lv3 |
+| Ability | What it does (Lv1) | Upgrading to Lv5 |
 |---|---|---|
 | Shockwave | Ground slam that knocks enemies up | Bigger area, more damage |
-| Shoulder Charge | Charge forward, knocking enemies aside. Breaks cracked walls (shortcuts!) | Farther, stuns |
-| Rage | For 6s: +30% damage and you can't be staggered | +45% / +60% |
-| Boulder Toss | Rip a boulder out of the ground and throw it | Bigger boulder / it shatters into pieces |
+| Shoulder Charge | Charge forward, knocking enemies aside. Breaks cracked walls (shortcuts!) | Goes farther; stuns at Lv5 |
+| Rage | For 6s: +30% damage and you can't be staggered | Up to +60% damage at Lv5 |
+| Boulder Toss | Rip a boulder out of the ground and throw it | Bigger boulder; shatters into pieces at Lv5 |
 
 **Archer**
 
-| Ability | What it does | Lv2 / Lv3 |
+| Ability | What it does (Lv1) | Upgrading to Lv5 |
 |---|---|---|
-| Arrow Rain | Rain of arrows on the area ahead of you | More arrows |
-| Turret | Drop a ballista that shoots for 8s | Shoots faster / drops 2 |
+| Arrow Rain | Rain of arrows on the area ahead of you | More arrows, wider area |
+| Turret | Drop a ballista that shoots for 8s | Shoots faster; drops 2 at Lv5 |
 | Grapple Arrow | Rope arrow that pulls you to walls or pulls enemies to you | Longer range, faster pull |
-| Hunter's Mark | Marks the strongest enemy nearby: it takes +30% damage | Marks 2 / 3 enemies |
+| Hunter's Mark | Marks the strongest enemy nearby: it takes +30% damage | Marks more enemies (3 at Lv5) |
 
 **Wizard**
 
-| Ability | What it does | Lv2 / Lv3 |
+| Ability | What it does (Lv1) | Upgrading to Lv5 |
 |---|---|---|
 | Thunder Strike | Calls lightning down on enemies in front of you (Thor-style) | More bolts |
-| Frost Burst | Freeze enemies around you | Bigger, longer freeze |
-| Blink | Teleport a short distance, even through thin walls | Farther / 2 charges |
-| Time Slow | Slow everything except you for 3s | 4s / 5s |
+| Frost Burst | Freeze enemies around you | Bigger area, longer freeze |
+| Blink | Teleport a short distance, even through thin walls | Goes farther; 2 charges at Lv5 |
+| Time Slow | Slow everything except you for 3s | Up to 5s at Lv5 |
 
 **Neutral (no class)**
 
-| Ability | What it does | Lv2 / Lv3 |
+| Ability | What it does (Lv1) | Upgrading to Lv5 |
 |---|---|---|
-| **Vampire** | Always on, no button. Every kill fills the flask **+2%** extra | +3% / +5% |
+| **Vampire** | Always on, no button. Every kill fills the flask **+2%** extra | +2% → +2.5% → +3% → +4% → **+5%** at Lv5 |
 
-### 5.5 Ability levels
-- Weapons use **grades** (F–S). Abilities use **levels** (1–3).
-- Ways to level up an ability:
-  - **Find the same ability again**: it merges into your current one and goes up a level.
-  - **Buy an ability upgrade** at the shop.
-- A higher level makes the ability stronger or gives it a shorter cooldown (see the tables in 5.4).
-- Abilities dropped in later worlds sometimes come at Lv2.
+### 5.5 Abilities: slots, levels and selling
+- **You can only carry 2 abilities.** Picking up a new one means swapping one out; the old one drops on the ground (it keeps its level, so you can pick it back up).
+- **Every ability you find or buy is Lv1.** It doesn't matter what level your current abilities are: a new Archer ability is Lv1 even if your other Archer ability is Lv5.
+- **Upgrading:** pay gold at a village shop (or the wandering merchant) to raise one of your abilities by 1 level, up to **Lv5**. Each level costs more than the last (9.3).
+- **Selling:** sell one of your abilities at a village shop. The higher its level, the more gold you get back. Use that gold to buy a different ability or upgrade your other one.
+- So every village is a choice: **keep investing** in what you have, or **sell and switch** to a new build.
+- Weapons use **grades** (F–S) and you find better ones as you go. Abilities use **levels** (1–5) and you buy them.
 
 ### 5.6 Enemies
 - Regular enemies **die fast** (2–4 hits from a good weapon). No damage sponges. They're things to cut through, not walls.
-- Each world has 4–5 enemy types + 1 elite version. One of them becomes that world's Guardian (7.3).
+- **Every biome has its own mobs:** 4 regular types + 1 elite (7.3). In the first two stages, one of them becomes that stage's Guardian (7.4).
 - Elites sometimes drop a **key** (8.7) or an ability.
 - Enemies get stunned/staggered easily so you can push through.
 - Clear warning flash before every attack.
-- Enemies get tougher each world, so you need the better grades and levels you find later.
+- Enemies get tougher each stage, so you need the better grades and levels you get later.
 
 ### 5.7 Bosses
-See section 7.3.
+See section 7.4.
 
 ---
 
@@ -306,73 +313,112 @@ See section 7.3.
 
 ### 6.2 Timer and splits
 - Run timer always on screen (can be turned off).
-- Split for each world, compared to your personal best (green/red).
-- Timer pauses only in menus. It does **not** stop in shops or when opening chests. Deciding costs time, that's the point.
+- Split for each stage, compared to your personal best (green/red).
+- Timer pauses only in menus. It **keeps running in villages**, in shops and when opening chests. Deciding costs time, that's the point.
+- Villages are small (about one screen), so a fast player is through one in ~10 seconds. Sleeping at the inn is a 1-second fade.
 
 ### 6.3 Timed doors
 - Some chest rooms are behind a door that **only opens if you reach it under a time limit**. Rewards: a weapon at key-chest odds (8.3) plus big gold.
 
 ### 6.4 Quality-of-life for speedrunners
 - One-button instant restart.
-- **Seeded runs**: type a seed to get the same loot, Lucky Blocks and roaming bosses every time (for races).
-- **World Practice mode**: play any world you've reached, timed, with a preset loadout.
-- Ghost replay of your best world time (later milestone).
+- **Seeded runs**: type a seed to get the same loot, Lucky Blocks and Dragon every time (for races).
+- **Stage Practice mode**: play any stage you've reached, timed, with a preset loadout.
+- Ghost replay of your best stage time (later milestone).
+- Best times are saved separately for the **Mountain road** and the **Forest road**, since they're different routes.
 
 ---
 
-## 7. Worlds and bosses
+## 7. The journey: stages and bosses
 
-Every world = **one continuous stage** → shop room → end boss.
+### 7.1 The route
 
-| # | World | Gimmick | End boss |
+```
+Home Village            (pick your class)
+      |
+Stage 1: Plains & Forest            -> Guardian: Great Boar
+      |
+Crossroads Village      (choose your road)
+      |                                   |
+Stage 2: Caves & Mountains      Stage 2: Dark Forest & Swamps
+  -> Guardian: Stone Colossus     -> Guardian: Spider Queen
+      |                                   |
+Border Village          (last stop before the enemy kingdom)
+      |
+Stage 3: Enemy Kingdom              -> Big boss: The Black Knight
+      |
+Rebel Camp              (hidden camp inside the kingdom)
+      |
+Stage 4: King's Castle              -> Final boss: The Enemy King
+
+Dragon event (30% of runs): shows up in Stage 2 or 3
+```
+
+- **Plains & Forest is always first.** Stage 2 is your choice of road. Stages 3 and 4 are always the Enemy Kingdom and the King's Castle.
+- Each stage is **one continuous biome** and ends with its boss.
+
+### 7.2 Biomes
+
+| Stage | Biome | Gimmick | End boss |
 |---|---|---|---|
-| 1 | **Ashen Gate** (castle walls) | Teaches dash, wall jump, slide | Guardian: **Giant Shield Knight** |
-| 2 | **Drowned Sewers** | Water slows you unless you dash/slide; bounce off pipes | Guardian: **Sludge Brute** |
-| 3 | **Clockwork Tower** | Moving gears, platforms on timers, vertical climb | **BIG BOSS: The Clockmaker** (mid-run) |
-| 4 | **Crimson Forest** | Grapple points, tree-top routes vs ground route | Guardian: **Elder Stag** |
-| 5 | **Frozen Mines** | Ice keeps your momentum, minecart section | Guardian: **Ice Golem** |
-| 6 | **The Sunken Throne** | Mix of everything, hardest enemies | **FINAL BOSS: The Drowned King** |
+| 1 | **Plains & Forest** | Teaches dash, wall jump, slide. Open fields, then a forest with a tree-top route vs a ground route | Guardian: **Great Boar** |
+| 2 (Mountain road) | **Caves & Mountains** | Vertical climbs, falling rocks, a minecart ride through the caves, icy peaks that keep your momentum | Guardian: **Stone Colossus** |
+| 2 (Forest road) | **Dark Forest & Swamps** | Swamp water slows you unless you dash or slide, dark areas lit by fireflies, vines to grapple | Guardian: **Spider Queen** |
+| 3 | **Enemy Kingdom** | Town streets vs rooftop route, guards on the walls, cannons that fire across the level | Big boss: **The Black Knight** |
+| 4 | **King's Castle** | Mix of everything, plus traps: spike floors, swinging blades, collapsing bridges | Final boss: **The Enemy King** |
 
-### 7.1 How one stage is built (template)
-Each stage is about 8 sections chained together:
+The two Stage 2 roads are about the same length. The Mountain road has more climbing and movement tricks; the Forest road has more fighting.
 
-1. **Start**: short run-in, a free weapon or Lucky Block
-2. **Combat stretch**: groups of enemies on flat ground
-3. **Traversal**: platforming using the world's gimmick
-4. **Branch**: main path vs side path (key, chest or ability) vs **skip route** (hard movement, saves time)
-5. **Arena**: doors lock, wave of enemies (fast kills = faster exit, and a big flask refill). Possible roaming boss spot.
-6. **Traversal 2**: harder version of section 3
-7. **Loot area**: key chest, cursed chest or timed door (optional)
-8. **Shop room** → **Boss door**
+### 7.3 Mobs per biome
 
-Each stage has about: 3–4 Lucky Blocks, 2 free loot spots (weapon or ability), 2 keys, 3 locked key chests, 1 cursed chest. That's fewer keys than locked chests, so you pick which chests to open. A Thief's Lockpick gets you one extra.
+| Biome | Regular mobs | Elite |
+|---|---|---|
+| **Plains & Forest** | **Wolf** (fast lunges), **Bandit** (basic sword), **Bandit Archer** (shoots from range), **Wild Boar** (charges in a straight line) | **Bandit Brute** (huge club) |
+| **Caves & Mountains** | **Bat Swarm** (erratic flyers), **Goblin Miner** (throws bombs), **Rock Golem** (armored front, hit it from behind or above), **Ram** (headbutts you off ledges) | **Goblin Shaman** (shields nearby goblins) |
+| **Dark Forest & Swamps** | **Bog Zombie** (rises out of the swamp), **Giant Spider** (drops from above on a thread), **Will-o'-Wisp** (floats in, explodes), **Swamp Witch** (throws poison potions) | **Treant** (walking tree, roots you in place) |
+| **Enemy Kingdom** | **Soldier** (shield blocks from the front), **Crossbowman** (on walls and rooftops), **War Hound** (fast, in packs), **Battle Mage** (fireballs, teleports) | **Knight** (heavy armor) |
+| **King's Castle** | **Royal Guard** (long halberd reach), **Gargoyle** (stone until you get close, then swoops), **Castle Mage** (shields other enemies), **Living Armor** (gets back up once) | **Royal Executioner** (giant axe) |
 
-### 7.2 Routes
-- **Main path**: always clear where to go (arrows/lighting). Never lost.
-- **Side paths**: keys and chests, cost 10–30s detour. Worth it or not? That's the speedrun choice.
-- **Skip routes**: need good movement or a specific ability (Grapple Arrow, Blink, Shoulder Charge). Save time.
-
-### 7.3 Boss types
+### 7.4 Bosses
 
 | Type | Where | What it is | Loot |
 |---|---|---|---|
-| **Guardian** | End of Worlds 1, 2, 4, 5 | A giant, stronger version of one of that world's regular enemies, with 1–2 new attacks. Short fight (~30–60s). | 1 weapon at key-chest odds + full flask |
-| **Big boss (mid)** | End of World 3 | A real boss with its own design, 2 phases (~60–90s) | 1 weapon, **B grade or better** + 1 ability + full flask |
-| **Big boss (final)** | End of World 6 | Final boss, 3 phases | Ends the run |
-| **Roaming boss** | Can show up in **any stage** (~15% chance per stage), in an arena next to the main path | Each one comes from a specific biome but can appear anywhere. **Optional**: skip it to save time, or fight it for great loot. | 1 weapon, **A grade or better**, with that boss's element + full flask |
+| **Guardian** | End of Stage 1 and Stage 2 | A giant, stronger version of one of that biome's regular mobs, with 1–2 new attacks. Short fight (~30–60s) | 1 weapon at key-chest odds + full flask |
+| **Big boss** | End of Stage 3 | **The Black Knight**, the King's champion. A real boss with its own design, 2 phases (~60–90s) | 1 weapon, **B grade or better** + 1 ability + full flask |
+| **Final boss** | End of Stage 4 | **The Enemy King**, 3 phases | Ends the run |
+| **Dragon** (special event) | Shows up in **30% of runs**, in Stage 2 or 3, landing in an arena next to the main path | A huge, fast boss. **Optional**: skip it to save time, or fight it for great loot | 1 weapon, **A grade or better**, with the Dragon's element + full flask + lots of gold |
 
-Big bosses have **stagger phases**: hit them hard enough and they drop, which opens a big damage window. Fast players skip phases.
+- Guardians: **Great Boar** (giant Wild Boar), **Stone Colossus** (giant Rock Golem), **Spider Queen** (giant Giant Spider).
+- Big bosses have **stagger phases**: hit them hard enough and they drop, which opens a big damage window. Fast players skip phases.
+- After every stage boss you pick **1 of 3 stat upgrades**.
 
-**Roaming bosses (first 4)**, one per element:
+**The Dragon** comes in 4 colors, picked at random. Its color sets its attacks and the element of its loot:
 
-| Roaming boss | Home biome | Element of its loot |
+| Dragon | Breath | Loot element |
 |---|---|---|
-| Ember Wyrm | Ashen Gate | Fire |
-| Bog Witch | Drowned Sewers | Poison |
-| Storm Knight | Clockwork Tower | Lightning |
-| Frost Wraith | Frozen Mines | Ice |
+| Red Dragon | Fire | Fire |
+| White Dragon | Frost | Ice |
+| Storm Dragon | Lightning | Lightning |
+| Green Dragon | Poison cloud | Poison |
 
-At most 1 roaming boss per stage. You can't get the same one twice in a run.
+### 7.5 How one stage is built (template)
+Each stage is about 8 sections chained together:
+
+1. **Start**: short run-in, a free weapon or Lucky Block
+2. **Combat stretch**: groups of mobs on open ground
+3. **Traversal**: platforming using the biome's gimmick
+4. **Branch**: main path vs side path (key, chest or ability) vs **skip route** (hard movement, saves time)
+5. **Arena**: doors lock, wave of mobs (fast kills = faster exit, and a big flask refill). Possible Dragon spot.
+6. **Traversal 2**: harder version of section 3
+7. **Loot area**: key chest, cursed chest or timed door (optional)
+8. **Boss arena** → then the road to the next village
+
+Each stage has about: 3–4 Lucky Blocks, 2 free loot spots (weapon or ability), 2 keys, 3 locked key chests, 1 cursed chest. That's fewer keys than locked chests, so you pick which chests to open. A Thief's Lockpick gets you one extra.
+
+### 7.6 Routes inside a stage
+- **Main path**: always clear where to go (arrows/lighting). Never lost.
+- **Side paths**: keys and chests, cost 10–30s detour. Worth it or not? That's the speedrun choice.
+- **Skip routes**: need good movement or a specific ability (Grapple Arrow, Blink, Shoulder Charge). Save time.
 
 ---
 
@@ -405,27 +451,25 @@ The grade color shows on the item and in the swap popup, so you can tell in a sp
 
 ### 8.3 Grade odds
 
-**Free loot by world.** Odds get better as you go deeper:
+**Free loot by stage.** Odds get better as you go deeper:
 
-| World | F | C | B | A | S |
+| Stage | F | C | B | A | S |
 |---|---|---|---|---|---|
-| 1 | 50% | 35% | 10% | 4% | 1% |
-| 2 | 35% | 38% | 18% | 7% | 2% |
-| 3 | 20% | 38% | 27% | 12% | 3% |
-| 4 | 10% | 30% | 35% | 20% | 5% |
-| 5 | 5% | 20% | 38% | 29% | 8% |
-| 6 | 0% | 10% | 35% | 43% | 12% |
+| 1. Plains & Forest | 50% | 35% | 10% | 4% | 1% |
+| 2. Mountains or Dark Forest | 30% | 38% | 20% | 9% | 3% |
+| 3. Enemy Kingdom | 12% | 32% | 33% | 18% | 5% |
+| 4. King's Castle | 0% | 15% | 37% | 36% | 12% |
 
-**Riskier sources get better odds.** World 1 example:
+**Riskier sources get better odds.** Stage 1 example:
 
 | Source | Risk | F | C | B | A | S |
 |---|---|---|---|---|---|---|
 | Free loot | None | 50% | 35% | 10% | 4% | 1% |
 | Key chest / Guardian / timed chest | Detour for a key, boss fight, or beating the clock | 35% | 38% | 18% | 7% | 2% |
 | Cursed chest | One-hit death until 10 kills | 0% | 20% | 50% | 25% | 5% |
-| Roaming boss | Optional boss fight | 0% | 0% | 0% | 75% | 25% |
+| Dragon | Optional boss fight | 0% | 0% | 0% | 75% | 25% |
 
-In later worlds every source moves up the same way free loot does. Exact numbers will get tuned in playtesting.
+In later stages every source moves up the same way free loot does. Exact numbers will get tuned in playtesting.
 
 Drops lean a little toward the classes of the abilities you're carrying (about half of drops match), so building toward a Connection bonus is possible but not guaranteed.
 
@@ -433,9 +477,9 @@ Drops lean a little toward the classes of the abilities you're carrying (about h
 
 | Chest | What you get | Catch |
 |---|---|---|
-| **Free loot** | A weapon or ability (on a stand, or in an open chest) | None |
+| **Free loot** | A weapon or a Lv1 ability (on a stand, or in an open chest) | None |
 | **Lucky Block** | A random **buff or debuff** | It's a gamble (8.5) |
-| **Key chest** | Choose 1 of 2 (weapons or abilities) | Needs a key (8.7) |
+| **Key chest** | Choose 1 of 2 (weapons or Lv1 abilities) | Needs a key (8.7) |
 | **Cursed chest** | A high-grade weapon + lots of gold | A curse (8.6) |
 | **Timed chest** | A weapon | Behind a timed door (6.3) |
 
@@ -446,7 +490,7 @@ Drops lean a little toward the classes of the abilities you're carrying (about h
 You **hit it with your weapon** (no stopping to open it). It pops and shows what you got in big text.
 
 - **55% buff, 45% debuff.**
-- Buffs last until the end of the current world. Debuffs last 45 seconds, so they hurt but never ruin a run.
+- Buffs last until the end of the current stage. Debuffs last 45 seconds, so they hurt but never ruin a run.
 
 | Buffs | | Debuffs | |
 |---|---|---|---|
@@ -466,35 +510,86 @@ You **hit it with your weapon** (no stopping to open it). It pops and shows what
 ### 8.7 Keys
 - Locked key chests need a key. **1 key opens 1 chest.**
 - Keys are **a little further through the level**: at the end of a side path, after a hard jump section, or dropped by elite enemies.
-- You can carry up to 3 keys. Leftover keys carry over to the next world.
-- Shops sometimes sell a key. The Thief hybrid's Lockpick opens 1 chest per world for free (4.3).
+- You can carry up to 3 keys. Leftover keys carry over to the next stage.
+- Village shops sometimes sell a key. The Thief hybrid's Lockpick opens 1 chest per stage for free (4.3).
 
 ---
 
-## 9. Shops
+## 9. Villages and shops
 
-- **One shop per world**, in the room right before the boss.
-- Sometimes a **wandering merchant** mid-stage (random, rare stock).
-- Shop sells: 3 weapons/abilities (using that world's odds, at least one is **B or better**), an **ability upgrade** (+1 level to one of your abilities), flask upgrade (+1 charge), an expensive instant flask refill, 1 stat upgrade, sometimes a key, and a reroll (gets pricier).
+### 9.1 Villages
+There's a village before Stage 1 and between every stage:
+
+| Village | Comes after | Special |
+|---|---|---|
+| **Home Village** | Start of every run | Pick your starting class, hit a practice dummy, see your unlocks. Instant restart skips it and keeps your class |
+| **Crossroads Village** | Stage 1 | **Choose your road**: Mountain road or Forest road |
+| **Border Village** | Stage 2 | Last stop before the enemy kingdom |
+| **Rebel Camp** | Stage 3 | Hidden camp inside the enemy kingdom, right before the castle |
+
+Every village (except Home Village) has:
+- **A shop** (9.2).
+- **An inn.** To start the next stage you **sleep** there. Sleeping **restores all your HP** (not the flask, 5.2) and takes you to the start of the next stage.
+- The timer keeps running (6.2), so a speedrunner shops fast and goes straight to bed.
+
+### 9.2 The shop
+- Sells **3 items** (weapons or Lv1 abilities) using that stage's grade odds, with at least one weapon **B or better**.
+- **Ability upgrade**: +1 level to one of your abilities (price depends on the level, 9.3).
+- **Sell an ability**: get gold back based on its level (9.3).
+- **Flask upgrade** (+1 max charge, up to 4) and an expensive **instant flask refill**.
+- Sometimes a **key**.
+- **Reroll** the 3 items (gets pricier each time).
 - Buying is **walk up + press one button**. No menus. Fast.
+- A **wandering merchant** sometimes shows up mid-stage with rare stock. He sells items and ability upgrades, but doesn't buy.
 - **Gold** comes from enemies + chests, and resets every run.
+
+### 9.3 Prices (starting numbers, will be tuned)
+These are placeholders until we know how much gold a stage gives. The target is roughly **400–600 gold per stage**, so you can't max out everything and have to choose.
+
+**Abilities**
+
+| Level | Cost to reach this level | Total spent | Sells for |
+|---|---|---|---|
+| Lv1 | 120 (buy it) | 120 | 60 |
+| Lv2 | 100 | 220 | 110 |
+| Lv3 | 175 | 395 | 200 |
+| Lv4 | 275 | 670 | 335 |
+| Lv5 | 400 | 1,070 | 535 |
+
+Selling gives back about **half** of what you spent on that ability.
+
+**Weapons (by grade)**
+
+| F | C | B | A | S |
+|---|---|---|---|---|
+| 40 | 80 | 160 | 320 | 640 |
+
+**Other**
+
+| Item | Price |
+|---|---|
+| Flask upgrade (+1 charge) | 300 |
+| Instant flask refill | 250 |
+| Key | 150 |
+| Reroll | 50, then +50 each time |
 
 ---
 
 ## 10. Progression
 
 ### 10.1 Inside a run
-- Weapons and abilities you find (swap anytime). Weapon grades go up as you go deeper (8.3). Abilities level up (5.5).
+- Weapons you find (swap anytime). Weapon grades go up as you go deeper (8.3).
+- Abilities you find or buy start at Lv1, and you level them up at village shops (5.5).
 - Your class changes with the abilities you carry: Connection bonus or hybrid (4.3).
-- Stat upgrades after each end-of-world boss: pick 1 of 3 (+damage, +HP, +speed, +cooldown, Bloodthirst, etc.).
-- Enemies get tougher each world, so finding higher grades and levels matters.
+- Stat upgrades after each stage boss: pick 1 of 3 (+damage, +HP, +speed, +cooldown, Bloodthirst, etc.).
+- Enemies get tougher each stage, so finding higher grades and buying levels matters.
 
 ### 10.2 Between runs (light meta)
 - All 4 starting classes are unlocked from the start.
 - Sometimes enemies drop **blueprints** that unlock a new weapon or ability into the loot pool.
 - **No permanent stat boosts**, so runs are always fair to compare for speedrunning.
 - A "classes discovered" page fills in as you get each Connection bonus and hybrid. Unlock new starting weapon choices and cosmetic outfits from achievements.
-- Best times are saved **per starting class** and per class you finished as, so each one gets its own speedrun leaderboard.
+- Best times are saved on your computer **per starting class** and **per road** (Mountain or Forest).
 
 ---
 
@@ -508,7 +603,7 @@ You **hit it with your weapon** (no stopping to open it). It pops and shows what
 | Weapon 1 / Weapon 2 | J / K | X / Y |
 | Ability 1 / Ability 2 | U / I | LT / RT |
 | Heal (flask) | Q | LB |
-| Interact / swap | E | B |
+| Interact / swap / buy / sleep | E | B |
 | Instant restart | R (hold) | Select (hold) |
 
 All rebindable. Bond passives and Vampire are always on, so they don't add any buttons.
@@ -516,10 +611,12 @@ All rebindable. Bond passives and Vampire are always on, so they don't add any b
 ---
 
 ## 12. Look and sound
-- Pixel art, 2D side view. Each world has its own color palette so you always know where you are.
+- Pixel art, 2D side view. Each biome has its own color palette so you always know where you are.
+- Villages are cozy and calm (warm lights, quiet music) as a break between stages.
 - Each class has its own look. Your outfit's trim changes color to show your current class or hybrid.
 - **Game feel** is a priority: hit-stop on big hits, screen shake, enemy flash, punchy sounds.
 - Each element has its own look and sound (fire crackle, ice shatter, Storm Hammer thunder, etc.).
+- The Dragon gets a warning before it arrives (a shadow passes over, a roar) so it feels like an event.
 - Flask fill bar ticks up with a little sound on every kill, so you feel the heal coming.
 - Music speeds up / adds layers with Rush level.
 - Start with simple placeholder shapes, add real art after the game feels good.
@@ -529,9 +626,9 @@ All rebindable. Bond passives and Vampire are always on, so they don't add any b
 ## 13. Tech
 
 **Recommended:** **Phaser 3 + TypeScript + Vite**, levels made in **Tiled** (free map editor).
-- Runs in any browser: share a link, upload to itch.io, no install.
+- Runs in any PC browser: share a link or upload to itch.io, no install.
 - I can build, run, and test it directly in this setup.
-- Tiled makes hand-building the 6 stages easy.
+- Tiled makes hand-building the 5 biomes and 4 villages easy.
 
 **Alternative:** **Godot 4**. It's a free engine, very good for 2D, with a visual editor you'd use yourself. Better if you want to do a lot of the editing by hand; it needs an install.
 
@@ -539,14 +636,15 @@ Planned code layout (Phaser):
 ```
 src/
   main.ts             game setup
-  scenes/             Boot, Menu, ClassSelect, World, Shop, Boss, RunSummary
+  scenes/             Boot, Menu, Village, Stage, Boss, RunSummary
   player/             movement, combat, loadout, flask
   classes/            4 classes, bond passives, 6 hybrids, weapon match rules
   weapons/ abilities/ one file per item + shared data tables (grades, levels)
   loot/               grades, elements, odds tables, chests, Lucky Block, keys
-  enemies/ bosses/    regular enemies, Guardians, big bosses, roaming bosses
-  systems/            rush meter, timer/splits, save data
-  levels/             Tiled JSON per world
+  shop/               prices, buying, selling, ability upgrades
+  enemies/ bosses/    mobs per biome, Guardians, Black Knight, Enemy King, Dragon
+  systems/            rush meter, timer/splits, run route, save data
+  levels/             Tiled JSON per biome and per village
 assets/               sprites, sounds, music
 ```
 
@@ -560,15 +658,15 @@ Each milestone ends with something you can play.
 |---|---|---|
 | M0 | Project setup | An empty screen with a square you can move |
 | M1 | **Movement feel** | A grey test level with all moves from section 3 |
-| M2 | **Combat core** | 2 weapons (Greatsword + War Maul), 2 enemy types, HP, flask that refills from kills, death, restart |
-| M3 | **World 1 stage** (grey boxes) | Full Ashen Gate stage start to end, timer + splits |
-| M4 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest, shop |
-| M5 | **First Guardian** | Giant Shield Knight fight |
-| M6 | **Classes + abilities** | Class select with 4 starting kits, 2 abilities per class + Vampire, ability levels, Connection bonuses, hybrids, weapon match |
-| M7 | **Run structure + Worlds 2–3** | World → upgrade pick → next world, run summary, PB saving, Clockmaker fight, all 17 abilities, Rush meter, timed doors, first roaming boss |
-| M8 | **Art + sound pass** | Worlds 1–3 look and sound real, class outfits |
-| M9 | **Worlds 4–6** | Full game, final boss, all 4 roaming bosses, all weapons |
-| M10 | **Speedrun extras + polish** | Seeds, practice mode, ghosts, per-class leaderboards, balance |
+| M2 | **Combat core** | 2 weapons (Greatsword + War Maul), 2 mobs (Wolf + Bandit), HP, flask that refills from kills, death, restart |
+| M3 | **Stage 1** (grey boxes) | Full Plains & Forest stage start to end with all its mobs, timer + splits |
+| M4 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest |
+| M5 | **First Guardian** | Great Boar fight |
+| M6 | **Classes + abilities** | Class select with 4 starting kits, 2 abilities per class + Vampire, Lv1–5 abilities, Connection bonuses, hybrids, weapon match |
+| M7 | **Villages + Stage 2** | Home Village, Crossroads Village, inn and sleeping, shop with prices, buying/selling/upgrading abilities, both Stage 2 roads with their mobs and Guardians, stat upgrades, run summary, saved best times |
+| M8 | **Art + sound pass** | Stages 1–2 and the villages look and sound real, class outfits |
+| M9 | **Stages 3–4 + Dragon** | Enemy Kingdom, King's Castle, Black Knight, Enemy King, the Dragon event, all 17 abilities, all 19 weapons, Rush meter, timed doors |
+| M10 | **Speedrun extras + polish** | Seeds, practice mode, ghosts, balance |
 
 **First thing to make fun: M1.** If running and jumping around the empty test level isn't fun, nothing else will be.
 
@@ -580,7 +678,7 @@ Each milestone ends with something you can play.
 These change how the code is set up:
 1. **Phaser (browser) or Godot?** (section 13)
 2. **Art:** will you draw it, or should I start with placeholder shapes + free asset packs?
-3. **Dying:** restart the whole run, or just the current world? (A2)
+3. **Dying:** restart the whole run, or just the current stage? (A2)
 4. **Layouts:** same every run (speedrun-friendly) or random? (A4)
 
 Once 1 and 2 are answered I can start on M0 and M1 (the movement test level). Movement doesn't depend on anything else in this list.
@@ -589,24 +687,21 @@ Once 1 and 2 are answered I can start on M0 and M1 (the movement test level). Mo
 
 | Topic | What we'd decide | My suggestion |
 |---|---|---|
-| **Story and setting** | Who you are, why you're rushing, why there's a timer | The kingdom is sinking. You have to reach the Drowned King before the water swallows the throne. The timer is the water rising. |
-| **Hub between runs** | Plain menu, or a small home area | Small hub: pick class, see unlocks, hit a practice dummy. Instant restart skips it. |
-| **Harder modes after you win** | Replay value | "Heat" levels 1–5: faster enemies, fewer flask charges, tighter timed doors. Each level gets its own leaderboard |
-| **Enemies per world** | 4–5 regular enemies + 1 elite per world (only bosses exist so far) | Design World 1's set first, together |
+| **Why the rush?** | The story reason for the timer | The King's army is about to march on your home village. You have to reach him first |
+| **Names** | The Enemy King's name, the kingdom's name, the game's real title | Pick these once the story is set |
+| **Harder modes after you win** | Replay value | "Heat" levels 1–5: faster enemies, fewer flask charges, tighter timed doors. Each level gets its own best times |
 | **Stat upgrades** | The pick-1-of-3 pool after each boss | About 12 options |
-| **Gold and prices** | What things cost in shops | Start with a simple price table, tune in playtesting |
-| **Leaderboards** | Local only, or online | Local first. Online needs a server, so add it later |
-| **Co-op** | Single player only, or 2 players | Single player (A7). Co-op roughly doubles the work |
-| **Platform** | PC only, or phone too | PC + controller. Touch controls are hard for a fast platformer |
-| **Tutorial** | How new players learn the moves | World 1 teaches everything as you play, no separate tutorial |
-| **Accessibility** | Options for players who struggle | Assist mode (slower game speed, extra flask charge). Assist runs don't go on leaderboards |
+| **Gold drops** | How much gold a stage gives, to set the prices in 9.3 | Aim for 400–600 per stage, tune in playtesting |
+| **Tutorial** | How new players learn the moves | Stage 1 teaches everything as you play, no separate tutorial |
+| **Accessibility** | Options for players who struggle | Assist mode (slower game speed, extra flask charge). Assist runs don't count for best times |
 
 ### 15.3 Quick checks on my guesses
-1. Ability pairs: **same class** = Connection bonus (stronger), **different classes** = hybrid (just different). Right?
-2. **Vampire** is neutral, so carrying it means no bond or hybrid for that slot. Okay?
-3. **All abilities** have levels 1–3, not just Vampire. Okay?
-4. Grades are **F, C, B, A, S** (no D). Want a D?
-5. **Roaming bosses** come from one biome but can show up in any stage. Right?
-6. **Lucky Block** at 55% buff / 45% debuff. Okay, or 50/50?
-7. **6 worlds** okay?
-8. Keep **"RUSHBLADE"** as the working title?
+1. **Road choice:** you pick the Mountain or Forest road at the Crossroads Village (what I wrote). Or should it be random?
+2. **Dragon:** 30% of runs, shows up in Stage 2 or 3 in a side arena, and it's optional. Or should it always be in the same place (like the mountains), or have a 30% chance in every stage?
+3. **Ability levels go up to 5** (you said "level 1 or 5"). Right, or keep the max at 3?
+4. **Abilities only level up by paying at shops.** Finding the same ability again no longer levels it up. Right?
+5. **Sleeping restores HP but not the flask.** Okay?
+6. **Vampire** is neutral, so carrying it means no bond or hybrid for that slot. Okay?
+7. Grades are **F, C, B, A, S** (no D). Want a D?
+8. **Lucky Block** at 55% buff / 45% debuff. Okay, or 50/50?
+9. Keep **"RUSHBLADE"** as the working title?
