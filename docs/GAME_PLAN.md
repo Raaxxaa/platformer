@@ -1,20 +1,17 @@
 # Game Plan — Speedrun Action Platformer (working title: **RUSHBLADE**)
 
-> Draft v5. Read it over and mark anything you want changed. Every section is
+> Draft v6. Read it over and mark anything you want changed. Every section is
 > numbered so you can say things like "change 6.2" or "cut section 10".
 
-### What changed in v5 (from your notes)
-- **Thief is no longer a class.** It's now the **hybrid** you get from a Swordsman ability + an Archer ability, with speed perks (Silent Steps, Lockpick) → 4.3
-- New 4th class: **Brawler**, the heavy hitter. Main weapons are a **big hammer (War Maul)** and **Iron Fists** → 4.2
-- Classes are now **Swordsman, Brawler, Archer, Wizard**. You still combine classes through your abilities → 4.3
-- Old Thief weapons and abilities moved: blades → Swordsman, Throwing Knives → Archer, Gauntlets → Brawler's Iron Fists, Chain Blade → Brawler's Flail. Giant Axe and Shield moved to Brawler → 5.3, 5.4
-- New hybrids: **Thief** (Swordsman + Archer), **Thunderlord** (Brawler + Wizard, the full Thor combo), **Gladiator** (Swordsman + Brawler) → 4.3
+### What changed in v6 (from your notes)
+- The heavy hitter class is called **Tank** → 4.2
+- The Tank can use **both hammers**: its own War Maul and the Wizard's Storm Hammer. The Storm Hammer counts as a class weapon for both, but its throw takes **5s to recharge** for everyone except Wizards → 4.2, 5.3
+- Section 15 is now **what's left to discuss**: decisions needed before building, topics we haven't covered, and quick checks on my guesses → 15
 
-### From v4
-- **Your class comes from your abilities.** Every weapon and ability belongs to a class → 4.1
-- **2 abilities from the same class = Connection bonus** (they link up and get stronger). **2 from different classes = a hybrid** with its own playstyle → 4.3
-- **Weapons that match your abilities' class get a buff.** Any other weapon still works, just without the bonus → 4.4
-- **Abilities have levels 1–3.** Vampire fills the flask **+2% → +3% → +5%** per kill → 5.2, 5.5
+### From v5
+- **Thief is no longer a class.** It's the **hybrid** you get from a Swordsman ability + an Archer ability, with speed perks (Silent Steps, Lockpick) → 4.3
+- Classes are **Swordsman, Tank, Archer, Wizard**. You combine classes through your abilities → 4.3
+- New hybrids: **Thief** (Swordsman + Archer), **Thunderlord** (Tank + Wizard, the full Thor combo), **Gladiator** (Swordsman + Tank) → 4.3
 
 ---
 
@@ -23,7 +20,7 @@
 **Decided**
 - Dead Cells–style 2D side-view action platformer, built for speed.
 - Has its own ideas, so it's not a copy: ability-based classes with Connection bonuses and hybrids, weapon grades + elements, ability levels, kill-charged flask, Lucky Blocks, Guardians, roaming bosses, Rush meter.
-- 4 classes: Swordsman, Brawler, Archer, Wizard. Thief is a hybrid (Swordsman + Archer), not a class. Any class can use any weapon.
+- 4 classes: Swordsman, Tank, Archer, Wizard. Thief is a hybrid (Swordsman + Archer), not a class. Any class can use any weapon.
 
 **Still my assumptions. Change any of these:**
 
@@ -100,7 +97,7 @@ Movement has to feel great before anything else gets built.
 ### 4.1 How classes work
 - **Every weapon and every ability belongs to a class.** A few abilities (like Vampire) are **neutral** and don't belong to any class.
 - At the start of a run you pick a **starting class**. You get its starting ability (Lv1) and pick 1 of 2 starting weapons (C grade). Your second ability slot starts empty.
-- After that, **your class is whatever your 2 abilities are.** Pick up abilities from other classes to combine classes. The HUD shows your current class name (e.g. "Brawler", or "Thief" for the Swordsman + Archer hybrid).
+- After that, **your class is whatever your 2 abilities are.** Pick up abilities from other classes to combine classes. The HUD shows your current class name (e.g. "Tank", or "Thief" for the Swordsman + Archer hybrid).
 - **Any class can use any weapon.** Weapons that match your class just work better (4.4).
 
 ### 4.2 The four classes
@@ -108,18 +105,21 @@ Movement has to feel great before anything else gets built.
 | Class | Style | Weapons | Abilities |
 |---|---|---|---|
 | **Swordsman** | Blades, fast combos, precise | Greatsword, Katana, Twin Daggers, Spear, Scythe | Blade Dash, Whirlwind, Blade Flurry, Riposte |
-| **Brawler** | Heavy hitter. Slow, huge hits, tanky | **War Maul** (big hammer), **Iron Fists**, Giant Axe, Flail, Shield | Shockwave, Shoulder Charge, Rage, Boulder Toss |
+| **Tank** | Heavy hitter. Slow, huge hits, tanky | **War Maul** (big hammer), **Iron Fists**, Giant Axe, Flail, Shield, Storm Hammer (shared with Wizard) | Shockwave, Shoulder Charge, Rage, Boulder Toss |
 | **Archer** | Ranged, mobile | Bow, Crossbow, Hand Cannon, Javelin, Throwing Knives | Arrow Rain, Turret, Grapple Arrow, Hunter's Mark |
-| **Wizard** | Storm magic, Thor-style | **Storm Hammer**, Staff, Wand, Spell Tome | Thunder Strike, Frost Burst, Blink, Time Slow |
+| **Wizard** | Storm magic, Thor-style | **Storm Hammer** (shared with Tank), Staff, Wand, Spell Tome | Thunder Strike, Frost Burst, Blink, Time Slow |
 
-**Two hammers, two styles:** the Brawler's **War Maul** is pure weight: slow, huge ground smashes. The Wizard's **Storm Hammer** is a magic hammer you throw and call back with lightning. Carry both classes' abilities and you become the **Thunderlord** (4.3).
+**Two hammers, two styles:** the Tank's **War Maul** is pure weight: slow, huge ground smashes. The Wizard's **Storm Hammer** is a magic hammer you throw and call back with lightning.
+- The Tank can use **both**. The Storm Hammer counts as a class weapon for the Tank and the Wizard, so it gets the +25% match bonus with either class's abilities (4.4).
+- **Throw recharge:** after you throw the Storm Hammer, it takes **2s** before you can throw it again if you carry a Wizard ability, and **5s** for everyone else (including a pure Tank). Swinging it has no recharge.
+- Carry a Tank ability and a Wizard ability and you become the **Thunderlord** (4.3): War Maul in one hand, Storm Hammer in the other, with the fast 2s recharge.
 
 **Starting kits**
 
 | Starting class | Starting ability | Starting weapon (pick 1) |
 |---|---|---|
 | Swordsman | Blade Dash | Greatsword or Katana |
-| Brawler | Shockwave | War Maul or Iron Fists |
+| Tank | Shockwave | War Maul or Iron Fists |
 | Archer | Arrow Rain | Bow or Crossbow |
 | Wizard | Thunder Strike | Storm Hammer or Staff |
 
@@ -137,7 +137,7 @@ Your 2 ability slots decide what you are:
 | Class | Bond passive |
 |---|---|
 | **Swordsman: Blademaster** | Every 3rd hit in a row is a guaranteed crit, and kills reset your dash cooldown |
-| **Brawler: Iron Will** | +30% max HP, you can't be knocked back while attacking, and heavy hits stagger enemies twice as long |
+| **Tank: Iron Will** | +30% max HP, you can't be knocked back while attacking, and heavy hits stagger enemies twice as long |
 | **Archer: Eagle Eye** | Long-range hits always crit. Aiming in the air slows your fall so you can shoot mid-jump |
 | **Wizard: Storm Caller** | Abilities recharge 25% faster, elements are stronger, and C-grade weapons get an element too (normally only B and up do) |
 
@@ -146,10 +146,10 @@ Your 2 ability slots decide what you are:
 | Abilities from | Hybrid | Combo perk |
 |---|---|---|
 | Swordsman + Archer | **Thief** | **Silent Steps:** +20% move speed, enemies take longer to notice you, and your first hit on an enemy that hasn't noticed you is a crit. **Lockpick:** open 1 key chest per world without a key |
-| Swordsman + Brawler | **Gladiator** | Switching weapons mid-combo keeps the combo going, and the next hit does +50% |
+| Swordsman + Tank | **Gladiator** | Switching weapons mid-combo keeps the combo going, and the next hit does +50% |
 | Swordsman + Wizard | **Spellblade** | Every melee hit makes your abilities recharge 0.5s faster |
-| Brawler + Archer | **Warden** | Melee hit → next shot does +50%. Shot hit → next melee hit does +50% |
-| Brawler + Wizard | **Thunderlord** | Every heavy hit (hammer, axe, fist finisher) calls down a lightning bolt. The full Thor combo |
+| Tank + Archer | **Warden** | Melee hit → next shot does +50%. Shot hit → next melee hit does +50% |
+| Tank + Wizard | **Thunderlord** | Every heavy hit (hammer, axe, fist finisher) calls down a lightning bolt. The full Thor combo |
 | Archer + Wizard | **Arcane Archer** | Every arrow carries an element (even F-grade bows), and charged shots explode |
 
 ### 4.4 Weapon match
@@ -199,7 +199,7 @@ Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
 | Spear | Long reach | Attack while dashing = lunge through enemies |
 | Scythe | Big arc | Kills with it fill the flask +3% |
 
-**Brawler**
+**Tank**
 
 | Weapon | Feel | Special |
 |---|---|---|
@@ -223,7 +223,7 @@ Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
 
 | Weapon | Feel | Special |
 |---|---|---|
-| **Storm Hammer** | Thor-style hammer | Swing it, or throw it and it flies back to you, hitting on the way out and back. Dive slam with it calls down lightning |
+| **Storm Hammer** | Thor-style hammer (also a Tank weapon) | Swing it, or throw it and it flies back to you, hitting on the way out and back. Throw recharge: 2s with a Wizard ability, 5s otherwise. Dive slam with it calls down lightning |
 | Staff | Magic bolts | Hold to charge a big exploding orb |
 | Wand | Rapid small shots | Shots slightly home in on enemies |
 | Spell Tome | Close-range magic | Opens a ring of spinning runes around you |
@@ -242,7 +242,7 @@ Each ability levels from 1 to 3 (5.5). The last column says what levels improve.
 | Blade Flurry | Swords spin around you for a few seconds | More blades |
 | Riposte | Stance for 1s: if you get hit, block it and counter with a big slash | Wider counter / also refunds dash |
 
-**Brawler**
+**Tank**
 
 | Ability | What it does | Lv2 / Lv3 |
 |---|---|---|
@@ -574,29 +574,39 @@ Each milestone ends with something you can play.
 
 ---
 
-## 15. Questions for you
+## 15. What's left to discuss
 
-**New from v5**
-1. Name for the heavy hitter: I went with **Brawler**. Others: Berserker, Juggernaut, Titan, Bruiser.
-2. Two hammers okay? Brawler's War Maul (heavy smash) and Wizard's Storm Hammer (throw + lightning). Or should the Wizard drop the hammer now that the Brawler has one?
+### 15.1 Decide before I start building
+These change how the code is set up:
+1. **Phaser (browser) or Godot?** (section 13)
+2. **Art:** will you draw it, or should I start with placeholder shapes + free asset packs?
+3. **Dying:** restart the whole run, or just the current world? (A2)
+4. **Layouts:** same every run (speedrun-friendly) or random? (A4)
 
-**From v4**
+Once 1 and 2 are answered I can start on M0 and M1 (the movement test level). Movement doesn't depend on anything else in this list.
 
-3. Did I get the ability idea right? **Same class pair** = Connection bonus (stronger). **Different class pair** = hybrid (not stronger, just a different playstyle).
-4. **Vampire** is neutral, so carrying it means no bond or hybrid for that slot. Good trade-off, or should it belong to a class?
-5. I gave **all abilities levels 1–3**, not just Vampire. You level them by finding the same ability again or buying an upgrade at the shop. Okay?
+### 15.2 Topics we haven't talked about yet
 
-**From v2**
+| Topic | What we'd decide | My suggestion |
+|---|---|---|
+| **Story and setting** | Who you are, why you're rushing, why there's a timer | The kingdom is sinking. You have to reach the Drowned King before the water swallows the throne. The timer is the water rising. |
+| **Hub between runs** | Plain menu, or a small home area | Small hub: pick class, see unlocks, hit a practice dummy. Instant restart skips it. |
+| **Harder modes after you win** | Replay value | "Heat" levels 1–5: faster enemies, fewer flask charges, tighter timed doors. Each level gets its own leaderboard |
+| **Enemies per world** | 4–5 regular enemies + 1 elite per world (only bosses exist so far) | Design World 1's set first, together |
+| **Stat upgrades** | The pick-1-of-3 pool after each boss | About 12 options |
+| **Gold and prices** | What things cost in shops | Start with a simple price table, tune in playtesting |
+| **Leaderboards** | Local only, or online | Local first. Online needs a server, so add it later |
+| **Co-op** | Single player only, or 2 players | Single player (A7). Co-op roughly doubles the work |
+| **Platform** | PC only, or phone too | PC + controller. Touch controls are hard for a fast platformer |
+| **Tutorial** | How new players learn the moves | World 1 teaches everything as you play, no separate tutorial |
+| **Accessibility** | Options for players who struggle | Assist mode (slower game speed, extra flask charge). Assist runs don't go on leaderboards |
 
-6. Grades are **F, C, B, A, S** (no D). Want a D too?
-7. Roaming bosses: one from each biome that can randomly show up in any stage. Right?
-8. Lucky Block at **55% buff / 45% debuff**. Okay, or 50/50?
-
-**Still open from v1**
-
-9. Die = restart whole run, or just restart the current world? (A2)
-10. Same layouts every run (speedrun-friendly) or random layouts? (A4)
-11. 6 worlds okay? More/fewer?
-12. Phaser (browser) or Godot?
-13. Art: will you draw it, or should I use placeholder + free asset packs?
-14. Name: keep "RUSHBLADE" as a working title, or something else?
+### 15.3 Quick checks on my guesses
+1. Ability pairs: **same class** = Connection bonus (stronger), **different classes** = hybrid (just different). Right?
+2. **Vampire** is neutral, so carrying it means no bond or hybrid for that slot. Okay?
+3. **All abilities** have levels 1–3, not just Vampire. Okay?
+4. Grades are **F, C, B, A, S** (no D). Want a D?
+5. **Roaming bosses** come from one biome but can show up in any stage. Right?
+6. **Lucky Block** at 55% buff / 45% debuff. Okay, or 50/50?
+7. **6 worlds** okay?
+8. Keep **"RUSHBLADE"** as the working title?
