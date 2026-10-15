@@ -1,15 +1,15 @@
 # Game Plan — Speedrun Action Platformer (working title: **RUSHBLADE**)
 
-> Draft v3. Read it over and mark anything you want changed. Every section is
+> Draft v4. Read it over and mark anything you want changed. Every section is
 > numbered so you can say things like "change 6.2" or "cut section 10".
 
-### What changed in v3 (from your notes)
-- New **classes**: Swordsman, Thief, Archer, Mage. Each has its own weapons and a passive → section 4
-- **Combine classes** mid-run (Archer + Mage = Arcane Archer, Swordsman + Mage = Spellblade, etc.) → 4.3
-- **Heal flask recharges from kills** instead of only at shops → 5.2
-- New **Vampire** ability: kills fill the flask way faster → 5.2, 5.4
-- Mage weapons added (Staff, Wand, Spell Tome), and a few more for other classes → 5.3
-- Sections after 3 got renumbered by one because Classes is now section 4.
+### What changed in v4 (from your notes)
+- Classes are now **Swordsman, Archer, Wizard, Thief**. The Wizard has a **Thor-style Storm Hammer**. The Thief is a light-melee + throwing class with speed skills like **Silent Steps** → 4.2
+- **Your class comes from your abilities.** Every weapon and ability belongs to a class. No more Class Shrine → 4.1
+- **2 abilities from the same class = Connection bonus** (they link up and get stronger). **2 from different classes = a hybrid** with its own playstyle → 4.3
+- **Weapons that match your abilities' class get a buff.** Any other weapon still works, just without the bonus → 4.4
+- **Abilities have levels 1–3.** Vampire fills the flask **+2% → +3% → +5%** per kill → 5.2, 5.5
+- New ability lists per class. War Hammer became the Wizard's Storm Hammer, and Grapple became the Archer's Grapple Arrow → 5.3, 5.4
 
 ---
 
@@ -17,7 +17,8 @@
 
 **Decided**
 - Dead Cells–style 2D side-view action platformer, built for speed.
-- Has its own ideas, so it's not a copy: classes + combo classes, weapon grades + elements, kill-charged flask, Lucky Blocks, Guardians, roaming bosses, Rush meter.
+- Has its own ideas, so it's not a copy: ability-based classes with Connection bonuses and hybrids, weapon grades + elements, ability levels, kill-charged flask, Lucky Blocks, Guardians, roaming bosses, Rush meter.
+- 4 classes: Swordsman, Archer, Wizard, Thief. Any class can use any weapon.
 
 **Still my assumptions. Change any of these:**
 
@@ -35,12 +36,13 @@
 ## 1. The pitch
 
 Dead Cells–style combat and loot, but built around **going fast**. Pick a
-class, carry big weapons and cooldown abilities, and cut through each world in
-one continuous stage. Gamble on Lucky Blocks, open chests, and find better
-graded weapons that pick up fire, ice and lightning powers as they go up in
-grade. Halfway through the run you merge with a second class and become
-something new. Your heal flask only refills by killing, so the best defense is
-staying aggressive. A timer is always on screen.
+starting class, then build your character from the weapons and abilities you
+find. Two abilities from the same class connect and get stronger. Two from
+different classes turn you into a hybrid with a new playstyle. Cut through each
+world in one continuous stage, gamble on Lucky Blocks, open chests, and find
+better graded weapons that pick up fire, ice and lightning powers. Your heal
+flask only refills by killing, so the best defense is staying aggressive. A
+timer is always on screen.
 
 **Run length targets**
 
@@ -54,13 +56,13 @@ staying aggressive. A timer is always on screen.
 
 ## 2. Core loop
 
-1. Start run → **pick a class** → pick its starting weapon (1 of 2, C grade).
+1. Start run → **pick a starting class** → get its starting ability and pick its starting weapon (1 of 2, C grade).
 2. Play through the world's stage: kill (this also refills your flask), move, hit Lucky Blocks, grab keys, open chests, decide on detours.
-3. Maybe run into a **roaming boss**. Fight it for top loot, or skip it to save time.
-4. Shop room before the end of the world → spend gold.
-5. Beat the **Guardian** (or a big boss in Worlds 3 and 6) → world split time shows (green = faster than your best, red = slower).
-6. Short transition (pick 1 of 3 stat upgrades) → next world. Loot odds go up.
-7. After World 2: **Class Shrine**. Pick a second class to combine with yours.
+3. Every ability you pick up shapes your class: stay pure for a **Connection bonus**, or mix for a **hybrid**.
+4. Maybe run into a **roaming boss**. Fight it for top loot, or skip it to save time.
+5. Shop room before the end of the world → spend gold.
+6. Beat the **Guardian** (or a big boss in Worlds 3 and 6) → world split time shows (green = faster than your best, red = slower).
+7. Short transition (pick 1 of 3 stat upgrades) → next world. Loot odds go up.
 8. Beat the final boss → run time, summary screen, personal best saved.
 9. Die → instant restart from World 1 (one button, no menus).
 
@@ -91,38 +93,65 @@ Movement has to feel great before anything else gets built.
 ## 4. Classes
 
 ### 4.1 How classes work
-- You pick a class at the start of every run.
-- **You can still use any weapon**, but your **class weapons do +25% damage** and get the class bonus. That way no loot drop is ever useless.
-- Each class has a **passive** that's always on. No extra buttons.
-- You start with a C-grade class weapon (choose 1 of 2). Your second weapon and abilities come from loot.
+- **Every weapon and every ability belongs to a class.** A few abilities (like Vampire) are **neutral** and don't belong to any class.
+- At the start of a run you pick a **starting class**. You get its starting ability (Lv1) and pick 1 of 2 starting weapons (C grade). Your second ability slot starts empty.
+- After that, **your class is whatever your 2 abilities are.** Pick up abilities from other classes to combine classes. The HUD shows your current class name (e.g. "Swordsman", or "Spellblade" for a hybrid).
+- **Any class can use any weapon.** Weapons that match your class just work better (4.4).
 
 ### 4.2 The four classes
 
-| Class | Style | Class weapons | Passive |
+| Class | Style | Weapons | Abilities |
 |---|---|---|---|
-| **Swordsman** | Big hits, tanky | Greatsword, War Hammer, Giant Axe, Spear, Shield | **Iron Will:** +30% max HP, and you can't be knocked back while swinging |
-| **Thief** | Fastest class | Twin Daggers, Katana, Chain Blade, Throwing Knives, Gauntlets | **Shadowstep:** 2 dash charges instead of 1. **Lockpick:** open 1 key chest per world without a key |
-| **Archer** | Ranged, mobile | Bow, Crossbow, Hand Cannon, Boomerang Glaive | **Eagle Eye:** long-range hits always crit. Aiming in the air slows your fall so you can shoot mid-jump |
-| **Mage** | Elements + abilities | Staff, Wand, Spell Tome, Scythe | **Arcane Flow:** abilities recharge 25% faster, elements are stronger, and **C-grade weapons also get an element** (normally only B and up do) |
+| **Swordsman** | Big hits, tanky, frontline | Greatsword, Giant Axe, Spear, Shield, Scythe | Shockwave, War Cry, Whirlwind, Shoulder Charge |
+| **Archer** | Ranged, mobile | Bow, Crossbow, Hand Cannon, Javelin | Arrow Rain, Turret, Grapple Arrow, Hunter's Mark |
+| **Wizard** | Storm magic, Thor-style | **Storm Hammer**, Staff, Wand, Spell Tome | Thunder Strike, Frost Burst, Blink, Time Slow |
+| **Thief** | Speed and swiftness. Light blades + throwing, a mix of Swordsman and Archer | Twin Daggers, Katana, Chain Blade, Throwing Knives, Gauntlets | **Silent Steps**, Shadow Dash, Smoke Bomb, Blade Flurry |
 
-Starting weapon choices: Swordsman: Greatsword or Spear. Thief: Twin Daggers or Katana. Archer: Bow or Crossbow. Mage: Staff or Wand.
+**Starting kits**
 
-### 4.3 Combining classes
-After you beat the World 2 Guardian, a **Class Shrine** appears. Pick a second class and you **combine** into a hybrid:
-- You keep **both passives**.
-- **Both classes' weapons** get the +25% bonus.
-- You get a **combo perk** that only that hybrid has.
-
-| Combo | Hybrid name | Combo perk |
+| Starting class | Starting ability | Starting weapon (pick 1) |
 |---|---|---|
-| Swordsman + Mage | **Spellblade** | Every melee hit makes your abilities recharge 0.5s faster |
-| Swordsman + Thief | **Duelist** | Dash through an enemy's attack → your next hit is a guaranteed crit |
-| Swordsman + Archer | **Warden** | Melee hit → next shot does +50%. Shot hit → next melee hit does +50% |
-| Thief + Mage | **Trickster** | Dashing leaves a decoy that explodes with your weapon's element |
-| Thief + Archer | **Shadowshot** | Shooting while dashing always crits, and ranged kills refund your dash |
-| Archer + Mage | **Arcane Archer** | Every arrow carries an element (even F-grade bows), and charged shots explode |
+| Swordsman | Shockwave | Greatsword or Spear |
+| Archer | Arrow Rain | Bow or Crossbow |
+| Wizard | Thunder Strike | Storm Hammer or Staff |
+| Thief | Silent Steps | Twin Daggers or Katana |
 
-**Or double down:** pick your own class again to become a **Master** with your passive twice as strong. The four Masters are Warlord (Swordsman), Phantom (Thief), Sharpshooter (Archer) and Archmage (Mage).
+### 4.3 Ability pairs: Connection bonus or hybrid
+Your 2 ability slots decide what you are:
+
+| Your 2 abilities | What you get | Feel |
+|---|---|---|
+| **Same class** (e.g. 2 Wizard abilities) | **Connection bonus**: the class's bond passive turns on, **and** the two abilities link: use one, then the other within 3s, and the second one is **50% stronger** | Strongest, most focused |
+| **Different classes** (e.g. Archer + Wizard) | **Hybrid**: a new class name and a combo perk that changes how you play | Not stronger, just different. More playstyles |
+| **Neutral + anything** (e.g. Vampire + Blink) | No bond or hybrid. That's the price for Vampire's healing | Safe |
+
+**Connection bonuses (same class)**
+
+| Class | Bond passive |
+|---|---|
+| **Swordsman: Iron Will** | +30% max HP, and you can't be knocked back while swinging |
+| **Archer: Eagle Eye** | Long-range hits always crit. Aiming in the air slows your fall so you can shoot mid-jump |
+| **Wizard: Storm Caller** | Abilities recharge 25% faster, elements are stronger, and C-grade weapons get an element too (normally only B and up do) |
+| **Thief: Shadowstep** | 2 dash charges instead of 1. **Lockpick:** open 1 key chest per world without a key |
+
+**Hybrids (different classes)**
+
+| Abilities from | Hybrid | Combo perk |
+|---|---|---|
+| Swordsman + Wizard | **Spellblade** | Every melee hit makes your abilities recharge 0.5s faster |
+| Swordsman + Archer | **Warden** | Melee hit → next shot does +50%. Shot hit → next melee hit does +50% |
+| Swordsman + Thief | **Duelist** | Dash through an enemy's attack → your next hit is a guaranteed crit |
+| Archer + Wizard | **Arcane Archer** | Every arrow carries an element (even F-grade bows), and charged shots explode |
+| Archer + Thief | **Shadowshot** | Shooting while dashing always crits, and ranged kills refund your dash |
+| Wizard + Thief | **Trickster** | Dashing leaves a decoy that explodes with your weapon's element |
+
+### 4.4 Weapon match
+- If a weapon's class **matches the class of either of your abilities**, it gets **+25% damage** and its class icon lights up on the HUD.
+- If it doesn't match, it **still works normally**. It just doesn't get the bonus.
+- Examples:
+  - Bow + Arrow Rain → Bow is matched (+25%).
+  - Bow + Thunder Strike → Bow works fine, no bonus.
+  - Bow + Arrow Rain + Thunder Strike → you're an **Arcane Archer**, and the Bow is matched.
 
 ---
 
@@ -130,24 +159,24 @@ After you beat the World 2 Guardian, a **Class Shrine** appears. Pick a second c
 
 ### 5.1 Loadout
 - **2 weapon slots**: any mix of melee, ranged, magic, or shield.
-- **2 ability slots**: cooldown skills.
+- **2 ability slots**: these decide your class (4.3).
 - **Heal flask**: see 5.2.
 
 ### 5.2 Healing: the flask recharges from kills
 - The flask has **2 charges** to start. Each charge heals 40% HP. Drinking is fast (~0.4s).
-- Under the flask icon is a **fill bar**. **Kills fill it**, and a full bar = 1 charge back.
+- Under the flask icon is a **fill bar**. **Kills fill it**, and at 100% you get 1 charge back.
 
-| Kill | Fills |
+| Source | Fills per kill |
 |---|---|
-| Regular enemy | 1/12 of a charge (12 kills = 1 charge) |
-| Elite enemy | 3/12 |
+| Regular enemy | 5% (20 kills = 1 charge) |
+| Elite enemy | 15% |
 | Guardian / big boss / roaming boss | Refills the whole flask |
+| **Vampire** (neutral ability, 5.4) | **+2%** extra per kill at Lv1, **+3%** at Lv2, **+5%** at Lv3 |
+| Scythe | +3% extra per kill made with it |
+| Bloodthirst stat upgrade | +2% extra per kill |
 
+- With everything stacked (Vampire Lv3 + Scythe + Bloodthirst) it's 15% per kill, about 7 kills per charge.
 - You start every run with a full flask. It does **not** refill on its own between worlds, so you have to keep killing.
-- More ways to fill it faster:
-  - **Vampire** ability (5.4): for 8s, every kill fills **3x as much** and heals you a little.
-  - **Scythe**: kills with it fill the bar 50% more.
-  - **Bloodthirst** stat upgrade (in the pick-1-of-3 pool): kills fill 25% more.
 - Shops sell a **flask upgrade** (+1 max charge, up to 4) and an expensive instant refill.
 
 ### 5.3 Weapons (first version, ~18)
@@ -158,10 +187,28 @@ Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
 | Weapon | Feel | Special |
 |---|---|---|
 | Greatsword | Big, wide swings | 3rd hit of combo is a huge cleave |
-| War Hammer | Slow, massive | Dive slam with it makes a shockwave |
 | Giant Axe | Heaviest weapon | Spin attack while moving |
 | Spear | Long reach | Attack while dashing = lunge through enemies |
 | Shield | Defense | Perfect parry stuns and refunds dash |
+| Scythe | Big arc | Kills with it fill the flask +3% |
+
+**Archer**
+
+| Weapon | Feel | Special |
+|---|---|---|
+| Bow | Ranged | Charged shot pierces |
+| Crossbow | Slow, heavy bolts | Bolts pin enemies to walls |
+| Hand Cannon | Ranged, slow | Knocks you backward (movement tech!) |
+| Javelin | Heavy throw | Sticks in walls, and you can stand on it (movement tech!) |
+
+**Wizard**
+
+| Weapon | Feel | Special |
+|---|---|---|
+| **Storm Hammer** | Thor-style hammer | Swing it, or throw it and it flies back to you, hitting on the way out and back. Dive slam with it calls down lightning |
+| Staff | Magic bolts | Hold to charge a big exploding orb |
+| Wand | Rapid small shots | Shots slightly home in on enemies |
+| Spell Tome | Close-range magic | Opens a ring of spinning runes around you |
 
 **Thief**
 
@@ -173,49 +220,70 @@ Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
 | Throwing Knives | Fast ranged | Throws 3 at once, never runs out |
 | Gauntlets | Close combo | Uppercut launches you upward too |
 
-**Archer**
-
-| Weapon | Feel | Special |
-|---|---|---|
-| Bow | Ranged | Charged shot pierces |
-| Crossbow | Slow, heavy bolts | Bolts pin enemies to walls |
-| Hand Cannon | Ranged, slow | Knocks you backward (movement tech!) |
-| Boomerang Glaive | Curved throw | Hits on the way out and on the way back |
-
-**Mage**
-
-| Weapon | Feel | Special |
-|---|---|---|
-| Staff | Magic bolts | Hold to charge a big exploding orb |
-| Wand | Rapid small shots | Shots slightly home in on enemies |
-| Spell Tome | Close-range magic | Opens a ring of spinning runes around you |
-| Scythe | Mage's melee | Big arc; kills fill the flask 50% more |
-
 **Speed twist on big weapons:** heavy weapons get **faster while your Rush meter is high** (see 6.1), so big weapons reward staying aggressive.
 
-### 5.4 Abilities (first version, ~9)
+### 5.4 Abilities (first version, 17)
+Each ability levels from 1 to 3 (5.5). The last column says what levels improve.
 
-| Ability | What it does |
-|---|---|
-| Grapple Hook | Pull yourself to walls/enemies. Big movement skill |
-| Blink | Teleport a short distance, even through thin walls |
-| Shockwave | Ground blast, knocks enemies up |
-| Bomb | Throw, explodes, can bomb-jump |
-| Frost Burst | Freeze enemies around you |
-| Turret | Drop a turret that shoots for 8s |
-| Spinning Blades | Saws orbit you for a few seconds |
-| Time Slow | Slow everything except you for 3s |
-| **Vampire** | For 8s, kills fill the flask 3x as much and heal you a little. Cooldown 30s |
+**Swordsman**
 
-### 5.5 Enemies
+| Ability | What it does | Lv2 / Lv3 |
+|---|---|---|
+| Shockwave | Ground slam that knocks enemies up | Bigger area, more damage |
+| War Cry | +30% damage for 6s | +45% / +60% |
+| Whirlwind | Spin forward through enemies | Longer spin, pulls enemies in |
+| Shoulder Charge | Charge forward, knocking enemies aside. Breaks cracked walls (shortcuts!) | Farther, stuns |
+
+**Archer**
+
+| Ability | What it does | Lv2 / Lv3 |
+|---|---|---|
+| Arrow Rain | Rain of arrows on the area ahead of you | More arrows |
+| Turret | Drop a ballista that shoots for 8s | Shoots faster / drops 2 |
+| Grapple Arrow | Rope arrow that pulls you to walls or pulls enemies to you | Longer range, faster pull |
+| Hunter's Mark | Marks the strongest enemy nearby: it takes +30% damage | Marks 2 / 3 enemies |
+
+**Wizard**
+
+| Ability | What it does | Lv2 / Lv3 |
+|---|---|---|
+| Thunder Strike | Calls lightning down on enemies in front of you (Thor-style) | More bolts |
+| Frost Burst | Freeze enemies around you | Bigger, longer freeze |
+| Blink | Teleport a short distance, even through thin walls | Farther / 2 charges |
+| Time Slow | Slow everything except you for 3s | 4s / 5s |
+
+**Thief**
+
+| Ability | What it does | Lv2 / Lv3 |
+|---|---|---|
+| **Silent Steps** | For 5s: enemies don't notice you, +30% move speed, and your first hit on each enemy crits | Lasts longer, more speed |
+| Shadow Dash | An extra dash that cuts through enemies | More damage / 2 charges |
+| Smoke Bomb | Smoke cloud that blinds enemies inside; you move faster in it. Can bomb-jump off it | Bigger cloud / poisons at Lv3 |
+| Blade Flurry | Knives spin around you for a few seconds | More knives |
+
+**Neutral (no class)**
+
+| Ability | What it does | Lv2 / Lv3 |
+|---|---|---|
+| **Vampire** | Always on, no button. Every kill fills the flask **+2%** extra | +3% / +5% |
+
+### 5.5 Ability levels
+- Weapons use **grades** (F–S). Abilities use **levels** (1–3).
+- Ways to level up an ability:
+  - **Find the same ability again**: it merges into your current one and goes up a level.
+  - **Buy an ability upgrade** at the shop.
+- A higher level makes the ability stronger or gives it a shorter cooldown (see the tables in 5.4).
+- Abilities dropped in later worlds sometimes come at Lv2.
+
+### 5.6 Enemies
 - Regular enemies **die fast** (2–4 hits from a good weapon). No damage sponges. They're things to cut through, not walls.
 - Each world has 4–5 enemy types + 1 elite version. One of them becomes that world's Guardian (7.3).
-- Elites sometimes drop a **key** (8.7).
+- Elites sometimes drop a **key** (8.7) or an ability.
 - Enemies get stunned/staggered easily so you can push through.
 - Clear warning flash before every attack.
-- Enemies get tougher each world, so you need the better grades you find later.
+- Enemies get tougher each world, so you need the better grades and levels you find later.
 
-### 5.6 Bosses
+### 5.7 Bosses
 See section 7.3.
 
 ---
@@ -231,7 +299,7 @@ See section 7.3.
 ### 6.2 Timer and splits
 - Run timer always on screen (can be turned off).
 - Split for each world, compared to your personal best (green/red).
-- Timer pauses only in menus. It does **not** stop in shops, at the Class Shrine, or when opening chests. Deciding costs time, that's the point.
+- Timer pauses only in menus. It does **not** stop in shops or when opening chests. Deciding costs time, that's the point.
 
 ### 6.3 Timed doors
 - Some chest rooms are behind a door that **only opens if you reach it under a time limit**. Rewards: a weapon at key-chest odds (8.3) plus big gold.
@@ -239,7 +307,7 @@ See section 7.3.
 ### 6.4 Quality-of-life for speedrunners
 - One-button instant restart.
 - **Seeded runs**: type a seed to get the same loot, Lucky Blocks and roaming bosses every time (for races).
-- **World Practice mode**: play any world you've reached, timed, with a preset loadout and class.
+- **World Practice mode**: play any world you've reached, timed, with a preset loadout.
 - Ghost replay of your best world time (later milestone).
 
 ---
@@ -251,7 +319,7 @@ Every world = **one continuous stage** → shop room → end boss.
 | # | World | Gimmick | End boss |
 |---|---|---|---|
 | 1 | **Ashen Gate** (castle walls) | Teaches dash, wall jump, slide | Guardian: **Giant Shield Knight** |
-| 2 | **Drowned Sewers** | Water slows you unless you dash/slide; bounce off pipes | Guardian: **Sludge Brute** → then the **Class Shrine** |
+| 2 | **Drowned Sewers** | Water slows you unless you dash/slide; bounce off pipes | Guardian: **Sludge Brute** |
 | 3 | **Clockwork Tower** | Moving gears, platforms on timers, vertical climb | **BIG BOSS: The Clockmaker** (mid-run) |
 | 4 | **Crimson Forest** | Grapple points, tree-top routes vs ground route | Guardian: **Elder Stag** |
 | 5 | **Frozen Mines** | Ice keeps your momentum, minecart section | Guardian: **Ice Golem** |
@@ -263,25 +331,25 @@ Each stage is about 8 sections chained together:
 1. **Start**: short run-in, a free weapon or Lucky Block
 2. **Combat stretch**: groups of enemies on flat ground
 3. **Traversal**: platforming using the world's gimmick
-4. **Branch**: main path vs side path (key or chest) vs **skip route** (hard movement, saves time)
+4. **Branch**: main path vs side path (key, chest or ability) vs **skip route** (hard movement, saves time)
 5. **Arena**: doors lock, wave of enemies (fast kills = faster exit, and a big flask refill). Possible roaming boss spot.
 6. **Traversal 2**: harder version of section 3
 7. **Loot area**: key chest, cursed chest or timed door (optional)
 8. **Shop room** → **Boss door**
 
-Each stage has about: 3–4 Lucky Blocks, 2 free loot spots, 2 keys, 3 locked key chests, 1 cursed chest. That's fewer keys than locked chests, so you pick which chests to open. A Thief's Lockpick gets them one extra.
+Each stage has about: 3–4 Lucky Blocks, 2 free loot spots (weapon or ability), 2 keys, 3 locked key chests, 1 cursed chest. That's fewer keys than locked chests, so you pick which chests to open. The Thief bond's Lockpick gets you one extra.
 
 ### 7.2 Routes
 - **Main path**: always clear where to go (arrows/lighting). Never lost.
 - **Side paths**: keys and chests, cost 10–30s detour. Worth it or not? That's the speedrun choice.
-- **Skip routes**: need good movement or a specific ability (Grapple, Blink). Save time.
+- **Skip routes**: need good movement or a specific ability (Grapple Arrow, Blink, Shoulder Charge). Save time.
 
 ### 7.3 Boss types
 
 | Type | Where | What it is | Loot |
 |---|---|---|---|
 | **Guardian** | End of Worlds 1, 2, 4, 5 | A giant, stronger version of one of that world's regular enemies, with 1–2 new attacks. Short fight (~30–60s). | 1 weapon at key-chest odds + full flask |
-| **Big boss (mid)** | End of World 3 | A real boss with its own design, 2 phases (~60–90s) | 1 weapon, **B grade or better** + full flask |
+| **Big boss (mid)** | End of World 3 | A real boss with its own design, 2 phases (~60–90s) | 1 weapon, **B grade or better** + 1 ability + full flask |
 | **Big boss (final)** | End of World 6 | Final boss, 3 phases | Ends the run |
 | **Roaming boss** | Can show up in **any stage** (~15% chance per stage), in an arena next to the main path | Each one comes from a specific biome but can appear anywhere. **Optional**: skip it to save time, or fight it for great loot. | 1 weapon, **A grade or better**, with that boss's element + full flask |
 
@@ -308,14 +376,14 @@ Every weapon drops with a grade. It's the **same weapon, upgraded**: more damage
 | Grade | Color | Damage | Power |
 |---|---|---|---|
 | **F** | Gray | 80% | Nothing |
-| **C** | Green | 100% | Nothing (Mage: gets an element) |
+| **C** | Green | 100% | Nothing (gets an element with the Wizard bond) |
 | **B** | Blue | 125% | 1 element (fire, ice, lightning, poison, or wind) |
 | **A** | Purple | 160% | Stronger element + 1 bonus perk (faster attacks, crit chance, lifesteal, etc.) |
 | **S** | Gold | 200% | Max-strength element + perk + a **signature move** and its own name |
 
-S-grade example: a fire Greatsword becomes **"Sunbreaker"**, and its 3rd hit sends a wave of fire along the ground. An ice Katana becomes **"Glacier Fang"**, and its dash-slash freezes everything it passes.
+S-grade example: a fire Greatsword becomes **"Sunbreaker"**, and its 3rd hit sends a wave of fire along the ground. A lightning Storm Hammer becomes **"Skysplitter"**, and throwing it drags a storm behind it.
 
-The grade color shows on the item and in the swap popup, so you can tell in a split second if it's better. The popup also shows a class icon if it's one of your class weapons.
+The grade color shows on the item and in the swap popup, so you can tell in a split second if it's better. The popup also shows the item's class icon and whether it would match your abilities.
 
 ### 8.2 Elements
 
@@ -351,20 +419,20 @@ The grade color shows on the item and in the swap popup, so you can tell in a sp
 
 In later worlds every source moves up the same way free loot does. Exact numbers will get tuned in playtesting.
 
-Weapon drops lean toward your class: about **60% of drops are your class's weapons**, and 40% are anything. After you combine, it's split between both classes.
+Drops lean a little toward the classes of the abilities you're carrying (about half of drops match), so building toward a Connection bonus is possible but not guaranteed.
 
 ### 8.4 Chest types
 
 | Chest | What you get | Catch |
 |---|---|---|
-| **Free loot** | A weapon (on a stand, or in an open chest) | None |
+| **Free loot** | A weapon or ability (on a stand, or in an open chest) | None |
 | **Lucky Block** | A random **buff or debuff** | It's a gamble (8.5) |
-| **Key chest** | Choose 1 of 2 weapons | Needs a key (8.7) |
+| **Key chest** | Choose 1 of 2 (weapons or abilities) | Needs a key (8.7) |
 | **Cursed chest** | A high-grade weapon + lots of gold | A curse (8.6) |
 | **Timed chest** | A weapon | Behind a timed door (6.3) |
 
 - Opening is **instant**, with no long animation.
-- Items pop out and you swap with one button, with a quick compare popup (grade color + damage).
+- Items pop out and you swap with one button, with a quick compare popup (grade color, damage, class icon, and whether it changes your bond or hybrid).
 
 ### 8.5 Lucky Block
 You **hit it with your weapon** (no stopping to open it). It pops and shows what you got in big text.
@@ -391,7 +459,7 @@ You **hit it with your weapon** (no stopping to open it). It pops and shows what
 - Locked key chests need a key. **1 key opens 1 chest.**
 - Keys are **a little further through the level**: at the end of a side path, after a hard jump section, or dropped by elite enemies.
 - You can carry up to 3 keys. Leftover keys carry over to the next world.
-- Shops sometimes sell a key. Thieves get 1 free chest per world with Lockpick (4.2).
+- Shops sometimes sell a key. The Thief bond's Lockpick opens 1 chest per world for free (4.3).
 
 ---
 
@@ -399,7 +467,7 @@ You **hit it with your weapon** (no stopping to open it). It pops and shows what
 
 - **One shop per world**, in the room right before the boss.
 - Sometimes a **wandering merchant** mid-stage (random, rare stock).
-- Shop sells: 3 weapons/abilities (using that world's odds, at least one is **B or better** and at least one is a class weapon), flask upgrade (+1 charge), an expensive instant flask refill, 1 stat upgrade, sometimes a key, and a reroll (gets pricier).
+- Shop sells: 3 weapons/abilities (using that world's odds, at least one is **B or better**), an **ability upgrade** (+1 level to one of your abilities), flask upgrade (+1 charge), an expensive instant flask refill, 1 stat upgrade, sometimes a key, and a reroll (gets pricier).
 - Buying is **walk up + press one button**. No menus. Fast.
 - **Gold** comes from enemies + chests, and resets every run.
 
@@ -408,17 +476,17 @@ You **hit it with your weapon** (no stopping to open it). It pops and shows what
 ## 10. Progression
 
 ### 10.1 Inside a run
-- Weapons and abilities you find (swap anytime). Grades go up as you go deeper (8.3).
+- Weapons and abilities you find (swap anytime). Weapon grades go up as you go deeper (8.3). Abilities level up (5.5).
+- Your class changes with the abilities you carry: Connection bonus or hybrid (4.3).
 - Stat upgrades after each end-of-world boss: pick 1 of 3 (+damage, +HP, +speed, +cooldown, Bloodthirst, etc.).
-- Class combining after World 2 (4.3).
-- Enemies get tougher each world, so finding higher grades matters.
+- Enemies get tougher each world, so finding higher grades and levels matters.
 
 ### 10.2 Between runs (light meta)
-- All 4 classes are unlocked from the start.
+- All 4 starting classes are unlocked from the start.
 - Sometimes enemies drop **blueprints** that unlock a new weapon or ability into the loot pool.
 - **No permanent stat boosts**, so runs are always fair to compare for speedrunning.
-- A "hybrids discovered" page fills in as you try each combo. Unlock new starting weapon choices and cosmetic outfits from achievements.
-- Best times are saved **per class and per hybrid**, so each one gets its own speedrun leaderboard.
+- A "classes discovered" page fills in as you get each Connection bonus and hybrid. Unlock new starting weapon choices and cosmetic outfits from achievements.
+- Best times are saved **per starting class** and per class you finished as, so each one gets its own speedrun leaderboard.
 
 ---
 
@@ -435,15 +503,15 @@ You **hit it with your weapon** (no stopping to open it). It pops and shows what
 | Interact / swap | E | B |
 | Instant restart | R (hold) | Select (hold) |
 
-All rebindable. Classes don't add any buttons (passives are always on).
+All rebindable. Bond passives and Vampire are always on, so they don't add any buttons.
 
 ---
 
 ## 12. Look and sound
 - Pixel art, 2D side view. Each world has its own color palette so you always know where you are.
-- Each class has its own look, and the hybrid gets a mixed outfit after the Class Shrine.
+- Each class has its own look. Your outfit's trim changes color to show your current class or hybrid.
 - **Game feel** is a priority: hit-stop on big hits, screen shake, enemy flash, punchy sounds.
-- Each element has its own look and sound (fire crackle, ice shatter, etc.).
+- Each element has its own look and sound (fire crackle, ice shatter, Storm Hammer thunder, etc.).
 - Flask fill bar ticks up with a little sound on every kill, so you feel the heal coming.
 - Music speeds up / adds layers with Rush level.
 - Start with simple placeholder shapes, add real art after the game feels good.
@@ -463,10 +531,10 @@ Planned code layout (Phaser):
 ```
 src/
   main.ts             game setup
-  scenes/             Boot, Menu, ClassSelect, World, Shop, ClassShrine, Boss, RunSummary
+  scenes/             Boot, Menu, ClassSelect, World, Shop, Boss, RunSummary
   player/             movement, combat, loadout, flask
-  classes/            4 classes, 6 hybrids, 4 masters (data tables + passives)
-  weapons/ abilities/ one file per item + shared data tables
+  classes/            4 classes, bond passives, 6 hybrids, weapon match rules
+  weapons/ abilities/ one file per item + shared data tables (grades, levels)
   loot/               grades, elements, odds tables, chests, Lucky Block, keys
   enemies/ bosses/    regular enemies, Guardians, big bosses, roaming bosses
   systems/            rush meter, timer/splits, save data
@@ -486,10 +554,10 @@ Each milestone ends with something you can play.
 | M1 | **Movement feel** | A grey test level with all moves from section 3 |
 | M2 | **Combat core** | 2 weapons (Greatsword + Daggers), 2 enemy types, HP, flask that refills from kills, death, restart |
 | M3 | **World 1 stage** (grey boxes) | Full Ashen Gate stage start to end, timer + splits |
-| M4 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest, shop, 2 abilities + Vampire |
+| M4 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest, shop |
 | M5 | **First Guardian** | Giant Shield Knight fight |
-| M6 | **Classes + run structure** | Class select with all 4 classes (passives + at least 2 weapons each), World → upgrade pick → next world, run summary, PB saving, instant restart |
-| M7 | **Worlds 2–3 + mid boss** | Class Shrine + all hybrids, Clockmaker fight, more weapons/abilities/enemies, Rush meter, timed doors, first roaming boss |
+| M6 | **Classes + abilities** | Class select with 4 starting kits, 2 abilities per class + Vampire, ability levels, Connection bonuses, hybrids, weapon match |
+| M7 | **Run structure + Worlds 2–3** | World → upgrade pick → next world, run summary, PB saving, Clockmaker fight, all 17 abilities, Rush meter, timed doors, first roaming boss |
 | M8 | **Art + sound pass** | Worlds 1–3 look and sound real, class outfits |
 | M9 | **Worlds 4–6** | Full game, final boss, all 4 roaming bosses, all weapons |
 | M10 | **Speedrun extras + polish** | Seeds, practice mode, ghosts, per-class leaderboards, balance |
@@ -500,24 +568,23 @@ Each milestone ends with something you can play.
 
 ## 15. Questions for you
 
-**New from v3**
-1. When do you combine classes? I put it **after World 2**. Other options: pick both classes at the very start, or combine after the mid-boss (World 3).
-2. Can any class use any weapon (class weapons just get +25%)? Or should classes be **locked** to their own weapons?
-3. **Vampire**: a button ability with a cooldown (what I wrote), or an always-on passive?
-4. Want more than 4 classes (e.g. Paladin, Necromancer), or keep it at 4 for now?
+**New from v4**
+1. Did I get the ability idea right? **Same class pair** = Connection bonus (stronger). **Different class pair** = hybrid (not stronger, just a different playstyle).
+2. **Thief**: its own class with light blades, throwing knives and speed skills (what I wrote)? Or should Thief not be a starting class, and instead be the hybrid you get from a Swordsman + Archer ability pair?
+3. **Vampire** is neutral, so carrying it means no bond or hybrid for that slot. Good trade-off, or should it belong to a class?
+4. I gave **all abilities levels 1–3**, not just Vampire. You level them by finding the same ability again or buying an upgrade at the shop. Okay?
 
 **From v2**
 
 5. Grades are **F, C, B, A, S** (no D). Want a D too?
-6. Grades only for **weapons**, or abilities too?
-7. Roaming bosses: one from each biome that can randomly show up in any stage. Right?
-8. Lucky Block at **55% buff / 45% debuff**. Okay, or 50/50?
+6. Roaming bosses: one from each biome that can randomly show up in any stage. Right?
+7. Lucky Block at **55% buff / 45% debuff**. Okay, or 50/50?
 
 **Still open from v1**
 
-9. Die = restart whole run, or just restart the current world? (A2)
-10. Same layouts every run (speedrun-friendly) or random layouts? (A4)
-11. 6 worlds okay? More/fewer?
-12. Phaser (browser) or Godot?
-13. Art: will you draw it, or should I use placeholder + free asset packs?
-14. Name: keep "RUSHBLADE" as a working title, or something else?
+8. Die = restart whole run, or just restart the current world? (A2)
+9. Same layouts every run (speedrun-friendly) or random layouts? (A4)
+10. 6 worlds okay? More/fewer?
+11. Phaser (browser) or Godot?
+12. Art: will you draw it, or should I use placeholder + free asset packs?
+13. Name: keep "RUSHBLADE" as a working title, or something else?
