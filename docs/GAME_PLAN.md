@@ -1,15 +1,20 @@
 # Game Plan — Speedrun Action Platformer (working title: **RUSHBLADE**)
 
-> Draft v4. Read it over and mark anything you want changed. Every section is
+> Draft v5. Read it over and mark anything you want changed. Every section is
 > numbered so you can say things like "change 6.2" or "cut section 10".
 
-### What changed in v4 (from your notes)
-- Classes are now **Swordsman, Archer, Wizard, Thief**. The Wizard has a **Thor-style Storm Hammer**. The Thief is a light-melee + throwing class with speed skills like **Silent Steps** → 4.2
-- **Your class comes from your abilities.** Every weapon and ability belongs to a class. No more Class Shrine → 4.1
+### What changed in v5 (from your notes)
+- **Thief is no longer a class.** It's now the **hybrid** you get from a Swordsman ability + an Archer ability, with speed perks (Silent Steps, Lockpick) → 4.3
+- New 4th class: **Brawler**, the heavy hitter. Main weapons are a **big hammer (War Maul)** and **Iron Fists** → 4.2
+- Classes are now **Swordsman, Brawler, Archer, Wizard**. You still combine classes through your abilities → 4.3
+- Old Thief weapons and abilities moved: blades → Swordsman, Throwing Knives → Archer, Gauntlets → Brawler's Iron Fists, Chain Blade → Brawler's Flail. Giant Axe and Shield moved to Brawler → 5.3, 5.4
+- New hybrids: **Thief** (Swordsman + Archer), **Thunderlord** (Brawler + Wizard, the full Thor combo), **Gladiator** (Swordsman + Brawler) → 4.3
+
+### From v4
+- **Your class comes from your abilities.** Every weapon and ability belongs to a class → 4.1
 - **2 abilities from the same class = Connection bonus** (they link up and get stronger). **2 from different classes = a hybrid** with its own playstyle → 4.3
 - **Weapons that match your abilities' class get a buff.** Any other weapon still works, just without the bonus → 4.4
 - **Abilities have levels 1–3.** Vampire fills the flask **+2% → +3% → +5%** per kill → 5.2, 5.5
-- New ability lists per class. War Hammer became the Wizard's Storm Hammer, and Grapple became the Archer's Grapple Arrow → 5.3, 5.4
 
 ---
 
@@ -18,7 +23,7 @@
 **Decided**
 - Dead Cells–style 2D side-view action platformer, built for speed.
 - Has its own ideas, so it's not a copy: ability-based classes with Connection bonuses and hybrids, weapon grades + elements, ability levels, kill-charged flask, Lucky Blocks, Guardians, roaming bosses, Rush meter.
-- 4 classes: Swordsman, Archer, Wizard, Thief. Any class can use any weapon.
+- 4 classes: Swordsman, Brawler, Archer, Wizard. Thief is a hybrid (Swordsman + Archer), not a class. Any class can use any weapon.
 
 **Still my assumptions. Change any of these:**
 
@@ -95,26 +100,28 @@ Movement has to feel great before anything else gets built.
 ### 4.1 How classes work
 - **Every weapon and every ability belongs to a class.** A few abilities (like Vampire) are **neutral** and don't belong to any class.
 - At the start of a run you pick a **starting class**. You get its starting ability (Lv1) and pick 1 of 2 starting weapons (C grade). Your second ability slot starts empty.
-- After that, **your class is whatever your 2 abilities are.** Pick up abilities from other classes to combine classes. The HUD shows your current class name (e.g. "Swordsman", or "Spellblade" for a hybrid).
+- After that, **your class is whatever your 2 abilities are.** Pick up abilities from other classes to combine classes. The HUD shows your current class name (e.g. "Brawler", or "Thief" for the Swordsman + Archer hybrid).
 - **Any class can use any weapon.** Weapons that match your class just work better (4.4).
 
 ### 4.2 The four classes
 
 | Class | Style | Weapons | Abilities |
 |---|---|---|---|
-| **Swordsman** | Big hits, tanky, frontline | Greatsword, Giant Axe, Spear, Shield, Scythe | Shockwave, War Cry, Whirlwind, Shoulder Charge |
-| **Archer** | Ranged, mobile | Bow, Crossbow, Hand Cannon, Javelin | Arrow Rain, Turret, Grapple Arrow, Hunter's Mark |
+| **Swordsman** | Blades, fast combos, precise | Greatsword, Katana, Twin Daggers, Spear, Scythe | Blade Dash, Whirlwind, Blade Flurry, Riposte |
+| **Brawler** | Heavy hitter. Slow, huge hits, tanky | **War Maul** (big hammer), **Iron Fists**, Giant Axe, Flail, Shield | Shockwave, Shoulder Charge, Rage, Boulder Toss |
+| **Archer** | Ranged, mobile | Bow, Crossbow, Hand Cannon, Javelin, Throwing Knives | Arrow Rain, Turret, Grapple Arrow, Hunter's Mark |
 | **Wizard** | Storm magic, Thor-style | **Storm Hammer**, Staff, Wand, Spell Tome | Thunder Strike, Frost Burst, Blink, Time Slow |
-| **Thief** | Speed and swiftness. Light blades + throwing, a mix of Swordsman and Archer | Twin Daggers, Katana, Chain Blade, Throwing Knives, Gauntlets | **Silent Steps**, Shadow Dash, Smoke Bomb, Blade Flurry |
+
+**Two hammers, two styles:** the Brawler's **War Maul** is pure weight: slow, huge ground smashes. The Wizard's **Storm Hammer** is a magic hammer you throw and call back with lightning. Carry both classes' abilities and you become the **Thunderlord** (4.3).
 
 **Starting kits**
 
 | Starting class | Starting ability | Starting weapon (pick 1) |
 |---|---|---|
-| Swordsman | Shockwave | Greatsword or Spear |
+| Swordsman | Blade Dash | Greatsword or Katana |
+| Brawler | Shockwave | War Maul or Iron Fists |
 | Archer | Arrow Rain | Bow or Crossbow |
 | Wizard | Thunder Strike | Storm Hammer or Staff |
-| Thief | Silent Steps | Twin Daggers or Katana |
 
 ### 4.3 Ability pairs: Connection bonus or hybrid
 Your 2 ability slots decide what you are:
@@ -129,21 +136,21 @@ Your 2 ability slots decide what you are:
 
 | Class | Bond passive |
 |---|---|
-| **Swordsman: Iron Will** | +30% max HP, and you can't be knocked back while swinging |
+| **Swordsman: Blademaster** | Every 3rd hit in a row is a guaranteed crit, and kills reset your dash cooldown |
+| **Brawler: Iron Will** | +30% max HP, you can't be knocked back while attacking, and heavy hits stagger enemies twice as long |
 | **Archer: Eagle Eye** | Long-range hits always crit. Aiming in the air slows your fall so you can shoot mid-jump |
 | **Wizard: Storm Caller** | Abilities recharge 25% faster, elements are stronger, and C-grade weapons get an element too (normally only B and up do) |
-| **Thief: Shadowstep** | 2 dash charges instead of 1. **Lockpick:** open 1 key chest per world without a key |
 
 **Hybrids (different classes)**
 
 | Abilities from | Hybrid | Combo perk |
 |---|---|---|
+| Swordsman + Archer | **Thief** | **Silent Steps:** +20% move speed, enemies take longer to notice you, and your first hit on an enemy that hasn't noticed you is a crit. **Lockpick:** open 1 key chest per world without a key |
+| Swordsman + Brawler | **Gladiator** | Switching weapons mid-combo keeps the combo going, and the next hit does +50% |
 | Swordsman + Wizard | **Spellblade** | Every melee hit makes your abilities recharge 0.5s faster |
-| Swordsman + Archer | **Warden** | Melee hit → next shot does +50%. Shot hit → next melee hit does +50% |
-| Swordsman + Thief | **Duelist** | Dash through an enemy's attack → your next hit is a guaranteed crit |
+| Brawler + Archer | **Warden** | Melee hit → next shot does +50%. Shot hit → next melee hit does +50% |
+| Brawler + Wizard | **Thunderlord** | Every heavy hit (hammer, axe, fist finisher) calls down a lightning bolt. The full Thor combo |
 | Archer + Wizard | **Arcane Archer** | Every arrow carries an element (even F-grade bows), and charged shots explode |
-| Archer + Thief | **Shadowshot** | Shooting while dashing always crits, and ranged kills refund your dash |
-| Wizard + Thief | **Trickster** | Dashing leaves a decoy that explodes with your weapon's element |
 
 ### 4.4 Weapon match
 - If a weapon's class **matches the class of either of your abilities**, it gets **+25% damage** and its class icon lights up on the HUD.
@@ -179,7 +186,7 @@ Your 2 ability slots decide what you are:
 - You start every run with a full flask. It does **not** refill on its own between worlds, so you have to keep killing.
 - Shops sell a **flask upgrade** (+1 max charge, up to 4) and an expensive instant refill.
 
-### 5.3 Weapons (first version, ~18)
+### 5.3 Weapons (first version, 19)
 Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
 
 **Swordsman**
@@ -187,10 +194,20 @@ Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
 | Weapon | Feel | Special |
 |---|---|---|
 | Greatsword | Big, wide swings | 3rd hit of combo is a huge cleave |
-| Giant Axe | Heaviest weapon | Spin attack while moving |
+| Katana | Fast + big | Hold to charge a dash-slash that goes through enemies |
+| Twin Daggers | Super fast | Crits from behind |
 | Spear | Long reach | Attack while dashing = lunge through enemies |
-| Shield | Defense | Perfect parry stuns and refunds dash |
 | Scythe | Big arc | Kills with it fill the flask +3% |
+
+**Brawler**
+
+| Weapon | Feel | Special |
+|---|---|---|
+| **War Maul** | Huge hammer, slowest swings in the game | Dive slam makes a shockwave that knocks down everything nearby |
+| **Iron Fists** | Fast punch combos | Combo finisher is an uppercut that launches you upward too |
+| Giant Axe | Very heavy | Spin attack while moving |
+| Flail | Ball on a chain, mid-range | Wind it up, then let go for a huge hit that pulls small enemies in |
+| Shield | Defense | Perfect parry stuns and refunds dash |
 
 **Archer**
 
@@ -200,6 +217,7 @@ Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
 | Crossbow | Slow, heavy bolts | Bolts pin enemies to walls |
 | Hand Cannon | Ranged, slow | Knocks you backward (movement tech!) |
 | Javelin | Heavy throw | Sticks in walls, and you can stand on it (movement tech!) |
+| Throwing Knives | Fast ranged | Throws 3 at once, never runs out |
 
 **Wizard**
 
@@ -210,16 +228,6 @@ Every weapon can drop at any grade (F to S). See section 8.1 for what grades do.
 | Wand | Rapid small shots | Shots slightly home in on enemies |
 | Spell Tome | Close-range magic | Opens a ring of spinning runes around you |
 
-**Thief**
-
-| Weapon | Feel | Special |
-|---|---|---|
-| Twin Daggers | Super fast | Crits from behind |
-| Katana | Fast + big | Hold to charge a dash-slash that goes through enemies |
-| Chain Blade | Mid-range whip | Pulls small enemies to you |
-| Throwing Knives | Fast ranged | Throws 3 at once, never runs out |
-| Gauntlets | Close combo | Uppercut launches you upward too |
-
 **Speed twist on big weapons:** heavy weapons get **faster while your Rush meter is high** (see 6.1), so big weapons reward staying aggressive.
 
 ### 5.4 Abilities (first version, 17)
@@ -229,10 +237,19 @@ Each ability levels from 1 to 3 (5.5). The last column says what levels improve.
 
 | Ability | What it does | Lv2 / Lv3 |
 |---|---|---|
-| Shockwave | Ground slam that knocks enemies up | Bigger area, more damage |
-| War Cry | +30% damage for 6s | +45% / +60% |
+| Blade Dash | An extra dash that slices through every enemy in its path | More damage / 2 charges |
 | Whirlwind | Spin forward through enemies | Longer spin, pulls enemies in |
+| Blade Flurry | Swords spin around you for a few seconds | More blades |
+| Riposte | Stance for 1s: if you get hit, block it and counter with a big slash | Wider counter / also refunds dash |
+
+**Brawler**
+
+| Ability | What it does | Lv2 / Lv3 |
+|---|---|---|
+| Shockwave | Ground slam that knocks enemies up | Bigger area, more damage |
 | Shoulder Charge | Charge forward, knocking enemies aside. Breaks cracked walls (shortcuts!) | Farther, stuns |
+| Rage | For 6s: +30% damage and you can't be staggered | +45% / +60% |
+| Boulder Toss | Rip a boulder out of the ground and throw it | Bigger boulder / it shatters into pieces |
 
 **Archer**
 
@@ -251,15 +268,6 @@ Each ability levels from 1 to 3 (5.5). The last column says what levels improve.
 | Frost Burst | Freeze enemies around you | Bigger, longer freeze |
 | Blink | Teleport a short distance, even through thin walls | Farther / 2 charges |
 | Time Slow | Slow everything except you for 3s | 4s / 5s |
-
-**Thief**
-
-| Ability | What it does | Lv2 / Lv3 |
-|---|---|---|
-| **Silent Steps** | For 5s: enemies don't notice you, +30% move speed, and your first hit on each enemy crits | Lasts longer, more speed |
-| Shadow Dash | An extra dash that cuts through enemies | More damage / 2 charges |
-| Smoke Bomb | Smoke cloud that blinds enemies inside; you move faster in it. Can bomb-jump off it | Bigger cloud / poisons at Lv3 |
-| Blade Flurry | Knives spin around you for a few seconds | More knives |
 
 **Neutral (no class)**
 
@@ -337,7 +345,7 @@ Each stage is about 8 sections chained together:
 7. **Loot area**: key chest, cursed chest or timed door (optional)
 8. **Shop room** → **Boss door**
 
-Each stage has about: 3–4 Lucky Blocks, 2 free loot spots (weapon or ability), 2 keys, 3 locked key chests, 1 cursed chest. That's fewer keys than locked chests, so you pick which chests to open. The Thief bond's Lockpick gets you one extra.
+Each stage has about: 3–4 Lucky Blocks, 2 free loot spots (weapon or ability), 2 keys, 3 locked key chests, 1 cursed chest. That's fewer keys than locked chests, so you pick which chests to open. A Thief's Lockpick gets you one extra.
 
 ### 7.2 Routes
 - **Main path**: always clear where to go (arrows/lighting). Never lost.
@@ -459,7 +467,7 @@ You **hit it with your weapon** (no stopping to open it). It pops and shows what
 - Locked key chests need a key. **1 key opens 1 chest.**
 - Keys are **a little further through the level**: at the end of a side path, after a hard jump section, or dropped by elite enemies.
 - You can carry up to 3 keys. Leftover keys carry over to the next world.
-- Shops sometimes sell a key. The Thief bond's Lockpick opens 1 chest per world for free (4.3).
+- Shops sometimes sell a key. The Thief hybrid's Lockpick opens 1 chest per world for free (4.3).
 
 ---
 
@@ -552,7 +560,7 @@ Each milestone ends with something you can play.
 |---|---|---|
 | M0 | Project setup | An empty screen with a square you can move |
 | M1 | **Movement feel** | A grey test level with all moves from section 3 |
-| M2 | **Combat core** | 2 weapons (Greatsword + Daggers), 2 enemy types, HP, flask that refills from kills, death, restart |
+| M2 | **Combat core** | 2 weapons (Greatsword + War Maul), 2 enemy types, HP, flask that refills from kills, death, restart |
 | M3 | **World 1 stage** (grey boxes) | Full Ashen Gate stage start to end, timer + splits |
 | M4 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest, shop |
 | M5 | **First Guardian** | Giant Shield Knight fight |
@@ -568,23 +576,27 @@ Each milestone ends with something you can play.
 
 ## 15. Questions for you
 
-**New from v4**
-1. Did I get the ability idea right? **Same class pair** = Connection bonus (stronger). **Different class pair** = hybrid (not stronger, just a different playstyle).
-2. **Thief**: its own class with light blades, throwing knives and speed skills (what I wrote)? Or should Thief not be a starting class, and instead be the hybrid you get from a Swordsman + Archer ability pair?
-3. **Vampire** is neutral, so carrying it means no bond or hybrid for that slot. Good trade-off, or should it belong to a class?
-4. I gave **all abilities levels 1–3**, not just Vampire. You level them by finding the same ability again or buying an upgrade at the shop. Okay?
+**New from v5**
+1. Name for the heavy hitter: I went with **Brawler**. Others: Berserker, Juggernaut, Titan, Bruiser.
+2. Two hammers okay? Brawler's War Maul (heavy smash) and Wizard's Storm Hammer (throw + lightning). Or should the Wizard drop the hammer now that the Brawler has one?
+
+**From v4**
+
+3. Did I get the ability idea right? **Same class pair** = Connection bonus (stronger). **Different class pair** = hybrid (not stronger, just a different playstyle).
+4. **Vampire** is neutral, so carrying it means no bond or hybrid for that slot. Good trade-off, or should it belong to a class?
+5. I gave **all abilities levels 1–3**, not just Vampire. You level them by finding the same ability again or buying an upgrade at the shop. Okay?
 
 **From v2**
 
-5. Grades are **F, C, B, A, S** (no D). Want a D too?
-6. Roaming bosses: one from each biome that can randomly show up in any stage. Right?
-7. Lucky Block at **55% buff / 45% debuff**. Okay, or 50/50?
+6. Grades are **F, C, B, A, S** (no D). Want a D too?
+7. Roaming bosses: one from each biome that can randomly show up in any stage. Right?
+8. Lucky Block at **55% buff / 45% debuff**. Okay, or 50/50?
 
 **Still open from v1**
 
-8. Die = restart whole run, or just restart the current world? (A2)
-9. Same layouts every run (speedrun-friendly) or random layouts? (A4)
-10. 6 worlds okay? More/fewer?
-11. Phaser (browser) or Godot?
-12. Art: will you draw it, or should I use placeholder + free asset packs?
-13. Name: keep "RUSHBLADE" as a working title, or something else?
+9. Die = restart whole run, or just restart the current world? (A2)
+10. Same layouts every run (speedrun-friendly) or random layouts? (A4)
+11. 6 worlds okay? More/fewer?
+12. Phaser (browser) or Godot?
+13. Art: will you draw it, or should I use placeholder + free asset packs?
+14. Name: keep "RUSHBLADE" as a working title, or something else?
