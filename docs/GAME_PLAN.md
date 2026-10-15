@@ -4,7 +4,7 @@
 > numbered so you can say things like "change 6.2" or "cut section 10".
 
 ### What changed in v7 (from your notes)
-- **For now: no online features, no co-op, PC only** (played in the browser) → 0
+- **For now: no online features, no co-op, one platform (PC)** → 0
 - **New journey:** you travel to the enemy kingdom. A run is **4 stages** with a fork: Plains & Forest → **Caves & Mountains or Dark Forest & Swamps** → Enemy Kingdom → King's Castle → 7.1, 7.2
 - **Dragon special event:** shows up in **30% of runs** and drops great loot. It replaces the 4 roaming bosses (the Dragon comes in 4 elements instead) → 7.4
 - **Every biome has its own mobs** → 7.3
@@ -24,7 +24,7 @@
 - Has its own ideas, so it's not a copy: ability-based classes with Connection bonuses and hybrids, weapon grades + elements, ability levels you buy, kill-charged flask, Lucky Blocks, Guardians, the Dragon event, villages between stages, Rush meter.
 - 4 classes: Swordsman, Tank, Archer, Wizard. Thief is a hybrid (Swordsman + Archer), not a class. Any class can use any weapon.
 - A run is 4 stages with a fork after Stage 1, and a village between every stage.
-- **For now:** single player only, no online features (scores are saved on your computer), PC only, played in the browser with keyboard or controller.
+- **For now:** single player only, no online features (scores are saved on your computer), one platform (PC), keyboard or controller. Whether it runs in the browser or as an installed game depends on the engine choice (15.1 #1).
 
 **Still my assumptions. Change any of these:**
 
@@ -101,7 +101,7 @@ Movement has to feel great before anything else gets built.
 ## 4. Classes
 
 ### 4.1 How classes work
-- **Every weapon and every ability belongs to a class.** A few abilities (like Vampire) are **neutral** and don't belong to any class.
+- **Every weapon and every ability belongs to a class**, except **Vampire**, which is **neutral** and doesn't belong to any class (more neutral abilities may come later).
 - In your home village you pick a **starting class**. You get its starting ability (Lv1) and pick 1 of 2 starting weapons (C grade). Your second ability slot starts empty.
 - After that, **your class is whatever your 2 abilities are.** Pick up abilities from other classes to combine classes. The HUD shows your current class name (e.g. "Tank", or "Thief" for the Swordsman + Archer hybrid).
 - **Any class can use any weapon.** Weapons that match your class just work better (4.4).
@@ -389,7 +389,7 @@ The two Stage 2 roads are about the same length. The Mountain road has more clim
 | **Dragon** (special event) | Shows up in **30% of runs**, in Stage 2 or 3, landing in an arena next to the main path | A huge, fast boss. **Optional**: skip it to save time, or fight it for great loot | 1 weapon, **A grade or better**, with the Dragon's element + full flask + lots of gold |
 
 - Guardians: **Great Boar** (giant Wild Boar), **Stone Colossus** (giant Rock Golem), **Spider Queen** (giant Giant Spider).
-- Big bosses have **stagger phases**: hit them hard enough and they drop, which opens a big damage window. Fast players skip phases.
+- The Black Knight and the Enemy King have **stagger phases**: hit them hard enough and they drop, which opens a big damage window. Fast players skip phases.
 - After every stage boss you pick **1 of 3 stat upgrades**.
 
 **The Dragon** comes in 4 colors, picked at random. Its color sets its attacks and the element of its loot:
@@ -408,10 +408,12 @@ Each stage is about 8 sections chained together:
 2. **Combat stretch**: groups of mobs on open ground
 3. **Traversal**: platforming using the biome's gimmick
 4. **Branch**: main path vs side path (key, chest or ability) vs **skip route** (hard movement, saves time)
-5. **Arena**: doors lock, wave of mobs (fast kills = faster exit, and a big flask refill). Possible Dragon spot.
+5. **Arena**: doors lock, wave of mobs (fast kills = faster exit, and a big flask refill).
 6. **Traversal 2**: harder version of section 3
 7. **Loot area**: key chest, cursed chest or timed door (optional)
 8. **Boss arena** → then the road to the next village
+
+Stages 2 and 3 also have a **side arena** next to the main path. In runs with the Dragon, it lands there. The doors don't lock, so you can run past it (7.4).
 
 Each stage has about: 3–4 Lucky Blocks, 2 free loot spots (weapon or ability), 2 keys, 3 locked key chests, 1 cursed chest. That's fewer keys than locked chests, so you pick which chests to open. A Thief's Lockpick gets you one extra.
 
@@ -467,9 +469,12 @@ The grade color shows on the item and in the swap popup, so you can tell in a sp
 | Free loot | None | 50% | 35% | 10% | 4% | 1% |
 | Key chest / Guardian / timed chest | Detour for a key, boss fight, or beating the clock | 35% | 38% | 18% | 7% | 2% |
 | Cursed chest | One-hit death until 10 kills | 0% | 20% | 50% | 25% | 5% |
-| Dragon | Optional boss fight | 0% | 0% | 0% | 75% | 25% |
 
-In later stages every source moves up the same way free loot does. Exact numbers will get tuned in playtesting.
+In later stages every source moves up the same way free loot does.
+
+**Dragon** (Stage 2 or 3 only): always **A grade or better**, 75% A / 25% S, with the Dragon's element. These odds don't change by stage.
+
+Exact numbers will get tuned in playtesting.
 
 Drops lean a little toward the classes of the abilities you're carrying (about half of drops match), so building toward a Connection bonus is possible but not guaranteed.
 
@@ -662,10 +667,10 @@ Each milestone ends with something you can play.
 | M3 | **Stage 1** (grey boxes) | Full Plains & Forest stage start to end with all its mobs, timer + splits |
 | M4 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest |
 | M5 | **First Guardian** | Great Boar fight |
-| M6 | **Classes + abilities** | Class select with 4 starting kits, 2 abilities per class + Vampire, Lv1–5 abilities, Connection bonuses, hybrids, weapon match |
-| M7 | **Villages + Stage 2** | Home Village, Crossroads Village, inn and sleeping, shop with prices, buying/selling/upgrading abilities, both Stage 2 roads with their mobs and Guardians, stat upgrades, run summary, saved best times |
+| M6 | **Classes + abilities** | Class select with 4 starting kits, 2 abilities per class + Vampire (all Lv1 for now), Connection bonuses, hybrids, weapon match |
+| M7 | **Villages + Stage 2** | Home Village, Crossroads Village, inn and sleeping, shop with prices, buying and selling abilities, upgrading them Lv1–5, both Stage 2 roads with their mobs and Guardians, stat upgrades, run summary, saved best times |
 | M8 | **Art + sound pass** | Stages 1–2 and the villages look and sound real, class outfits |
-| M9 | **Stages 3–4 + Dragon** | Enemy Kingdom, King's Castle, Black Knight, Enemy King, the Dragon event, all 17 abilities, all 19 weapons, Rush meter, timed doors |
+| M9 | **Stages 3–4 + Dragon** | Border Village, Enemy Kingdom, Rebel Camp, King's Castle, Black Knight, Enemy King, the Dragon event, all 17 abilities, all 19 weapons, Rush meter, timed doors |
 | M10 | **Speedrun extras + polish** | Seeds, practice mode, ghosts, balance |
 
 **First thing to make fun: M1.** If running and jumping around the empty test level isn't fun, nothing else will be.
