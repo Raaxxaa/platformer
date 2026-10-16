@@ -362,8 +362,8 @@ it('releaseAll clears every held button and direction (window blur)', () => {
 | 4 | x 31–34, y 21–26 | solid | Ledge 96 px up (needs the double jump) |
 | 5 | x 40–47, y 18–25 | solid | Wall with a 16 px tunnel under it (slide through) |
 | 6 | x 53–53, y 6–24 | solid | Shaft left wall (32 px opening at the bottom to walk in) |
-| 7 | x 60–60, y 6–26 | solid | Shaft right wall (wall-jump up the 96 px shaft) |
-| 8 | x 60–75, y 5–5 | solid | Platform at the top of the shaft (exit right, drop down) |
+| 7 | x 58–58, y 6–26 | solid | Shaft right wall (wall-jump up the 64 px shaft; was 96 px before playtest) |
+| 8 | x 58–75, y 5–5 | solid | Platform at the top of the shaft (exit right, drop down) |
 | 9 | x 80–84, y 24–24 | oneway | One-way platform 48 px up |
 | 10 | x 87–91, y 20–20 | oneway | One-way platform 64 px above #9 (double jump) |
 | 11 | x 80–84, y 16–16 | oneway | One-way platform 64 px above #10 |

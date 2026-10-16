@@ -207,9 +207,9 @@ All of these live in `src/core/tuning.ts` as `MOVE`. Ticks = `Math.round(seconds
 | `CRAWL_MAX` | 80 px/s | | |
 | `WALL_SLIDE_MAX` | 90 px/s | | 400 when holding down |
 | `WALL_JUMP_VX` | 220 px/s | | Away from the wall |
-| `WALL_JUMP_VY` | −380 px/s | | Peak 48 px |
-| `WALL_JUMP_LOCK` | 0.12 s | 14 | No steering |
-| `WALL_JUMP_RANGE` | 3 px | | Max gap to a wall for a wall jump |
+| `WALL_JUMP_VY` | −400 px/s | | Peak 53 px (playtest: was −380) |
+| `WALL_JUMP_LOCK` | 0.10 s | 12 | No steering (playtest: was 0.12 s) |
+| `WALL_JUMP_RANGE` | 4 px | | Max gap to a wall for a wall jump (playtest: was 3) |
 | `WALL_COYOTE` | 0.10 s | 12 | |
 | `LEDGE_WINDOW` | 5–24 px | | Ledge top this far above the feet |
 | `LEDGE_CLIMB_UP` | 0.10 s | 12 | Phase 1 |
@@ -313,7 +313,7 @@ The jump buffer is **active** when `pt - jumpPressPt < 12` and that press hasn't
 
 1. **Drop-through** (§13.1): only if `jumpPressFresh` (pressed this tick, not from the buffer), `moveY = +1`, grounded, all support is one-way, and the state is **not `slide`** (a jump during a slide is always a slide-jump, even holding down; design decision, SPEC-GAP 2).
 2. **Ground jump:** grounded, or `coyoteValid` and `pt - lastGroundPt <= 12`. Also from `dash` (on ground or within coyote), `slide` (needs room to stand, §9.2), `diveLand`, `ledgeClimb` (§10.3). Not from `crawl`.
-3. **Wall jump** (§8.3): airborne and a wall in wall-jump range (gap 0–3 px, §8.1) on either side, or `pt - lastWallPt <= 12`.
+3. **Wall jump** (§8.3): airborne and a wall in wall-jump range (gap 0–4 px, §8.1) on either side, or `pt - lastWallPt <= 12`.
 4. **Double jump:** airborne and `doubleJumpAvailable`.
 5. Otherwise keep the press in the buffer (it can still fire on a later tick within the window, e.g. on landing or reaching a wall).
 
@@ -362,7 +362,7 @@ The dash buffer is active when `pt - dashPressPt < 12` and that press hasn't bee
 
 ### 8.1 Wall contact
 
-The **gap** on side `S` is the number of empty pixel columns between the box and the nearest wall pixel, measured on the row `y - 14` (body center height). **Touching** = gap 0. **In wall-jump range** = gap 0–3 px (`WALL_JUMP_RANGE`).
+The **gap** on side `S` is the number of empty pixel columns between the box and the nearest wall pixel, measured on the row `y - 14` (body center height). **Touching** = gap 0. **In wall-jump range** = gap 0–4 px (`WALL_JUMP_RANGE`).
 
 ### 8.2 Wall slide
 
@@ -373,9 +373,9 @@ The **gap** on side `S` is the number of empty pixel columns between the box and
 ### 8.3 Wall jump
 
 - Direction `away = -S`. If walls are in range on **both** sides: jump away from the side `moveX` points to; if `moveX = 0`, away from the side the player faces. With only wall coyote, use `-lastWallDir`.
-- `vx = 220 * away` (not scaled by `speedMult`), `vy = −380`, facing = away. During the 14-tick steering lock, **facing still follows `moveX`** (only velocity is locked), so the player can turn and attack back toward the wall. (Design decision, SPEC-GAP 1.)
-- **Steering lock 14 ticks:** `vx` is not changed by input, accel, decel or decay. Gravity applies. Dash, double jump and dive slam are allowed during the lock (a dash ends the lock; a double jump does not).
-- **Refreshes** `airDashAvailable = true` and `doubleJumpAvailable = true`. Cuttable. Peak 48 px; moves 25.7 px away during the lock.
+- `vx = 220 * away` (not scaled by `speedMult`), `vy = −400`, facing = away. During the 14-tick steering lock, **facing still follows `moveX`** (only velocity is locked), so the player can turn and attack back toward the wall. (Design decision, SPEC-GAP 1.)
+- **Steering lock 12 ticks:** `vx` is not changed by input, accel, decel or decay. Gravity applies. Dash, double jump and dive slam are allowed during the lock (a dash ends the lock; a double jump does not).
+- **Refreshes** `airDashAvailable = true` and `doubleJumpAvailable = true`. Cuttable. Peak 53 px; moves 22 px away during the lock.
 - **Single-wall climbing is possible and intended:** wall jump, then (after the lock) hold toward the wall and double jump near the apex; this returns to the wall about 80 px higher every ~0.58 s. Level design (06) must use ceilings, not tall walls alone, to block areas.
 
 ---
@@ -718,8 +718,8 @@ All tests run in Vitest on `src/core` with a flat test level (solid floor) unles
 13. With no double jump left, a jump pressed 10 ticks before the landing tick fires on the tick after landing; one pressed 12 ticks before the landing tick does not (a press on tick P is usable on ticks P to P + 11).
 14. A dash-jump (jump on dash tick 1) on flat ground lands 136–140 px from the jump point; a running jump at 170 px/s lands 92–94 px away.
 15. Max fall speed is 400 px/s, 520 px/s while holding down, 90 px/s in wall slide, 160 px/s in swamp water.
-16. A wall jump without release rises 48 px, moves 25–26 px away during the 14-tick lock, and sets both `airDashAvailable` and `doubleJumpAvailable` to true.
-17. A jump pressed in the air with a 3 px gap to a wall is a wall jump; with a 4 px gap it is a double jump.
+16. A wall jump without release rises 53 px (±1), moves 22 px (±1) away during the 12-tick lock, and sets both `airDashAvailable` and `doubleJumpAvailable` to true.
+17. A jump pressed in the air with a 4 px gap to a wall is a wall jump; with a 5 px gap it is a double jump.
 18. Jumping beside a wall while holding toward it, with the apex leaving the feet 10 px below the wall's top, triggers a ledge grab at the apex; 18 ticks later the player is `ground` on the ledge. With a ceiling 20 px above the ledge, no grab happens.
 19. A ledge 80 px above the floor can be reached with one full jump; a ledge 96 px above cannot (without double jump).
 20. Rising with the head overlapping a ceiling corner by 4 px nudges the player sideways and the jump continues; at 5 px it bonks (`vy` becomes 0).

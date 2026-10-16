@@ -657,7 +657,8 @@ Each milestone ends with something you can play.
 |---|---|---|
 | M0 | Project setup | An empty screen with a square you can move |
 | M1 | **Movement feel** | A grey test level with all moves from section 3 |
-| M2 | **Combat core** | 2 weapons (Greatsword + War Maul), 2 mobs (Wolf + Bandit), HP, flask that refills from kills, death, restart |
+| M2 | **Combat + Stage 1 enemies** | Greatsword + War Maul, all 5 Stage 1 enemies (Wolf, Bandit, Bandit Archer, Wild Boar, Bandit Brute), HP, flask, Rush, hit-stop, death and restart |
+| ART1 | **Style board (Stage 1)** | Real art for the 4 player outfits, all Stage 1 enemies, Plains tiles and background, on one image for you to approve. Can run alongside M2 |
 | M3 | **Stage 1** (grey boxes) | Full Plains & Forest stage start to end with all its mobs, timer + splits |
 | M4 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest |
 | M5 | **First Guardian** | Great Boar fight |
