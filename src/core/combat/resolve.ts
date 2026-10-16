@@ -38,7 +38,8 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const grade = g.slot !== undefined ? w.combat.slots[g.slot]?.grade ?? 'C' : 'C';
   // A broken boss takes its break multiplier (04 §9.1, a step-6 target multiplier).
   const targetMult = e.def.boss && e.control?.type === 'stagger' ? e.def.boss.breakMult : 1;
-  const { damage } = playerHitDamage({ base: spec.damage, grade, matched: false, isWeapon: true, targetMult });
+  const matched = g.slot !== undefined && w.classState.weaponMatched[g.slot];
+  const { damage } = playerHitDamage({ base: spec.damage, grade, matched, isWeapon: true, targetMult });
   e.hp -= damage;
   e.lastPlayerHitTick = w.tick;
   e.damagedTicks = 0;

@@ -17,6 +17,9 @@ import { isGrounded, pushOut } from '../physics/collide.ts';
 import { Bodies, type SolidBody } from '../physics/bodies.ts';
 import { checkSpikes } from '../hazards/spikes.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
+import { cloneLoadout, createAbilityRuntime, defaultLoadout, type Loadout } from '../abilities/runtime.ts';
+import type { AbilityRuntime, BondId, ClassState, HybridId } from '../abilities/types.ts';
+import { classChanged, computeClassState } from '../classes/classState.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
 import { deriveSeed, Rng } from '../rng.ts';
@@ -64,7 +67,9 @@ export type WorldEvent =
   | { t: 'timedDoorOpened'; doorId: string }
   | { t: 'timedDoorMissed'; doorId: string }
   | { t: 'bossDefeated'; bossId: string; stage: Stage }
-  | { t: 'split'; index: number; runTicks: number; segmentTicks: number; deltaTicks: number | null; bestSegment: boolean };
+  | { t: 'split'; index: number; runTicks: number; segmentTicks: number; deltaTicks: number | null; bestSegment: boolean }
+  | { t: 'classChanged'; displayName: string; bond: BondId | null; hybrid: HybridId | null }
+  | { t: 'classDiscovered'; id: BondId | HybridId };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -81,6 +86,8 @@ export interface GameWorldOptions {
   enemies?: EnemySpawn[];
   /** Solid bodies at stage load (doors etc.); copied fresh on every restart. */
   bodies?: SolidBody[];
+  /** Weapons and abilities at stage start and on restart (default: the M2 loadout). */
+  loadout?: Loadout;
 }
 
 export class GameWorld {
@@ -94,6 +101,10 @@ export class GameWorld {
   health!: PlayerHealth;
   rush!: RushState;
   combat!: PlayerCombat;
+  abilities!: AbilityRuntime;
+  classState!: ClassState;
+  /** Bonds and hybrids seen this session (06 saves them in M7). */
+  readonly discoveredClasses = new Set<BondId | HybridId>();
   flask!: FlaskState;
   drinking: DrinkState | null = null;
   drinkBufferTicks = 0;
@@ -186,10 +197,10 @@ export class GameWorld {
     this.flask = createFlask();
     this.drinking = null;
     this.drinkBufferTicks = 0;
-    this.combat = createPlayerCombat([
-      { weaponId: 'greatsword', grade: 'C', element: null, perk: null },
-      { weaponId: 'war_maul', grade: 'C', element: null, perk: null },
-    ]);
+    const lo = cloneLoadout(this.opts.loadout ?? defaultLoadout());
+    this.combat = createPlayerCombat(lo.weapons);
+    this.abilities = createAbilityRuntime(lo.abilities);
+    this.classState = computeClassState([null, null], [null, null]);
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
     this.gold = 0;
@@ -201,6 +212,7 @@ export class GameWorld {
     this.hitGroups = [];
     this.events = [];
     this.nextId = 1;
+    this.refreshClassState();
     this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
     this.pendingDeaths = [];
     this.projectiles = [];
@@ -219,6 +231,29 @@ export class GameWorld {
 
   restart(): void {
     this.reset();
+  }
+
+  /** Replace the loadout now and for every restart (kit pick, debug). */
+  setLoadout(l: Loadout): void {
+    this.opts.loadout = cloneLoadout(l);
+    const c = cloneLoadout(l);
+    this.combat.slots = c.weapons;
+    this.combat.current = null;
+    this.abilities.slots = c.abilities;
+    this.refreshClassState();
+  }
+
+  /** 03 §4.4: recompute the class state after any slot change; emit classChanged / classDiscovered. */
+  refreshClassState(): void {
+    const prev = this.classState;
+    const next = computeClassState(this.abilities.slots.map((s) => s?.id ?? null), this.combat.slots.map((s) => s?.weaponId ?? null));
+    this.classState = next;
+    if (classChanged(prev, next)) this.events.push({ t: 'classChanged', displayName: next.displayName, bond: next.bond, hybrid: next.hybrid });
+    const found = next.bond ?? next.hybrid;
+    if (found && !this.discoveredClasses.has(found)) {
+      this.discoveredClasses.add(found);
+      this.events.push({ t: 'classDiscovered', id: found });
+    }
   }
 
   /** Run time in ticks (06 §5.1). */
