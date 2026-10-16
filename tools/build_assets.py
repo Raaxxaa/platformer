@@ -8,7 +8,7 @@ ROOT = os.path.dirname(TOOLS)
 sys.path.insert(0, TOOLS)
 
 from art import palette  # noqa: E402
-from art import atlas, build_player, build_world, contrast, items, projectiles, style_board, vfx  # noqa: E402
+from art import atlas, build_player, build_world, contrast, items, projectiles, style_board, vfx, village  # noqa: E402
 from art.enemies import plains as enemies_plains  # noqa: E402
 from art.bosses import great_boar  # noqa: E402
 from audio import listen_sheet, sfx_defs  # noqa: E402
@@ -32,6 +32,7 @@ def build(root=ROOT):
     anims += items.build(assets, preview)
     anims += projectiles.build(assets, preview)
     anims += vfx.build(assets, preview)
+    anims += village.build(assets, preview)
     style_board.build(preview)
     contrast.write_report(preview)
     sfx_defs.build(os.path.join(assets, 'audio', 'sfx'))

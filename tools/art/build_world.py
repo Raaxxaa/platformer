@@ -55,6 +55,14 @@ def build(assets, preview):
         P.check_palette_lock(img, P.allowed(B.ALLOWED[i]), f'bg_plains_{i}')
         img.save(os.path.join(assets, 'bg', f'bg_plains_{i}.png'))
         layers.append(img)
+    for vs in ('village_home', 'village_crossroads'):
+        st = Image.new('RGBA', (640, 360))
+        for i in range(3):
+            img = B.render(vs, i)
+            P.check_palette_lock(img, P.allowed(B.allowed_for(vs, i)), f'bg_{vs}_{i}')
+            img.save(os.path.join(assets, 'bg', f'bg_{vs}_{i}.png'))
+            st.alpha_composite(img)
+        st.resize((1280, 720), Image.NEAREST).save(os.path.join(preview, f'bg_{vs}_stack.png'))
     big = sheet.resize((sheet.width * 4, sheet.height * 4), Image.NEAREST)
     big.save(os.path.join(preview, 'tiles_plains_sheet.png'))
     scene = tile_scene(sheet, demo_grid(), layers)

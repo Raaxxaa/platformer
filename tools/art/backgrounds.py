@@ -9,6 +9,14 @@ from . import palette as P
 
 W, H = 640, 360
 ALLOWED = {0: ['pl_sky', 'pl_bg0'], 1: ['pl_bg1'], 2: ['pl_bg2']}
+SKY = {'village_home': 'vh_sky', 'village_crossroads': 'vc_sky'}
+
+
+def allowed_for(set_name, layer):
+    if set_name == 'plains':
+        return ALLOWED[layer]
+    return {0: [SKY[set_name], 'pl_bg0', 'pl_bg1', 'vl_light'], 1: ['pl_bg0', 'pl_bg1', 'vl_light'],
+            2: ['pl_bg2', 'vl_light']}[layer]
 
 
 def _rng(asset_id):
@@ -42,7 +50,8 @@ def _fill_below(img, xs, top, dark, light, rim=3):
 
 
 def render(set_name, layer, width=W):
-    assert set_name == 'plains'
+    if set_name != 'plains':
+        return render_village(set_name, layer, width)
     xs = np.arange(width)
     img = np.zeros((H, width, 4), np.uint8)
     ys = np.arange(H)[:, None]
@@ -104,5 +113,129 @@ def render(set_name, layer, width=W):
         # near ground strip
         top = 334 + _wave(xs, [(3, 3, 1.0), (8, 2, 0.5)])
         _fill_below(img, xs, top, dark, light, rim=2)
+        return Image.fromarray(img, 'RGBA')
+    raise ValueError(layer)
+
+
+def _box(img, xs, x0, x1, y0, y1, col):
+    """Axis-aligned box repeated every 640 px (x0/x1 in the 0..640 period)."""
+    ys = np.arange(img.shape[0])[:, None]
+    dx = (xs[None, :] - x0) % W
+    _paint(img, (dx < (x1 - x0)) & (ys >= y0) & (ys < y1), col)
+
+
+def _tri(img, xs, cx, half, y_base, height, col):
+    """Roof triangle centered on cx (periodic)."""
+    ys = np.arange(img.shape[0])[:, None]
+    d = np.abs(_wrap(xs[None, :] - cx))
+    top = y_base - height * (1 - d / half)
+    _paint(img, (d < half) & (ys >= top) & (ys < y_base), col)
+
+
+def render_village(set_name, layer, width=W):
+    xs = np.arange(width)
+    img = np.zeros((H, width, 4), np.uint8)
+    ys = np.arange(H)[:, None]
+    bg0, bg1, bg2, light = P.RAMPS['pl_bg0'], P.RAMPS['pl_bg1'], P.RAMPS['pl_bg2'], P.RAMPS['vl_light']
+    home = set_name == 'village_home'
+    if layer == 0:
+        sky = P.RAMPS[SKY[set_name]]
+        for i, col in enumerate(sky):
+            _paint(img, np.broadcast_to((ys >= i * 44), (H, width)), col)
+        # low sun near the horizon (dawn on the right, sunset on the left)
+        sx = 470 if home else 170
+        dx = _wrap(xs[None, :] - sx)
+        _paint(img, dx * dx + (ys - 214) ** 2 < 26 ** 2, light[1])
+        _paint(img, (dx * dx + (ys - 214) ** 2 < 26 ** 2) & (dx * dx + (ys - 214) ** 2 >= 23 ** 2), light[0])
+        if not home:
+            # far left: mountain peaks; far right: a dark forest (the two roads lead there)
+            for cx, hgt, half in ((90, 70, 60), (150, 95, 70), (215, 60, 50)):
+                _tri(img, xs, cx, half, 250, hgt, bg0[1])
+                _tri(img, xs, cx, half * 0.35, 250 - hgt * 0.65, hgt * 0.35, sky[5])
+            for k in range(14):
+                cx = 400 + k * 13
+                _tri(img, xs, cx, 9, 252, 26 + (k * 7) % 11, bg1[0])
+        top = 240 + _wave(xs, [(1, 10, 1.1), (3, 6, 0.3), (6, 3, 2.0)])
+        _fill_below(img, xs, top, bg0[0], bg0[1], rim=2)
+        if not home:
+            # the crossroads: one road climbs the hills and forks, left to the mountains, right to the forest
+            for x in range(width):
+                d = _wrap(x - 320)
+                ad = abs(d)
+                if ad > 230:
+                    continue
+                y = 257 - ad * 0.05
+                half = 3.0 - ad / 230 * 2.2
+                y0, y1 = int(round(y - half / 2)), int(round(y + half / 2)) + 1
+                img[y0:y1, x, :3] = sky[5]
+                img[y0:y1, x, 3] = 255
+            for y in range(257, 262):                      # the shared stem toward the viewer
+                half = 1 + (y - 257) * 0.8
+                m = np.abs(_wrap(xs - 320)) < half
+                img[y, m, :3] = sky[5]
+                img[y, m, 3] = 255
+        return Image.fromarray(img, 'RGBA')
+    if layer == 1:
+        base = 300 + _wave(xs, [(2, 3, 0.4), (5, 2, 1.3)])
+        _fill_below(img, xs, base, bg1[0], bg1[1], rim=2)
+        g = _rng(f'bg_{set_name}_1')
+        n = 7 if home else 9
+        for k in range(n):
+            cx = k * W / n + g.uniform(-12, 12)
+            if home:
+                wdt, hgt = g.uniform(40, 56), g.uniform(30, 40)
+                _box(img, xs, (cx - wdt / 2) % W, (cx - wdt / 2) % W + wdt, 300 - hgt, 304, bg1[0])
+                _tri(img, xs, cx, wdt / 2 + 6, 300 - hgt + 1, 22, bg1[1])
+                # chimney and smoke
+                chx = (cx + wdt / 4) % W
+                _box(img, xs, chx, chx + 5, 300 - hgt - 18, 300 - hgt - 2, bg1[0])
+                for j in range(4):
+                    sx, sy, r = chx + 3 + j * 4, 300 - hgt - 24 - j * 9, 3 + j
+                    dx = _wrap(xs[None, :] - sx)
+                    _paint(img, dx * dx + (ys - sy) ** 2 < r * r, bg0[1])
+                for wx in (cx - wdt / 4, cx + wdt / 6):
+                    _box(img, xs, (wx - 3) % W, (wx - 3) % W + 6, 300 - hgt + 12, 300 - hgt + 19, light[0])
+            else:
+                # market street: stalls with striped awnings
+                wdt = g.uniform(44, 60)
+                x0 = (cx - wdt / 2) % W
+                _box(img, xs, x0, x0 + wdt, 266, 304, bg1[0])
+                for j in range(int(wdt // 8)):
+                    _box(img, xs, (x0 + j * 8) % W, (x0 + j * 8) % W + 4, 260, 270, bg1[1])
+                _box(img, xs, x0 - 3, x0 + wdt + 3, 258, 261, bg1[1])
+                _box(img, xs, (x0 + 6) % W, (x0 + 6) % W + wdt - 12, 278, 284, light[0])
+        return Image.fromarray(img, 'RGBA')
+    if layer == 2:
+        dark, lit = bg2
+        top = 336 + _wave(xs, [(3, 2, 1.0), (7, 1.5, 0.5)])
+        _fill_below(img, xs, top, dark, lit, rim=2)
+        if home:
+            # fence along the ground and a few round trees
+            for k in range(40):
+                px = k * 16
+                _box(img, xs, px, px + 3, 316, 340, dark)
+            _box(img, xs, 0, W, 322, 325, lit)
+            _box(img, xs, 0, W, 331, 333, dark)
+            g = _rng('bg_village_home_2')
+            for cx in (60, 300, 520):
+                cx += g.uniform(-20, 20)
+                _box(img, xs, (cx - 4) % W, (cx - 4) % W + 8, 250, 340, dark)
+                for j in range(6):
+                    ox, oy, rr = g.uniform(-26, 26), g.uniform(-14, 10), g.uniform(14, 22)
+                    dx = _wrap(xs[None, :] - (cx + ox))
+                    dy = ys - (232 + oy)
+                    d = dx * dx + dy * dy
+                    _paint(img, d < rr * rr, dark)
+                    _paint(img, (d < rr * rr) & ~((dx - 2) ** 2 + (dy - 2) ** 2 < (rr - 1) ** 2) & (dx < 2) & (dy < 2),
+                           lit)
+        else:
+            # lantern posts with warm lamps
+            for k in range(4):
+                px = 40 + k * 160
+                _box(img, xs, px, px + 4, 262, 340, dark)
+                _box(img, xs, px - 6, px + 10, 258, 262, dark)
+                _box(img, xs, px - 5, px + 1, 262, 272, dark)
+                _box(img, xs, px - 4, px, 264, 270, light[1])
+                _box(img, xs, px - 3, px - 1, 265, 268, light[0])
         return Image.fromarray(img, 'RGBA')
     raise ValueError(layer)

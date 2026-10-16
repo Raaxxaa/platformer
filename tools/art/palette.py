@@ -48,6 +48,12 @@ RAMPS = {
     'pl_bg0': _hex('#9ec7c6', '#b4d6cd'),
     'pl_bg1': _hex('#5f9b7c', '#78b18b'),
     'pl_bg2': _hex('#2f5f49', '#3f7a56'),
+    # 08 §3.7 villages
+    'vl_wood': _hex('#3b2618', '#6a4228', '#9a663a', '#c99560'),
+    'vl_plaster': _hex('#8c7e6a', '#b8a88c', '#e2d6b8'),
+    'vl_light': _hex('#ffd27a', '#fff0c0'),
+    'vh_sky': sky_bands((0xf2, 0xb4, 0x8a), (0xfb, 0xe6, 0xc8)),      # village_home (dawn)
+    'vc_sky': sky_bands((0xe0, 0x78, 0x5a), (0xf6, 0xc8, 0x90)),      # village_crossroads (sunset)
     'en_red': _hex('#4a1824', '#7e2a34', '#b8443f', '#e27b5b'),
     'en_slate': _hex('#24263a', '#444a6a', '#737ca0', '#adb6d4'),
     # The plains row lists en_bone without values; the swamps row gives them (plan ART1 Task 1).
