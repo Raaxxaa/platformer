@@ -12,3 +12,9 @@ export function ticks(seconds: number): number {
 
 /** Longest real frame the fixed-step loop catches up on; longer hitches are dropped (00-README). */
 export const MAX_FRAME_SECONDS = 0.25;
+
+/** Gamepad stick thresholds (01 §1.2 step 4). */
+export const INPUT = {
+  STICK_X: 0.30,
+  STICK_Y: 0.60,
+} as const;
