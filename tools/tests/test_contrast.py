@@ -46,7 +46,8 @@ class ItemsTest(unittest.TestCase):
         self.assertEqual(fr['chest_key_closed_00'].size, (24, 16))
         self.assertEqual(fr['chest_key_open_00'].size, (24, 16))
         self.assertEqual(fr['glow_weapon_greatsword'].size, (18, 18))
-        self.assertEqual(items.greatsword_icon().size, (16, 16))
+        from art import icons
+        self.assertEqual(icons.weapon_icon('greatsword').size, (16, 16))
 
 
 if __name__ == '__main__':

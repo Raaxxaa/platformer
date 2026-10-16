@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 
 from . import backgrounds as B
+from . import icons as IC
 from . import items as I
 from . import palette as P
 from . import preview as V
@@ -94,7 +95,7 @@ def compose():
     scene.alpha_composite(it['chest_key_closed_00'], (130 - 12, gy - 16))
     scene.alpha_composite(it['lucky_block_idle_00'], (300 - 8, gy - 64))
     # Greatsword on the ground in each grade color; A and S get light beams
-    icon = I.greatsword_icon()
+    icon = IC.weapon_icon('greatsword')
     glow = it['glow_weapon_greatsword']
     for k, gr in enumerate('FCBAS'):
         x = 470 + k * 26
@@ -178,7 +179,7 @@ def compose_village(which, cam_x=112, cam_y=8):
             img = _tint_trim(obj['ability_altar_idle_01'], P.CLASS_COLORS['archer' if tx == 19 else 'wizard'])
         put(img, tx * 16 + 8)
     if which == 'crossroads':
-        icon = I.greatsword_icon()
+        icon = IC.weapon_icon('greatsword')
         glow = _tint_white(I.build_frames()['glow_weapon_greatsword'], P.GRADE_COLORS['B'])
         x, y = tile(9) - 8, VL.FLOOR_Y - 16 - 8 - 16
         world.alpha_composite(glow, (x - 1, y - 1))

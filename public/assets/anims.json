@@ -949,6 +949,38 @@
   "mode": "speed"
  },
  {
+  "key": "beam",
+  "atlas": "items",
+  "frames": [
+   "beam_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "blueprint",
+  "atlas": "items",
+  "frames": [
+   "blueprint_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "chest_cursed_closed",
+  "atlas": "items",
+  "frames": [
+   "chest_cursed_closed_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "chest_cursed_open",
+  "atlas": "items",
+  "frames": [
+   "chest_cursed_open_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "chest_key_closed",
   "atlas": "items",
   "frames": [
@@ -961,6 +993,42 @@
   "atlas": "items",
   "frames": [
    "chest_key_open_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "chest_timed_closed",
+  "atlas": "items",
+  "frames": [
+   "chest_timed_closed_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "chest_timed_open",
+  "atlas": "items",
+  "frames": [
+   "chest_timed_open_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "coin_spin",
+  "atlas": "items",
+  "frames": [
+   "coin_spin_00",
+   "coin_spin_01",
+   "coin_spin_02",
+   "coin_spin_03"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "key",
+  "atlas": "items",
+  "frames": [
+   "key_00"
   ],
   "mode": "once"
  },
