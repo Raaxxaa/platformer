@@ -52,3 +52,19 @@ def preview_gif(path, frames, fps, bg):
         out.append(b)
     ms = int(round(1000 / fps))
     out[0].save(path, save_all=True, append_images=out[1:], duration=ms, loop=0, optimize=False)
+
+
+def tint(img, color):
+    """Multiply-tint an RGBA image (preview of Phaser's multiply tint)."""
+    import numpy as np
+    a = np.array(img).astype(np.float32)
+    for i in range(3):
+        a[:, :, i] = a[:, :, i] * color[i] / 255.0
+    return Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8), 'RGBA')
+
+
+def compose_player(body, trim_a, trim_b, color_a, color_b):
+    out = body.copy()
+    out.alpha_composite(tint(trim_a, color_a))
+    out.alpha_composite(tint(trim_b, color_b))
+    return out

@@ -39,6 +39,8 @@ class PartLayer:
         self.ids = np.full((h, w), -1, dtype=np.int16)
         self.parts = []      # list of (name, ramp slot ids)
         self.index = {}
+        self.z = []          # draw order of each part's latest draw call
+        self._draws = 0
 
     def add_part(self, name, ramp, shift=0):
         """ramp: slot ids dark -> light. shift > 0 makes the part that many shades darker."""
@@ -46,10 +48,14 @@ class PartLayer:
             ramp = [ramp[max(0, i - shift)] for i in range(len(ramp))]
         self.index[name] = len(self.parts)
         self.parts.append((name, list(ramp)))
+        self.z.append(-1)
         return name
 
     def put(self, mask, part):
-        self.ids[mask] = self.index[part]
+        i = self.index[part]
+        self.ids[mask] = i
+        self._draws += 1
+        self.z[i] = self._draws
 
 
 def _centers(w, h):
@@ -140,15 +146,18 @@ def stamp(c, x, y, grid, mapping):
                 continue
             px, py = x + i, y + j
             if 0 <= px < c.w and 0 <= py < c.h:
-                c.ids[py, px] = c.index[mapping[ch]]
+                m = np.zeros((c.h, c.w), dtype=bool)
+                m[py, px] = True
+                c.put(m, mapping[ch])
 
 
 def base_index(n):
-    return 1 if n <= 3 else n // 2
+    return min(n - 1, 1) if n <= 3 else n // 2
 
 
 def auto_shade(layer):
-    """08 §12.2: up/left outside the part -> light, down/right outside -> dark, else base."""
+    """08 §12.2: up/left outside the part -> light, down/right outside -> dark, else base.
+    08 §2: a pixel next to a part drawn over it takes its darkest shade, so overlapping parts stay readable."""
     ids = layer.ids
     h, w = ids.shape
     pad = np.full((h + 2, w + 2), -1, dtype=np.int16)
@@ -157,6 +166,12 @@ def auto_shade(layer):
     left, right = pad[1:-1, :-2], pad[1:-1, 2:]
     light = (up != ids) | (left != ids)
     dark = (down != ids) | (right != ids)
+    # single-color parts (eyes) cast no edge; index -1 -> transparent (z -1)
+    z = np.array([zz if len(r) > 1 else -1 for zz, (_n, r) in zip(layer.z, layer.parts)] + [-1], dtype=np.int32)
+    zi = z[ids]
+    under = np.zeros_like(light)
+    for n in (up, down, left, right):
+        under |= (n >= 0) & (n != ids) & (z[n] > zi)
     out = np.full((h, w), -1, dtype=np.int16)
     for pi, (_name, ramp) in enumerate(layer.parts):
         m = ids == pi
@@ -166,6 +181,7 @@ def auto_shade(layer):
         out[m] = ramp[base_index(n)]
         out[m & dark] = ramp[0]
         out[m & light] = ramp[-1]
+        out[m & under] = ramp[0]
     return Canvas(w, h, out)
 
 

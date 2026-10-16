@@ -1,0 +1,118 @@
+[
+ {
+  "key": "idle",
+  "atlas": "player_archer",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03",
+   "idle_04",
+   "idle_05"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "run",
+  "atlas": "player_archer",
+  "frames": [
+   "run_00",
+   "run_01",
+   "run_02",
+   "run_03",
+   "run_04",
+   "run_05",
+   "run_06",
+   "run_07"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "idle",
+  "atlas": "player_swordsman",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03",
+   "idle_04",
+   "idle_05"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "run",
+  "atlas": "player_swordsman",
+  "frames": [
+   "run_00",
+   "run_01",
+   "run_02",
+   "run_03",
+   "run_04",
+   "run_05",
+   "run_06",
+   "run_07"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "idle",
+  "atlas": "player_tank",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03",
+   "idle_04",
+   "idle_05"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "run",
+  "atlas": "player_tank",
+  "frames": [
+   "run_00",
+   "run_01",
+   "run_02",
+   "run_03",
+   "run_04",
+   "run_05",
+   "run_06",
+   "run_07"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "idle",
+  "atlas": "player_wizard",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03",
+   "idle_04",
+   "idle_05"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "run",
+  "atlas": "player_wizard",
+  "frames": [
+   "run_00",
+   "run_01",
+   "run_02",
+   "run_03",
+   "run_04",
+   "run_05",
+   "run_06",
+   "run_07"
+  ],
+  "mode": "speed"
+ }
+]
