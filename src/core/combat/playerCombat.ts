@@ -63,6 +63,7 @@ function isDivePress(b: PlayerBody, input: InputState, w: GameWorld, slot: Slot)
 function startability(w: GameWorld): 'yes' | 'hold' | 'buffer' {
   const s = w.body.state;
   if (w.isDrinking()) return 'buffer';
+  if ((w.abilities.cast as { phase: string } | null)?.phase === 'startup') return 'buffer';   // 03 §7.6
   if (s === 'ground' || s === 'air' || s === 'crawl' || s === 'slide' || s === 'wallSlide') return 'yes';
   if (s === 'dash' || s === 'ledgeClimb') return 'hold';
   return 'buffer';
@@ -185,6 +186,8 @@ export function stepPlayerCombat(w: GameWorld, input: InputState): void {
   if (input.attack1.pressed && c.slots[0]) press = 0;
   else if (input.attack2.pressed && c.slots[1]) press = 1;
   if (press !== null && isDivePress(b, input, w, press)) press = null;
+  // 03 §7.6: a weapon press ends a cast's recovery at once (during startup it waits in the buffer).
+  if (press !== null && (w.abilities.cast as { phase: string } | null)?.phase === 'recovery') { w.abilities.cast = null; w.mods.gravityMult = 1; }
 
   // Hit-stop: timers pause; presses are buffered and the buffer starts when hit-stop ends.
   if (b.hitStopTicks > 0) {

@@ -18,7 +18,9 @@ import { Bodies, type SolidBody } from '../physics/bodies.ts';
 import { checkSpikes } from '../hazards/spikes.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
 import { cloneLoadout, createAbilityRuntime, defaultLoadout, type Loadout } from '../abilities/runtime.ts';
-import type { AbilityRuntime, BondId, ClassState, HybridId } from '../abilities/types.ts';
+import type { AbilityId, AbilityRuntime, BondId, ClassState, HybridId } from '../abilities/types.ts';
+import { clearAbilityEffects, fillAbilities, onCastCancelMove, onCastHurt, stepAbilities } from '../abilities/abilitySystem.ts';
+import { stepAbilityEntities, type AbilityEntity } from '../abilities/entities.ts';
 import { classChanged, computeClassState } from '../classes/classState.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
@@ -69,7 +71,11 @@ export type WorldEvent =
   | { t: 'bossDefeated'; bossId: string; stage: Stage }
   | { t: 'split'; index: number; runTicks: number; segmentTicks: number; deltaTicks: number | null; bestSegment: boolean }
   | { t: 'classChanged'; displayName: string; bond: BondId | null; hybrid: HybridId | null }
-  | { t: 'classDiscovered'; id: BondId | HybridId };
+  | { t: 'classDiscovered'; id: BondId | HybridId }
+  | { t: 'abilityUsed'; slot: 0 | 1; id: AbilityId; linked: boolean }
+  | { t: 'abilityLinked'; slot: 0 | 1 }
+  | { t: 'abilityFizzle'; slot: 0 | 1 }
+  | { t: 'abilityNotReady'; slot: 0 | 1 };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -102,6 +108,8 @@ export class GameWorld {
   rush!: RushState;
   combat!: PlayerCombat;
   abilities!: AbilityRuntime;
+  /** Live ability entities (zones, bolts, marks...): each ticks itself; death and stage start clear them (03 §7.9). */
+  abilityEntities: AbilityEntity[] = [];
   classState!: ClassState;
   /** Bonds and hybrids seen this session (06 saves them in M7). */
   readonly discoveredClasses = new Set<BondId | HybridId>();
@@ -227,6 +235,8 @@ export class GameWorld {
     this.activeHint = null;
     this.phase = 'stage';
     this.deathTick = 0;
+    this.abilityEntities = [];
+    fillAbilities(this);
   }
 
   restart(): void {
@@ -315,6 +325,7 @@ export class GameWorld {
     // No ghost hits: every player hit group goes now; Rush resets at death (02 §8.1).
     cancelAttack(this, 'hurt');
     endDive(this);
+    clearAbilityEffects(this);
     this.hitGroups = this.hitGroups.filter((g) => g.owner !== 'player');
     this.rush.value = 0;
     this.events.push({ t: 'playerDied', cause });
@@ -324,6 +335,7 @@ export class GameWorld {
   onPlayerHitstun(): void {
     cancelAttack(this, 'hurt');
     cancelDrink(this);
+    onCastHurt(this);
   }
 
   /** A player hit group landed a direct hit on an enemy (Rush hooks). */
@@ -469,14 +481,15 @@ export class GameWorld {
     tryStartDrink(this, input);
     stepDrink(this);
     if (this.drinking) this.mods.actionMoveMult = FLASK.MOVE_CAP;
+    stepAbilities(this, input);
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
     this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush))];
     const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
     if (checkSpikes(this)) moveEvents.push('spikeHit');   // 01 §3 step 9
     for (const e of moveEvents) {
       this.events.push({ t: 'move', e });
-      if (e === 'dashStart' || e === 'slideStart') { cancelAttack(this, 'dash'); cancelDrink(this); }
-      else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') { cancelAttack(this, 'jump'); cancelDrink(this); }
+      if (e === 'dashStart' || e === 'slideStart') { cancelAttack(this, 'dash'); cancelDrink(this); onCastCancelMove(this); }
+      else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') { cancelAttack(this, 'jump'); cancelDrink(this); onCastCancelMove(this); }
       else if (e === 'diveStart') cancelAttack(this, 'dive');
     }
     if (moveEvents.includes('dashStart')) this.dashThrough.clear();
@@ -489,8 +502,9 @@ export class GameWorld {
     for (const e of [...this.enemies].sort((a, b) => a.id - b.id)) this.stepEnemy(e);
     separateEnemies(this);
     syncEnemyGroups(this);
-    // 6. Moving hit groups.
+    // 6. Moving hit groups and ability entities (world ticks).
     stepProjectiles(this);
+    stepAbilityEntities(this);
     // 7. Hit resolution: player hits first (ties go to the player), then enemy hits.
     resolvePlayerHits(this);
     resolveEnemyHits(this);

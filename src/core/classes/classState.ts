@@ -7,7 +7,7 @@ import { BONDS, CLASS_IDS, CLASS_NAME, HYBRIDS, NO_CLASS_NAME, WEAPON_CLASSES } 
 export function computeClassState(abilities: readonly (AbilityId | null)[], weapons: readonly (WeaponId | null)[] = [null, null]): ClassState {
   const A: ClassId[] = [];
   for (const id of abilities) {
-    const c = id ? ABILITY_INFO[id].cls : null;
+    const c = id ? ABILITY_INFO[id]?.cls ?? null : null;
     if (c) A.push(c);
   }
   const carried = CLASS_IDS.filter((c) => A.includes(c));
