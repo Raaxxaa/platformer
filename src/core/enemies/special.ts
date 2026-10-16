@@ -6,6 +6,7 @@ import { removeEnemyGroups, type AttackHooks } from './attack.ts';
 import { supportAhead } from './body.ts';
 import type { EnemyState } from './enemy.ts';
 import { spawnEnemyProjectile } from './projectiles.ts';
+import { greatBoarHooks } from './greatBoar.ts';
 
 
 function fireShots(w: GameWorld, e: EnemyState): void {
@@ -33,6 +34,7 @@ function dazeAfterWall(w: GameWorld, e: EnemyState): void {
 export function attackHooks(e: EnemyState): AttackHooks {
   const def = e.ai.attack?.def;
   if (!def) return {};
+  if (e.def.id === 'great_boar') return greatBoarHooks(e);
   return {
     onActStart(w, en) {
       if (def.leap && 'vx' in def.leap) {

@@ -7,8 +7,8 @@ const regulars = defs.filter((d) => d.tier === 'regular');
 const elites = defs.filter((d) => d.elite);
 
 describe('Stage 1 enemy data (04 §3, checklist 1–3, 30)', () => {
-  it('has the five Stage 1 enemies and the Training Dummy', () => {
-    expect(Object.keys(ENEMIES).sort()).toEqual(['bandit', 'bandit_archer', 'bandit_brute', 'training_dummy', 'wild_boar', 'wolf']);
+  it('has the five Stage 1 enemies, the Great Boar and the Training Dummy', () => {
+    expect(Object.keys(ENEMIES).sort()).toEqual(['bandit', 'bandit_archer', 'bandit_brute', 'great_boar', 'training_dummy', 'wild_boar', 'wolf']);
   });
   it('regular HP is 25–60, elite HP 120–170', () => {
     for (const d of regulars) { expect(d.hp).toBeGreaterThanOrEqual(25); expect(d.hp).toBeLessThanOrEqual(60); }

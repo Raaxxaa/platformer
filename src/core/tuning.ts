@@ -133,6 +133,22 @@ export const ARENA = {
   FILL_FAST: 400, FILL_SLOW: 250,
 } as const;
 
+/** Bosses (04 §9). */
+export const BOSS = {
+  SPAWN_FRACTION: 0.75,                  // of the arena width from the entry side
+  INTRO: 1.0, INTRO_TICKS: ticks(1.0),
+  POISE_IMMUNE: 2.0, POISE_IMMUNE_TICKS: ticks(2.0),
+} as const;
+
+/** The Great Boar (04 §10.1). */
+export const GREAT_BOAR = {
+  CHARGE_SPEED: 380, CHARGE_SPEED_ENRAGED: 440,
+  DAZE: 2.0, DAZE_TICKS: ticks(2.0), DAZE_ENRAGED: 1.4, DAZE_ENRAGED_TICKS: ticks(1.4),
+  CRASH_SHAKE: { amplitude: 4, seconds: 0.3 },
+  ROCKS: 3, ROCK_SPACING: 48, ROCK_TRIES: 200,
+  ROCK_MARKER: 0.8, ROCK_MARKER_TICKS: ticks(0.8),
+} as const;
+
 /** Timed doors (06 §9.5). */
 export const TIMED_DOOR = { TRIGGER_W: 48 } as const;   // px strip in front of the door
 

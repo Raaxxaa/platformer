@@ -6,6 +6,8 @@ import type { LevelObject } from '../level/loadLevel.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { ARENA, ENEMY } from '../tuning.ts';
 import { COMBAT_ARENA } from '../../data/levelRules.ts';
+import { spawnBoss, wakeBoss } from '../enemies/boss.ts';
+import type { EnemyId } from '../enemies/types.ts';
 
 /** Runtime data for one arena (rebuilt on every restart). */
 export interface ArenaRt {
@@ -38,6 +40,7 @@ export function buildArenas(w: GameWorld): Map<string, ArenaRt> {
       parTicks: Math.round(par * 120), waveIds: [], nextWaveTick: -1, doorsOpenTick: -1, lockedOnce: false,
     });
     w.run.arenas[id] = { locked: false, wave: 0, lockTick: -1, cleared: false, clearTick: null };
+    if (kind === 'boss' && a.props.boss) spawnBoss(w, out.get(id)!, String(a.props.boss) as EnemyId, a.props.entry === 'right' ? 'right' : 'left');
   }
   return out;
 }
@@ -134,7 +137,13 @@ export function cameraTarget(w: GameWorld): CameraBounds {
 }
 
 export function stepArenas(w: GameWorld): void {
-  for (const a of w.arenas.values()) if (a.kind === 'combat') stepCombatArena(w, a);
+  for (const a of w.arenas.values()) {
+    if (a.kind === 'combat') stepCombatArena(w, a);
+    else if (a.kind === 'boss' && tryLock(w, a)) {
+      const boss = w.enemies.find((e) => e.boss?.arenaId === a.id && !e.dead);
+      if (boss) wakeBoss(boss);
+    }
+  }
   stepStuck(w);
   setCameraBounds(w.camera, cameraTarget(w));
 }

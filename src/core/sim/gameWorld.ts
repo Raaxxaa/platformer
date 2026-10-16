@@ -38,6 +38,8 @@ import { buildArenas, stepArenas, type ArenaRt } from '../run/arenas.ts';
 import { buildTimedDoors, stepTimedDoors, type TimedDoorRt } from '../run/timedDoors.ts';
 import { stepZones, type HintAction } from '../run/zones.ts';
 import { stepClocks } from '../run/runState.ts';
+import { bossBar, stepBossPhases, type BossBar } from '../enemies/boss.ts';
+import { stepRockfall, type RockMarker } from '../enemies/greatBoar.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -60,7 +62,8 @@ export type WorldEvent =
   | { t: 'arenaWave'; arenaId: string; wave: number }
   | { t: 'arenaCleared'; arenaId: string; clearTicks: number; fast: boolean }
   | { t: 'timedDoorOpened'; doorId: string }
-  | { t: 'timedDoorMissed'; doorId: string };
+  | { t: 'timedDoorMissed'; doorId: string }
+  | { t: 'bossDefeated'; bossId: string; stage: Stage };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -103,6 +106,7 @@ export class GameWorld {
   arenas = new Map<string, ArenaRt>();
   timedDoors: TimedDoorRt[] = [];
   activeHint: HintAction | null = null;
+  rockMarkers: RockMarker[] = [];
   readonly level: LevelData | null;
   readonly waveSpawns: LevelEnemySpawn[];
   readonly markers: LevelObject[];
@@ -206,6 +210,7 @@ export class GameWorld {
     this.lastAttackStartTick = -100000;
     this.rushedInstances = new Set();
     this.dashThrough = new Set();
+    this.rockMarkers = [];
     this.arenas = buildArenas(this);
     this.timedDoors = buildTimedDoors(this);
     this.activeHint = null;
@@ -215,6 +220,11 @@ export class GameWorld {
 
   restart(): void {
     this.reset();
+  }
+
+  /** The boss bar while a boss arena is locked (04 §9.4). */
+  get bossBar(): BossBar | null {
+    return bossBar(this);
   }
 
   /** Adds a solid body now (tests, debug). */
@@ -365,6 +375,12 @@ export class GameWorld {
       return;
     }
     stepEnemyReactions(e);
+    if (e.boss && e.boss.introTicks > 0) {      // boss intro: takes damage, doesn't act (04 §9.2)
+      e.boss.introTicks -= 1;
+      if (!e.knockback) e.vx = 0;
+      stepEnemyBody(this, e);
+      return;
+    }
     for (const [id, n] of e.ai.cooldowns) if (n > 0) e.ai.cooldowns.set(id, n - 1);
     if (e.ai.gapTicks > 0) e.ai.gapTicks -= 1;
     if (e.control) {
@@ -413,7 +429,8 @@ export class GameWorld {
     if (moveEvents.includes('dashEnd')) this.lastDashEndTick = this.tick;
     onDiveEvents(this, moveEvents, input);
     syncPlayerGroups(this);
-    // 5. Enemy AI and movement.
+    // 5. Enemy AI and movement; hazard timers (06 §2.8: rock markers).
+    stepRockfall(this);
     activateEnemies(this);
     for (const e of [...this.enemies].sort((a, b) => a.id - b.id)) this.stepEnemy(e);
     separateEnemies(this);
@@ -425,6 +442,7 @@ export class GameWorld {
     resolveEnemyHits(this);
     // 8. Statuses (none in M2). 9. Deaths.
     processDeaths(this);
+    stepBossPhases(this);
     stepDiveImpact(this);
     this.dashThroughRush();
     stepRush(this);

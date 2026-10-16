@@ -2,6 +2,7 @@
 import { enemyCenter, enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { roundHalfUp } from '../math.ts';
+import { onBossKilled } from '../enemies/boss.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, ENEMY } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
@@ -35,7 +36,9 @@ export function killEnemy(w: GameWorld, e: EnemyState): void {
 function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const spec = g.spec;
   const grade = g.slot !== undefined ? w.combat.slots[g.slot]?.grade ?? 'C' : 'C';
-  const { damage } = playerHitDamage({ base: spec.damage, grade, matched: false, isWeapon: true });
+  // A broken boss takes its break multiplier (04 §9.1, a step-6 target multiplier).
+  const targetMult = e.def.boss && e.control?.type === 'stagger' ? e.def.boss.breakMult : 1;
+  const { damage } = playerHitDamage({ base: spec.damage, grade, matched: false, isWeapon: true, targetMult });
   e.hp -= damage;
   e.lastPlayerHitTick = w.tick;
   e.damagedTicks = 0;
@@ -112,6 +115,7 @@ export function processDeaths(w: GameWorld): void {
     // SPEC-GAP: M2 credits gold instantly; coins in M4
     w.gold += roundHalfUp(e.def.gold * rushGoldMult(rushLevel(w.rush)));
     w.events.push({ t: 'kill', enemyId: e.id, tier });
+    if (e.boss) onBossKilled(w, e);
   }
   w.pendingDeaths = [];
 }

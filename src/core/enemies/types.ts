@@ -31,6 +31,13 @@ export interface EnemyAttackDef {
   shots?: { projectile: EnemyProjectileId; angles: number[]; aim: 'player' | 'facing' | 'arc' }[];
   chain?: { telegraph: number; active: number; hit: EnemyHit; move?: { dist: number; time: number }; phases?: number[] }[];
 }
+/** 04 §9: shared boss data. */
+export interface BossDef {
+  breakTime: number; breakMult: number;            // s, step-6 target multiplier while broken
+  attackGapEnraged: number;                         // s
+  enrageAt: number;                                 // HP fraction
+  bar: { name: string; title: string; marks: number[] };
+}
 export interface EnemyDef {
   id: EnemyId; tier: Tier; size: SizeClass; elite: boolean;
   hurtbox: { w: number; h: number };
@@ -40,6 +47,7 @@ export interface EnemyDef {
   notice: { range: number; rangeY: number; time: number };
   preferred: [number, number]; attackGap: number; turnDelay: number;
   backOff?: number;             // walks away only when closer than this (default: the preferred band's min)
+  boss?: BossDef;
   noFacing?: boolean; blocksPlayer?: boolean;
   guard?: { guardMult: number; when: 'always' | 'notAttacking' | 'stance'; bypassAbove: boolean };
   armor?: { mult: number; heavyIgnores: boolean };

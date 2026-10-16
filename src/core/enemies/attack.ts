@@ -4,13 +4,14 @@ import type { GameWorld } from '../sim/gameWorld.ts';
 import { ticks } from '../tuning.ts';
 import type { EnemyState } from './enemy.ts';
 import type { EnemyAttackDef } from './types.ts';
+import { bossAttackGapTicks } from './boss.ts';
 
 function setCooldown(e: EnemyState, def: EnemyAttackDef): void {
   e.ai.cooldowns.set(def.id, ticks(def.cooldown));
 }
 
 function gapTicks(e: EnemyState): number {
-  return ticks(e.def.attackGap);
+  return bossAttackGapTicks(e) ?? ticks(e.def.attackGap);
 }
 
 export function removeEnemyGroups(w: GameWorld, e: EnemyState): void {
