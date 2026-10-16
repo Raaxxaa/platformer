@@ -206,6 +206,7 @@ export const ENEMY = {
   MAX_TOKENS_MELEE: 2, MAX_TOKENS_RANGED: 2,
   LEAP_MAX: 1.0, LEAP_MAX_TICKS: ticks(1.0),
   DUMMY_HEAL_DELAY: 1.0, DUMMY_HEAL_TICKS: ticks(1.0),
+  TELEGRAPH_FLASH_LAST: 0.15, TELEGRAPH_FLASH_LAST_TICKS: ticks(0.15),   // last part of a telegraph flashes near-white
 } as const;
 
 /** Heal flask (02 §7). Fill is in tenths of a percent. */

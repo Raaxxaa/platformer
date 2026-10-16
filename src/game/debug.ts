@@ -1,7 +1,18 @@
 // window.__game debug API and the ?debug=1 switch (00-README "Debug hook").
 import type { CameraState } from '../core/camera.ts';
+import type { EnemyId } from '../core/enemies/types.ts';
 import type { PlayerBody } from '../core/player/body.ts';
+import type { GameWorld } from '../core/sim/gameWorld.ts';
 import type { InputSpec, PlayerSim } from '../core/sim/playerSim.ts';
+
+/** A read-only snapshot of the combat world (M2). */
+export interface WorldSnapshot {
+  tick: number; runTicks: number; phase: string;
+  hp: number; maxHp: number; dead: boolean;
+  flask: { charges: number; maxCharges: number; fillTenths: number };
+  rush: number; gold: number;
+  enemies: { id: number; def: string; x: number; y: number; hp: number; maxHp: number; aware: boolean; state: string; attack: string | null; dead: boolean }[];
+}
 
 export interface GameDebugApi {
   ready: boolean;
@@ -11,6 +22,9 @@ export interface GameDebugApi {
   setManual(on: boolean): void;    // manual: the scene stops stepping by itself and ignores devices
   step(n: number, spec?: InputSpec): void;  // run n ticks holding `spec` (pressed on the first tick only)
   teleport(x: number, y: number): void;     // fresh body with its feet at (x, y), camera snapped
+  world?(): WorldSnapshot;                  // combat scene only
+  spawn?(enemyId: EnemyId, x: number, y: number, facing?: 1 | -1): number;
+  setHp?(hp: number): void;
 }
 
 declare global {
@@ -36,5 +50,38 @@ export function installDebugApi(host: DebugHost): void {
     setManual: (on) => host.setManual(on),
     step: (n, spec = {}) => { host.sim.stepSpec(spec, n); },
     teleport: (x, y) => host.sim.respawn({ x, y }),
+  };
+}
+
+export interface CombatDebugHost {
+  readonly world: GameWorld;
+  setManual(on: boolean): void;
+  stepSpec(spec: InputSpec, n: number): void;
+}
+
+export function snapshotWorld(w: GameWorld): WorldSnapshot {
+  return {
+    tick: w.tick, runTicks: w.runTicks, phase: w.phase,
+    hp: w.health.hp, maxHp: w.health.maxHp, dead: w.health.dead,
+    flask: { ...w.flask }, rush: w.rush.value, gold: w.gold,
+    enemies: w.enemies.map((e) => ({
+      id: e.id, def: e.def.id, x: e.x, y: e.y, hp: e.hp, maxHp: e.maxHp, aware: e.aware,
+      state: e.ai.state, attack: e.ai.attack ? `${e.ai.attack.def.id}:${e.ai.attack.phase}` : null, dead: e.dead,
+    })),
+  };
+}
+
+export function installCombatDebugApi(host: CombatDebugHost): void {
+  window.__game = {
+    ready: true,
+    tick: () => host.world.tick,
+    body: () => structuredClone(host.world.body),
+    camera: () => structuredClone(host.world.camera),
+    setManual: (on) => host.setManual(on),
+    step: (n, spec = {}) => host.stepSpec(spec, n),
+    teleport: (x, y) => host.world.teleportPlayer(x, y),
+    world: () => snapshotWorld(host.world),
+    spawn: (enemyId, x, y, facing = -1) => host.world.spawnExtra({ enemy: enemyId, x, y, facing }).id,
+    setHp: (hp) => { host.world.health.hp = hp; },
   };
 }

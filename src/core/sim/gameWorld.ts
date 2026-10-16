@@ -1,6 +1,6 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
-import { createCamera, shake, stepCamera, type CameraState } from '../camera.ts';
+import { createCamera, shake, snapCamera, stepCamera, type CameraState } from '../camera.ts';
 import { createHealth, type PlayerHealth } from '../combat/health.ts';
 import type { HitGroup } from '../combat/hitGroups.ts';
 import { addRush, createRush, rushLevel, rushSpeedPercent, stepRush } from '../combat/rush.ts';
@@ -152,6 +152,25 @@ export class GameWorld {
 
   restart(): void {
     this.reset();
+  }
+
+  /** Debug: a fresh player body with its feet at (x, y); everything else stays. */
+  teleportPlayer(x: number, y: number): void {
+    this.body = createPlayerBody(x, y);
+    if (!isGrounded(this.body, this.grid, 0)) {
+      this.body.state = 'air';
+      this.body.grounded = false;
+    }
+    cancelAttack(this, 'hurt');
+    snapCamera(this.camera, this.body);
+  }
+
+  /** Debug: spawn one more enemy (active at once). */
+  spawnExtra(s: EnemySpawn): EnemyState {
+    const e = spawnEnemy(this, s);
+    e.dormant = false;
+    this.enemies.push(e);
+    return e;
   }
 
   /** Hurt pipeline hook: the player died this tick (06 §6.1). */
