@@ -1,6 +1,6 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
-import { createCamera, stepCamera, type CameraState } from '../camera.ts';
+import { createCamera, shake, stepCamera, type CameraState } from '../camera.ts';
 import { createHealth, type PlayerHealth } from '../combat/health.ts';
 import type { HitGroup } from '../combat/hitGroups.ts';
 import { addRush, createRush, rushLevel, rushSpeedPercent, stepRush } from '../combat/rush.ts';
@@ -10,8 +10,8 @@ import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
 import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
-import { FLASK, RUSH } from '../tuning.ts';
-import type { InputState } from '../input.ts';
+import { CAMERA, FLASK, RESTART, RUSH } from '../tuning.ts';
+import { emptyInput, type InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { isGrounded } from '../physics/collide.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
@@ -31,6 +31,9 @@ import { onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '..
 import type { EnemySpawn } from '../enemies/types.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
+
+/** 'stage' while playing, 'dead' for the 1 s after death, then 'deathScreen' (06 §6.1). */
+export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
 
 export type WorldEvent =
   | { t: 'move'; e: MoveEvent }
@@ -84,6 +87,12 @@ export class GameWorld {
   /** Was the player already in hit-stop when this tick started (its melee boxes are frozen)? */
   playerFrozenAtTickStart = false;
   events: WorldEvent[] = [];
+  phase: WorldPhase = 'stage';
+  deathTick = 0;
+  /** Consecutive ticks restart has been held (06 §6.2); survives restarts. */
+  restartHoldTicks = 0;
+  /** After a hold restart the button must be released once before a new hold counts. */
+  restartNeedsRelease = false;
   private nextId = 1;
 
   constructor(opts: GameWorldOptions) {
@@ -137,6 +146,8 @@ export class GameWorld {
     this.lastAttackStartTick = -100000;
     this.rushedInstances = new Set();
     this.dashThrough = new Set();
+    this.phase = 'stage';
+    this.deathTick = 0;
   }
 
   restart(): void {
@@ -145,6 +156,8 @@ export class GameWorld {
 
   /** Hurt pipeline hook: the player died this tick (06 §6.1). */
   onPlayerDied(cause: string): void {
+    this.phase = 'dead';
+    this.deathTick = this.tick;
     this.events.push({ t: 'playerDied', cause });
   }
 
@@ -176,8 +189,42 @@ export class GameWorld {
 
   /** camera.shake(amplitude, seconds) from gameplay (01 §14.4). */
   requestShake(amplitude: number, seconds: number): void {
-    this.events.push({ t: 'shake', level: amplitude >= 4 ? 'medium' : 'small' });
-    void seconds;
+    shake(this.camera, amplitude, seconds);
+    this.events.push({ t: 'shake', level: amplitude >= CAMERA.SHAKE_MEDIUM.amplitude ? 'medium' : 'small' });
+  }
+
+  /** A named shake level (01 §14.4): small = 2 px / 0.12 s, medium = 4 px / 0.25 s. */
+  shakeLevel(level: 'small' | 'medium'): void {
+    const s = level === 'medium' ? CAMERA.SHAKE_MEDIUM : CAMERA.SHAKE_SMALL;
+    this.requestShake(s.amplitude, s.seconds);
+  }
+
+  /** Restart rules (06 §6.1–6.2). Returns true when the world restarted this tick. */
+  private handleRestart(input: InputState): boolean {
+    const r = input.restart;
+    if (this.phase === 'deathScreen' || this.phase === 'dead') {
+      if (r.pressed && this.tick + 1 - this.deathTick >= RESTART.PRESS_AFTER_TICKS) {
+        this.restartNeedsRelease = r.held;
+        this.restartHoldTicks = 0;
+        this.restart();
+        return true;
+      }
+      if (this.phase === 'deathScreen') return false;
+    }
+    if (!r.held) {
+      this.restartHoldTicks = 0;
+      this.restartNeedsRelease = false;
+      return false;
+    }
+    if (this.restartNeedsRelease) return false;
+    this.restartHoldTicks += 1;
+    if (this.restartHoldTicks >= RESTART.HOLD_TICKS) {
+      this.restartHoldTicks = 0;
+      this.restartNeedsRelease = true;
+      this.restart();
+      return true;
+    }
+    return false;
   }
 
   /** On-kill effects that belong to other systems (flask, Rush). */
@@ -228,8 +275,12 @@ export class GameWorld {
   }
 
   /** One 120 Hz tick in 02 §2.1 order. */
-  step(input: InputState): void {
+  step(rawInput: InputState): void {
     this.events = [];
+    if (this.handleRestart(rawInput)) return;
+    if (this.phase === 'deathScreen') return;
+    // A dead player takes no input; the world keeps running around them.
+    const input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
     this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
     if (!this.health.dead) this.runTicks += 1;
@@ -272,6 +323,7 @@ export class GameWorld {
     stepRush(this);
     stepFlask(this);
     // 10. Rush and flask.
-    stepCamera(this.camera, this.body);
+    stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());
+    if (this.phase === 'dead' && this.tick - this.deathTick >= RESTART.DEATH_SIM_TICKS) this.phase = 'deathScreen';
   }
 }

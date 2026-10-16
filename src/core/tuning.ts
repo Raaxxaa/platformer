@@ -111,6 +111,16 @@ export const CAMERA = {
   MARGIN_X: 64,             // px between the player box and the left/right screen edges
   MARGIN_Y: 48,             // px between the player box and the top/bottom screen edges
   SNAP_DIST: 160,           // px, a single-tick player move larger than this snaps
+  SHAKE_MAX: 8,             // px
+  SHAKE_SMALL: { amplitude: 2, seconds: 0.12 },
+  SHAKE_MEDIUM: { amplitude: 4, seconds: 0.25 },
+} as const;
+
+/** Death and restart (06 §6). */
+export const RESTART = {
+  DEATH_SIM: 1.0, DEATH_SIM_TICKS: ticks(1.0),          // the world keeps running after death
+  PRESS_AFTER: 0.25, PRESS_AFTER_TICKS: ticks(0.25),    // a restart press counts from here
+  HOLD: 0.5, HOLD_TICKS: ticks(0.5),                    // instant restart hold
 } as const;
 
 /** Combat numbers (02 §2–9). Seconds, with tick twins where code counts ticks. */

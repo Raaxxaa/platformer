@@ -56,7 +56,7 @@ export function onDiveEvents(w: GameWorld, events: MoveEvent[], input: InputStat
     const impact = diveDefFor(w, d.slot).impact;
     d.impactId = addGroup(w, impact, impact.impactBox, d.slot, d.hitEnemies);
     d.impactTicks = ticks(impact.impactTime);
-    if (impact.hit.heavy) w.events.push({ t: 'shake', level: 'medium' });
+    if (impact.hit.heavy) w.shakeLevel('medium');
     return;
   }
   // A jump or dash out of the dive ends its descent box.

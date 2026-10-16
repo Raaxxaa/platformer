@@ -14,6 +14,9 @@ export interface CameraState {
   lookDown: number;          // fall look-down, px
   bounds: CameraBounds;
   lastPx: number; lastPy: number;   // player position last tick, for the snap distance
+  shakes: { amplitude: number; remaining: number; duration: number }[];
+  shakeX: number; shakeY: number;   // offset added after clamping (01 §14.4)
+  shakeEnabled: boolean;            // the screen-shake setting (07)
 }
 
 const SMOOTH_X = 1 - Math.exp(-TICK / CAMERA.TAU_X);
@@ -59,13 +62,42 @@ export function snapCamera(c: CameraState, b: PlayerBody): void {
 }
 
 export function createCamera(bounds: CameraBounds, b: PlayerBody): CameraState {
-  const c: CameraState = { x: 0, y: 0, cx: 0, cy: 0, anchorY: b.y, lookX: 0, lookDown: 0, bounds: { ...bounds }, lastPx: b.x, lastPy: b.y };
+  const c: CameraState = { x: 0, y: 0, cx: 0, cy: 0, anchorY: b.y, lookX: 0, lookDown: 0, bounds: { ...bounds }, lastPx: b.x, lastPy: b.y,
+    shakes: [], shakeX: 0, shakeY: 0, shakeEnabled: true };
   snapCamera(c, b);
   return c;
 }
 
-/** One camera tick, after the player's (01 §14.2). */
-export function stepCamera(c: CameraState, b: PlayerBody): void {
+/** camera.shake(amplitude, seconds) (01 §14.4). */
+export function shake(c: CameraState, amplitude: number, seconds: number): void {
+  const n = Math.max(1, Math.round(seconds / TICK));
+  c.shakes.push({ amplitude, remaining: n, duration: n });
+}
+
+/** The amplitude in use now: the largest A × remaining / duration, capped at 8 px. */
+export function shakeAmplitude(c: CameraState): number {
+  let a = 0;
+  for (const s of c.shakes) a = Math.max(a, (s.amplitude * s.remaining) / s.duration);
+  return Math.min(CAMERA.SHAKE_MAX, a);
+}
+
+/** Shake offset for this tick, then the shakes age by one tick. Draws from `rand` only while shaking. */
+function stepShake(c: CameraState, rand: () => number): void {
+  const amp = shakeAmplitude(c);
+  if (amp > 0 && c.shakeEnabled) {
+    c.shakeX = Math.round((rand() * 2 - 1) * amp);
+    c.shakeY = Math.round((rand() * 2 - 1) * amp);
+  } else {
+    c.shakeX = 0;
+    c.shakeY = 0;
+  }
+  for (const s of c.shakes) s.remaining -= 1;
+  c.shakes = c.shakes.filter((s) => s.remaining > 0);
+}
+
+/** One camera tick, after the player's (01 §14.2). `rand` is the `cosmetic` stream (shake only). */
+export function stepCamera(c: CameraState, b: PlayerBody, rand: () => number = () => 0.5): void {
+  stepShake(c, rand);
   if (Math.hypot(b.x - c.lastPx, b.y - c.lastPy) > CAMERA.SNAP_DIST) {
     snapCamera(c, b);
     return;

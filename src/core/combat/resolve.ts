@@ -34,7 +34,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const killed = e.def.tier !== 'dummy' && e.hp <= 0;
   if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
   w.events.push({ t: 'hit', target: e.id, amount: damage, crit: false, heavy: !!spec.heavy });
-  if (spec.heavy) w.events.push({ t: 'shake', level: 'small' });
+  if (spec.heavy) w.shakeLevel('small');
   w.onPlayerLandedHit(g, e);
   // Hit-stop: melee freezes both, a shot only the target.
   const stop = meleeHitStopTicks(spec.hitStop, false, killed);
@@ -92,7 +92,7 @@ export function resolveEnemyHits(w: GameWorld): void {
     if (!landed) continue;                                  // invulnerable: not marked, may hit later
     markHit(g, 0, w.tick);
     w.events.push({ t: 'hit', target: 'player', amount: 0, crit: false, heavy: false });
-    w.events.push({ t: 'shake', level: 'small' });
+    w.shakeLevel('small');
     if (g.kind === 'melee' && owner) owner.hitStopTicks = maxStop(owner.hitStopTicks, COMBAT.HURT_HIT_STOP_TICKS);
     w.onEnemyShotLanded(g);
   }
