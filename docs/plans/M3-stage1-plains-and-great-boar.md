@@ -11,7 +11,7 @@
 - the boss, the Great Boar;
 - the run timer and the split when the boss dies.
 
-Loot objects (Lucky Blocks, chests, keys, loot stands, merchant) are placed in the level but only show as grey markers. They start working in M4.
+Loot objects (Lucky Blocks, chests, keys, loot stands, merchant) are placed in the level but only show as grey markers. They start working in M5 (loot). M4 adds classes, abilities and weapons first.
 
 **Architecture:**
 - Levels are written as ASCII chunk files plus a manifest in `levels-src/`. A Python builder (`tools/build_levels.py`) turns them into Tiled-format JSON in `public/levels/`.
@@ -40,8 +40,8 @@ Loot objects (Lucky Blocks, chests, keys, loot stands, merchant) are placed in t
 - Debug URL params `start`, `section`, `seed`.
 
 **Later:**
-- Loot behavior, the boss weapon drop, keys and chests (M4).
-- The stat pick after a boss and the walk to the village (M6–M7). M3 shows a temporary "Stage clear" screen instead.
+- Loot behavior, the boss weapon drop, keys and chests (M5).
+- The stat pick after a boss and the walk to the village (M7). M3 shows a temporary "Stage clear" screen instead.
 - Personal bests and save data (M7).
 - The real HUD and boss bar art (07).
 - The Dragon, cannons, falling-rock zones, swinging blades, minecart, water and ice (later stages).
@@ -272,7 +272,7 @@ tests/e2e/stage1.spec.ts
     - **Break:** when poise reaches 0, the boss can't act for 2.0 s and takes ×1.25 damage (a step-6 target multiplier). Then 2.0 s of poise immunity.
     - **Enrage** at ≤ 50% HP, with no pause.
     - `bossDefeated {bossId, stage}` on the kill tick. The boss's hit groups and projectiles are removed.
-    - **Loot in M3:** +60 gold (× Rush factor) and flask charges set to max. The weapon drop is a `// SPEC-GAP: boss weapon drop arrives with loot in M4`.
+    - **Loot in M3:** +60 gold (× Rush factor) and flask charges set to max. The weapon drop is a `// SPEC-GAP: boss weapon drop arrives with loot in M5`.
   - **`greatBoar.ts`** (04 §10.1):
     - **Charge:** 380 px/s, 440 when enraged. It doesn't turn and runs until it hits a wall (max 2.0 s).
     - **Wall crash:** dazed 2.0 s (1.4 s enraged) and `shake(4, 0.3)`. When enraged, 3 falling rocks drop at x from `enemyAI` (inside the arena, at least 48 px apart), each with a 0.8 s floor marker.
@@ -418,4 +418,4 @@ Totals: wolf 12, bandit 10, archer 9, boar 9 (40), plus 4 brutes. The validator 
 - `public/levels/plains.json` passes `validateLevel` and `routeLint`.
 - The user has played Stage 1 (or seen every section) and given feedback.
 
-**Next plan:** `M4-loot.md`. Grades and elements, free loot stands, Lucky Blocks, keys and key chests, the cursed chest, the timed chest, coins, the boss weapon drop, and the wandering merchant's items. Written by the design chat after M3.
+**Next plan:** `V1-stage1-sprites-and-sound.md`, then `M4-classes-abilities-weapons-basics.md`. Loot comes after that, in M5.
