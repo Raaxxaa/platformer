@@ -13,6 +13,7 @@ export interface HammerState {
   slot: 0 | 1; x: number; y: number; vx: number; vy: number;
   phase: 'out' | 'back'; t: number;            // ticks in the current phase
   groupId: number; attackInstance: number;
+  traveled: number;                            // the full path, out and back (Eagle Eye)
 }
 
 const rectAt = (x: number, y: number): Rect => ({ x: x - H.size / 2, y: y - H.size / 2, w: H.size, h: H.size });
@@ -46,7 +47,7 @@ export function launchHammer(w: GameWorld, cur: CurrentAttack): void {
   const b = w.body;
   const h: HammerState = {
     slot: cur.slot, x: b.x + b.facing * PROJECTILE_SPAWN.dx, y: b.y + PROJECTILE_SPAWN.dy, vx: b.facing * H.outSpeed, vy: 0,
-    phase: 'out', t: 0, groupId: 0, attackInstance: cur.attackInstance,
+    phase: 'out', t: 0, groupId: 0, attackInstance: cur.attackInstance, traveled: 0,
   };
   w.hammer = h;
   w.hammerLaunchTick[cur.slot] = w.tick;
@@ -96,6 +97,7 @@ export function stepHammer(w: GameWorld): void {
     if (g) g.dir = h.vx >= 0 ? 1 : -1;
     if (Math.hypot(tx - h.x, ty - h.y) <= H.catchDist || h.t >= ticks(H.autoCatchS)) { removeHammer(w, false); return; }
   }
+  h.traveled += Math.hypot(h.x - (prev.x + H.size / 2), h.y - (prev.y + H.size / 2));
   const g = w.hitGroups.find((x) => x.id === h.groupId);
-  if (g) g.rect = sweep(prev, rectAt(h.x, h.y));
+  if (g) { g.rect = sweep(prev, rectAt(h.x, h.y)); g.traveled = h.traveled; }
 }

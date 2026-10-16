@@ -3,6 +3,7 @@ import { cancelEnemyAttack } from '../enemies/attack.ts';
 import type { EnemyState } from '../enemies/enemy.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { BOSS, COMBAT, ENEMY, ticks } from '../tuning.ts';
+import { BOND } from '../../data/classes.ts';
 
 /** Committed: in the Tele or Act of an attack (02 §4.2). */
 export function isCommitted(e: EnemyState): boolean {
@@ -29,7 +30,9 @@ export function damagePoise(w: GameWorld, e: EnemyState, amount: number, heavy: 
   e.poise = 0;
   cancelEnemyAttack(w, e);
   // Bosses Break for a fixed time instead (04 §9.1): heavy hits don't lengthen it.
-  const n = e.def.boss ? ticks(e.def.boss.breakTime) : heavy ? COMBAT.STAGGER_HEAVY_TICKS : COMBAT.STAGGER_TICKS;
+  // Iron Will (03 §5.3) doubles the heavy stagger.
+  const heavyMult = w.classState.bond === 'iron_will' ? BOND.IRON_WILL_STAGGER_MULT : 1;
+  const n = e.def.boss ? ticks(e.def.boss.breakTime) : heavy ? Math.round(COMBAT.STAGGER_HEAVY_TICKS * heavyMult) : COMBAT.STAGGER_TICKS;
   e.control = { type: 'stagger', ticks: n };
   return true;
 }

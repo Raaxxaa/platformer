@@ -10,7 +10,7 @@ import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
 import { addFlaskFill, cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
-import { CAMERA, FLASK, RESTART, RUSH } from '../tuning.ts';
+import { CAMERA, COMBAT, FLASK, RESTART, RUSH } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { isGrounded, pushOut } from '../physics/collide.ts';
@@ -26,6 +26,7 @@ import { vampireTenths } from '../abilities/list/vampire.ts';
 import { hammerOutIn, removeHammer, stepHammer, type HammerState } from '../combat/stormHammer.ts';
 import { clearPlayerProjectiles, clearSpentGroups, stepPlayerProjectiles, type PlayerProjectile } from '../combat/playerProjectiles.ts';
 import { classChanged, computeClassState } from '../classes/classState.ts';
+import { onBondChange, stepBonds } from '../classes/bonds.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
 import { deriveSeed, Rng } from '../rng.ts';
@@ -117,6 +118,14 @@ export class GameWorld {
   classState!: ClassState;
   /** Bonds and hybrids seen this session (06 saves them in M7). */
   readonly discoveredClasses = new Set<BondId | HybridId>();
+  /** 02 §1 hit streak: attack instances that landed, the streak and its last landing tick. */
+  hitStreak = 0;
+  lastLandingTick = -100000;
+  landedInstances = new Set<number>();
+  /** Attack instances whose landing made the streak a multiple of 3 (Blademaster). */
+  streakCrit = new Set<number>();
+  /** HP Iron Will added when it turned on (03 §5.3). */
+  ironWillAddedHP = 0;
   flask!: FlaskState;
   drinking: DrinkState | null = null;
   drinkBufferTicks = 0;
@@ -219,6 +228,11 @@ export class GameWorld {
     this.combat = createPlayerCombat(lo.weapons);
     this.abilities = createAbilityRuntime(lo.abilities);
     this.classState = computeClassState([null, null], [null, null]);
+    this.hitStreak = 0;
+    this.lastLandingTick = -100000;
+    this.landedInstances = new Set();
+    this.streakCrit = new Set();
+    this.ironWillAddedHP = 0;
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
     this.gold = 0;
@@ -272,6 +286,7 @@ export class GameWorld {
     const prev = this.classState;
     const next = computeClassState(this.abilities.slots.map((s) => s?.id ?? null), this.combat.slots.map((s) => s?.weaponId ?? null));
     this.classState = next;
+    onBondChange(this, prev, next);
     if (classChanged(prev, next)) this.events.push({ t: 'classChanged', displayName: next.displayName, bond: next.bond, hybrid: next.hybrid });
     const found = next.bond ?? next.hybrid;
     if (found && !this.discoveredClasses.has(found)) {
@@ -345,6 +360,20 @@ export class GameWorld {
     this.hitGroups = this.hitGroups.filter((g) => g.owner !== 'player');
     this.rush.value = 0;
     this.events.push({ t: 'playerDied', cause });
+  }
+
+  /** 02 §1: an attack instance's first direct hit on an enemy adds 1 to the hit streak. */
+  noteLanding(g: HitGroup): void {
+    if (this.landedInstances.has(g.attackInstance)) return;
+    this.landedInstances.add(g.attackInstance);
+    this.hitStreak += 1;
+    this.lastLandingTick = this.tick;
+    if (this.hitStreak % 3 === 0) this.streakCrit.add(g.attackInstance);
+  }
+
+  /** Unblocked damage to the player resets the hit streak (02 §5.2 step 10). */
+  onPlayerDamaged(): void {
+    this.hitStreak = 0;
   }
 
   /** Hurt pipeline hook: hitstun cancels the attack, charge and drink (02 §5.2 step 7). */
@@ -503,6 +532,8 @@ export class GameWorld {
     stepDrink(this);
     if (this.drinking) this.mods.actionMoveMult = FLASK.MOVE_CAP;
     stepAbilities(this, input);
+    if (this.tick - this.lastLandingTick > COMBAT.HIT_STREAK_TIMEOUT_TICKS) this.hitStreak = 0;
+    stepBonds(this);
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
     this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush))];
     const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);

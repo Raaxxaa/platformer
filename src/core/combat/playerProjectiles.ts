@@ -44,7 +44,7 @@ export function spawnBlast(w: GameWorld, x: number, y: number, size: { w: number
 function explode(w: GameWorld, p: PlayerProjectile): void {
   const m = p.opts.blastMult ?? 1;
   const b = p.def.blast!;
-  spawnBlast(w, p.x, p.y, { w: b.w * m, h: b.h * m }, p.def.hit, p.slot, p.attackInstance, { bonus: p.bonus, projectile: p.id });
+  spawnBlast(w, p.x, p.y, { w: b.w * m, h: b.h * m }, p.def.hit, p.slot, p.attackInstance, { bonus: p.bonus, projectile: p.id, traveled: p.traveled });
 }
 
 /** The projectile goes now; its group is only switched off (hit resolution may be looping over the list) and is
@@ -76,7 +76,7 @@ export function firePlayerProjectile(w: GameWorld, slot: 0 | 1, attackInstance: 
   w.playerProjectiles.push(p);
   const g: HitGroup = {
     id: pid, owner: 'player', kind: 'shot', rect: rectOf(p), spec: def.hit, active: true, lastHitTick: new Map(), hitCount: new Map(),
-    attackInstance, slot, dir: f, projectile: pid, bonus: p.bonus,
+    attackInstance, slot, dir: f, projectile: pid, bonus: p.bonus, traveled: 0,
     contact: def.explodeOnEnemy ? (ww) => { explode(ww, p); removePlayerProjectile(ww, p); g.active = false; return true; } : undefined,
     onHit: (ww, gg, e, info) => {
       opts.onHit?.(ww, gg, e, info);
@@ -107,7 +107,7 @@ export function stepPlayerProjectiles(w: GameWorld): void {
     p.x = nx; p.y = ny;
     if (p.traveled >= p.def.range) { endProjectile(w, p); continue; }
     const g = w.hitGroups.find((h) => h.id === p.groupId);
-    if (g) g.rect = sweep(prev, rectOf(p));
+    if (g) { g.rect = sweep(prev, rectOf(p)); g.traveled = p.traveled; }
   }
 }
 

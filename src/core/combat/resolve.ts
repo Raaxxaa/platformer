@@ -8,7 +8,9 @@ import { COMBAT, ENEMY } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
 import { applyEnemyKnockback, applyLaunch, applyPull, controlOrPoise, damagePoise, isCommitted } from './enemyReactions.ts';
 import { guaranteedCrit, hitBonus, kbDir, targetMult } from './hitMods.ts';
+import { elementOf, lightningChain } from './elements.ts';
 import { hurtPlayer } from './health.ts';
+import { refundDash } from '../player/dash.ts';
 import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
 import { maxStop, meleeHitStopTicks } from './hitStop.ts';
 import { rushGoldMult, rushLevel } from './rush.ts';
@@ -39,8 +41,9 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const isWeapon = g.ability === undefined;
   const inst = g.slot !== undefined ? w.combat.slots[g.slot] : null;
   const matched = isWeapon && g.slot !== undefined && w.classState.weaponMatched[g.slot];
+  w.noteLanding(g);                                         // hit streak first: Blademaster's 3rd landing crits itself
   const crit = guaranteedCrit(w, g, e);
-  const { damage } = playerHitDamage({
+  const { damage, procBase } = playerHitDamage({
     base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: targetMult(w, g, e),
   });
   e.hp -= damage;
@@ -51,6 +54,9 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const killed = e.def.tier !== 'dummy' && e.hp <= 0;
   if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
   w.events.push({ t: 'hit', target: e.id, amount: damage, crit, heavy: !!spec.heavy });
+  // Element on the direct hit (02 §6): Lightning chains to 2 others right away.
+  const el = elementOf(w, g);
+  if (el?.id === 'lightning') lightningChain(w, e, el.level, procBase, (x) => targetMult(w, g, x), (x) => killEnemy(w, x));
   if (spec.heavy) w.shakeLevel('small');
   w.onPlayerLandedHit(g, e);
   // Hit-stop (02 §4.1): melee freezes both, a shot or a multi-hit group only the target.
@@ -130,5 +136,7 @@ export function processDeaths(w: GameWorld): void {
     w.events.push({ t: 'kill', enemyId: e.id, tier });
     if (e.boss) onBossKilled(w, e);
   }
+  // Blademaster (03 §5.2): kills reset the dash; several kills on one tick = one call.
+  if (w.pendingDeaths.length && w.classState.bond === 'blademaster') refundDash(w.body);
   w.pendingDeaths = [];
 }
