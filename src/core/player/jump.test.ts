@@ -221,3 +221,18 @@ function specless() {
   const b = { held: false, pressed: false, released: false };
   return { moveX: 0 as const, moveY: 0 as const, jump: b, dash: b, attack1: b, attack2: b, ability1: b, ability2: b, heal: b, interact: b, restart: b, pause: b };
 }
+
+describe('low box in the air (01 §2.2)', () => {
+  it('a double jump under a low ceiling keeps the 12 × 14 box until the 12 × 28 box fits', () => {
+    // ceiling tile row 20 (bottom y 336); the body hangs in the air with its low box 2 px under it
+    const g = gridFromRects(40, 30, [{ x0: 0, y0: 27, x1: 39, y1: 29, kind: 'solid' }, { x0: 0, y0: 20, x1: 39, y1: 20, kind: 'solid' }]);
+    const sim = new PlayerSim(g, { x: 300, y: 352 });
+    sim.body.h = 14;
+    sim.stepSpec({});
+    expect(sim.body.h).toBe(14);
+    const y0 = sim.body.y;
+    expect(sim.stepSpec({ jump: true })).toContain('doubleJump');
+    expect(sim.body.h).toBe(14);
+    expect(Math.abs(sim.body.y - y0)).toBeLessThanOrEqual(4);   // no push-out jump
+  });
+});

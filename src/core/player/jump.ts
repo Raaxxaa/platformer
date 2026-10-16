@@ -20,7 +20,7 @@ export function jumpBufferActive(b: PlayerBody): boolean {
 function startJump(b: PlayerBody, vy: number, mods: MoveModifiers): void {
   // A jump from a dash or slide keeps its vx and ends it this tick (01 §6.4); the caller emits the end event.
   if (b.state === 'dash' || b.state === 'slide') endDashOrSlide(b, mods);
-  b.h = MOVE.BOX_H;
+  // The box regrows to 12 × 28 in step 10 once it fits (a slide-jump already checked the room).
   b.vy = vy;
   b.jumpCuttable = true;
   b.coyoteValid = false;
