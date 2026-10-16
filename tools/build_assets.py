@@ -9,6 +9,7 @@ sys.path.insert(0, TOOLS)
 
 from art import palette  # noqa: E402
 from art import atlas, build_player  # noqa: E402
+from art.enemies import plains as enemies_plains  # noqa: E402
 
 
 def build(root=ROOT):
@@ -23,6 +24,7 @@ def build(root=ROOT):
     palette.write_json(os.path.join(assets, 'palette.json'))
     anims = []
     anims += build_player.build(assets, preview)
+    anims += enemies_plains.build(assets, preview)
     atlas.write_anims(os.path.join(assets, 'anims.json'), anims)
     return assets
 

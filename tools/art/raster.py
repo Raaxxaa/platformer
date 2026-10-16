@@ -45,7 +45,7 @@ class PartLayer:
     def add_part(self, name, ramp, shift=0):
         """ramp: slot ids dark -> light. shift > 0 makes the part that many shades darker."""
         if shift:
-            ramp = [ramp[max(0, i - shift)] for i in range(len(ramp))]
+            ramp = [ramp[min(len(ramp) - 1, max(0, i - shift))] for i in range(len(ramp))]
         self.index[name] = len(self.parts)
         self.parts.append((name, list(ramp)))
         self.z.append(-1)

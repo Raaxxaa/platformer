@@ -25,13 +25,16 @@ def humanoid_fk(pose, lengths=HUMANOID, feet=(24, 44)):
     hx, hy = pose.get('hipOffset', (0, 0))
     hip = (feet[0] + hx, feet[1] - L['hip'] + hy)
     cdx, cdy = pose.get('chest', (0, 0))
-    chest = (hip[0] + pose.get('lean', 0) + cdx, hip[1] - L['torso'] + cdy)
+    tilt = pose.get('tilt', 0)            # torso rotation about the hip, + = toward the facing
+    up = _seg((0, 0), 180 - tilt, 1)      # unit vector along the spine
+    chest = (hip[0] + pose.get('lean', 0) + cdx + up[0] * L['torso'], hip[1] + cdy + up[1] * L['torso'])
     hdx, hdy = pose.get('head', (0, 0))
-    head = (chest[0] + hdx, chest[1] - L['head'] + hdy)
+    head = (chest[0] + hdx + up[0] * L['head'], chest[1] + hdy + up[1] * L['head'])
     j = {'hip': _pt(hip), 'chest': _pt(chest), 'head': _pt(head)}
     for side in 'FB':
         sd, ed = pose['arm' + side]
-        sh = (chest[0], chest[1] + 1)
+        sd += tilt
+        sh = (chest[0] - up[0], chest[1] - up[1])
         el = _seg(sh, sd, L['upper'])
         ha = _seg(el, sd + ed, L['fore'])
         j['shoulder' + side], j['elbow' + side], j['hand' + side] = _pt(sh), _pt(el), _pt(ha)

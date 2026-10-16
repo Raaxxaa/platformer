@@ -1,5 +1,697 @@
 [
  {
+  "key": "bandit_archer_atk_arrow",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_archer_atk_arrow_00",
+   "bandit_archer_atk_arrow_01",
+   "bandit_archer_atk_arrow_02",
+   "bandit_archer_atk_arrow_03",
+   "bandit_archer_atk_arrow_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bandit_archer_atk_kick",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_archer_atk_kick_00",
+   "bandit_archer_atk_kick_01",
+   "bandit_archer_atk_kick_02",
+   "bandit_archer_atk_kick_03",
+   "bandit_archer_atk_kick_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bandit_archer_death",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_archer_death_00",
+   "bandit_archer_death_01",
+   "bandit_archer_death_02",
+   "bandit_archer_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bandit_archer_hurt",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_archer_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "bandit_archer_idle",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_archer_idle_00",
+   "bandit_archer_idle_01",
+   "bandit_archer_idle_02",
+   "bandit_archer_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "bandit_archer_knockdown",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_archer_knockdown_00",
+   "bandit_archer_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bandit_archer_stagger",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_archer_stagger_00",
+   "bandit_archer_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "bandit_archer_walk",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_archer_walk_00",
+   "bandit_archer_walk_01",
+   "bandit_archer_walk_02",
+   "bandit_archer_walk_03",
+   "bandit_archer_walk_04",
+   "bandit_archer_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "bandit_atk_lunge_stab",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_atk_lunge_stab_00",
+   "bandit_atk_lunge_stab_01",
+   "bandit_atk_lunge_stab_02",
+   "bandit_atk_lunge_stab_03",
+   "bandit_atk_lunge_stab_04",
+   "bandit_atk_lunge_stab_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bandit_atk_slash",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_atk_slash_00",
+   "bandit_atk_slash_01",
+   "bandit_atk_slash_02",
+   "bandit_atk_slash_03",
+   "bandit_atk_slash_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bandit_brute_atk_club_swing",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_brute_atk_club_swing_00",
+   "bandit_brute_atk_club_swing_01",
+   "bandit_brute_atk_club_swing_02",
+   "bandit_brute_atk_club_swing_03",
+   "bandit_brute_atk_club_swing_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bandit_brute_atk_overhead_smash",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_brute_atk_overhead_smash_00",
+   "bandit_brute_atk_overhead_smash_01",
+   "bandit_brute_atk_overhead_smash_02",
+   "bandit_brute_atk_overhead_smash_03",
+   "bandit_brute_atk_overhead_smash_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bandit_brute_death",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_brute_death_00",
+   "bandit_brute_death_01",
+   "bandit_brute_death_02",
+   "bandit_brute_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bandit_brute_hurt",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_brute_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "bandit_brute_idle",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_brute_idle_00",
+   "bandit_brute_idle_01",
+   "bandit_brute_idle_02",
+   "bandit_brute_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "bandit_brute_knockdown",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_brute_knockdown_00",
+   "bandit_brute_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bandit_brute_stagger",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_brute_stagger_00",
+   "bandit_brute_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "bandit_brute_walk",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_brute_walk_00",
+   "bandit_brute_walk_01",
+   "bandit_brute_walk_02",
+   "bandit_brute_walk_03",
+   "bandit_brute_walk_04",
+   "bandit_brute_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "bandit_death",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_death_00",
+   "bandit_death_01",
+   "bandit_death_02",
+   "bandit_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bandit_hurt",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "bandit_idle",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_idle_00",
+   "bandit_idle_01",
+   "bandit_idle_02",
+   "bandit_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "bandit_knockdown",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_knockdown_00",
+   "bandit_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bandit_stagger",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_stagger_00",
+   "bandit_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "bandit_walk",
+  "atlas": "enemies_plains",
+  "frames": [
+   "bandit_walk_00",
+   "bandit_walk_01",
+   "bandit_walk_02",
+   "bandit_walk_03",
+   "bandit_walk_04",
+   "bandit_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "wild_boar_atk_charge",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_atk_charge_00",
+   "wild_boar_atk_charge_01",
+   "wild_boar_atk_charge_02",
+   "wild_boar_atk_charge_03",
+   "wild_boar_atk_charge_04",
+   "wild_boar_atk_charge_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "wild_boar_atk_tusk_jab",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_atk_tusk_jab_00",
+   "wild_boar_atk_tusk_jab_01",
+   "wild_boar_atk_tusk_jab_02",
+   "wild_boar_atk_tusk_jab_03",
+   "wild_boar_atk_tusk_jab_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "wild_boar_dazed",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_dazed_00",
+   "wild_boar_dazed_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "wild_boar_death",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_death_00",
+   "wild_boar_death_01",
+   "wild_boar_death_02",
+   "wild_boar_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "wild_boar_hurt",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wild_boar_idle",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_idle_00",
+   "wild_boar_idle_01",
+   "wild_boar_idle_02",
+   "wild_boar_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "wild_boar_knockdown",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_knockdown_00",
+   "wild_boar_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "wild_boar_skid",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_skid_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wild_boar_stagger",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_stagger_00",
+   "wild_boar_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "wild_boar_walk",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wild_boar_walk_00",
+   "wild_boar_walk_01",
+   "wild_boar_walk_02",
+   "wild_boar_walk_03",
+   "wild_boar_walk_04",
+   "wild_boar_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "wolf_atk_lunge_bite",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wolf_atk_lunge_bite_00",
+   "wolf_atk_lunge_bite_01",
+   "wolf_atk_lunge_bite_02",
+   "wolf_atk_lunge_bite_03",
+   "wolf_atk_lunge_bite_04",
+   "wolf_atk_lunge_bite_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "wolf_atk_snap",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wolf_atk_snap_00",
+   "wolf_atk_snap_01",
+   "wolf_atk_snap_02",
+   "wolf_atk_snap_03",
+   "wolf_atk_snap_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "wolf_death",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wolf_death_00",
+   "wolf_death_01",
+   "wolf_death_02",
+   "wolf_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "wolf_hurt",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wolf_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wolf_idle",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wolf_idle_00",
+   "wolf_idle_01",
+   "wolf_idle_02",
+   "wolf_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "wolf_knockdown",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wolf_knockdown_00",
+   "wolf_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "wolf_stagger",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wolf_stagger_00",
+   "wolf_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "wolf_walk",
+  "atlas": "enemies_plains",
+  "frames": [
+   "wolf_walk_00",
+   "wolf_walk_01",
+   "wolf_walk_02",
+   "wolf_walk_03",
+   "wolf_walk_04",
+   "wolf_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
   "key": "idle",
   "atlas": "player_archer",
   "frames": [
