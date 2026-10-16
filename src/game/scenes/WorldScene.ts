@@ -31,6 +31,7 @@ const DRAW = {
   telegraph: 0xff9a3c, telegraphLast: 0xfff4d0, hurtFlash: 0xffffff, controlled: 0x8a8a8a,
   projectile: 0xffd84a, attackBox: 0xff3030, attackAlpha: 0.4, enemyHurtbox: 0x4080ff,
   hpBack: 0x202020, hpFill: 0xe04040, hpGap: 4, eye: 2, overlay: 0x000000, overlayAlpha: 0.6,
+  playerShot: 0xfff4c8, blast: 0xffa83a, blastAlpha: 0.5, hammer: 0x42d9ff, charge: 0xffd84a,
 } as const;
 
 export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost {
@@ -181,8 +182,20 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       if (this.boxesMode || !this.projViews.hasArt(p.def.id)) g.fillStyle(DRAW.projectile, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
     }
 
+    // Player projectiles, blasts and the thrown Storm Hammer: grey boxes until ART5 (rotated boxes are drawn as their swept box).
+    for (const p of w.playerProjectiles) g.fillStyle(DRAW.playerShot, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
+    for (const id of w.blasts) { const bl = w.hitGroups.find((x) => x.id === id); if (bl) g.fillStyle(DRAW.blast, DRAW.blastAlpha).fillRect(bl.rect.x, bl.rect.y, bl.rect.w, bl.rect.h); }
+    if (w.hammer) g.fillStyle(DRAW.hammer, 1).fillRect(w.hammer.x - 8, w.hammer.y - 8, 16, 16);
+
     const b = w.body;
     const left = b.x - b.w / 2, top = b.y - b.h;
+    // Charge bar (07 §5.5, simplest form): fills over the charge time, white when full.
+    const ch = w.combat.charge;
+    if (ch) {
+      const f = Math.min(1, ch.ticks / Math.max(1, ch.need));
+      g.fillStyle(DRAW.hpBack, 1).fillRect(b.x - 10, top - 6, 20, 2);
+      g.fillStyle(f >= 1 ? 0xffffff : DRAW.charge, 1).fillRect(b.x - 10, top - 6, Math.round(20 * f), 2);
+    }
     this.playerView.setVisible(!this.boxesMode);
     if (this.boxesMode) this.boxes.fillStyle(STATE_COLOR[b.state], 1).fillRect(left, top, b.w, b.h);
     else this.playerView.update(w, this.playerEv);

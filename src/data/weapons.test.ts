@@ -1,13 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { WEAPONS, DIVE } from './weapons.ts';
+import { PLAYER_PROJECTILES } from './playerProjectiles.ts';
 import { playerHitDamage } from '../core/combat/damage.ts';
 import { phaseTicks } from '../core/combat/phases.ts';
 import type { WeaponDef } from '../core/combat/types.ts';
 
 const cycleTicks = (w: WeaponDef, atk = 1) =>
   w.combo.reduce((s, st) => s + phaseTicks(st.startup, atk) + phaseTicks(st.active, atk) + phaseTicks(st.recovery, atk), 0);
+const baseOf = (st: WeaponDef['combo'][number]) => st.hit?.damage ?? st.projectiles!.reduce((s, p) => s + PLAYER_PROJECTILES[p.id]!.hit.damage, 0);
 const matchedDps = (w: WeaponDef) =>
-  w.combo.reduce((s, st) => s + playerHitDamage({ base: st.hit!.damage, grade: 'C', matched: true, isWeapon: true }).damage, 0) / (cycleTicks(w) / 120);
+  w.combo.reduce((s, st) => s + playerHitDamage({ base: baseOf(st), grade: 'C', matched: true, isWeapon: true }).damage, 0) / (cycleTicks(w) / 120);
 
 describe('weapons (02 §10)', () => {
   const gs = WEAPONS.greatsword!, wm = WEAPONS.war_maul!;
@@ -19,6 +21,15 @@ describe('weapons (02 §10)', () => {
     expect(matchedDps(gs)).toBeCloseTo(46.1, 1);
     expect(matchedDps(wm)).toBeCloseTo(45.4, 1);
     for (const w of [gs, wm]) { expect(matchedDps(w)).toBeGreaterThanOrEqual(43); expect(matchedDps(w)).toBeLessThanOrEqual(47); }
+  });
+  it('the M4 weapons match 02 §10.1 C-matched DPS (checklist 3)', () => {
+    const want: Record<string, number> = { katana: 45.3, iron_fists: 45.8, bow: 46.2, crossbow: 45.0, storm_hammer: 45.4, staff: 45.7 };
+    for (const [id, dps] of Object.entries(want)) {
+      const w = WEAPONS[id as keyof typeof WEAPONS]!;
+      expect(matchedDps(w), id).toBeCloseTo(dps, 0);
+      expect(matchedDps(w)).toBeGreaterThanOrEqual(43);
+      expect(matchedDps(w)).toBeLessThanOrEqual(47);
+    }
   });
   it('War Maul step 2 is the heavy smash with box 28,−10,56,20', () => {
     expect(wm.combo[1].hit!.heavy).toBe(true);

@@ -35,6 +35,8 @@ export interface HitGroup {
   noPlayerStop?: boolean;
   /** Overrides the size/elite rules for a control effect (pull target point). */
   pullTo?: { x: number; y: number; speed: number };
+  /** Recomputes the rect after player movement (swept moving attacks). */
+  follow?: (w: GameWorld, g: HitGroup) => void;
 }
 
 /** 02 §2.2: `box` is a center offset from the feet facing right; mirror dx when facing left. */

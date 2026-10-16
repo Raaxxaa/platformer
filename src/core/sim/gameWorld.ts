@@ -21,6 +21,8 @@ import { cloneLoadout, createAbilityRuntime, defaultLoadout, type Loadout } from
 import type { AbilityId, AbilityRuntime, BondId, ClassState, HybridId } from '../abilities/types.ts';
 import { clearAbilityEffects, fillAbilities, onCastCancelMove, onCastHurt, stepAbilities } from '../abilities/abilitySystem.ts';
 import { stepAbilityEntities, type AbilityEntity } from '../abilities/entities.ts';
+import { hammerOutIn, removeHammer, stepHammer, type HammerState } from '../combat/stormHammer.ts';
+import { clearPlayerProjectiles, stepPlayerProjectiles, type PlayerProjectile } from '../combat/playerProjectiles.ts';
 import { classChanged, computeClassState } from '../classes/classState.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
@@ -133,6 +135,12 @@ export class GameWorld {
   enemies: EnemyState[] = [];
   pendingDeaths: EnemyState[] = [];
   projectiles: EnemyProjectile[] = [];
+  playerProjectiles: PlayerProjectile[] = [];
+  /** The thrown Storm Hammer (02 §11) and each slot's last launch tick. */
+  hammer: HammerState | null = null;
+  hammerLaunchTick: [number, number] = [-100000, -100000];
+  /** Blast hit groups: they live for the tick they appear (02 §10.4). */
+  blasts: number[] = [];
   dive: DiveState | null = null;
   lastDashEndTick = -100000;
   lastAttackStartTick = -100000;
@@ -224,6 +232,10 @@ export class GameWorld {
     this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
     this.pendingDeaths = [];
     this.projectiles = [];
+    this.playerProjectiles = [];
+    this.blasts = [];
+    this.hammer = null;
+    this.hammerLaunchTick = [-100000, -100000];
     this.dive = null;
     this.lastDashEndTick = -100000;
     this.lastAttackStartTick = -100000;
@@ -326,6 +338,8 @@ export class GameWorld {
     cancelAttack(this, 'hurt');
     endDive(this);
     clearAbilityEffects(this);
+    clearPlayerProjectiles(this);
+    removeHammer(this, true);
     this.hitGroups = this.hitGroups.filter((g) => g.owner !== 'player');
     this.rush.value = 0;
     this.events.push({ t: 'playerDied', cause });
@@ -475,8 +489,10 @@ export class GameWorld {
     // Wall-clock timers.
     if (this.health.iframeTicks > 0) this.health.iframeTicks -= 1;
     if (this.health.hitstunTicks > 0 && this.body.hitStopTicks === 0) this.health.hitstunTicks -= 1;
+    if (this.health.abilityIframeTicks > 0 && this.body.hitStopTicks === 0) this.health.abilityIframeTicks -= 1;
     // 3. Player actions.
-    this.ctx.slotUsable = [this.combat.slots[0] !== null, this.combat.slots[1] !== null];
+    // A slot whose Storm Hammer is out cannot dive (02 §11).
+    this.ctx.slotUsable = [this.combat.slots[0] !== null && !hammerOutIn(this, 0), this.combat.slots[1] !== null && !hammerOutIn(this, 1)];
     stepPlayerCombat(this, input);
     tryStartDrink(this, input);
     stepDrink(this);
@@ -503,6 +519,8 @@ export class GameWorld {
     separateEnemies(this);
     syncEnemyGroups(this);
     // 6. Moving hit groups and ability entities (world ticks).
+    stepPlayerProjectiles(this);
+    stepHammer(this);
     stepProjectiles(this);
     stepAbilityEntities(this);
     // 7. Hit resolution: player hits first (ties go to the player), then enemy hits.

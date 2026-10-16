@@ -10,11 +10,12 @@ export interface PlayerHealth {
   hp: number; maxHp: number;
   iframeTicks: number;     // hurt i-frames left (wall ticks, counted from the hurt tick)
   hitstunTicks: number;    // hitstun left (pauses during the player's hit-stop)
+  abilityIframeTicks: number;   // 02 "ability i-frames": enemy hits miss, hazards still hit (player ticks)
   dead: boolean; deathCause: string | null;
 }
 
 export function createHealth(): PlayerHealth {
-  return { hp: COMBAT.MAX_HP, maxHp: COMBAT.MAX_HP, iframeTicks: 0, hitstunTicks: 0, dead: false, deathCause: null };
+  return { hp: COMBAT.MAX_HP, maxHp: COMBAT.MAX_HP, iframeTicks: 0, hitstunTicks: 0, abilityIframeTicks: 0, dead: false, deathCause: null };
 }
 
 export type HurtSource =
@@ -36,7 +37,7 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   if (h.dead) return 0;
   // 1. Invulnerability. Hazards only respect hurt i-frames.
   if (h.iframeTicks > 0) return 0;
-  if (src.kind === 'enemyHit' && b.dashIframes) return 0;
+  if (src.kind === 'enemyHit' && (b.dashIframes || h.abilityIframeTicks > 0)) return 0;
   // 2–4. Riposte, parry, block: hooks.
   if (src.kind === 'enemyHit' && (ripostes() || parries() || blocks())) return 0;
   // 5. Damage.
