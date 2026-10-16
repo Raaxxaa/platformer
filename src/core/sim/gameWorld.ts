@@ -31,8 +31,14 @@ import { stepEnemyReactions } from '../combat/enemyReactions.ts';
 import { processDeaths, resolveEnemyHits, resolvePlayerHits } from '../combat/resolve.ts';
 import { endDive, onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
 import type { EnemySpawn } from '../enemies/types.ts';
+import { buildWorldParts, type LevelData, type LevelEnemySpawn, type LevelObject } from '../level/loadLevel.ts';
+import { createRunState, type RunState } from '../run/runState.ts';
+import { fnv1a32 } from '../rng.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
+
+/** Loot objects that are only grey markers until M4. */
+const MARKER_TYPES = new Set(['lucky_block', 'loot_stand', 'key', 'key_chest', 'cursed_chest', 'timed_chest', 'merchant_spot']);
 
 /** 'stage' while playing, 'dead' for the 1 s after death, then 'deathScreen' (06 §6.1). */
 export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
@@ -50,6 +56,13 @@ export type WorldEvent =
 export interface GameWorldOptions {
   grid: TileGrid;
   spawn: { x: number; y: number };
+  facing?: 1 | -1;
+  seedText?: string;
+  level?: LevelData;
+  /** Arena wave spawns, spawned by the arena logic (06 §9.2). */
+  waveSpawns?: LevelEnemySpawn[];
+  /** Loot objects that don't work yet (M4): drawn as markers. */
+  markers?: LevelObject[];
   stage?: Stage;
   runSeed?: number;
   enemies?: EnemySpawn[];
@@ -77,6 +90,10 @@ export class GameWorld {
   gold = 0;
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
   bodies!: Bodies;
+  run!: RunState;
+  readonly level: LevelData | null;
+  readonly waveSpawns: LevelEnemySpawn[];
+  readonly markers: LevelObject[];
   hitGroups: HitGroup[] = [];
   enemies: EnemyState[] = [];
   pendingDeaths: EnemyState[] = [];
@@ -104,8 +121,28 @@ export class GameWorld {
     this.opts = opts;
     this.grid = opts.grid;
     this.stage = opts.stage ?? 1;
-    this.runSeed = opts.runSeed ?? 1;
+    this.runSeed = opts.seedText !== undefined ? fnv1a32(opts.seedText) : opts.runSeed ?? 1;
+    this.level = opts.level ?? null;
+    this.waveSpawns = opts.waveSpawns ?? [];
+    this.markers = opts.markers ?? [];
     this.reset();
+  }
+
+  /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
+  static fromLevel(d: LevelData, opts: { seedText: string }): GameWorld {
+    const parts = buildWorldParts(d);
+    const start = d.objects.find((o) => o.type === 'player_start');
+    if (!start) throw new Error(`level ${d.id} has no player_start`);
+    const bodies: SolidBody[] = parts.bodies.map((b) => ({
+      id: b.id, x: b.x, y: b.y, w: b.w, h: b.h, oneWay: b.oneWay, surface: 'normal', grabbable: b.grabbable, noTeleport: b.noTeleport, active: b.active,
+    }));
+    return new GameWorld({
+      grid: parts.grid, spawn: { x: start.x, y: start.y }, facing: Number(start.props.facing ?? 1) < 0 ? -1 : 1,
+      stage: (d.stage || 1) as Stage, seedText: opts.seedText, level: d, bodies,
+      enemies: parts.spawns.filter((s) => s.wave === 0),
+      waveSpawns: parts.spawns.filter((s) => s.wave > 0),
+      markers: d.objects.filter((o) => MARKER_TYPES.has(o.type)),
+    });
   }
 
   /** A fresh entity or hit-group id. */
@@ -119,6 +156,9 @@ export class GameWorld {
     for (const b of this.opts.bodies ?? []) this.bodies.add({ ...b });
     grid.bodies = this.bodies;
     this.body = createPlayerBody(spawn.x, spawn.y);
+    this.body.facing = this.opts.facing ?? 1;
+    this.run = createRunState(this.opts.seedText ?? '');
+    this.run.runSeed = this.runSeed;
     if (!isGrounded(this.body, grid, 0)) {
       this.body.state = 'air';
       this.body.grounded = false;
