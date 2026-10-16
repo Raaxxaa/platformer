@@ -92,3 +92,22 @@ export const MOVE = {
   LEDGE_ROOM_FORWARD: 14,        // px, and this far onto the ledge
   LEDGE_STAND_OFFSET: 8,         // px, standing spot center past the wall face (01 §10.2)
 } as const;
+
+/** Follow camera (01 §14.1). */
+export const CAMERA = {
+  LOOK_AHEAD_K: 0.35,       // look-ahead target = clamp(vx × 0.35, ±80)
+  LOOK_AHEAD_MAX: 80,
+  LOOK_IDLE_SPEED: 10,      // px/s; below this the target is facing × 24
+  LOOK_IDLE: 24,
+  LOOK_RATE: 240,           // px/s, linear change toward the target
+  FEET_OFFSET: 40,          // feet sit 40 px below the screen center (screen y 220)
+  AIR_UP_SLACK: 80,
+  LOOK_DOWN: 64,            // px, when vy >= 300 or in diveFall
+  LOOK_DOWN_VY: 300,
+  LOOK_DOWN_RATE: 300,      // px/s
+  TAU_X: 0.08,              // s, exponential smoothing time constants
+  TAU_Y: 0.12,
+  MARGIN_X: 64,             // px between the player box and the left/right screen edges
+  MARGIN_Y: 48,             // px between the player box and the top/bottom screen edges
+  SNAP_DIST: 160,           // px, a single-tick player move larger than this snaps
+} as const;

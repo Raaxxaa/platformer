@@ -5,6 +5,7 @@ import { isGrounded } from '../physics/collide.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
+import { createCamera, stepCamera, type CameraState } from '../camera.ts';
 
 /** Held inputs for one tick, the easy way (tests, debug API). */
 export interface InputSpec {
@@ -38,7 +39,7 @@ export class PlayerSim {
   body: PlayerBody;
   mods: MoveModifiers = defaultModifiers();
   ctx: MoveContext = { slotUsable: [true, true] };   // M1 has no weapons; dive slam needs a usable slot
-  camera: { x: number; y: number } = { x: 0, y: 0 };
+  camera: CameraState;
   tick = 0;
   private prevSpec: InputSpec = {};
 
@@ -49,11 +50,14 @@ export class PlayerSim {
       this.body.state = 'air';
       this.body.grounded = false;
     }
+    this.camera = createCamera({ x: 0, y: 0, w: g.widthPx, h: g.heightPx }, this.body);
   }
 
   step(input: InputState): MoveEvent[] {
     this.tick += 1;
-    return stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
+    const events = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
+    stepCamera(this.camera, this.body);
+    return events;
   }
 
   /** Runs `n` ticks holding `spec`; buttons count as pressed only on the first tick (relative to the previous spec). */
