@@ -9,7 +9,8 @@
     "test": "vitest run",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 4173 --strictPort",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build && playwright test",
+    "assets": "python3 tools/build_assets.py"
   },
   "dependencies": { "phaser": "4.2.1" },
   "devDependencies": {
