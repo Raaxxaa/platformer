@@ -17,6 +17,7 @@ import { activateEnemies, spawnEnemy, type EnemyState } from '../enemies/enemy.t
 import { stepEnemyAttack, syncEnemyGroups } from '../enemies/attack.ts';
 import { stepEnemyReactions } from '../combat/enemyReactions.ts';
 import { processDeaths, resolveEnemyHits, resolvePlayerHits } from '../combat/resolve.ts';
+import { onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
 import type { EnemySpawn } from '../enemies/types.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
@@ -58,6 +59,7 @@ export class GameWorld {
   hitGroups: HitGroup[] = [];
   enemies: EnemyState[] = [];
   pendingDeaths: EnemyState[] = [];
+  dive: DiveState | null = null;
   /** Was the player already in hit-stop when this tick started (its melee boxes are frozen)? */
   playerFrozenAtTickStart = false;
   events: WorldEvent[] = [];
@@ -105,6 +107,7 @@ export class GameWorld {
     this.nextId = 1;
     this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
     this.pendingDeaths = [];
+    this.dive = null;
   }
 
   restart(): void {
@@ -122,7 +125,9 @@ export class GameWorld {
   }
 
   /** A player hit group landed a direct hit on an enemy (Rush hooks). */
-  onPlayerLandedHit(_g: HitGroup, _e: EnemyState): void {}
+  onPlayerLandedHit(g: HitGroup, e: EnemyState): void {
+    if (g.attackInstance < 0) onDiveGroupHit(this, g, e.id);
+  }
 
   /** An enemy took player damage: instant awareness (04 §2.4). */
   onEnemyHitByPlayer(e: EnemyState): void {
@@ -170,12 +175,14 @@ export class GameWorld {
     this.ctx.slotUsable = [this.combat.slots[0] !== null, this.combat.slots[1] !== null];
     stepPlayerCombat(this, input);
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
-    for (const e of stepPlayer(this.body, input, this.grid, this.mods, this.ctx)) {
+    const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
+    for (const e of moveEvents) {
       this.events.push({ t: 'move', e });
       if (e === 'dashStart' || e === 'slideStart') cancelAttack(this, 'dash');
       else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') cancelAttack(this, 'jump');
       else if (e === 'diveStart') cancelAttack(this, 'dive');
     }
+    onDiveEvents(this, moveEvents, input);
     syncPlayerGroups(this);
     // 5. Enemy AI and movement.
     activateEnemies(this);
@@ -187,6 +194,7 @@ export class GameWorld {
     resolveEnemyHits(this);
     // 8. Statuses (none in M2). 9. Deaths.
     processDeaths(this);
+    stepDiveImpact(this);
     // 10. Rush and flask.
     stepCamera(this.camera, this.body);
   }
