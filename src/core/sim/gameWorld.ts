@@ -21,6 +21,8 @@ import { deriveSeed, Rng } from '../rng.ts';
 import { activateEnemies, spawnEnemy, type EnemyState } from '../enemies/enemy.ts';
 import { stepEnemyAttack, syncEnemyGroups } from '../enemies/attack.ts';
 import { separateEnemies, stepEnemyBody } from '../enemies/body.ts';
+import { becomeAware, stepAwareness } from '../enemies/awareness.ts';
+import { stepAi } from '../enemies/ai.ts';
 import { stepEnemyReactions } from '../combat/enemyReactions.ts';
 import { processDeaths, resolveEnemyHits, resolvePlayerHits } from '../combat/resolve.ts';
 import { onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
@@ -71,6 +73,9 @@ export class GameWorld {
   dive: DiveState | null = null;
   lastDashEndTick = -100000;
   lastAttackStartTick = -100000;
+  /** Player-side notice multipliers (Thief Silent Steps, 03); 1 by default. */
+  noticeTimeMult = 1;
+  noticeRangeMult = 1;
   private rushedInstances = new Set<number>();
   private dashThrough = new Set<number>();
   /** Was the player already in hit-stop when this tick started (its melee boxes are frozen)? */
@@ -156,7 +161,7 @@ export class GameWorld {
 
   /** An enemy took player damage: instant awareness (04 §2.4). */
   onEnemyHitByPlayer(e: EnemyState): void {
-    e.aware = true;
+    becomeAware(this, e, true);
   }
 
   /** An enemy shot hit the player (projectiles stop). */
@@ -198,8 +203,13 @@ export class GameWorld {
     stepEnemyReactions(e);
     for (const [id, n] of e.ai.cooldowns) if (n > 0) e.ai.cooldowns.set(id, n - 1);
     if (e.ai.gapTicks > 0) e.ai.gapTicks -= 1;
-    if (e.ai.attack && !e.control) stepEnemyAttack(this, e);
-    if (e.control && !e.knockback && e.grounded) e.vx = 0;
+    if (e.control) {
+      if (!e.knockback && e.grounded) e.vx = 0;
+    } else if (!e.knockback) {
+      if (e.ai.attack) stepEnemyAttack(this, e);
+      else stepAi(this, e);
+    }
+    stepAwareness(this, e);
     e.hitWall = false;
     stepEnemyBody(this, e);
   }

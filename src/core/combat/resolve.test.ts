@@ -74,6 +74,7 @@ describe('player hits on enemies (02 §3–4)', () => {
     const w = bandit();
     const e = w.enemies[0];
     e.dormant = false;
+    w.health.iframeTicks = 100000;                          // its counter-attacks don't land (no attacker hit-stop)
     playerHit(w, e, GS.combo[0].hit!);
     expect(e.poise).toBe(5);
     stepSpec(w, {}, 6 + 179);

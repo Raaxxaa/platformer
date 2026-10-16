@@ -26,7 +26,7 @@ export interface AiState {
   patrolDir: 1 | -1;
   patrolWait: number;
   lostTicks: number;               // ticks the player has been beyond loseRange
-  pendingAwareTicks: number;       // alert spread: becomes aware when this reaches 0 (−1 = none)
+  pendingAwareAt: number;          // alert spread: world tick to become aware at (−1 = none)
   backingOff: boolean;             // Wolf: back off after an attack
 }
 
@@ -66,7 +66,7 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
     id: w.newId(), def, x: s.x, y: s.y, remX: 0, remY: 0, vx: 0, vy: 0, facing: s.facing,
     hp: maxHp, maxHp, poise: def.poiseMax, poiseImmuneTicks: 0, noPoiseHitTicks: 0,
     aware: false, noticeT: 0,
-    ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareTicks: -1, backingOff: false },
+    ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false },
     hitStopTicks: 0, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,
     damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0,
