@@ -114,3 +114,89 @@ def build(preview):
     path = os.path.join(preview, 'style_board_plains.png')
     out.save(path)
     return path
+
+
+# ---------------------------------------------------------------- village board (ART3)
+
+def _tint_trim(img, color):
+    """Multiply only the tintable trim grays (#707070, #b0b0b0, #ffffff) by `color`."""
+    a = np.array(img).astype(np.float32)
+    grays = [(0x70, 0x70, 0x70), (0xb0, 0xb0, 0xb0), (0xff, 0xff, 0xff)]
+    m = np.zeros(a.shape[:2], bool)
+    for g in grays:
+        m |= (a[:, :, 0] == g[0]) & (a[:, :, 1] == g[1]) & (a[:, :, 2] == g[2]) & (a[:, :, 3] > 0)
+    for i in range(3):
+        a[:, :, i][m] = a[:, :, i][m] * color[i] / 255.0
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
+def compose_village(which, cam_x=112, cam_y=8):
+    from . import npcs, village as VL
+    W, H = 640, 360
+    set_name = 'village_home' if which == 'home' else 'village_crossroads'
+    scene = Image.new('RGBA', (W, H))
+    for i in range(3):
+        scene.alpha_composite(B.render(set_name, i))
+    world = Image.new('RGBA', (48 * 16, 23 * 16))
+    obj = VL.all_frames()
+    npc, _ = npcs.build_frames()
+
+    def put(img, cx, bottom=VL.FLOOR_Y):
+        world.alpha_composite(img, (int(cx - img.width // 2), int(bottom - img.height)))
+
+    tile = lambda t: t * 16 + 8   # noqa: E731
+    if which == 'home':
+        put(obj['cottage_a_00'], 72)                 # tiles 2–6, left of the statues
+        put(obj['well_00'], tile(31))                # between the dummy and the unlocks board
+        put(obj['cottage_b_00'], 664)                # tiles 39–43, between the seed board and the gate
+    else:
+        world.alpha_composite(obj['market_roof_00'], (7 * 16, VL.FLOOR_Y - obj['market_roof_00'].height))
+        world.alpha_composite(obj['inn_00'], VL.INN_ORIGIN)
+    # floor: plains tiles, rows 20–22, walls at columns 0 and 47
+    sheet = T.build_sheet('plains')
+    g = np.zeros((23, 48), bool)
+    g[20:, :] = True
+    g[:, 0] = g[:, 47] = True
+    idx = T.autotile(g)
+    for y in range(17, 23):
+        for x in range(48):
+            if idx[y, x] >= 0:
+                world.alpha_composite(T.cell_image(sheet, idx[y, x]), (x * 16, y * 16))
+    if which == 'home':
+        put(npc['villager_a_idle_00'], tile(5), VL.FLOOR_Y + 2)
+        put(npc['villager_b_idle_01'], tile(41), VL.FLOOR_Y + 2)
+    else:
+        put(npc['merchant_idle_00'], tile(37.5), VL.FLOOR_Y + 2)
+        put(npc['shopkeeper_wave_01'], tile(17), VL.FLOOR_Y + 2)
+        put(npc['innkeeper_idle_00'], tile(44.6), VL.FLOOR_Y + 2)
+    for frame, tx in VL.LAYOUT[which]:
+        if frame.startswith('training_dummy'):
+            put(VL.dummy_frames()[frame], tx * 16 + 8, VL.FLOOR_Y + 2)
+            continue
+        img = obj[frame]
+        if frame.startswith('ability_altar'):
+            img = _tint_trim(obj['ability_altar_idle_01'], P.CLASS_COLORS['archer' if tx == 19 else 'wizard'])
+        put(img, tx * 16 + 8)
+    if which == 'crossroads':
+        icon = I.greatsword_icon()
+        glow = _tint_white(I.build_frames()['glow_weapon_greatsword'], P.GRADE_COLORS['B'])
+        x, y = tile(9) - 8, VL.FLOOR_Y - 16 - 8 - 16
+        world.alpha_composite(glow, (x - 1, y - 1))
+        world.alpha_composite(icon, (x, y))
+    # the player in the starter look, near the statues / the shop
+    b, ta, tb = render(draw('swordsman', POSES['idle'][0]))
+    col = P.CLASS_COLORS['none']
+    put(V.compose_player(b, ta, tb, col, col), tile(11 if which == 'home' else 7), VL.FLOOR_Y + 2)
+    scene.alpha_composite(world.crop((cam_x, cam_y, cam_x + W, cam_y + H)))
+    return scene
+
+
+def build_villages(preview):
+    top, bottom = compose_village('home'), compose_village('crossroads')
+    out = Image.new('RGBA', (640, 720))
+    out.alpha_composite(top, (0, 0))
+    out.alpha_composite(bottom, (0, 360))
+    out = out.resize((1280, 1440), Image.NEAREST).convert('RGB')
+    path = os.path.join(preview, 'style_board_villages.png')
+    out.save(path)
+    return path

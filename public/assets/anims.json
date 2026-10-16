@@ -257,25 +257,6 @@
   "mode": "speed"
  },
  {
-  "key": "training_dummy_hit",
-  "atlas": "enemies_extra",
-  "frames": [
-   "training_dummy_hit_00",
-   "training_dummy_hit_01",
-   "training_dummy_hit_02"
-  ],
-  "mode": "once",
-  "fps": 20
- },
- {
-  "key": "training_dummy_idle",
-  "atlas": "enemies_extra",
-  "frames": [
-   "training_dummy_idle_00"
-  ],
-  "mode": "once"
- },
- {
   "key": "bandit_archer_atk_arrow",
   "atlas": "enemies_plains",
   "frames": [

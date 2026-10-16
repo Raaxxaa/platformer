@@ -35,6 +35,7 @@ def build(root=ROOT):
     anims += village.build(assets, preview)
     anims += npcs.build(assets, preview)
     style_board.build(preview)
+    style_board.build_villages(preview)
     contrast.write_report(preview)
     sfx_defs.build(os.path.join(assets, 'audio', 'sfx'))
     listen_sheet.build(os.path.join(root, 'docs', 'art'))

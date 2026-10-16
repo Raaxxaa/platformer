@@ -48,6 +48,12 @@ class VillagePropsTest(unittest.TestCase):
             for (a0, a1, fa), (b0, b1, fb) in zip(spans, spans[1:]):
                 self.assertLessEqual(a1, b0, (village, fa, fb))
 
+    def test_lights_pulse_gently(self):
+        # 08 photosensitivity: glows change at most 2 times per second
+        keys = {a['key']: a for a in V.anims()}
+        for k in ('ability_altar_idle', 'gate_idle'):
+            self.assertLessEqual(keys[k]['fps'], 2, k)
+
     def test_props_differ(self):
         keys = [k for k in SIZES if k.endswith('_00')]
         for a, b in itertools.combinations(keys, 2):

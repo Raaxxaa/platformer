@@ -32,4 +32,30 @@ player_archer terrain
 player_archer bg_plains_2
 player_wizard terrain
 player_wizard bg_plains_2
+player_swordsman bg_village_home_2
+player_swordsman bg_village_crossroads_2
+player_tank bg_village_home_1
+player_tank bg_village_crossroads_1
+player_archer bg_village_home_2
+player_archer bg_village_crossroads_2
+player_wizard bg_village_home_2
+player_wizard bg_village_crossroads_2
+shopkeeper bg_village_home_1
+shopkeeper bg_village_home_2
+shopkeeper bg_village_crossroads_1
+shopkeeper bg_village_crossroads_2
+innkeeper bg_village_home_1
+innkeeper bg_village_crossroads_1
+merchant bg_village_home_2
+merchant bg_village_crossroads_2
+villager_a bg_village_home_1
+villager_a bg_village_home_2
+villager_a bg_village_crossroads_1
+villager_a bg_village_crossroads_2
+villager_b bg_village_home_1
+villager_b bg_village_home_2
+villager_b bg_village_crossroads_1
+villager_b bg_village_crossroads_2
 ```
+
+Village lines (the last 24 above) accepted by the user on 2026-10-16 after seeing the draft village board: the villages reuse the Plains tree colors and the NPCs use the `npc` green, and everyone stands out by eye.

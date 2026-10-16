@@ -76,16 +76,34 @@ def surfaces():
     return s
 
 
-def report_lines():
+def village_entities():
+    """The player (starter outfits) and the village NPCs."""
+    from . import npcs
+    out = {k: v for k, v in entities().items() if k.startswith('player_')}
+    fr, _ = npcs.build_frames()
+    for n in npcs.NPCS:
+        out[n] = fr[f'{n}_idle_00']
+    return out
+
+
+def village_surfaces():
+    return {f'bg_{v}_{i}': mean_oklab(B.render(v, i)) for v in ('village_home', 'village_crossroads')
+            for i in range(3)}
+
+
+def _lines(ents, surf):
     ink = P.RAMPS['ink'][0]
-    surf = surfaces()
     lines = []
-    for name, img in entities().items():
+    for name, img in ents.items():
         m = mean_oklab(img, skip=[ink])
         for sname, sm in surf.items():
             d = dist(m, sm)
             lines.append(f'{name} {sname} {d:.3f} {"PASS" if d >= THRESHOLD else "FAIL"}')
     return lines
+
+
+def report_lines():
+    return _lines(entities(), surfaces()) + _lines(village_entities(), village_surfaces())
 
 
 def write_report(preview):

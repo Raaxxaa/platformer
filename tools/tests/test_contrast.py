@@ -19,6 +19,18 @@ class ContrastTest(unittest.TestCase):
         fails = [l for l in lines if l.endswith('FAIL') and ' '.join(l.split()[:2]) not in accepted]
         self.assertEqual(fails, [])
 
+    def test_village_lines(self):
+        lines = contrast.report_lines()
+        people = ['player_swordsman', 'player_tank', 'player_archer', 'player_wizard', 'shopkeeper', 'innkeeper',
+                  'merchant', 'villager_a', 'villager_b']
+        surf = [f'bg_{v}_{i}' for v in ('village_home', 'village_crossroads') for i in range(3)]
+        accepted = contrast.accepted_fails()
+        for e in people:
+            for s in surf:
+                hits = [l for l in lines if l.split()[:2] == [e, s]]
+                self.assertEqual(len(hits), 1, (e, s))
+                self.assertFalse(hits[0].endswith('FAIL') and f'{e} {s}' not in accepted, hits[0])
+
     def test_oklab_known_values(self):
         w = contrast.oklab((255, 255, 255))
         self.assertAlmostEqual(w[0], 1.0, places=3)
