@@ -30,21 +30,25 @@ export function blobIndex(mask: number): number {
 }
 
 export const ONEWAY_COL = TILESET.onewayCols;
+const SPIKE_COL: Partial<Record<string, number>> = TILESET.spikeCols;
 
 function filled(g: TileGrid, tx: number, ty: number): boolean {
   if (tx < 0 || ty < 0 || tx >= g.w || ty >= g.h) return true;
-  return g.isSolidTile(tx, ty);
+  const k = g.baseKindAt(tx, ty);
+  return k === 'solid' || k === 'ice';
 }
 
 export function onewayPiece(g: TileGrid, tx: number, ty: number): number {
-  const l = tx > 0 && g.kindAt(tx - 1, ty) === 'oneway';
-  const r = tx < g.w - 1 && g.kindAt(tx + 1, ty) === 'oneway';
+  const l = tx > 0 && g.baseKindAt(tx - 1, ty) === 'oneway';
+  const r = tx < g.w - 1 && g.baseKindAt(tx + 1, ty) === 'oneway';
   return l && r ? ONEWAY_COL.middle : l ? ONEWAY_COL.right : r ? ONEWAY_COL.left : ONEWAY_COL.single;
 }
 
 /** The tileset index for a terrain cell, or null when the cell draws nothing. */
 export function terrainTile(g: TileGrid, tx: number, ty: number): { index: number } | null {
-  const k = g.kindAt(tx, ty);
+  const k = g.baseKindAt(tx, ty);
+  const spike = SPIKE_COL[k];
+  if (spike !== undefined) return { index: TILESET.onewayRow * TILESET.columns + spike };
   if (k === 'oneway') return { index: TILESET.onewayRow * TILESET.columns + onewayPiece(g, tx, ty) };
   if (k !== 'solid' && k !== 'ice') return null;
   const base = k === 'ice' ? TILESET.iceRow * TILESET.columns : 0;
@@ -67,11 +71,11 @@ export function terrainTile(g: TileGrid, tx: number, ty: number): { index: numbe
 
 /** 08 §9.4 auto-decoration for an empty cell: a tileset index or null. */
 export function decoTile(g: TileGrid, tx: number, ty: number): number | null {
-  if (g.kindAt(tx, ty) !== 'empty') return null;
+  if (g.baseKindAt(tx, ty) !== 'empty') return null;
   const T = TILESET;
-  if (ty + 1 < g.h && g.isSolidTile(tx, ty + 1) && hash2(tx, ty, 3) % 100 < T.topDecoChance)
+  if (ty + 1 < g.h && filled(g, tx, ty + 1) && hash2(tx, ty, 3) % 100 < T.topDecoChance)
     return T.topDecoRow * T.columns + T.topDecoCol + (hash2(tx, ty, 2) % T.topDecoCount);
-  if (ty > 0 && g.isSolidTile(tx, ty - 1) && hash2(tx, ty, 5) % 100 < T.hangDecoChance)
+  if (ty > 0 && filled(g, tx, ty - 1) && hash2(tx, ty, 5) % 100 < T.hangDecoChance)
     return T.hangDecoRow * T.columns + T.hangDecoCol + (hash2(tx, ty, 4) % T.hangDecoCount);
   return null;
 }

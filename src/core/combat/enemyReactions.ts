@@ -2,7 +2,7 @@
 import { cancelEnemyAttack } from '../enemies/attack.ts';
 import type { EnemyState } from '../enemies/enemy.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { COMBAT, ENEMY, ticks } from '../tuning.ts';
+import { BOSS, COMBAT, ENEMY, ticks } from '../tuning.ts';
 
 /** Committed: in the Tele or Act of an attack (02 §4.2). */
 export function isCommitted(e: EnemyState): boolean {
@@ -28,7 +28,9 @@ export function damagePoise(w: GameWorld, e: EnemyState, amount: number, heavy: 
   if (e.poise > 0) return false;
   e.poise = 0;
   cancelEnemyAttack(w, e);
-  e.control = { type: 'stagger', ticks: heavy ? COMBAT.STAGGER_HEAVY_TICKS : COMBAT.STAGGER_TICKS };
+  // Bosses Break for a fixed time instead (04 §9.1): heavy hits don't lengthen it.
+  const n = e.def.boss ? ticks(e.def.boss.breakTime) : heavy ? COMBAT.STAGGER_HEAVY_TICKS : COMBAT.STAGGER_TICKS;
+  e.control = { type: 'stagger', ticks: n };
   return true;
 }
 
@@ -50,6 +52,7 @@ export function stepEnemyReactions(e: EnemyState): void {
       if (wasStagger) {
         e.poise = e.def.poiseMax;
         if (e.def.elite) e.poiseImmuneTicks = COMBAT.ELITE_POISE_IMMUNE_TICKS;
+        else if (e.def.boss) e.poiseImmuneTicks = BOSS.POISE_IMMUNE_TICKS;
       }
     }
   }

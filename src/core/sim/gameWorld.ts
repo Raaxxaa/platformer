@@ -13,7 +13,9 @@ import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDri
 import { CAMERA, FLASK, RESTART, RUSH } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
-import { isGrounded } from '../physics/collide.ts';
+import { isGrounded, pushOut } from '../physics/collide.ts';
+import { Bodies, type SolidBody } from '../physics/bodies.ts';
+import { checkSpikes } from '../hazards/spikes.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
@@ -29,8 +31,20 @@ import { stepEnemyReactions } from '../combat/enemyReactions.ts';
 import { processDeaths, resolveEnemyHits, resolvePlayerHits } from '../combat/resolve.ts';
 import { endDive, onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
 import type { EnemySpawn } from '../enemies/types.ts';
+import { buildWorldParts, type LevelData, type LevelEnemySpawn, type LevelObject } from '../level/loadLevel.ts';
+import { createRunState, type RunState } from '../run/runState.ts';
+import { fnv1a32 } from '../rng.ts';
+import { buildArenas, stepArenas, type ArenaRt } from '../run/arenas.ts';
+import { buildTimedDoors, stepTimedDoors, type TimedDoorRt } from '../run/timedDoors.ts';
+import { stepZones, type HintAction } from '../run/zones.ts';
+import { stepClocks } from '../run/runState.ts';
+import { bossBar, stepBossPhases, type BossBar } from '../enemies/boss.ts';
+import { stepRockfall, type RockMarker } from '../enemies/greatBoar.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
+
+/** Loot objects that are only grey markers until M4. */
+const MARKER_TYPES = new Set(['lucky_block', 'loot_stand', 'key', 'key_chest', 'cursed_chest', 'timed_chest', 'merchant_spot']);
 
 /** 'stage' while playing, 'dead' for the 1 s after death, then 'deathScreen' (06 §6.1). */
 export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
@@ -43,14 +57,30 @@ export type WorldEvent =
   | { t: 'kill'; enemyId: number; tier: 'regular' | 'elite' }
   | { t: 'playerDied'; cause: string }
   | { t: 'healRefused'; reason: HealRefusedReason }
-  | { t: 'drink' };
+  | { t: 'drink' }
+  | { t: 'arenaLocked'; arenaId: string }
+  | { t: 'arenaWave'; arenaId: string; wave: number }
+  | { t: 'arenaCleared'; arenaId: string; clearTicks: number; fast: boolean }
+  | { t: 'timedDoorOpened'; doorId: string }
+  | { t: 'timedDoorMissed'; doorId: string }
+  | { t: 'bossDefeated'; bossId: string; stage: Stage }
+  | { t: 'split'; index: number; runTicks: number; segmentTicks: number; deltaTicks: number | null; bestSegment: boolean };
 
 export interface GameWorldOptions {
   grid: TileGrid;
   spawn: { x: number; y: number };
+  facing?: 1 | -1;
+  seedText?: string;
+  level?: LevelData;
+  /** Arena wave spawns, spawned by the arena logic (06 §9.2). */
+  waveSpawns?: LevelEnemySpawn[];
+  /** Loot objects that don't work yet (M4): drawn as markers. */
+  markers?: LevelObject[];
   stage?: Stage;
   runSeed?: number;
   enemies?: EnemySpawn[];
+  /** Solid bodies at stage load (doors etc.); copied fresh on every restart. */
+  bodies?: SolidBody[];
 }
 
 export class GameWorld {
@@ -69,9 +99,17 @@ export class GameWorld {
   drinkBufferTicks = 0;
   camera!: CameraState;
   tick = 0;
-  runTicks = 0;
   gold = 0;
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
+  bodies!: Bodies;
+  run!: RunState;
+  arenas = new Map<string, ArenaRt>();
+  timedDoors: TimedDoorRt[] = [];
+  activeHint: HintAction | null = null;
+  rockMarkers: RockMarker[] = [];
+  readonly level: LevelData | null;
+  readonly waveSpawns: LevelEnemySpawn[];
+  readonly markers: LevelObject[];
   hitGroups: HitGroup[] = [];
   enemies: EnemyState[] = [];
   pendingDeaths: EnemyState[] = [];
@@ -89,18 +127,34 @@ export class GameWorld {
   events: WorldEvent[] = [];
   phase: WorldPhase = 'stage';
   deathTick = 0;
-  /** Consecutive ticks restart has been held (06 §6.2); survives restarts. */
-  restartHoldTicks = 0;
-  /** After a hold restart the button must be released once before a new hold counts. */
-  restartNeedsRelease = false;
   private nextId = 1;
 
   constructor(opts: GameWorldOptions) {
     this.opts = opts;
     this.grid = opts.grid;
     this.stage = opts.stage ?? 1;
-    this.runSeed = opts.runSeed ?? 1;
+    this.runSeed = opts.seedText !== undefined ? fnv1a32(opts.seedText) : opts.runSeed ?? 1;
+    this.level = opts.level ?? null;
+    this.waveSpawns = opts.waveSpawns ?? [];
+    this.markers = opts.markers ?? [];
     this.reset();
+  }
+
+  /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
+  static fromLevel(d: LevelData, opts: { seedText: string }): GameWorld {
+    const parts = buildWorldParts(d);
+    const start = d.objects.find((o) => o.type === 'player_start');
+    if (!start) throw new Error(`level ${d.id} has no player_start`);
+    const bodies: SolidBody[] = parts.bodies.map((b) => ({
+      id: b.id, x: b.x, y: b.y, w: b.w, h: b.h, oneWay: b.oneWay, surface: 'normal', grabbable: b.grabbable, noTeleport: b.noTeleport, active: b.active,
+    }));
+    return new GameWorld({
+      grid: parts.grid, spawn: { x: start.x, y: start.y }, facing: Number(start.props.facing ?? 1) < 0 ? -1 : 1,
+      stage: (d.stage || 1) as Stage, seedText: opts.seedText, level: d, bodies,
+      enemies: parts.spawns.filter((s) => s.wave === 0),
+      waveSpawns: parts.spawns.filter((s) => s.wave > 0),
+      markers: d.objects.filter((o) => MARKER_TYPES.has(o.type)),
+    });
   }
 
   /** A fresh entity or hit-group id. */
@@ -110,7 +164,17 @@ export class GameWorld {
 
   private reset(): void {
     const { grid, spawn } = this.opts;
+    this.bodies = new Bodies(grid.w, grid.h);
+    for (const b of this.opts.bodies ?? []) this.bodies.add({ ...b });
+    grid.bodies = this.bodies;
     this.body = createPlayerBody(spawn.x, spawn.y);
+    this.body.facing = this.opts.facing ?? 1;
+    // The restart hold survives a restart (06 §6.2: holding through one never restarts twice).
+    const hold = this.run ? { h: this.run.restartHoldTicks, n: this.run.restartNeedsRelease } : { h: 0, n: false };
+    this.run = createRunState(this.opts.seedText ?? '');
+    this.run.runSeed = this.runSeed;
+    this.run.restartHoldTicks = hold.h;
+    this.run.restartNeedsRelease = hold.n;
     if (!isGrounded(this.body, grid, 0)) {
       this.body.state = 'air';
       this.body.grounded = false;
@@ -128,7 +192,6 @@ export class GameWorld {
     ]);
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
-    this.runTicks = 0;
     this.gold = 0;
     this.rng = {
       enemyAI: new Rng(deriveSeed(this.runSeed, 'enemyAI', this.stage)),
@@ -146,12 +209,47 @@ export class GameWorld {
     this.lastAttackStartTick = -100000;
     this.rushedInstances = new Set();
     this.dashThrough = new Set();
+    this.rockMarkers = [];
+    this.arenas = buildArenas(this);
+    this.timedDoors = buildTimedDoors(this);
+    this.activeHint = null;
     this.phase = 'stage';
     this.deathTick = 0;
   }
 
   restart(): void {
     this.reset();
+  }
+
+  /** Run time in ticks (06 §5.1). */
+  get runTicks(): number {
+    return this.run.runTicks;
+  }
+
+  /** The stage boss died (06 §2.5): split 1 on this tick, unless the player died on an earlier tick. */
+  onStageBossDefeated(): void {
+    const r = this.run;
+    if (r.phase === 'dead' && r.deathTick !== this.tick) return;
+    if (r.splits[0] !== null) return;
+    r.splits[0] = r.runTicks;
+    // PB comparison (deltaTicks, bestSegment) arrives with save data in M7.
+    this.events.push({ t: 'split', index: 1, runTicks: r.runTicks, segmentTicks: r.runTicks, deltaTicks: null, bestSegment: false });
+  }
+
+  /** The boss bar while a boss arena is locked (04 §9.4). */
+  get bossBar(): BossBar | null {
+    return bossBar(this);
+  }
+
+  /** Adds a solid body now (tests, debug). */
+  addBody(b: SolidBody): void {
+    this.bodies.add({ ...b });
+  }
+
+  /** Turns a body on or off. A body turning on over the player pushes the player out (01 §13.9, §2.8). */
+  setBodyActive(id: string, on: boolean): void {
+    this.bodies.setActive(id, on);
+    if (on) pushOut(this.body, this.grid);
   }
 
   /** Debug: a fresh player body with its feet at (x, y); everything else stays. */
@@ -177,6 +275,8 @@ export class GameWorld {
   onPlayerDied(cause: string): void {
     this.phase = 'dead';
     this.deathTick = this.tick;
+    this.run.phase = 'dead';
+    this.run.deathTick = this.tick;
     // No ghost hits: every player hit group goes now; Rush resets at death (02 §8.1).
     cancelAttack(this, 'hurt');
     endDive(this);
@@ -226,25 +326,29 @@ export class GameWorld {
   /** Restart rules (06 §6.1–6.2). Returns true when the world restarted this tick. */
   private handleRestart(input: InputState): boolean {
     const r = input.restart;
+    if (this.run.phase === 'stageClear') {          // M3's temporary stage-clear screen: a fresh press runs again
+      if (r.pressed) { this.run.restartNeedsRelease = r.held; this.run.restartHoldTicks = 0; this.restart(); return true; }
+      return false;
+    }
     if (this.phase === 'deathScreen' || this.phase === 'dead') {
       if (r.pressed && this.tick + 1 - this.deathTick >= RESTART.PRESS_AFTER_TICKS) {
-        this.restartNeedsRelease = r.held;
-        this.restartHoldTicks = 0;
+        this.run.restartNeedsRelease = r.held;
+        this.run.restartHoldTicks = 0;
         this.restart();
         return true;
       }
       return false;                               // while dead only a press counts (06 §6.2)
     }
     if (!r.held) {
-      this.restartHoldTicks = 0;
-      this.restartNeedsRelease = false;
+      this.run.restartHoldTicks = 0;
+      this.run.restartNeedsRelease = false;
       return false;
     }
-    if (this.restartNeedsRelease) return false;
-    this.restartHoldTicks += 1;
-    if (this.restartHoldTicks >= RESTART.HOLD_TICKS) {
-      this.restartHoldTicks = 0;
-      this.restartNeedsRelease = true;
+    if (this.run.restartNeedsRelease) return false;
+    this.run.restartHoldTicks += 1;
+    if (this.run.restartHoldTicks >= RESTART.HOLD_TICKS) {
+      this.run.restartHoldTicks = 0;
+      this.run.restartNeedsRelease = true;
       this.restart();
       return true;
     }
@@ -284,7 +388,19 @@ export class GameWorld {
       e.hitStopTicks -= 1;
       return;
     }
+    if (e.spawnInTicks > 0) {                 // spawn-in: cannot act (04 §2.2)
+      e.spawnInTicks -= 1;
+      e.vx = 0;
+      stepEnemyBody(this, e);
+      return;
+    }
     stepEnemyReactions(e);
+    if (e.boss && e.boss.introTicks > 0) {      // boss intro: takes damage, doesn't act (04 §9.2)
+      e.boss.introTicks -= 1;
+      if (!e.knockback) e.vx = 0;
+      stepEnemyBody(this, e);
+      return;
+    }
     for (const [id, n] of e.ai.cooldowns) if (n > 0) e.ai.cooldowns.set(id, n - 1);
     if (e.ai.gapTicks > 0) e.ai.gapTicks -= 1;
     if (e.control) {
@@ -302,13 +418,13 @@ export class GameWorld {
   step(rawInput: InputState): void {
     this.events = [];
     if (this.handleRestart(rawInput)) return;
-    if (this.phase === 'deathScreen') return;
+    if (this.phase === 'deathScreen' || this.run.phase === 'stageClear') return;   // frozen; clocks stopped
     // A dead player takes no input; the world keeps running around them.
     const input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
+    stepClocks(this.run);
     this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
     for (const e of this.enemies) e.frozenAtTickStart = e.hitStopTicks > 0;
-    if (!this.health.dead) this.runTicks += 1;
     // Wall-clock timers.
     if (this.health.iframeTicks > 0) this.health.iframeTicks -= 1;
     if (this.health.hitstunTicks > 0 && this.body.hitStopTicks === 0) this.health.hitstunTicks -= 1;
@@ -321,6 +437,7 @@ export class GameWorld {
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
     this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush))];
     const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
+    if (checkSpikes(this)) moveEvents.push('spikeHit');   // 01 §3 step 9
     for (const e of moveEvents) {
       this.events.push({ t: 'move', e });
       if (e === 'dashStart' || e === 'slideStart') { cancelAttack(this, 'dash'); cancelDrink(this); }
@@ -331,7 +448,8 @@ export class GameWorld {
     if (moveEvents.includes('dashEnd')) this.lastDashEndTick = this.tick;
     onDiveEvents(this, moveEvents, input);
     syncPlayerGroups(this);
-    // 5. Enemy AI and movement.
+    // 5. Enemy AI and movement; hazard timers (06 §2.8: rock markers).
+    stepRockfall(this);
     activateEnemies(this);
     for (const e of [...this.enemies].sort((a, b) => a.id - b.id)) this.stepEnemy(e);
     separateEnemies(this);
@@ -343,11 +461,15 @@ export class GameWorld {
     resolveEnemyHits(this);
     // 8. Statuses (none in M2). 9. Deaths.
     processDeaths(this);
+    stepBossPhases(this);
     stepDiveImpact(this);
     this.dashThroughRush();
     stepRush(this);
     stepFlask(this);
-    // 10. Rush and flask.
+    // 10. Rush and flask. 11. Level logic (06 §2.8).
+    stepTimedDoors(this);
+    stepZones(this);
+    stepArenas(this);
     stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());
     if (this.phase === 'dead' && this.tick - this.deathTick >= RESTART.DEATH_SIM_TICKS) this.phase = 'deathScreen';
   }

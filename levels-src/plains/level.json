@@ -1,0 +1,759 @@
+{
+ "levelId": "plains",
+ "kind": "stage",
+ "stage": 1,
+ "biome": "plains",
+ "width": 627,
+ "height": 64,
+ "chunks": [
+  {
+   "file": "s1.txt",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "file": "s2.txt",
+   "x": 36,
+   "y": 0
+  },
+  {
+   "file": "s3.txt",
+   "x": 146,
+   "y": 0
+  },
+  {
+   "file": "s4.txt",
+   "x": 241,
+   "y": 0
+  },
+  {
+   "file": "s5.txt",
+   "x": 345,
+   "y": 0
+  },
+  {
+   "file": "s6.txt",
+   "x": 390,
+   "y": 0
+  },
+  {
+   "file": "s7.txt",
+   "x": 491,
+   "y": 0
+  },
+  {
+   "file": "s8.txt",
+   "x": 571,
+   "y": 0
+  }
+ ],
+ "legend": {
+  "S": {
+   "type": "loot_stand",
+   "kind": "weapon"
+  },
+  "s": {
+   "type": "loot_stand",
+   "kind": "ability"
+  },
+  "g": {
+   "type": "guide_arrow",
+   "angle": 0.0
+  },
+  "T": {
+   "type": "timed_chest",
+   "door": "td1"
+  },
+  "b": {
+   "type": "enemy",
+   "enemy": "bandit",
+   "facing": -1
+  },
+  "r": {
+   "type": "enemy",
+   "enemy": "bandit_archer",
+   "facing": -1
+  },
+  "o": {
+   "type": "enemy",
+   "enemy": "wild_boar",
+   "facing": -1
+  },
+  "B": {
+   "type": "enemy",
+   "enemy": "bandit_brute",
+   "facing": -1
+  },
+  "1": {
+   "type": "enemy",
+   "enemy": "wolf",
+   "facing": -1,
+   "group": "p1"
+  },
+  "2": {
+   "type": "enemy",
+   "enemy": "wolf",
+   "facing": -1,
+   "group": "p2"
+  },
+  "3": {
+   "type": "enemy",
+   "enemy": "wolf",
+   "facing": -1,
+   "group": "p3"
+  },
+  "6": {
+   "type": "enemy",
+   "enemy": "wolf",
+   "facing": -1,
+   "group": "p6"
+  },
+  "4": {
+   "type": "enemy",
+   "enemy": "wolf",
+   "facing": -1,
+   "group": "pa",
+   "wave": 1,
+   "arena": "a1"
+  },
+  "x": {
+   "type": "enemy",
+   "enemy": "bandit",
+   "facing": -1,
+   "wave": 1,
+   "arena": "a1"
+  },
+  "X": {
+   "type": "enemy",
+   "enemy": "bandit",
+   "facing": -1,
+   "wave": 2,
+   "arena": "a1"
+  },
+  "y": {
+   "type": "enemy",
+   "enemy": "bandit_archer",
+   "facing": -1,
+   "wave": 2,
+   "arena": "a1"
+  },
+  "z": {
+   "type": "enemy",
+   "enemy": "wild_boar",
+   "facing": -1,
+   "wave": 2,
+   "arena": "a1"
+  },
+  "Z": {
+   "type": "enemy",
+   "enemy": "bandit_brute",
+   "facing": -1,
+   "wave": 2,
+   "arena": "a1"
+  }
+ },
+ "objects": [
+  {
+   "type": "hint",
+   "x": 1,
+   "y": 34,
+   "w": 8,
+   "h": 4,
+   "props": {
+    "action": "move"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 9,
+   "y": 34,
+   "w": 5,
+   "h": 4,
+   "props": {
+    "action": "jump"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 22,
+   "y": 34,
+   "w": 6,
+   "h": 4,
+   "props": {
+    "action": "interact"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 30,
+   "y": 34,
+   "w": 6,
+   "h": 4,
+   "props": {
+    "action": "attack"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 37,
+   "y": 34,
+   "w": 7,
+   "h": 4,
+   "props": {
+    "action": "dash"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 65,
+   "y": 32,
+   "w": 8,
+   "h": 4,
+   "props": {
+    "action": "lucky_block"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 147,
+   "y": 30,
+   "w": 7,
+   "h": 8,
+   "props": {
+    "action": "double_jump"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 182,
+   "y": 44,
+   "w": 9,
+   "h": 4,
+   "props": {
+    "action": "wall_jump"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 206,
+   "y": 35,
+   "w": 5,
+   "h": 3,
+   "props": {
+    "action": "slide"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 244,
+   "y": 34,
+   "w": 5,
+   "h": 4,
+   "props": {
+    "action": "dive_slam"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 345,
+   "y": 34,
+   "w": 3,
+   "h": 4,
+   "props": {
+    "action": "heal"
+   }
+  },
+  {
+   "type": "arena",
+   "x": 349,
+   "y": 20,
+   "w": 38,
+   "h": 18,
+   "props": {
+    "id": "a1",
+    "kind": "combat"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 348,
+   "y": 35,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "a1",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 387,
+   "y": 35,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "a1",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "hint",
+   "x": 417,
+   "y": 23,
+   "w": 7,
+   "h": 3,
+   "props": {
+    "action": "drop_through"
+   }
+  },
+  {
+   "type": "timed_door",
+   "x": 537,
+   "y": 35,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "id": "td1",
+    "side": "right",
+    "timeLimit": 120.0
+   }
+  },
+  {
+   "type": "arena",
+   "x": 573,
+   "y": 24,
+   "w": 36,
+   "h": 14,
+   "props": {
+    "id": "boss1",
+    "kind": "boss",
+    "boss": "great_boar",
+    "entry": "left"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 572,
+   "y": 35,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "boss1",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 609,
+   "y": 35,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "boss1",
+    "role": "exit"
+   }
+  },
+  {
+   "type": "exit",
+   "x": 623,
+   "y": 34,
+   "w": 3,
+   "h": 4,
+   "props": {}
+  },
+  {
+   "type": "section",
+   "x": 0,
+   "y": 0,
+   "w": 36,
+   "h": 64,
+   "props": {
+    "index": 1
+   }
+  },
+  {
+   "type": "section",
+   "x": 36,
+   "y": 0,
+   "w": 110,
+   "h": 64,
+   "props": {
+    "index": 2
+   }
+  },
+  {
+   "type": "section",
+   "x": 146,
+   "y": 0,
+   "w": 95,
+   "h": 64,
+   "props": {
+    "index": 3
+   }
+  },
+  {
+   "type": "section",
+   "x": 241,
+   "y": 0,
+   "w": 104,
+   "h": 64,
+   "props": {
+    "index": 4
+   }
+  },
+  {
+   "type": "section",
+   "x": 345,
+   "y": 0,
+   "w": 45,
+   "h": 64,
+   "props": {
+    "index": 5
+   }
+  },
+  {
+   "type": "section",
+   "x": 390,
+   "y": 0,
+   "w": 101,
+   "h": 64,
+   "props": {
+    "index": 6
+   }
+  },
+  {
+   "type": "section",
+   "x": 491,
+   "y": 0,
+   "w": 80,
+   "h": 64,
+   "props": {
+    "index": 7
+   }
+  },
+  {
+   "type": "section",
+   "x": 571,
+   "y": 0,
+   "w": 56,
+   "h": 64,
+   "props": {
+    "index": 8
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   3,
+   37
+  ],
+  [
+   12,
+   37
+  ],
+  [
+   14,
+   35
+  ],
+  [
+   18,
+   35
+  ],
+  [
+   20,
+   37
+  ],
+  [
+   35,
+   37
+  ],
+  [
+   43,
+   37
+  ],
+  [
+   60,
+   37
+  ],
+  [
+   64,
+   35
+  ],
+  [
+   73,
+   35
+  ],
+  [
+   75,
+   37
+  ],
+  [
+   94,
+   37
+  ],
+  [
+   97,
+   37
+  ],
+  [
+   111,
+   37
+  ],
+  [
+   113,
+   34
+  ],
+  [
+   118,
+   34
+  ],
+  [
+   123,
+   37
+  ],
+  [
+   125,
+   35
+  ],
+  [
+   128,
+   35
+  ],
+  [
+   130,
+   37
+  ],
+  [
+   145,
+   37
+  ],
+  [
+   153,
+   37
+  ],
+  [
+   155,
+   31
+  ],
+  [
+   160,
+   31
+  ],
+  [
+   162,
+   37
+  ],
+  [
+   165,
+   37
+  ],
+  [
+   169,
+   32
+  ],
+  [
+   173,
+   32
+  ],
+  [
+   175,
+   47
+  ],
+  [
+   188,
+   47
+  ],
+  [
+   187,
+   42
+  ],
+  [
+   191,
+   37
+  ],
+  [
+   210,
+   37
+  ],
+  [
+   214,
+   37
+  ],
+  [
+   218,
+   37
+  ],
+  [
+   231,
+   37
+  ],
+  [
+   233,
+   35
+  ],
+  [
+   236,
+   37
+  ],
+  [
+   240,
+   37
+  ],
+  [
+   248,
+   37
+  ],
+  [
+   253,
+   37
+  ],
+  [
+   317,
+   37
+  ],
+  [
+   320,
+   37
+  ],
+  [
+   344,
+   37
+  ],
+  [
+   347,
+   37
+  ],
+  [
+   367,
+   37
+  ],
+  [
+   389,
+   37
+  ],
+  [
+   393,
+   37
+  ],
+  [
+   395,
+   34
+  ],
+  [
+   402,
+   31
+  ],
+  [
+   408,
+   28
+  ],
+  [
+   414,
+   25
+  ],
+  [
+   421,
+   25
+  ],
+  [
+   421,
+   31
+  ],
+  [
+   428,
+   31
+  ],
+  [
+   432,
+   28
+  ],
+  [
+   441,
+   28
+  ],
+  [
+   446,
+   25
+  ],
+  [
+   448,
+   25
+  ],
+  [
+   452,
+   25
+  ],
+  [
+   456,
+   25
+  ],
+  [
+   457,
+   37
+  ],
+  [
+   461,
+   37
+  ],
+  [
+   464,
+   37
+  ],
+  [
+   467,
+   24
+  ],
+  [
+   470,
+   24
+  ],
+  [
+   472,
+   37
+  ],
+  [
+   490,
+   37
+  ],
+  [
+   521,
+   37
+  ],
+  [
+   523,
+   34
+  ],
+  [
+   527,
+   30
+  ],
+  [
+   536,
+   30
+  ],
+  [
+   539,
+   37
+  ],
+  [
+   570,
+   37
+  ],
+  [
+   571,
+   37
+  ],
+  [
+   590,
+   37
+  ],
+  [
+   610,
+   37
+  ],
+  [
+   624,
+   37
+  ]
+ ]
+}

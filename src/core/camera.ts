@@ -1,5 +1,5 @@
 // Follow camera: look-ahead, air slack, fall look-down, smoothing, margins, bounds (01 §14).
-// M1 covers §14.1–14.3 snapping; camera zones, the bounds blend and shake come later.
+// Camera zones blend the clamp rectangle over 0.4 s (§14.3); shake is §14.4.
 import { approach } from './math.ts';
 import type { PlayerBody } from './player/body.ts';
 import { CAMERA, TICK, VIEW_H, VIEW_W } from './tuning.ts';
@@ -12,7 +12,10 @@ export interface CameraState {
   anchorY: number;           // feet height the camera follows vertically
   lookX: number;             // horizontal look-ahead, px
   lookDown: number;          // fall look-down, px
-  bounds: CameraBounds;
+  bounds: CameraBounds;               // the clamp rectangle in use (blended)
+  target: CameraBounds;               // the active bounds it blends toward
+  blendFrom: CameraBounds;
+  blendTicks: number;                 // ticks into the blend (BOUNDS_BLEND_TICKS = done)
   lastPx: number; lastPy: number;   // player position last tick, for the snap distance
   shakes: { amplitude: number; remaining: number; duration: number }[];
   shakeX: number; shakeY: number;   // offset added after clamping (01 §14.4)
@@ -53,6 +56,8 @@ function finish(c: CameraState, b: PlayerBody): void {
 
 /** Places the camera on the player with no smoothing; look-ahead and look-down reset (01 §14.3). */
 export function snapCamera(c: CameraState, b: PlayerBody): void {
+  c.bounds = { ...c.target };
+  c.blendTicks = CAMERA.BOUNDS_BLEND_TICKS;
   c.anchorY = b.y;
   c.lookX = 0;
   c.lookDown = 0;
@@ -63,9 +68,27 @@ export function snapCamera(c: CameraState, b: PlayerBody): void {
 
 export function createCamera(bounds: CameraBounds, b: PlayerBody): CameraState {
   const c: CameraState = { x: 0, y: 0, cx: 0, cy: 0, anchorY: b.y, lookX: 0, lookDown: 0, bounds: { ...bounds }, lastPx: b.x, lastPy: b.y,
+    target: { ...bounds }, blendFrom: { ...bounds }, blendTicks: CAMERA.BOUNDS_BLEND_TICKS,
     shakes: [], shakeX: 0, shakeY: 0, shakeEnabled: true };
   snapCamera(c, b);
   return c;
+}
+
+/** Sets the active bounds (level rectangle or a camera zone); each edge then moves linearly over 0.4 s (01 §14.3). */
+export function setCameraBounds(c: CameraState, t: CameraBounds): void {
+  if (t.x === c.target.x && t.y === c.target.y && t.w === c.target.w && t.h === c.target.h) return;
+  c.blendFrom = { ...c.bounds };
+  c.target = { ...t };
+  c.blendTicks = 0;
+}
+
+function stepBoundsBlend(c: CameraState): void {
+  if (c.blendTicks >= CAMERA.BOUNDS_BLEND_TICKS) { c.bounds = { ...c.target }; return; }
+  c.blendTicks += 1;
+  const k = c.blendTicks / CAMERA.BOUNDS_BLEND_TICKS, f = c.blendFrom, t = c.target;
+  const x0 = f.x + (t.x - f.x) * k, y0 = f.y + (t.y - f.y) * k;
+  const x1 = f.x + f.w + (t.x + t.w - f.x - f.w) * k, y1 = f.y + f.h + (t.y + t.h - f.y - f.h) * k;
+  c.bounds = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
 
 /** camera.shake(amplitude, seconds) (01 §14.4). */
@@ -98,6 +121,7 @@ function stepShake(c: CameraState, rand: () => number): void {
 /** One camera tick, after the player's (01 §14.2). `rand` is the `cosmetic` stream (shake only). */
 export function stepCamera(c: CameraState, b: PlayerBody, rand: () => number = () => 0.5): void {
   stepShake(c, rand);
+  stepBoundsBlend(c);
   if (Math.hypot(b.x - c.lastPx, b.y - c.lastPy) > CAMERA.SNAP_DIST) {
     snapCamera(c, b);
     return;

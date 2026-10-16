@@ -2,6 +2,7 @@
 import { enemyCenter, enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { roundHalfUp } from '../math.ts';
+import { onBossKilled } from '../enemies/boss.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, ENEMY } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
@@ -18,14 +19,26 @@ export function playerRect(w: GameWorld): Rect {
 }
 
 function hittable(e: EnemyState): boolean {
-  return !e.dead && !e.dormant;
+  return !e.dead && !e.dormant && e.spawnInTicks === 0;
+}
+
+/** An enemy reaches 0 HP: it dies, its attack and boxes go, and step 9 runs its on-kill effects. */
+export function killEnemy(w: GameWorld, e: EnemyState): void {
+  e.hp = 0;
+  e.dead = true;
+  e.deathTicks = ENEMY.DEATH_ANIM_TICKS;
+  cancelEnemyAttack(w, e);
+  removeEnemyGroups(w, e);
+  w.pendingDeaths.push(e);
 }
 
 /** One player direct hit on one enemy (02 §3.1, §4). */
 function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const spec = g.spec;
   const grade = g.slot !== undefined ? w.combat.slots[g.slot]?.grade ?? 'C' : 'C';
-  const { damage } = playerHitDamage({ base: spec.damage, grade, matched: false, isWeapon: true });
+  // A broken boss takes its break multiplier (04 §9.1, a step-6 target multiplier).
+  const targetMult = e.def.boss && e.control?.type === 'stagger' ? e.def.boss.breakMult : 1;
+  const { damage } = playerHitDamage({ base: spec.damage, grade, matched: false, isWeapon: true, targetMult });
   e.hp -= damage;
   e.lastPlayerHitTick = w.tick;
   e.damagedTicks = 0;
@@ -41,12 +54,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   e.hitStopTicks = maxStop(e.hitStopTicks, stop);
   if (g.kind === 'melee' && !spec.multiHit) w.body.hitStopTicks = maxStop(w.body.hitStopTicks, stop);
   if (killed) {
-    e.hp = 0;
-    e.dead = true;
-    e.deathTicks = ENEMY.DEATH_ANIM_TICKS;
-    cancelEnemyAttack(w, e);
-    removeEnemyGroups(w, e);
-    w.pendingDeaths.push(e);
+    killEnemy(w, e);
     return;
   }
   // Poise and stagger, then knockback (full if staggered; ignored if committed otherwise).
@@ -104,9 +112,10 @@ export function processDeaths(w: GameWorld): void {
   for (const e of w.pendingDeaths) {
     const tier = e.def.elite ? 'elite' : 'regular';
     w.onPlayerKill(e, tier);
-    // SPEC-GAP: M2 credits gold instantly; coins in M4
+    // SPEC-GAP: M2 credits gold instantly; coins in M5
     w.gold += roundHalfUp(e.def.gold * rushGoldMult(rushLevel(w.rush)));
     w.events.push({ t: 'kill', enemyId: e.id, tier });
+    if (e.boss) onBossKilled(w, e);
   }
   w.pendingDeaths = [];
 }

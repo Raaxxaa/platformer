@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 async function boot(page: Page) {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1');
+  await page.goto('/?debug=1&scene=combat');
   await page.waitForFunction(() => (window as any).__game?.ready === true);
   await page.evaluate(() => (window as any).__game.setManual(true));
   return errors;

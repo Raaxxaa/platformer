@@ -1,0 +1,400 @@
+{
+ "compressionlevel": -1,
+ "height": 10,
+ "infinite": false,
+ "layers": [
+  {
+   "data": [
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,1,1,5,5,1,1,1,1,2,2,2,2,2,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+],
+   "height": 10,
+   "id": 1,
+   "name": "collision",
+   "opacity": 1,
+   "type": "tilelayer",
+   "visible": true,
+   "width": 24,
+   "x": 0,
+   "y": 0
+  },
+  {
+   "draworder": "topdown",
+   "id": 2,
+   "name": "zones",
+   "objects": [
+    {
+     "height": 96,
+     "id": 7,
+     "name": "",
+     "properties": [
+      {
+       "name": "id",
+       "type": "string",
+       "value": "a1"
+      },
+      {
+       "name": "kind",
+       "type": "string",
+       "value": "combat"
+      }
+     ],
+     "rotation": 0,
+     "type": "arena",
+     "visible": true,
+     "width": 96,
+     "x": 256,
+     "y": 32
+    },
+    {
+     "height": 160,
+     "id": 11,
+     "name": "",
+     "properties": [
+      {
+       "name": "index",
+       "type": "int",
+       "value": 1
+      }
+     ],
+     "rotation": 0,
+     "type": "section",
+     "visible": true,
+     "width": 192,
+     "x": 0,
+     "y": 0
+    },
+    {
+     "height": 48,
+     "id": 12,
+     "name": "",
+     "properties": [
+      {
+       "name": "action",
+       "type": "string",
+       "value": "jump"
+      }
+     ],
+     "rotation": 0,
+     "type": "hint",
+     "visible": true,
+     "width": 48,
+     "x": 32,
+     "y": 80
+    },
+    {
+     "height": 48,
+     "id": 13,
+     "name": "",
+     "properties": [],
+     "rotation": 0,
+     "type": "exit",
+     "visible": true,
+     "width": 16,
+     "x": 368,
+     "y": 80
+    },
+    {
+     "height": 0,
+     "id": 14,
+     "name": "",
+     "polyline": [
+      {
+       "x": 0,
+       "y": 0
+      },
+      {
+       "x": 112,
+       "y": 0
+      },
+      {
+       "x": 304,
+       "y": 0
+      }
+     ],
+     "properties": [],
+     "rotation": 0,
+     "type": "main_path",
+     "visible": true,
+     "width": 0,
+     "x": 24,
+     "y": 120
+    }
+   ],
+   "opacity": 1,
+   "type": "objectgroup",
+   "visible": true,
+   "x": 0,
+   "y": 0
+  },
+  {
+   "draworder": "topdown",
+   "id": 3,
+   "name": "objects",
+   "objects": [
+    {
+     "height": 0,
+     "id": 1,
+     "name": "",
+     "point": true,
+     "properties": [],
+     "rotation": 0,
+     "type": "lucky_block",
+     "visible": true,
+     "width": 0,
+     "x": 72,
+     "y": 104
+    },
+    {
+     "height": 0,
+     "id": 2,
+     "name": "",
+     "point": true,
+     "properties": [],
+     "rotation": 0,
+     "type": "key",
+     "visible": true,
+     "width": 0,
+     "x": 200,
+     "y": 104
+    },
+    {
+     "height": 0,
+     "id": 3,
+     "name": "",
+     "point": true,
+     "properties": [],
+     "rotation": 0,
+     "type": "player_start",
+     "visible": true,
+     "width": 0,
+     "x": 24,
+     "y": 128
+    },
+    {
+     "height": 0,
+     "id": 5,
+     "name": "",
+     "point": true,
+     "properties": [
+      {
+       "name": "door",
+       "type": "string",
+       "value": "td1"
+      }
+     ],
+     "rotation": 0,
+     "type": "timed_chest",
+     "visible": true,
+     "width": 0,
+     "x": 184,
+     "y": 128
+    },
+    {
+     "height": 48,
+     "id": 8,
+     "name": "",
+     "properties": [
+      {
+       "name": "arena",
+       "type": "string",
+       "value": "a1"
+      },
+      {
+       "name": "role",
+       "type": "string",
+       "value": "entry"
+      }
+     ],
+     "rotation": 0,
+     "type": "arena_door",
+     "visible": true,
+     "width": 16,
+     "x": 240,
+     "y": 80
+    },
+    {
+     "height": 48,
+     "id": 9,
+     "name": "",
+     "properties": [
+      {
+       "name": "arena",
+       "type": "string",
+       "value": "a1"
+      },
+      {
+       "name": "role",
+       "type": "string",
+       "value": "entry"
+      }
+     ],
+     "rotation": 0,
+     "type": "arena_door",
+     "visible": true,
+     "width": 16,
+     "x": 352,
+     "y": 80
+    },
+    {
+     "height": 48,
+     "id": 10,
+     "name": "",
+     "properties": [
+      {
+       "name": "id",
+       "type": "string",
+       "value": "td1"
+      },
+      {
+       "name": "side",
+       "type": "string",
+       "value": "left"
+      },
+      {
+       "name": "timeLimit",
+       "type": "float",
+       "value": 120.0
+      }
+     ],
+     "rotation": 0,
+     "type": "timed_door",
+     "visible": true,
+     "width": 16,
+     "x": 160,
+     "y": 80
+    }
+   ],
+   "opacity": 1,
+   "type": "objectgroup",
+   "visible": true,
+   "x": 0,
+   "y": 0
+  },
+  {
+   "draworder": "topdown",
+   "id": 4,
+   "name": "spawns",
+   "objects": [
+    {
+     "height": 0,
+     "id": 4,
+     "name": "",
+     "point": true,
+     "properties": [
+      {
+       "name": "enemy",
+       "type": "string",
+       "value": "wolf"
+      },
+      {
+       "name": "facing",
+       "type": "int",
+       "value": -1
+      },
+      {
+       "name": "group",
+       "type": "string",
+       "value": "p1"
+      }
+     ],
+     "rotation": 0,
+     "type": "enemy",
+     "visible": true,
+     "width": 0,
+     "x": 152,
+     "y": 128
+    },
+    {
+     "height": 0,
+     "id": 6,
+     "name": "",
+     "point": true,
+     "properties": [
+      {
+       "name": "arena",
+       "type": "string",
+       "value": "a1"
+      },
+      {
+       "name": "enemy",
+       "type": "string",
+       "value": "bandit"
+      },
+      {
+       "name": "wave",
+       "type": "int",
+       "value": 1
+      }
+     ],
+     "rotation": 0,
+     "type": "enemy",
+     "visible": true,
+     "width": 0,
+     "x": 328,
+     "y": 128
+    }
+   ],
+   "opacity": 1,
+   "type": "objectgroup",
+   "visible": true,
+   "x": 0,
+   "y": 0
+  }
+ ],
+ "nextlayerid": 5,
+ "nextobjectid": 15,
+ "orientation": "orthogonal",
+ "properties": [
+  {
+   "name": "biome",
+   "type": "string",
+   "value": "plains"
+  },
+  {
+   "name": "kind",
+   "type": "string",
+   "value": "stage"
+  },
+  {
+   "name": "levelId",
+   "type": "string",
+   "value": "mini"
+  },
+  {
+   "name": "stage",
+   "type": "int",
+   "value": 1
+  }
+ ],
+ "renderorder": "right-down",
+ "tiledversion": "1.10.2",
+ "tileheight": 16,
+ "tilesets": [
+  {
+   "columns": 8,
+   "firstgid": 1,
+   "image": "kinds.png",
+   "imageheight": 16,
+   "imagewidth": 128,
+   "margin": 0,
+   "name": "kinds",
+   "spacing": 0,
+   "tilecount": 8,
+   "tileheight": 16,
+   "tilewidth": 16
+  }
+ ],
+ "tilewidth": 16,
+ "type": "map",
+ "version": "1.10",
+ "width": 24
+}

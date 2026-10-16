@@ -112,9 +112,54 @@ export const CAMERA = {
   MARGIN_Y: 48,             // px between the player box and the top/bottom screen edges
   SNAP_DIST: 160,           // px, a single-tick player move larger than this snaps
   SHAKE_MAX: 8,             // px
+  BOUNDS_BLEND: 0.4, BOUNDS_BLEND_TICKS: ticks(0.4),   // camera zone change (01 §14.3)
   SHAKE_SMALL: { amplitude: 2, seconds: 0.12 },
   SHAKE_MEDIUM: { amplitude: 4, seconds: 0.25 },
 } as const;
+
+/** Spikes (01 §13.4): 20 damage, not stage-scaled; hurt zones are inset inside the tile. */
+export const SPIKES = {
+  DAMAGE: 20,
+  INSET_SIDE: 2, DEPTH: 8,                      // zone: 12 px wide, 8 px deep from the base
+  UP_VY: -330, DOWN_VY: 150,
+  SIDE_VX: 220, SIDE_VY: -200, SIDE_LOCK: 14,   // ticks of steering lock
+} as const;
+
+/** Combat arenas (06 §9.2). Fill in tenths of a percent. */
+export const ARENA = {
+  NEXT_WAVE: 0.75, NEXT_WAVE_TICKS: ticks(0.75),
+  DOORS_OPEN: 0.5, DOORS_OPEN_TICKS: ticks(0.5),
+  STUCK: 3.0, STUCK_TICKS: ticks(3.0),
+  FILL_FAST: 400, FILL_SLOW: 250,
+} as const;
+
+/** Bosses (04 §9). */
+export const BOSS = {
+  SPAWN_FRACTION: 0.75,                  // of the arena width from the entry side
+  INTRO: 1.0, INTRO_TICKS: ticks(1.0),
+  POISE_IMMUNE: 2.0, POISE_IMMUNE_TICKS: ticks(2.0),
+} as const;
+
+/** The Great Boar (04 §10.1). */
+export const GREAT_BOAR = {
+  CHARGE_SPEED: 380, CHARGE_SPEED_ENRAGED: 440,
+  DAZE: 2.0, DAZE_TICKS: ticks(2.0), DAZE_ENRAGED: 1.4, DAZE_ENRAGED_TICKS: ticks(1.4),
+  CRASH_SHAKE: { amplitude: 4, seconds: 0.3 },
+  ROCKS: 3, ROCK_SPACING: 48, ROCK_TRIES: 200,
+  ROCK_MARKER: 0.8, ROCK_MARKER_TICKS: ticks(0.8),
+} as const;
+
+/** Main-path movement limits for level design (06 §8.5), in tiles. "Late" = from section 3 on. */
+export const ROUTE = {
+  RISE: 5, RISE_LATE: 7,
+  ONEWAY_RISE: 3, ONEWAY_RISE_LATE: 6,
+  GAP: 4, GAP_LATE: 5,
+  LATE_SECTION: 3,
+  SHAFT_MIN: 3, SHAFT_MAX: 5,           // wall-jump shaft inner width
+} as const;
+
+/** Timed doors (06 §9.5). */
+export const TIMED_DOOR = { TRIGGER_W: 48 } as const;   // px strip in front of the door
 
 /** Death and restart (06 §6). */
 export const RESTART = {
@@ -213,6 +258,7 @@ export const ENEMY = {
   WAVE_SPAWN_DX: 24,            // floor waves start this far in front of the feet
   HURT_FLASH_TICKS: 2,          // enemy hurt flash (02 §4.6: 2 ticks)
   LOS_STEP: 4,                  // px between line-of-sight samples
+  SPAWN_IN: 0.5, SPAWN_IN_TICKS: ticks(0.5),               // arena waves, ambushes, summons (04 §2.2)
   TELEGRAPH_FLASH_LAST: 0.15, TELEGRAPH_FLASH_LAST_TICKS: ticks(0.15),   // last part of a telegraph flashes near-white
 } as const;
 
