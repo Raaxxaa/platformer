@@ -77,6 +77,7 @@ export function stepEnemyAttack(w: GameWorld, e: EnemyState, hooks: AttackHooks 
   }
   if (a.phase === 'act') {
     const endNow = hooks.onActTick?.(w, e) ?? false;
+    if (!e.ai.attack) return true;                       // the hook ended the attack (e.g. the Boar's wall daze)
     if (!endNow && a.t < a.len) return false;
     removeEnemyGroups(w, e);
     e.token = null;

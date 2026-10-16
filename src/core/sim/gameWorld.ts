@@ -23,6 +23,8 @@ import { stepEnemyAttack, syncEnemyGroups } from '../enemies/attack.ts';
 import { separateEnemies, stepEnemyBody } from '../enemies/body.ts';
 import { becomeAware, stepAwareness } from '../enemies/awareness.ts';
 import { stepAi } from '../enemies/ai.ts';
+import { attackHooks } from '../enemies/special.ts';
+import { removeProjectile, stepProjectiles, type EnemyProjectile } from '../enemies/projectiles.ts';
 import { stepEnemyReactions } from '../combat/enemyReactions.ts';
 import { processDeaths, resolveEnemyHits, resolvePlayerHits } from '../combat/resolve.ts';
 import { onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
@@ -70,6 +72,7 @@ export class GameWorld {
   hitGroups: HitGroup[] = [];
   enemies: EnemyState[] = [];
   pendingDeaths: EnemyState[] = [];
+  projectiles: EnemyProjectile[] = [];
   dive: DiveState | null = null;
   lastDashEndTick = -100000;
   lastAttackStartTick = -100000;
@@ -128,6 +131,7 @@ export class GameWorld {
     this.nextId = 1;
     this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
     this.pendingDeaths = [];
+    this.projectiles = [];
     this.dive = null;
     this.lastDashEndTick = -100000;
     this.lastAttackStartTick = -100000;
@@ -165,7 +169,16 @@ export class GameWorld {
   }
 
   /** An enemy shot hit the player (projectiles stop). */
-  onEnemyShotLanded(_g: HitGroup): void {}
+  onEnemyShotLanded(g: HitGroup): void {
+    const p = this.projectiles.find((q) => q.groupId === g.id);
+    if (p) removeProjectile(this, p);
+  }
+
+  /** camera.shake(amplitude, seconds) from gameplay (01 §14.4). */
+  requestShake(amplitude: number, seconds: number): void {
+    this.events.push({ t: 'shake', level: amplitude >= 4 ? 'medium' : 'small' });
+    void seconds;
+  }
 
   /** On-kill effects that belong to other systems (flask, Rush). */
   onPlayerKill(_e: EnemyState, tier: 'regular' | 'elite'): void {
@@ -206,7 +219,7 @@ export class GameWorld {
     if (e.control) {
       if (!e.knockback && e.grounded) e.vx = 0;
     } else if (!e.knockback) {
-      if (e.ai.attack) stepEnemyAttack(this, e);
+      if (e.ai.attack) stepEnemyAttack(this, e, attackHooks(e));
       else stepAi(this, e);
     }
     stepAwareness(this, e);
@@ -248,6 +261,7 @@ export class GameWorld {
     separateEnemies(this);
     syncEnemyGroups(this);
     // 6. Moving hit groups.
+    stepProjectiles(this);
     // 7. Hit resolution: player hits first (ties go to the player), then enemy hits.
     resolvePlayerHits(this);
     resolveEnemyHits(this);
