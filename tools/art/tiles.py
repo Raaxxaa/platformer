@@ -10,7 +10,7 @@ N, NE, E, SE, S, SW, W, NW = 1, 2, 4, 8, 16, 32, 64, 128
 TILE = 16
 COLS, ROWS = 16, 9
 MARGIN, SPACING = 1, 2
-ALLOWED = ['pl_soil', 'pl_grass', 'pl_wood']
+ALLOWED = ['pl_soil', 'pl_grass', 'pl_wood', 'white']
 
 
 def reduce_mask(m):
@@ -166,6 +166,81 @@ def draw_spikes(direction):
     return np.ascontiguousarray(np.rot90(a, k))
 
 
+def _px(a, x, y, col):
+    if 0 <= x < TILE and 0 <= y < TILE:
+        a[y, x, :3] = col
+        a[y, x, 3] = 255
+
+
+def top_deco(v):
+    """Plains top decorations (08 §9.1 row 7, cols 8–15), standing on the cell's bottom edge. No outline."""
+    a = _empty()
+    g = rng(f'deco_top_{v}')
+    gr, so, wd = P.RAMPS['pl_grass'], P.RAMPS['pl_soil'], P.RAMPS['pl_wood']
+    if v in (0, 1, 2):                                    # grass tufts
+        for k in range(3 + v):
+            x = int(g.integers(2, 14))
+            h = int(g.integers(3, 7))
+            for y in range(h):
+                _px(a, x + (1 if y > h - 2 and k % 2 else 0), 15 - y, gr[2] if y < h - 1 else gr[3])
+            _px(a, x - 1, 15, gr[1])
+    elif v in (3, 4):                                     # flowers: white daisies / tan buttercups
+        petal = P.RAMPS['white'][0] if v == 3 else so[4]
+        for x0 in (4, 10) if v == 3 else (7,):
+            for y in range(10, 16):
+                _px(a, x0, y, gr[2])
+            for dx, dy in ((0, -1), (-1, 0), (1, 0), (0, 1)):
+                _px(a, x0 + dx, 9 + dy, petal)
+            _px(a, x0, 9, so[3] if v == 3 else wd[1])
+    elif v == 5:                                          # small stones
+        for (x, w, h) in ((3, 4, 3), (9, 3, 2)):
+            for y in range(h):
+                for dx in range(w):
+                    _px(a, x + dx, 15 - y, so[3] if y == h - 1 else so[1])
+    elif v == 6:                                          # mushrooms
+        for x0, h in ((5, 4), (10, 3)):
+            for y in range(h):
+                _px(a, x0, 15 - y, so[4])
+            for dx in (-2, -1, 0, 1, 2):
+                _px(a, x0 + dx, 15 - h, wd[2] if abs(dx) < 2 else wd[1])
+            for dx in (-1, 0, 1):
+                _px(a, x0 + dx, 14 - h, wd[2])
+    else:                                                 # a twig with a leaf
+        for x in range(3, 13):
+            _px(a, x, 15 - (x - 3) // 4, wd[1])
+        _px(a, 9, 12, gr[3])
+        _px(a, 10, 12, gr[2])
+    return a
+
+
+def hanging_deco(v):
+    """Plains hanging decorations (08 §9.1 row 8, cols 0–7), hanging from the cell's top edge."""
+    a = _empty()
+    g = rng(f'deco_hang_{v}')
+    gr, so = P.RAMPS['pl_grass'], P.RAMPS['pl_soil']
+    if v in (0, 1, 2):                                    # roots
+        for k in range(2 + v % 2):
+            x = int(g.integers(2, 14))
+            ln = int(g.integers(5, 11))
+            for y in range(ln):
+                _px(a, x + (y // 4) * (1 if k % 2 else -1), y, so[1] if y < ln - 2 else so[2])
+    elif v in (3, 4, 5):                                  # vines with leaves
+        for k in range(1 + v % 2):
+            x = 4 + k * 7
+            ln = 8 + v
+            for y in range(ln):
+                _px(a, x + (1 if (y // 3) % 2 else 0), y, gr[1])
+                if y % 3 == 2:
+                    _px(a, x + 2, y, gr[2])
+                    _px(a, x - 1, y + 1, gr[3])
+    else:                                                 # moss
+        for x in range(1, 15):
+            ln = 1 + int(g.integers(0, 3 + (v - 6) * 2))
+            for y in range(ln):
+                _px(a, x, y, gr[2] if y == 0 else gr[1])
+    return a
+
+
 def tile_cells(set_name):
     """{(col, row): 16×16 RGBA array} for every drawn cell."""
     cells = {}
@@ -177,6 +252,9 @@ def tile_cells(set_name):
         cells[(c, 3)] = draw_oneway(kind)
     for c, d in zip(range(8, 12), ('up', 'right', 'down', 'left')):
         cells[(c, 3)] = draw_spikes(d)
+    for v in range(8):
+        cells[(8 + v, 7)] = top_deco(v)
+        cells[(v, 8)] = hanging_deco(v)
     return cells
 
 

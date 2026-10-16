@@ -10,7 +10,7 @@ from . import raster as R
 
 ATLAS = 'objects'
 ALLOWED = ['ink', 'white', 'trim', 'gray', 'npc', 'vl_wood', 'vl_plaster', 'vl_light',
-           'w_steel', 'w_wood', 'w_gold', 'w_magic', 'fx_heal']
+           'w_steel', 'w_wood', 'w_gold', 'w_magic', 'fx_heal', 'fx_poison']
 FLOOR_Y = 320                         # 06 §12.1: floor surface at row 20
 INN_ORIGIN = (39 * 16, 160)           # top-left of the inn frame in the village map
 INN_SIZE = (128, 160)
@@ -525,8 +525,10 @@ def anims():
 
 
 def all_frames():
+    from . import objects
     fr = dict(building_frames())
     fr.update(prop_frames())
+    fr.update(objects.frames())
     return fr
 
 
