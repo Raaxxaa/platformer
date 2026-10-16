@@ -12,7 +12,12 @@ GAP = 0.4
 VOL = {'vo_': 0.4, 'boss_': 0.8, 'enemy_swing': 0.45, 'enemy_death': 0.55, 'proj_': 0.45, 'rock_shatter': 0.45,
        'rock_whistle': 0.5, 'hit_': 0.65, 'swing_': 0.5, 'player_': 0.8, 'jump': 0.45, 'double_jump': 0.45,
        'wall_jump': 0.45, 'land': 0.45, 'dash': 0.5, 'slide': 0.5, 'dive_': 0.6, 'step_': 0.22,
-       'flask_tick': 0.25, 'flask_': 0.5, 'door_': 0.6, 'arena_': 0.6, 'timed_': 0.6}
+       'flask_tick': 0.25, 'flask_': 0.5, 'door_': 0.6, 'arena_': 0.6, 'timed_': 0.6,
+       'ledge_grab': 0.5, 'drop_through': 0.5, 'spike_hit': 0.45, 'rush_': 0.45, 'charge_': 0.4,
+       'explosion_': 0.75, 'lucky_': 0.7, 'jackpot': 0.7, 'chest_': 0.6, 'cursed_open': 0.6, 'curse_lifted': 0.6,
+       'key_pickup': 0.5, 'keys_full': 0.5, 'coin': 0.5, 'item_pop': 0.5, 'pickup_': 0.5, 'blueprint': 0.5,
+       'purchase': 0.6, 'cant_afford': 0.6, 'upgrade': 0.6, 'sell': 0.6, 'reroll': 0.6, 'split_': 0.6, 'pb': 0.6,
+       'sleep': 0.6, 'restart': 0.6, 'ui_': 0.5}
 
 
 def vol(sid):
