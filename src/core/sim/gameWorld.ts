@@ -15,6 +15,7 @@ import { stepPlayer } from '../player/movement.ts';
 import { deriveSeed, Rng } from '../rng.ts';
 import { activateEnemies, spawnEnemy, type EnemyState } from '../enemies/enemy.ts';
 import { stepEnemyAttack, syncEnemyGroups } from '../enemies/attack.ts';
+import { separateEnemies, stepEnemyBody } from '../enemies/body.ts';
 import { stepEnemyReactions } from '../combat/enemyReactions.ts';
 import { processDeaths, resolveEnemyHits, resolvePlayerHits } from '../combat/resolve.ts';
 import { onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
@@ -160,6 +161,9 @@ export class GameWorld {
     for (const [id, n] of e.ai.cooldowns) if (n > 0) e.ai.cooldowns.set(id, n - 1);
     if (e.ai.gapTicks > 0) e.ai.gapTicks -= 1;
     if (e.ai.attack && !e.control) stepEnemyAttack(this, e);
+    if (e.control && !e.knockback && e.grounded) e.vx = 0;
+    e.hitWall = false;
+    stepEnemyBody(this, e);
   }
 
   /** One 120 Hz tick in 02 §2.1 order. */
@@ -187,6 +191,7 @@ export class GameWorld {
     // 5. Enemy AI and movement.
     activateEnemies(this);
     for (const e of [...this.enemies].sort((a, b) => a.id - b.id)) this.stepEnemy(e);
+    separateEnemies(this);
     syncEnemyGroups(this);
     // 6. Moving hit groups.
     // 7. Hit resolution: player hits first (ties go to the player), then enemy hits.

@@ -42,6 +42,7 @@ export interface EnemyState {
   control: { type: 'stagger' | 'knockdown' | 'dazed'; ticks: number } | null;
   knockback: boolean;
   grounded: boolean;
+  hitWall: boolean;                // moveX hit a wall this tick
   dormant: boolean; dead: boolean; deathTicks: number;
   spawn: EnemySpawn;
   lastPlayerHitTick: number;
@@ -66,7 +67,7 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
     hp: maxHp, maxHp, poise: def.poiseMax, poiseImmuneTicks: 0, noPoiseHitTicks: 0,
     aware: false, noticeT: 0,
     ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareTicks: -1, backingOff: false },
-    hitStopTicks: 0, control: null, knockback: false, grounded: true,
+    hitStopTicks: 0, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,
     damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0,
   };
