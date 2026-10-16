@@ -144,3 +144,8 @@ export const COMBAT = {
 
 /** Ground move cap while attacking, by weapon weight (02 §9.3). */
 export const WEIGHT_MOVE_MULT = { light: 0.60, medium: 0.40, heavy: 0.25 } as const;
+
+/** Rush meter (02 §8). */
+export const RUSH = {
+  MAX: 300,
+} as const;
