@@ -155,6 +155,11 @@ def base_index(n):
     return min(n - 1, 1) if n <= 3 else n // 2
 
 
+def dark_index(n):
+    """Edge shade: one below base on 4–5 color ramps (the darkest is kept for overlaps), else the darkest."""
+    return max(0, base_index(n) - 1) if n >= 4 else 0
+
+
 def auto_shade(layer):
     """08 §12.2: up/left outside the part -> light, down/right outside -> dark, else base.
     08 §2: a pixel next to a part drawn over it takes its darkest shade, so overlapping parts stay readable."""
@@ -178,8 +183,9 @@ def auto_shade(layer):
         if not m.any():
             continue
         n = len(ramp)
-        out[m] = ramp[base_index(n)]
-        out[m & dark] = ramp[0]
+        b = base_index(n)
+        out[m] = ramp[b]
+        out[m & dark] = ramp[dark_index(n)]
         out[m & light] = ramp[-1]
         out[m & under] = ramp[0]
     return Canvas(w, h, out)

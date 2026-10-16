@@ -7,7 +7,7 @@ from PIL import Image
 PAD = 2
 MAX_PAGE = 2048
 ROW_WIDTH = 1024        # target page width before the 2048 cap
-_NAME = re.compile(r'^([ab]/)?[a-z0-9_]+_(\d\d|smear)$')
+_NAME = re.compile(r'^([ab]/)?([a-z0-9_]+_(\d\d|smear)|(glow|icon)_[a-z0-9_]+)$')
 
 
 def frame_names(key, n):

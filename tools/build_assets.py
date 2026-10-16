@@ -8,7 +8,7 @@ ROOT = os.path.dirname(TOOLS)
 sys.path.insert(0, TOOLS)
 
 from art import palette  # noqa: E402
-from art import atlas, build_player, build_world  # noqa: E402
+from art import atlas, build_player, build_world, contrast, items, style_board  # noqa: E402
 from art.enemies import plains as enemies_plains  # noqa: E402
 
 
@@ -26,6 +26,9 @@ def build(root=ROOT):
     anims += build_player.build(assets, preview)
     anims += enemies_plains.build(assets, preview)
     build_world.build(assets, preview)
+    anims += items.build(assets, preview)
+    style_board.build(preview)
+    contrast.write_report(preview)
     atlas.write_anims(os.path.join(assets, 'anims.json'), anims)
     return assets
 

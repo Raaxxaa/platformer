@@ -692,6 +692,34 @@
   "mode": "speed"
  },
  {
+  "key": "chest_key_closed",
+  "atlas": "items",
+  "frames": [
+   "chest_key_closed_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "chest_key_open",
+  "atlas": "items",
+  "frames": [
+   "chest_key_open_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "lucky_block_idle",
+  "atlas": "items",
+  "frames": [
+   "lucky_block_idle_00",
+   "lucky_block_idle_01",
+   "lucky_block_idle_02",
+   "lucky_block_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
   "key": "idle",
   "atlas": "player_archer",
   "frames": [
