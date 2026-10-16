@@ -691,6 +691,8 @@ Each milestone ends with something you can play.
 | M3 | **Stage 1 + Great Boar** | The full Plains & Forest stage (8 sections, arena with waves, timed door, hints) and the Great Boar boss fight, with the timer and split. Loot shows as grey markers until M5 |
 | V1 | **Stage 1 with real art and sound** | The builder swaps the grey boxes for the real sprites, tiles, background, effects and sounds (after M3 + ART2) |
 | ART3 | **Villages** | Art for the Home Village and Crossroads Village: backgrounds, inn, shop objects, class statues, NPCs, training dummy (art chat). Can run alongside M3–M5 |
+| ART4 | **Stage 1 finished + loot art** | Every player move in all 4 outfits, Greatsword and War Maul attacks, doors and decorations, chests, keys, coins, all HUD icons and fonts, movement and loot effects and sounds (art chat) |
+| ART5 | **Class weapons + abilities art** | The 6 new starting weapons, their projectiles, ability poses, effects and sounds for M4 (art chat) |
 | M4 | **Classes, abilities, weapons (basics)** | Pick a class and starting weapon; 2 abilities per class + Vampire; all 4 Connection bonuses and 6 hybrids; weapon match; the 6 starting weapons that were missing (Katana, Iron Fists, Bow, Crossbow, Storm Hammer, Staff); a Training Ground with an armory and a training dummy |
 | M5 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest, timed chest, coins, boss weapon drop, merchant items |
 | M6 | ~~Classes + abilities~~ | Moved into M4 |
