@@ -17,6 +17,7 @@ export const MAX_FRAME_SECONDS = 0.25;
 export const INPUT = {
   STICK_X: 0.30,
   STICK_Y: 0.60,
+  TRIGGER_HELD: 0.5,   // gamepad buttons 6 and 7 count as held at this value (07 §8.2)
 } as const;
 
 /** Tile size in pixels (00-README "Units"). */

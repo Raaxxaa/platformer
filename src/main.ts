@@ -1,16 +1,6 @@
 import Phaser from 'phaser';
 import { computeZoom, GAME_WIDTH, GAME_HEIGHT } from './game/zoom.ts';
-
-class BootScene extends Phaser.Scene {
-  constructor() {
-    super('Boot');
-  }
-
-  create(): void {
-    this.add.rectangle(0, 312, 640, 48, 0x4a4f63).setOrigin(0, 0);
-    (window as unknown as { __game: unknown }).__game = { ready: true };
-  }
-}
+import { MovementTestScene } from './game/scenes/MovementTestScene.ts';
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -25,7 +15,7 @@ const game = new Phaser.Game({
     zoom: computeZoom(window.innerWidth, window.innerHeight),
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene],
+  scene: [MovementTestScene],
 });
 
 // Whole-number zoom only (2×, 3×, …); the black page background shows as bars.

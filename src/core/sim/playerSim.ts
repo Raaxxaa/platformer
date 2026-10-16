@@ -5,7 +5,7 @@ import { isGrounded } from '../physics/collide.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
-import { createCamera, stepCamera, type CameraState } from '../camera.ts';
+import { createCamera, snapCamera, stepCamera, type CameraState } from '../camera.ts';
 
 /** Held inputs for one tick, the easy way (tests, debug API). */
 export interface InputSpec {
@@ -45,12 +45,24 @@ export class PlayerSim {
 
   constructor(g: TileGrid, spawn: { x: number; y: number }) {
     this.grid = g;
-    this.body = createPlayerBody(spawn.x, spawn.y);
-    if (!isGrounded(this.body, g, 0)) {
-      this.body.state = 'air';
-      this.body.grounded = false;
-    }
+    this.body = PlayerSim.freshBody(g, spawn);
     this.camera = createCamera({ x: 0, y: 0, w: g.widthPx, h: g.heightPx }, this.body);
+  }
+
+  private static freshBody(g: TileGrid, spawn: { x: number; y: number }): PlayerBody {
+    const body = createPlayerBody(spawn.x, spawn.y);
+    if (!isGrounded(body, g, 0)) {
+      body.state = 'air';
+      body.grounded = false;
+    }
+    return body;
+  }
+
+  /** A fresh player body at `spawn` (feet position) with the camera snapped to it. */
+  respawn(spawn: { x: number; y: number }): void {
+    this.body = PlayerSim.freshBody(this.grid, spawn);
+    this.prevSpec = {};
+    snapCamera(this.camera, this.body);
   }
 
   step(input: InputState): MoveEvent[] {

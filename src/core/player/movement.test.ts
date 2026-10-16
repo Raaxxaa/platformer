@@ -151,3 +151,15 @@ describe('falling (01 §5.4, checklist 15, 28)', () => {
     expect(peakRise(sim, () => sim.stepSpec({}, 10))).toBe(0);
   });
 });
+
+describe('PlayerSim.respawn', () => {
+  it('puts a fresh body at the spot and snaps the camera', () => {
+    const sim = new PlayerSim(flatWorld(), { x: 200, y: 432 });
+    sim.stepSpec({ moveX: 1, jump: true }, 20);
+    sim.respawn({ x: 500, y: 432 });
+    expect(sim.body).toMatchObject({ x: 500, y: 432, vx: 0, vy: 0, state: 'ground', grounded: true });
+    expect(sim.camera.cx).toBe(500);
+    sim.respawn({ x: 300, y: 100 });
+    expect(sim.body.state).toBe('air');
+  });
+});
