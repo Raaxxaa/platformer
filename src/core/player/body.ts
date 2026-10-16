@@ -27,6 +27,10 @@ export interface PlayerBody extends AABBBody {
   // Implementation fields beyond 01 §15:
   hitStopTicks: number;   // player hit-stop (02); always 0 until M2
   landSpeed: number;      // impact speed of the last landing, for the 'land' event's listeners
+  climbFromX: number;     // ledge climb (01 §10.2): where the grab snapped the body,
+  climbFromY: number;
+  climbTop: number;       // the ledge top L,
+  climbStandX: number;    // and the standing spot's x
 }
 
 export function createPlayerBody(x: number, y: number): PlayerBody {
@@ -39,6 +43,7 @@ export function createPlayerBody(x: number, y: number): PlayerBody {
     dashPressPt: NEVER, dashReadyPt: 0, lastWallPt: NEVER, lastWallDir: 1,
     steerLockTicks: 0, dashIframes: false, preDashSpeed: 0,
     hitStopTicks: 0, landSpeed: 0,
+    climbFromX: 0, climbFromY: 0, climbTop: 0, climbStandX: 0,
   };
 }
 

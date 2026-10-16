@@ -4,11 +4,12 @@ import type { TileGrid } from '../level/tiles.ts';
 import { MOVE } from '../tuning.ts';
 import { NEVER, setState, type MoveEvent, type MoveStateId, type PlayerBody } from './body.ts';
 import { endDashOrSlide, standingFits } from './dash.ts';
-import type { MoveModifiers } from './modifiers.ts';
 import { wallJump, wallJumpDir } from './wall.ts';
+import { finishClimb } from './ledge.ts';
+import { runMaxEff, type MoveModifiers } from './modifiers.ts';
 
 /** States a jump can start from. Others (crawl, …) keep the press buffered (01 §6.4). */
-const JUMP_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'dash', 'slide', 'wallSlide']);
+const JUMP_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'dash', 'slide', 'wallSlide', 'ledgeClimb']);
 
 /** The jump buffer is active while the last press is under 12 ticks old and unused (01 §6.4). */
 export function jumpBufferActive(b: PlayerBody): boolean {
@@ -36,6 +37,11 @@ export function tryJump(b: PlayerBody, input: InputState, g: TileGrid, mods: Mov
   if (mods.rooted || !mods.canJump || !JUMP_STATES.has(b.state)) return null;
   // Slide-jump needs room to stand (01 §9.2); otherwise the press stays buffered.
   if (b.state === 'slide' && !standingFits(b, g)) return null;
+  // Jump during a ledge climb: snap to the standing spot, then a ground jump at run speed (01 §10.3).
+  if (b.state === 'ledgeClimb') {
+    finishClimb(b);
+    b.vx = b.facing * runMaxEff(b, mods);
+  }
 
   // 2. Ground jump: grounded, or coyote time after leaving the ground without a jump.
   if (b.grounded || (b.coyoteValid && b.pt - b.lastGroundPt <= MOVE.COYOTE_TICKS)) {

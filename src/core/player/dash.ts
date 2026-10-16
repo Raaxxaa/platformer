@@ -6,9 +6,10 @@ import { MOVE } from '../tuning.ts';
 import { NEVER, setState, type MoveEvent, type MoveStateId, type PlayerBody } from './body.ts';
 import { runMaxEff, type MoveModifiers } from './modifiers.ts';
 import { leaveWall } from './wall.ts';
+import { finishClimb } from './ledge.ts';
 
 /** States a dash or slide can start from (01 §7.1). */
-const DASH_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'crawl', 'wallSlide']);
+const DASH_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'crawl', 'wallSlide', 'ledgeClimb']);
 
 /** The dash buffer is active while the last press is under 12 ticks old and unused. */
 export function dashBufferActive(b: PlayerBody): boolean {
@@ -46,6 +47,8 @@ function clampEndSpeed(b: PlayerBody, mods: MoveModifiers): void {
 export function tryStartDash(b: PlayerBody, input: InputState, _g: TileGrid, mods: MoveModifiers): MoveEvent | null {
   if (!dashBufferActive(b)) return null;
   if (b.pt < b.dashReadyPt || !mods.canDash || mods.rooted || !DASH_STATES.has(b.state)) return null;
+  // Dash during a ledge climb: snap to the standing spot, then a ground dash or slide (01 §10.3).
+  if (b.state === 'ledgeClimb') finishClimb(b);
   if (!b.grounded && !b.airDashAvailable) return null;
 
   const slide = b.grounded && (input.moveY === 1 || b.state === 'crawl');

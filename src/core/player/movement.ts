@@ -9,6 +9,7 @@ import { endDashOrSlide, standingFits, stepDashOrSlide, tryStartDash } from './d
 import { applyJumpCut, tryJump } from './jump.ts';
 import { runMaxEff, type MoveContext, type MoveModifiers } from './modifiers.ts';
 import { leaveWall, updateWallSlide } from './wall.ts';
+import { checkLedgeGrab, stepLedgeClimb } from './ledge.ts';
 
 interface Rates { accel: number; decel: number; turn: number; overspeed: number }
 const GROUND_RATES: Rates = { accel: MOVE.GROUND_ACCEL, decel: MOVE.GROUND_DECEL, turn: MOVE.GROUND_TURN, overspeed: MOVE.OVERSPEED_DECAY_GROUND };
@@ -70,15 +71,17 @@ function land(b: PlayerBody, ev: MoveEvent[]): void {
   ev.push('land');
 }
 
-/** Step 9: grounded check, landing and leaving the ground (01 §5.5), wall hits, wall slide, crawl. */
-function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers, hitWall: boolean, ev: MoveEvent[]): void {
+/** Step 9: grounded check, landing and leaving the ground (01 §5.5), wall hits, ledge grab, wall slide, crawl. */
+function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers, hitWall: boolean, ev: MoveEvent[]): boolean {
   const wasGrounded = b.grounded;
   const grounded = isGrounded(b, g, b.vy);
   b.grounded = grounded;
 
+  let dashWallDir: -1 | 0 | 1 = 0;
   if (hitWall && (b.state === 'dash' || b.state === 'slide')) {
     // 01 §7.3 / §9.2: hitting a wall ends the dash or slide with vx = 0.
     const wasSlide = b.state === 'slide';
+    if (!wasSlide) dashWallDir = b.facing;
     ev.push(endDashOrSlide(b, mods));
     b.vx = 0;
     if (wasSlide && grounded && !standingFits(b, g)) setState(b, 'crawl', 0);
@@ -95,17 +98,22 @@ function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModi
       b.doubleJumpAvailable = true;
     }
     if (b.state === 'crawl' && standingFits(b, g)) setState(b, 'ground', 0);
-    return;
+  } else {
+    // Leaving the ground without a jump (walking, dashing or sliding off): coyote time starts.
+    if (wasGrounded) b.coyoteValid = true;
+    if (b.state === 'ground' || b.state === 'crawl') setState(b, 'air', 0);
+    else if (b.state === 'slide') {
+      ev.push(endDashOrSlide(b, mods));     // 01 §9.2: slide ends, vx kept
+      setState(b, 'air', 0);
+    }
   }
 
-  // Leaving the ground without a jump (walking, dashing or sliding off): coyote time starts.
-  if (wasGrounded) b.coyoteValid = true;
-  if (b.state === 'ground' || b.state === 'crawl') setState(b, 'air', 0);
-  else if (b.state === 'slide') {
-    ev.push(endDashOrSlide(b, mods));     // 01 §9.2: slide ends, vx kept
-    setState(b, 'air', 0);
+  if (checkLedgeGrab(b, input, g, mods, dashWallDir)) {
+    ev.push('ledgeGrab');
+    return true;
   }
   updateWallSlide(b, input, g);
+  return false;
 }
 
 /** Step 10: facing follows moveX in the free-moving states unless combat locked it. */
@@ -148,25 +156,30 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
   } else {
     applyJumpCut(b, input);
   }
-  const vxStart = b.vx, vyStart = b.vy;
-  // 6–7. Velocities.
-  horizontalVelocity(b, input, mods);
-  verticalVelocity(b, input, mods);
-  b.vx = clampAbs(b.vx, MOVE.MAX_SPEED);
-  b.vy = clampAbs(b.vy, MOVE.MAX_SPEED);
-  if (b.vy >= 0) b.jumpCuttable = false;
-  // 8. Move (trapezoid rule, 01 §2.4).
-  const dx = ((vxStart + b.vx) / 2) * TICK;
-  const dy = ((vyStart + b.vy) / 2) * TICK;
-  const hitWall = moveX(b, g, dx, true) === 'wall';
-  if (hitWall) b.vx = 0;
-  if (moveY(b, g, dy, { dropping: false, preferDir: input.moveX }) === 'bonk') {
-    b.vy = 0;
-    b.jumpCuttable = false;
+  if (b.state === 'ledgeClimb') {
+    // 6–9. The climb is scripted and skips velocity, collision and push-out (01 §10.2).
+    stepLedgeClimb(b);
+  } else {
+    const vxStart = b.vx, vyStart = b.vy;
+    // 6–7. Velocities.
+    horizontalVelocity(b, input, mods);
+    verticalVelocity(b, input, mods);
+    b.vx = clampAbs(b.vx, MOVE.MAX_SPEED);
+    b.vy = clampAbs(b.vy, MOVE.MAX_SPEED);
+    if (b.vy >= 0) b.jumpCuttable = false;
+    // 8. Move (trapezoid rule, 01 §2.4).
+    const dx = ((vxStart + b.vx) / 2) * TICK;
+    const dy = ((vyStart + b.vy) / 2) * TICK;
+    const hitWall = moveX(b, g, dx, true) === 'wall';
+    if (hitWall) b.vx = 0;
+    if (moveY(b, g, dy, { dropping: false, preferDir: input.moveX }) === 'bonk') {
+      b.vy = 0;
+      b.jumpCuttable = false;
+    }
+    // 9. After move.
+    const grabbed = afterMove(b, input, g, mods, hitWall, ev);
+    if (!grabbed) pushOut(b, g);
   }
-  // 9. After move.
-  afterMove(b, input, g, mods, hitWall, ev);
-  pushOut(b, g);
   // 10. Facing and box.
   updateFacing(b, input, mods);
   updateBox(b, g);
