@@ -996,6 +996,90 @@
   "fps": 6
  },
  {
+  "key": "innkeeper_idle",
+  "atlas": "npcs",
+  "frames": [
+   "innkeeper_idle_00",
+   "innkeeper_idle_01",
+   "innkeeper_idle_02",
+   "innkeeper_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "innkeeper_wave",
+  "atlas": "npcs",
+  "frames": [
+   "innkeeper_wave_00",
+   "innkeeper_wave_01",
+   "innkeeper_wave_02",
+   "innkeeper_wave_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "merchant_idle",
+  "atlas": "npcs",
+  "frames": [
+   "merchant_idle_00",
+   "merchant_idle_01",
+   "merchant_idle_02",
+   "merchant_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "shopkeeper_idle",
+  "atlas": "npcs",
+  "frames": [
+   "shopkeeper_idle_00",
+   "shopkeeper_idle_01",
+   "shopkeeper_idle_02",
+   "shopkeeper_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "shopkeeper_wave",
+  "atlas": "npcs",
+  "frames": [
+   "shopkeeper_wave_00",
+   "shopkeeper_wave_01",
+   "shopkeeper_wave_02",
+   "shopkeeper_wave_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "villager_a_idle",
+  "atlas": "npcs",
+  "frames": [
+   "villager_a_idle_00",
+   "villager_a_idle_01",
+   "villager_a_idle_02",
+   "villager_a_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "villager_b_idle",
+  "atlas": "npcs",
+  "frames": [
+   "villager_b_idle_00",
+   "villager_b_idle_01",
+   "villager_b_idle_02",
+   "villager_b_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
   "key": "ability_altar_idle",
   "atlas": "objects",
   "frames": [
