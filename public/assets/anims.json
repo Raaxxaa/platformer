@@ -1,5 +1,262 @@
 [
  {
+  "key": "atk_charge",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "atk_charge_00",
+   "atk_charge_01",
+   "atk_charge_02",
+   "atk_charge_03",
+   "atk_charge_04",
+   "atk_charge_05",
+   "atk_charge_06",
+   "atk_charge_07"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3,
+     4,
+     5
+    ],
+    "loopFps": 16
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     6,
+     7
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_stomp_quake",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "atk_stomp_quake_00",
+   "atk_stomp_quake_01",
+   "atk_stomp_quake_02",
+   "atk_stomp_quake_03",
+   "atk_stomp_quake_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_tusk_toss",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "atk_tusk_toss_00",
+   "atk_tusk_toss_01",
+   "atk_tusk_toss_02",
+   "atk_tusk_toss_03",
+   "atk_tusk_toss_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "break",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "break_00",
+   "break_01",
+   "break_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0
+    ]
+   },
+   {
+    "phase": "all",
+    "frames": [
+     1,
+     2
+    ],
+    "loopFps": 4
+   }
+  ]
+ },
+ {
+  "key": "dazed",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "dazed_00",
+   "dazed_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "death",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "death_00",
+   "death_01",
+   "death_02",
+   "death_03",
+   "death_04",
+   "death_05",
+   "death_06",
+   "death_07",
+   "death_08"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
+  "key": "hurt",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "idle",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "intro",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "intro_00",
+   "intro_01",
+   "intro_02",
+   "intro_03",
+   "intro_04",
+   "intro_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "stagger",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "stagger_00",
+   "stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "transition",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "transition_00",
+   "transition_01",
+   "transition_02",
+   "transition_03",
+   "transition_04",
+   "transition_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "walk",
+  "atlas": "boss_great_boar",
+  "frames": [
+   "walk_00",
+   "walk_01",
+   "walk_02",
+   "walk_03",
+   "walk_04",
+   "walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
   "key": "bandit_archer_atk_arrow",
   "atlas": "enemies_plains",
   "frames": [

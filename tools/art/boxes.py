@@ -9,6 +9,7 @@ HURTBOX = {
     'bandit_archer': (14, 28),
     'wild_boar': (30, 20),
     'bandit_brute': (24, 40),
+    'great_boar': (64, 40),          # 04 §9.1
 }
 
 # 04 §3: attack boxes (dx, dy, w, h) from the feet, facing right. None = projectile (no melee box).
@@ -18,4 +19,6 @@ ATTACK_BOX = {
     'bandit_archer': {'arrow': None, 'kick': (14, -12, 18, 16)},
     'wild_boar': {'charge': (14, -10, 24, 18), 'tusk_jab': (14, -10, 22, 18)},
     'bandit_brute': {'club_swing': (26, -20, 44, 36), 'overhead_smash': (30, -12, 40, 24)},
+    # 04 §10.1 (Rockfall uses falling_rock projectiles, no melee box)
+    'great_boar': {'charge': (28, -20, 40, 36), 'tusk_toss': (36, -24, 48, 48), 'stomp_quake': (0, -8, 96, 16)},
 }
