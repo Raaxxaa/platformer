@@ -9,7 +9,7 @@ import { leaveWall } from './wall.ts';
 import { finishClimb } from './ledge.ts';
 
 /** States a dash or slide can start from (01 §7.1). */
-const DASH_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'crawl', 'wallSlide', 'ledgeClimb']);
+const DASH_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'crawl', 'wallSlide', 'ledgeClimb', 'diveWindup', 'diveFall', 'diveLand']);
 
 /** The dash buffer is active while the last press is under 12 ticks old and unused. */
 export function dashBufferActive(b: PlayerBody): boolean {

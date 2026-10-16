@@ -129,6 +129,23 @@ export function supportIsOnlyOneWay(b: AABBBody, g: TileGrid): boolean {
 }
 
 /**
+ * One-way apex assist (01 §2.7.3), for the tick vy goes from < 0 to >= 0: if the feet are 1–6 px
+ * below the top of a one-way tile under the box and the box fits standing on that top, snap onto it.
+ */
+export function oneWayApexSnap(b: AABBBody, g: TileGrid): boolean {
+  const x0 = b.x - b.w / 2, x1 = b.x + b.w / 2;
+  for (let d = 1; d <= COLLIDE.APEX_ASSIST_MAX; d++) {
+    const top = b.y - d;
+    if (rowHasOneWayTop(g, x0, x1, top) && boxFree(g, b.x, top, b.w, b.h)) {
+      b.y = top;
+      b.remY = 0;
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Push-out (01 §2.8): if the box overlaps a solid, move it to the first free spot trying
  * up d, left d, right d, down d for d = 1..32. Returns false if nothing is free within 32 px.
  */

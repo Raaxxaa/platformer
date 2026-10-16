@@ -30,6 +30,7 @@ export const COLLIDE = {
   STEP_UP_MAX: 4,         // §2.7.2 step-up lifts up to 4 px
   CEILING_NUDGE_MAX: 4,   // §2.7.1 ceiling nudge shifts up to 4 px
   PUSH_OUT_MAX: 32,       // §2.8 push-out search distance
+  APEX_ASSIST_MAX: 6,     // §2.7.3 one-way apex assist reaches up to 6 px
 } as const;
 
 /**

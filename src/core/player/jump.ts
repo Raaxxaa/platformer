@@ -4,12 +4,13 @@ import type { TileGrid } from '../level/tiles.ts';
 import { MOVE } from '../tuning.ts';
 import { NEVER, setState, type MoveEvent, type MoveStateId, type PlayerBody } from './body.ts';
 import { endDashOrSlide, standingFits } from './dash.ts';
+import { supportIsOnlyOneWay } from '../physics/collide.ts';
 import { wallJump, wallJumpDir } from './wall.ts';
 import { finishClimb } from './ledge.ts';
 import { runMaxEff, type MoveModifiers } from './modifiers.ts';
 
 /** States a jump can start from. Others (crawl, …) keep the press buffered (01 §6.4). */
-const JUMP_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'dash', 'slide', 'wallSlide', 'ledgeClimb']);
+const JUMP_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'dash', 'slide', 'wallSlide', 'ledgeClimb', 'diveWindup', 'diveFall', 'diveLand']);
 
 /** The jump buffer is active while the last press is under 12 ticks old and unused (01 §6.4). */
 export function jumpBufferActive(b: PlayerBody): boolean {
@@ -34,7 +35,21 @@ function startJump(b: PlayerBody, vy: number, mods: MoveModifiers): void {
  */
 export function tryJump(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers): MoveEvent | null {
   if (!jumpBufferActive(b)) return null;
-  if (mods.rooted || !mods.canJump || !JUMP_STATES.has(b.state)) return null;
+  if (mods.rooted || !mods.canJump) return null;
+
+  // 1. Drop-through (01 §13.1): a fresh press with down, grounded, and every support one-way.
+  // SPEC-GAP: this also applies during a slide or dash on a one-way platform (so down + jump there drops instead of slide-jumping).
+  if (b.jumpPressFresh && input.moveY === 1 && b.grounded && b.state !== 'ledgeClimb' && supportIsOnlyOneWay(b, g)) {
+    if (b.state === 'dash' || b.state === 'slide') endDashOrSlide(b, mods);
+    b.y += 1;
+    b.vy = 0;
+    b.coyoteValid = false;
+    b.grounded = false;
+    b.jumpPressPt = NEVER;
+    setState(b, 'air', 1);
+    return 'dropThrough';
+  }
+  if (!JUMP_STATES.has(b.state)) return null;
   // Slide-jump needs room to stand (01 §9.2); otherwise the press stays buffered.
   if (b.state === 'slide' && !standingFits(b, g)) return null;
   // Jump during a ledge climb: snap to the standing spot, then a ground jump at run speed (01 §10.3).

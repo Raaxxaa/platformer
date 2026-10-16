@@ -2,7 +2,7 @@
 import type { InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { approach, clampAbs } from '../math.ts';
-import { boxFree, isGrounded, moveX, moveY, pushOut } from '../physics/collide.ts';
+import { boxFree, isGrounded, moveX, moveY, oneWayApexSnap, pushOut } from '../physics/collide.ts';
 import { MOVE, TICK } from '../tuning.ts';
 import { setState, type MoveEvent, type PlayerBody } from './body.ts';
 import { endDashOrSlide, standingFits, stepDashOrSlide, tryStartDash } from './dash.ts';
@@ -10,6 +10,7 @@ import { applyJumpCut, tryJump } from './jump.ts';
 import { runMaxEff, type MoveContext, type MoveModifiers } from './modifiers.ts';
 import { leaveWall, updateWallSlide } from './wall.ts';
 import { checkLedgeGrab, stepLedgeClimb } from './ledge.ts';
+import { stepDivePhases, tryStartDive } from './dive.ts';
 
 interface Rates { accel: number; decel: number; turn: number; overspeed: number }
 const GROUND_RATES: Rates = { accel: MOVE.GROUND_ACCEL, decel: MOVE.GROUND_DECEL, turn: MOVE.GROUND_TURN, overspeed: MOVE.OVERSPEED_DECAY_GROUND };
@@ -41,7 +42,7 @@ function horizontalVelocity(b: PlayerBody, input: InputState, mods: MoveModifier
     case 'ground': steer(b, input.moveX, runMaxEff(b, mods), GROUND_RATES, mods); break;
     case 'air': steer(b, input.moveX, runMaxEff(b, mods), AIR_RATES, mods); break;
     case 'crawl': steer(b, input.moveX, runMaxEff(b, mods, MOVE.CRAWL_MAX), GROUND_RATES, mods); break;
-    case 'wallSlide': b.vx = 0; break;
+    case 'wallSlide': case 'diveWindup': case 'diveFall': case 'diveLand': b.vx = 0; break;
     default: break;
   }
 }
@@ -49,7 +50,8 @@ function horizontalVelocity(b: PlayerBody, input: InputState, mods: MoveModifier
 /** Step 7: vertical velocity by state (01 §5.4). */
 function verticalVelocity(b: PlayerBody, input: InputState, mods: MoveModifiers): void {
   switch (b.state) {
-    case 'ground': case 'crawl': case 'dash': case 'slide': b.vy = 0; break;
+    case 'ground': case 'crawl': case 'dash': case 'slide': case 'diveWindup': case 'diveLand': b.vy = 0; break;
+    case 'diveFall': b.vy = MOVE.DIVE_SPEED; break;
     case 'air': {
       const cap = mods.maxFallOverride ?? (input.moveY === 1 ? MOVE.MAX_FALL_DOWN_HELD : MOVE.MAX_FALL);
       b.vy = fall(b.vy, MOVE.GRAVITY * mods.gravityMult, cap);
@@ -91,6 +93,12 @@ function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModi
   if (grounded) {
     if (b.state === 'wallSlide') leaveWall(b);
     if (b.state === 'air' || b.state === 'wallSlide') land(b, ev);
+    else if (b.state === 'diveFall') {
+      b.landSpeed = b.vy;
+      b.vy = 0;
+      setState(b, 'diveLand', 0);
+      ev.push('diveLand');
+    }
     b.lastGroundPt = b.pt;
     if (b.state !== 'dash' && b.state !== 'slide') {
       // Standing on the ground refreshes both (a landing, or a dash that ended on the ground).
@@ -101,7 +109,7 @@ function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModi
   } else {
     // Leaving the ground without a jump (walking, dashing or sliding off): coyote time starts.
     if (wasGrounded) b.coyoteValid = true;
-    if (b.state === 'ground' || b.state === 'crawl') setState(b, 'air', 0);
+    if (b.state === 'ground' || b.state === 'crawl' || b.state === 'diveLand') setState(b, 'air', 0);
     else if (b.state === 'slide') {
       ev.push(endDashOrSlide(b, mods));     // 01 §9.2: slide ends, vx kept
       setState(b, 'air', 0);
@@ -130,7 +138,7 @@ function updateBox(b: PlayerBody, g: TileGrid): void {
 }
 
 /** Runs one movement tick for the player (01 §3). Returns this tick's movement events. */
-export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers, _ctx: MoveContext): MoveEvent[] {
+export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers, ctx: MoveContext): MoveEvent[] {
   const ev: MoveEvent[] = [];
   // 1. Hit-stop: arrives with combat in M2 (hitStopTicks stays 0).
   // 2. Advance; end timed states.
@@ -138,6 +146,7 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
   b.stateTicks += 1;
   const ended = stepDashOrSlide(b, g, mods);
   if (ended) ev.push(ended);
+  stepDivePhases(b);
   // 3. Record presses.
   if (input.jump.pressed) {
     b.jumpPressPt = b.pt;
@@ -154,6 +163,12 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
     if (stateBeforeJump === 'slide') ev.push('slideEnd');
     ev.push(jumpEvent);
   } else {
+    const stateBeforeDive = b.state;
+    const diveEvent = tryStartDive(b, input, ctx);
+    if (diveEvent) {
+      if (stateBeforeDive === 'dash') ev.push(endDashOrSlide(b, mods));
+      ev.push(diveEvent);
+    }
     applyJumpCut(b, input);
   }
   if (b.state === 'ledgeClimb') {
@@ -170,12 +185,13 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
     // 8. Move (trapezoid rule, 01 §2.4).
     const dx = ((vxStart + b.vx) / 2) * TICK;
     const dy = ((vyStart + b.vy) / 2) * TICK;
-    const hitWall = moveX(b, g, dx, true) === 'wall';
+    const hitWall = moveX(b, g, dx, b.state !== 'diveFall') === 'wall';
     if (hitWall) b.vx = 0;
-    if (moveY(b, g, dy, { dropping: false, preferDir: input.moveX }) === 'bonk') {
+    if (moveY(b, g, dy, { dropping: jumpEvent === 'dropThrough', preferDir: input.moveX }) === 'bonk') {
       b.vy = 0;
       b.jumpCuttable = false;
     }
+    if (b.state === 'air' && vyStart < 0 && b.vy >= 0) oneWayApexSnap(b, g);
     // 9. After move.
     const grabbed = afterMove(b, input, g, mods, hitWall, ev);
     if (!grabbed) pushOut(b, g);
