@@ -417,6 +417,7 @@ When 05 §12 says the merchant is present (rolled at stage load), the loader add
 |---|---|---|
 | `player_start` | 3 | Facing right. Spawns with `save.lastKit` equipped (or empty-handed on the very first launch) |
 | `class_statue` swordsman, tank, archer, wizard | 9, 13, 17, 21 | Opens the class pick popup (07) for that class: pick one of its starting weapons (the 2 from 03 §3, plus a 3rd once `save.unlocks.startWeapons` has it, 05 §14.3). Confirm → the kit replaces the current loadout at once; `lastKit` saved |
+| `mirror_spot` | 25 | Not interactable yet. The future character mirror (GAME_PLAN 4.5, M12); until then an empty frame |
 | `enemy` `training_dummy` (04 §2.10) | 28 | Hit it to try the kit |
 | `unlocks_board` | 34 | Opens the unlocks / classes discovered page (07) |
 | `seed_board` | 37 | Opens seed entry (07): type a seed or clear it. The board shows the active typed seed |

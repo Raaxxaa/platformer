@@ -101,6 +101,7 @@ The other 8 abilities and 11 weapons come later (M9). Loot (grades, chests, Luck
 - **Player ticks vs world ticks** (03 §1): cooldowns, the buffer, the link, stances and player effects count player ticks (not in hit-stop). Ability entities (Arrow Rain zone, Thunder Strike bolts, marks) count world ticks.
 - **Ability hits skip grade and match and never scale with the stage** (03 §7.8). They do get the additive pool (link), crits and target multipliers (Hunter's Mark).
 - **Class state is a pure function** of the ability slots and weapon slots. It is recomputed the same tick any slot changes.
+- **Use the real art when it is on `main`.** If ART4 (player moves, Greatsword and War Maul, `ui` atlas, fonts, effects, sounds) and ART5 (the 6 new weapons, projectiles, ability poses, effects and sounds) are merged, draw with them instead of grey boxes: player anims per 08 §5.2 (this removes V1's idle/run SPEC-GAP), weapon layers and smears per 08 §6.3, HUD icons from the `ui` atlas, text in the `rb_*` fonts. Anything still missing stays a grey box. Loot art (chests, keys, coins, glows) is wired in M5.
 - The **M2 tests must keep passing.** When no kit has been picked, the combat test level keeps its M2 loadout (Greatsword + War Maul, no abilities).
 - Everything new is visible through `window.__game` with `?debug=1`:
   - `abilityRuntime()` and `classState()`;
@@ -318,6 +319,7 @@ If a file in the table already exists under another name, extend that one instea
   - **4 class statue markers** (grey boxes with the class letter). Interact opens the class pick (07 §6.7) with that class's 2 starting weapons. Confirm equips the kit at once (03 §3: ability slot 1 Lv1, slot 2 empty, weapon slot 1 at C, slot 2 empty).
   - **Armory:** a row of endless stands with each M4 ability (Lv1) and each of the 8 weapons, grouped by class with a class-colored label.
   - **Training Dummy** (04 §2.10) with the DPS readout (07 §5.8).
+  - **Dummy art:** the enemy view must accept an enemy that has only `idle` and `hit` anims (the dummy: play `hit` when struck, never stagger or die) and load the `enemies_extra` atlas. The art is already built; the art chat left `training_dummy_idle` and `training_dummy_hit` out of `anims.json` until the view handles them (`docs/art/SPEC-GAPS-art.md` #3). When this works, tell the user so the art chat can add the two lines back.
 - [ ] **Stage 1:** before the run starts, the same class pick panel opens with all 4 classes (left/right picks the class, up/down the weapon). The pick is kept for instant restart. `?kit=archer:bow` skips the panel (tests use it).
 - [ ] **Tests:** the kit equips the right items; restart keeps the kit; the dummy never dies and its HP returns 1.0 s after the last hit; the DPS formula.
 - [ ] **Commit.**
