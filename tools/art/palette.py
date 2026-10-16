@@ -110,3 +110,26 @@ def write_json(path):
     with open(path, 'w', newline='\n') as f:
         json.dump(data, f, indent=1)
         f.write('\n')
+
+
+# Slot table: every ramp color gets one integer slot id, used by raster canvases.
+COLORS = []
+_SLOT = {}
+for _ramp in RAMPS.values():
+    for _c in _ramp:
+        if _c not in _SLOT:
+            _SLOT[_c] = len(COLORS)
+            COLORS.append(_c)
+
+
+def sid(color):
+    """Slot id of an RGB tuple (must be a ramp color)."""
+    return _SLOT[color]
+
+
+def ramp_ids(name):
+    return [_SLOT[c] for c in RAMPS[name]]
+
+
+INK = _SLOT[RAMPS['ink'][0]]
+WHITE = _SLOT[RAMPS['white'][0]]
