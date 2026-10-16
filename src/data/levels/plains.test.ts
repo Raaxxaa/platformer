@@ -31,10 +31,10 @@ describe('Plains & Forest level (M3 Task 9)', () => {
     expect(validateLevel(d)).toEqual([]);
     expect(routeLint(d)).toEqual([]);
   });
-  it('is 650–730 tiles of main path, at most 720 × 64', () => {
+  it('is 710–790 tiles of main path (Stage 1 after 06 §8.6, SPEC-GAP 8), at most 720 × 64', () => {
     const len = pathLengthTiles(d.objects.find((o) => o.type === 'main_path')!);
-    expect(len).toBeGreaterThanOrEqual(650);
-    expect(len).toBeLessThanOrEqual(730);
+    expect(len).toBeGreaterThanOrEqual(710);
+    expect(len).toBeLessThanOrEqual(790);
     expect(d.widthTiles).toBeLessThanOrEqual(720);
     expect(d.heightTiles).toBeLessThanOrEqual(64);
   });
