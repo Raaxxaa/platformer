@@ -3185,6 +3185,25 @@
   "fps": 12
  },
  {
+  "key": "charge_full",
+  "atlas": "vfx",
+  "frames": [
+   "charge_full_00",
+   "charge_full_01",
+   "charge_full_02"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "charge_glow",
+  "atlas": "vfx",
+  "frames": [
+   "charge_glow_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "crit_spark",
   "atlas": "vfx",
   "frames": [
@@ -3197,6 +3216,27 @@
   "fps": 30
  },
  {
+  "key": "curse_wisps",
+  "atlas": "vfx",
+  "frames": [
+   "curse_wisps_00",
+   "curse_wisps_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "dash_refund",
+  "atlas": "vfx",
+  "frames": [
+   "dash_refund_00",
+   "dash_refund_01",
+   "dash_refund_02"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
   "key": "debris",
   "atlas": "vfx",
   "frames": [
@@ -3204,6 +3244,51 @@
    "debris_01",
    "debris_02",
    "debris_03"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "dive_bounce",
+  "atlas": "vfx",
+  "frames": [
+   "dive_bounce_00",
+   "dive_bounce_01",
+   "dive_bounce_02"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "dive_impact",
+  "atlas": "vfx",
+  "frames": [
+   "dive_impact_00",
+   "dive_impact_01",
+   "dive_impact_02",
+   "dive_impact_03",
+   "dive_impact_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "dive_impact_heavy",
+  "atlas": "vfx",
+  "frames": [
+   "dive_impact_heavy_00",
+   "dive_impact_heavy_01",
+   "dive_impact_heavy_02",
+   "dive_impact_heavy_03",
+   "dive_impact_heavy_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "dive_trail",
+  "atlas": "vfx",
+  "frames": [
+   "dive_trail_00"
   ],
   "mode": "once"
  },
@@ -3230,6 +3315,89 @@
   ],
   "mode": "once",
   "fps": 20
+ },
+ {
+  "key": "dust_slide",
+  "atlas": "vfx",
+  "frames": [
+   "dust_slide_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "dust_wall",
+  "atlas": "vfx",
+  "frames": [
+   "dust_wall_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "dust_walljump",
+  "atlas": "vfx",
+  "frames": [
+   "dust_walljump_00",
+   "dust_walljump_01",
+   "dust_walljump_02",
+   "dust_walljump_03"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "explosion_l",
+  "atlas": "vfx",
+  "frames": [
+   "explosion_l_00",
+   "explosion_l_01",
+   "explosion_l_02",
+   "explosion_l_03",
+   "explosion_l_04",
+   "explosion_l_05"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "explosion_s",
+  "atlas": "vfx",
+  "frames": [
+   "explosion_s_00",
+   "explosion_s_01",
+   "explosion_s_02",
+   "explosion_s_03",
+   "explosion_s_04",
+   "explosion_s_05"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "flask_orb",
+  "atlas": "vfx",
+  "frames": [
+   "flask_orb_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "guard_spark",
+  "atlas": "vfx",
+  "frames": [
+   "guard_spark_00",
+   "guard_spark_01",
+   "guard_spark_02"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "heal",
+  "atlas": "vfx",
+  "frames": [
+   "heal_00"
+  ],
+  "mode": "once"
  },
  {
   "key": "hit_heavy",
@@ -3263,6 +3431,55 @@
   ],
   "mode": "once",
   "fps": 30
+ },
+ {
+  "key": "ring_djump",
+  "atlas": "vfx",
+  "frames": [
+   "ring_djump_00",
+   "ring_djump_01",
+   "ring_djump_02",
+   "ring_djump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "rush_up",
+  "atlas": "vfx",
+  "frames": [
+   "rush_up_00",
+   "rush_up_01",
+   "rush_up_02",
+   "rush_up_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "spawn_in",
+  "atlas": "vfx",
+  "frames": [
+   "spawn_in_00",
+   "spawn_in_01",
+   "spawn_in_02",
+   "spawn_in_03",
+   "spawn_in_04",
+   "spawn_in_05"
+  ],
+  "mode": "once",
+  "fps": 12
+ },
+ {
+  "key": "spike_spark",
+  "atlas": "vfx",
+  "frames": [
+   "spike_spark_00",
+   "spike_spark_01",
+   "spike_spark_02"
+  ],
+  "mode": "once",
+  "fps": 24
  },
  {
   "key": "stun_stars",

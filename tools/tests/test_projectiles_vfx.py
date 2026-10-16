@@ -34,7 +34,7 @@ class ProjectilesVfxTest(unittest.TestCase):
     def test_vfx(self):
         fr, anims = VX.build_frames()
         self.check(fr, FX, VX.ALLOWED, 'vfx')
-        self.assertEqual({a['key'] for a in anims}, set(FX))
+        self.assertTrue(set(FX) <= {a['key'] for a in anims})
         # spark cores are white so code can add the element color around them
         for k in ('hit_spark_00', 'hit_heavy_00'):
             self.assertIn((255, 255, 255, 255), list(fr[k].getdata()))
