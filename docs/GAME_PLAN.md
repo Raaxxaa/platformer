@@ -688,11 +688,12 @@ Each milestone ends with something you can play.
 | M2 | **Combat + Stage 1 enemies** | Greatsword + War Maul, all 5 Stage 1 enemies (Wolf, Bandit, Bandit Archer, Wild Boar, Bandit Brute), HP, flask, Rush, hit-stop, death and restart |
 | ART1 | **Style board (Stage 1)** | Real art for the 4 player outfits, all Stage 1 enemies, Plains tiles and background, on one image for you to approve. Can run alongside M2 |
 | ART2 | **Stage 1 enemies finished** | Great Boar boss art, enemy projectiles, hit/stun effects, sounds for every Stage 1 enemy and combat (art chat). Style board v1 approved |
-| M3 | **Stage 1 + Great Boar** | The full Plains & Forest stage (8 sections, arena with waves, timed door, hints) and the Great Boar boss fight, with the timer and split. Loot shows as grey markers until M4 |
+| M3 | **Stage 1 + Great Boar** | The full Plains & Forest stage (8 sections, arena with waves, timed door, hints) and the Great Boar boss fight, with the timer and split. Loot shows as grey markers until M5 |
 | V1 | **Stage 1 with real art and sound** | The builder swaps the grey boxes for the real sprites, tiles, background, effects and sounds (after M3 + ART2) |
-| M4 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest |
-| M5 | ~~First Guardian~~ | Moved into M3 |
-| M6 | **Classes + abilities** | Class select with 4 starting kits, 2 abilities per class + Vampire (all Lv1 for now), Connection bonuses, hybrids, weapon match |
+| ART3 | **Villages** | Art for the Home Village and Crossroads Village: backgrounds, inn, shop objects, class statues, NPCs, training dummy (art chat). Can run alongside M3–M5 |
+| M4 | **Classes, abilities, weapons (basics)** | Pick a class and starting weapon; 2 abilities per class + Vampire; all 4 Connection bonuses and 6 hybrids; weapon match; the 6 starting weapons that were missing (Katana, Iron Fists, Bow, Crossbow, Storm Hammer, Staff); a Training Ground with an armory and a training dummy |
+| M5 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest, timed chest, coins, boss weapon drop, merchant items |
+| M6 | ~~Classes + abilities~~ | Moved into M4 |
 | M7 | **Villages + Stage 2** | Home Village, Crossroads Village, inn and sleeping, shop with prices, buying and selling abilities, upgrading them Lv1–5, both Stage 2 roads with their mobs and Guardians, stat upgrades, run summary, saved best times |
 | M8 | **Art + sound pass** | Stages 1–2 and the villages look and sound real, class outfits |
 | M9 | **Stages 3–4 + Dragon** | Border Village, Enemy Kingdom, Rebel Camp, King's Castle, Black Knight, Enemy King, the Dragon event, all 17 abilities, all 19 weapons, Rush meter, timed doors |
