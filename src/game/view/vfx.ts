@@ -18,10 +18,12 @@ type Fx =
 export interface TickEvent { tick: number; e: WorldEvent }
 
 /** Number of live effects of each kind, for tests (window.__game.vfx()). */
-export interface VfxCounts { total: number; byKey: Record<string, number> }
+export interface VfxCounts { total: number; byKey: Record<string, number>; spawned: Record<string, number> }
 
 export class VfxPool {
   private readonly list: Fx[] = [];
+  /** Effects started since the scene began, by key (tests). */
+  private readonly spawned: Record<string, number> = {};
   private readonly gfx: Phaser.GameObjects.Graphics;
   private readonly scene: Phaser.Scene;
   private readonly bank: AnimBank;
@@ -34,6 +36,8 @@ export class VfxPool {
   private add(fx: Fx): void {
     if (this.list.length >= VFX.max) this.remove(0);          // the oldest is recycled
     this.list.push(fx);
+    const k = fx.kind === 'anim' ? fx.key : fx.kind;
+    this.spawned[k] = (this.spawned[k] ?? 0) + 1;
   }
   private remove(i: number): void {
     const fx = this.list[i];
@@ -94,7 +98,7 @@ export class VfxPool {
       const k = fx.kind === 'anim' ? fx.key : fx.kind;
       byKey[k] = (byKey[k] ?? 0) + 1;
     }
-    return { total: this.list.length, byKey };
+    return { total: this.list.length, byKey, spawned: { ...this.spawned } };
   }
 
   clear(): void {

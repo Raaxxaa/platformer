@@ -9,7 +9,7 @@ function run(w: GameWorld, watch: SfxWatch, spec: InputSpec, n: number): string[
   const ids: string[] = [];
   for (let i = 0; i < n; i++) {
     const ev: WorldEvent[] = stepSpec(w, spec, 1);
-    ids.push(...watch.collect(w, ev.map((e) => ({ tick: w.tick, e })), { key: 'idle', frame: 0 }).map((r) => r.id));
+    ids.push(...watch.collect(w, ev.map((e) => ({ tick: w.tick, e }))).map((r) => r.id));
   }
   return ids;
 }

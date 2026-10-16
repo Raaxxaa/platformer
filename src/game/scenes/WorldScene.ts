@@ -15,6 +15,7 @@ import type { AnimDef } from '../view/animClock.ts';
 import { AnimBank } from '../view/animBank.ts';
 import { EnemySprite, OUTFIT, PlayerSprite, ProjectileSprites, type PlayerViewEvents } from '../view/EntitySprites.ts';
 import { SfxPlayer } from '../audio/sfx.ts';
+import type { SfxRequest } from '../audio/sfxRules.ts';
 import { SfxWatch } from '../audio/sfxTriggers.ts';
 import { drawMarkers, VfxDirector, VfxPool, type TickEvent } from '../view/vfx.ts';
 import { loadAssets } from '../assets/loadAssets.ts';
@@ -58,6 +59,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   private lastRenderTick = -1;
   protected sfx!: SfxPlayer;
   private sfxWatch = new SfxWatch();
+  /** Sounds found by the per-tick checks, played on the next render. */
+  private sfxQueue: SfxRequest[] = [];
   private soundNote!: Phaser.GameObjects.BitmapText;
   /** `?boxes=1`: the old grey boxes instead of sprites (debugging). */
   protected boxesMode = false;
@@ -123,8 +126,13 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   /** One world tick, keeping its events for the next render. */
   protected stepWorld(input: Parameters<GameWorld['step']>[0]): void {
+    const before = this.world.tick;
     this.world.step(input);
-    for (const e of this.world.events) this.frameEvents.push({ tick: this.world.tick, e });
+    if (this.world.tick < before) { this.sfxWatch.reset(); this.sfxQueue = []; }
+    const evs = this.world.events.map((e) => ({ tick: this.world.tick, e }));
+    this.frameEvents.push(...evs);
+    this.sfxQueue.push(...this.sfxWatch.collect(this.world, evs));
+    if (this.vfx) this.vfx.update(this.world, evs, { atlas: `player_${OUTFIT}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
   }
 
   update(_time: number, delta: number): void {
@@ -155,7 +163,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.boxes.clear();
     // A restart rewinds the tick: drop effects of the old run.
     if (w.tick < this.lastRenderTick) {
-      this.vfx.reset(); this.sfxWatch.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
+      this.vfx.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
       this.sfx.play([{ id: 'restart' }], w.tick, { camCenterX: cam.x, playerX: w.body.x });
     }
     this.lastRenderTick = w.tick;
@@ -178,10 +186,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.playerView.setVisible(!this.boxesMode);
     if (this.boxesMode) this.boxes.fillStyle(STATE_COLOR[b.state], 1).fillRect(left, top, b.w, b.h);
     else this.playerView.update(w, this.playerEv);
-    this.vfx.update(w, this.frameEvents, { atlas: `player_${OUTFIT}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
     this.vfx.pool.update(w.tick);
     drawMarkers(this.markersGfx.clear(), w);
-    const reqs = this.sfxWatch.collect(w, this.frameEvents, this.playerView.anim);
+    const reqs = [...this.sfxQueue, ...this.sfxWatch.footsteps(this.playerView.anim)];
+    this.sfxQueue = [];
     this.sfx.play(reqs, w.tick, { camCenterX: cam.x + this.scale.width / 2, playerX: b.x });
     this.soundNote.setVisible(this.sfx.locked && !this.overview);
     if (this.debug) g.lineStyle(1, COLOR.hurtbox, 1).strokeRect(left + 0.5, top + 0.5, b.w - 1, b.h - 1);

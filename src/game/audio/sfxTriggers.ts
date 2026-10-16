@@ -37,8 +37,16 @@ export class SfxWatch {
     this.swingKey = ''; this.rush = 0; this.sipped = false; this.charges = -1; this.runFrame = -1; this.projectiles.clear();
   }
 
-  /** `playerAnim` is the player view's current anim key and frame (for footsteps). */
-  collect(w: GameWorld, events: TickEvent[], playerAnim: { key: string; frame: number }): SfxRequest[] {
+  /** Footsteps on run frames 1 and 5, from the player view's anim (checked each render). */
+  footsteps(playerAnim: { key: string; frame: number }): SfxRequest[] {
+    const rf = playerAnim.key === 'run' ? playerAnim.frame : -1;
+    const step = rf !== this.runFrame && (SFX_TRIGGER.footstepFrames as readonly number[]).includes(rf);
+    this.runFrame = rf;
+    return step ? [{ id: 'step_soft' }] : [];
+  }
+
+  /** Called after every world tick with that tick's events, so no state change is missed between renders. */
+  collect(w: GameWorld, events: TickEvent[]): SfxRequest[] {
     const out: SfxRequest[] = [];
     const b = w.body;
     for (const { e } of events) {
@@ -122,10 +130,6 @@ export class SfxWatch {
       if (weight) out.push({ id: `swing_${weight}` });
     }
     this.swingKey = key;
-    // Footsteps on run frames 1 and 5.
-    const rf = playerAnim.key === 'run' ? playerAnim.frame : -1;
-    if (rf !== this.runFrame && (SFX_TRIGGER.footstepFrames as readonly number[]).includes(rf)) out.push({ id: 'step_soft' });
-    this.runFrame = rf;
     // Rush up / max / down.
     const lvl = rushLevel(w.rush);
     if (lvl > this.rush) out.push(lvl === 3 ? { id: 'rush_max' } : { id: 'rush_up', semitones: SFX_TRIGGER.rushSemitones * (lvl - 1) });
