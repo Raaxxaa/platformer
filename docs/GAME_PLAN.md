@@ -174,6 +174,32 @@ Your 2 ability slots decide what you are:
   - Bow + Thunder Strike → Bow works fine, no bonus.
   - Bow + Arrow Rain + Thunder Strike → you're an **Arcane Archer**, and the Bow is matched.
 
+### 4.5 Your character's look (not tied to class)
+Your character's appearance has **nothing to do with your class**. Any class can look any way you want.
+
+- **Character creator** (a mirror/wardrobe in the Home Village):
+  - **Race:** Human, Elf (pointed ears), Dwarf (beard, stocky) or Orc (green skin, small tusks).
+  - **Looks:** skin tone, hair style, hair color, face, beard.
+  - **Clothes:** a few starting clothing sets, each with **colors you pick**.
+- **Accessories from mob drops:** hats, helmets, masks, capes, pauldrons and more. They drop rarely from enemies and bosses, themed by who dropped them. Examples:
+
+  | Dropped by | Accessory |
+  |---|---|
+  | Wolf | Wolf-pelt hood |
+  | Bandit | Bandit bandana |
+  | Bandit Archer | Feathered cap |
+  | Wild Boar | Tusk necklace |
+  | Bandit Brute | Spiked shoulder pads |
+  | Great Boar | Boar-skull helmet |
+  | Dragon | Dragon-scale cape (in its color) |
+
+  - **Drop rates (starting idea):** about 1% from regular enemies, 5% from elites, 25% from bosses. The first kill of a boss is always a drop.
+  - **Kept forever:** a dropped accessory goes into your **collection** for every future run. It takes no inventory slot, and a popup says what you got.
+  - **Collection book:** shows every accessory you've found and outlines of the ones you haven't, as something to hunt for.
+- **Your class still shows:** a thin glow or trim in your current class or hybrid color, so you can still tell your class at a glance.
+- **Fairness:** every race is the same size and has the same hitbox, and everything here is **looks only, with no stats**. That keeps speedrun times comparable.
+- **When:** a later milestone (M12). Until then the player uses the 4 starter looks from the art plan, and any class can use any of them.
+
 ---
 
 ## 5. Combat
@@ -601,7 +627,7 @@ Selling gives back about **half** of what you spent on that ability.
 - All 4 starting classes are unlocked from the start.
 - Sometimes enemies drop **blueprints** that unlock a new weapon or ability into the loot pool.
 - **No permanent stat boosts**, so runs are always fair to compare for speedrunning.
-- A "classes discovered" page fills in as you get each Connection bonus and hybrid. Beating the King with a class unlocks a third starting weapon for it. Cosmetic outfit unlocks come later (not in the first version).
+- A "classes discovered" page fills in as you get each Connection bonus and hybrid. Beating the King with a class unlocks a third starting weapon for it. Cosmetic accessories come from mob drops and stay in your collection forever (4.5, M12).
 - Best times are saved on your computer **per starting class** and **per road** (Mountain or Forest).
 
 ---
@@ -626,7 +652,7 @@ All rebindable. Bond passives and Vampire are always on, so they don't add any b
 ## 12. Look and sound
 - Pixel art, 2D side view. Each biome has its own color palette so you always know where you are.
 - Villages are cozy and calm (warm lights, quiet music) as a break between stages.
-- Each class has its own look. Your outfit's trim changes color to show your current class or hybrid.
+- Your character's look is your own choice, not your class (4.5). A trim/glow color shows your current class or hybrid.
 - **Game feel** is a priority: hit-stop on big hits, screen shake, enemy flash, punchy sounds.
 - Each element has its own look and sound (fire crackle, ice shatter, Storm Hammer thunder, etc.).
 - The Dragon gets a warning before it arrives (a shadow passes over, a roar) so it feels like an event.
@@ -668,6 +694,7 @@ Each milestone ends with something you can play.
 | M9 | **Stages 3–4 + Dragon** | Border Village, Enemy Kingdom, Rebel Camp, King's Castle, Black Knight, Enemy King, the Dragon event, all 17 abilities, all 19 weapons, Rush meter, timed doors |
 | M10 | **Speedrun extras + polish** | Seeds, practice mode, ghosts, balance |
 | M11 | **Layout variety** | Each section of each stage has several hand-made versions; every run picks a different mix (14.1) |
+| M12 | **Character customization** | Character creator (race, looks, clothing colors), accessory drops from mobs and bosses, collection book (4.5) |
 
 **First thing to make fun: M1.** If running and jumping around the empty test level isn't fun, nothing else will be.
 
