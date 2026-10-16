@@ -18,3 +18,9 @@ export const INPUT = {
   STICK_X: 0.30,
   STICK_Y: 0.60,
 } as const;
+
+/** Tile size in pixels (00-README "Units"). */
+export const TILE_SIZE = 16;
+/** Game view (resolution) in pixels (00-README "Units"). */
+export const VIEW_W = 640;
+export const VIEW_H = 360;
