@@ -1,0 +1,21 @@
+{
+  "name": "rushblade",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "test:e2e": "npm run build && playwright test"
+  },
+  "dependencies": { "phaser": "4.2.1" },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5",
+    "@playwright/test": "1.56.1"
+  }
+}
