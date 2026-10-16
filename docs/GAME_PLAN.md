@@ -196,6 +196,7 @@ Your character's appearance has **nothing to do with your class**. Any class can
   - That's about 30 enemy types, so about 30 accessories to collect over many runs.
   - They're **kept forever** in your collection, take no inventory slot, and a popup says what you got.
   - **Collection book:** shows every accessory you've found and outlines of the ones still missing.
+  - **Shops sell cosmetics too:** every village shop has **1 cosmetic slot** with a shop-only item (clothing colors, hats, capes, hair dyes that no enemy drops). It changes every visit and costs run gold (roughly 150–400). So you choose: spend gold on looks and stay weaker this run, or on power. It's kept forever, like drops.
   - **Possible extra later:** a rare color variant of each accessory with a small chance on later kills, for players who want more to hunt.
 - **Your class still shows:** a thin glow or trim in your current class or hybrid color, so you can still tell your class at a glance.
 - **Fairness:** every race is the same size and has the same hitbox, and everything here is **looks only, with no stats**. That keeps speedrun times comparable.
