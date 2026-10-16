@@ -13,6 +13,8 @@ import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/bod
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
 import { deriveSeed, Rng } from '../rng.ts';
+import { activateEnemies, spawnEnemy, type EnemyState } from '../enemies/enemy.ts';
+import type { EnemySpawn } from '../enemies/types.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -31,6 +33,7 @@ export interface GameWorldOptions {
   spawn: { x: number; y: number };
   stage?: Stage;
   runSeed?: number;
+  enemies?: EnemySpawn[];
 }
 
 export class GameWorld {
@@ -50,6 +53,7 @@ export class GameWorld {
   gold = 0;
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
   hitGroups: HitGroup[] = [];
+  enemies: EnemyState[] = [];
   events: WorldEvent[] = [];
   private nextId = 1;
 
@@ -93,6 +97,7 @@ export class GameWorld {
     this.hitGroups = [];
     this.events = [];
     this.nextId = 1;
+    this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
   }
 
   restart(): void {
@@ -133,7 +138,9 @@ export class GameWorld {
       else if (e === 'diveStart') cancelAttack(this, 'dive');
     }
     syncPlayerGroups(this);
-    // 5. Enemy AI and movement. 6. Moving hit groups. 7. Hit resolution. 8. Statuses. 9. Deaths. 10. Rush and flask.
+    // 5. Enemy AI and movement.
+    activateEnemies(this);
+    // 6. Moving hit groups. 7. Hit resolution. 8. Statuses. 9. Deaths. 10. Rush and flask.
     stepCamera(this.camera, this.body);
   }
 }

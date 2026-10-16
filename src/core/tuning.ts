@@ -154,3 +154,32 @@ export const RUSH = {
   SPEED_PERCENT: [0, 0.05, 0.10, 0.15],
   GOLD_MULT: [1.00, 1.10, 1.20, 1.30],
 } as const;
+
+/** Stage scaling (04 §2.3, 00-README). */
+export const STAGE_SCALING = {
+  1: { mobHp: 1.0, bossHp: 1.0, dmg: 1.0 }, 2: { mobHp: 1.4, bossHp: 1.7, dmg: 1.3 },
+  3: { mobHp: 1.9, bossHp: 2.6, dmg: 1.5 }, 4: { mobHp: 2.4, bossHp: 3.6, dmg: 1.7 } } as const;
+
+/** Shared enemy rules (04 §2). */
+export const ENEMY = {
+  GRAVITY: 1500,
+  MAX_FALL: 400,
+  SEPARATION_DIST: 10,          // px between feet x
+  SEPARATION_SPEED: 40,         // px/s
+  ATTACK_GAP_REGULAR: 0.6,
+  ATTACK_GAP_ELITE: 0.8,
+  ALERT_REACTION: 0.25, ALERT_REACTION_TICKS: ticks(0.25),
+  ALERT_SPREAD_RANGE: 128,
+  ALERT_SPREAD_DELAY: 0.3, ALERT_SPREAD_TICKS: ticks(0.3),
+  NOTICE_RANGE_Y: 80,
+  LOSE_RANGE_MIN: 320,          // loseRange = max(320, 2 × range)
+  RETURN_AFTER: 5.0, RETURN_AFTER_TICKS: ticks(5.0),
+  PATROL_PAUSE: 1.0, PATROL_PAUSE_TICKS: ticks(1.0),
+  DEATH_ANIM: 0.4, DEATH_ANIM_TICKS: ticks(0.4),
+  ACTIVATION_MARGIN: 96,
+  MELEE_DY_MIN: -40, MELEE_DY_MAX: 24,
+  RANGED_DY_MIN: -96, RANGED_DY_MAX: 96,
+  MAX_TOKENS_MELEE: 2, MAX_TOKENS_RANGED: 2,
+  LEAP_MAX: 1.0, LEAP_MAX_TICKS: ticks(1.0),
+  DUMMY_HEAL_DELAY: 1.0, DUMMY_HEAL_TICKS: ticks(1.0),
+} as const;
