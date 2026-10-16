@@ -34,6 +34,7 @@ import type { EnemySpawn } from '../enemies/types.ts';
 import { buildWorldParts, type LevelData, type LevelEnemySpawn, type LevelObject } from '../level/loadLevel.ts';
 import { createRunState, type RunState } from '../run/runState.ts';
 import { fnv1a32 } from '../rng.ts';
+import { buildArenas, stepArenas, type ArenaRt } from '../run/arenas.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -51,7 +52,10 @@ export type WorldEvent =
   | { t: 'kill'; enemyId: number; tier: 'regular' | 'elite' }
   | { t: 'playerDied'; cause: string }
   | { t: 'healRefused'; reason: HealRefusedReason }
-  | { t: 'drink' };
+  | { t: 'drink' }
+  | { t: 'arenaLocked'; arenaId: string }
+  | { t: 'arenaWave'; arenaId: string; wave: number }
+  | { t: 'arenaCleared'; arenaId: string; clearTicks: number; fast: boolean };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -91,6 +95,7 @@ export class GameWorld {
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
   bodies!: Bodies;
   run!: RunState;
+  arenas = new Map<string, ArenaRt>();
   readonly level: LevelData | null;
   readonly waveSpawns: LevelEnemySpawn[];
   readonly markers: LevelObject[];
@@ -194,6 +199,7 @@ export class GameWorld {
     this.lastAttackStartTick = -100000;
     this.rushedInstances = new Set();
     this.dashThrough = new Set();
+    this.arenas = buildArenas(this);
     this.phase = 'stage';
     this.deathTick = 0;
   }
@@ -343,6 +349,12 @@ export class GameWorld {
       e.hitStopTicks -= 1;
       return;
     }
+    if (e.spawnInTicks > 0) {                 // spawn-in: cannot act (04 §2.2)
+      e.spawnInTicks -= 1;
+      e.vx = 0;
+      stepEnemyBody(this, e);
+      return;
+    }
     stepEnemyReactions(e);
     for (const [id, n] of e.ai.cooldowns) if (n > 0) e.ai.cooldowns.set(id, n - 1);
     if (e.ai.gapTicks > 0) e.ai.gapTicks -= 1;
@@ -407,7 +419,8 @@ export class GameWorld {
     this.dashThroughRush();
     stepRush(this);
     stepFlask(this);
-    // 10. Rush and flask.
+    // 10. Rush and flask. 11. Level logic (06 §2.8).
+    stepArenas(this);
     stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());
     if (this.phase === 'dead' && this.tick - this.deathTick >= RESTART.DEATH_SIM_TICKS) this.phase = 'deathScreen';
   }

@@ -76,7 +76,7 @@ function stepEngage(w: GameWorld, e: EnemyState): void {
   const distX = Math.abs(w.body.x - e.x);
   const loseRange = Math.max(ENEMY.LOSE_RANGE_MIN, 2 * e.def.notice.range);
   e.ai.lostTicks = distX > loseRange ? e.ai.lostTicks + 1 : 0;
-  if (e.ai.lostTicks >= ENEMY.RETURN_AFTER_TICKS) {
+  if (e.ai.lostTicks >= ENEMY.RETURN_AFTER_TICKS && e.waveArena === null) {   // waves never return home (04 §2.2)
     e.ai.state = 'return';
     e.aware = false;
     e.noticeT = 0;

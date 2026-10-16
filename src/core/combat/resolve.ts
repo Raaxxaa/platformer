@@ -18,7 +18,17 @@ export function playerRect(w: GameWorld): Rect {
 }
 
 function hittable(e: EnemyState): boolean {
-  return !e.dead && !e.dormant;
+  return !e.dead && !e.dormant && e.spawnInTicks === 0;
+}
+
+/** An enemy reaches 0 HP: it dies, its attack and boxes go, and step 9 runs its on-kill effects. */
+export function killEnemy(w: GameWorld, e: EnemyState): void {
+  e.hp = 0;
+  e.dead = true;
+  e.deathTicks = ENEMY.DEATH_ANIM_TICKS;
+  cancelEnemyAttack(w, e);
+  removeEnemyGroups(w, e);
+  w.pendingDeaths.push(e);
 }
 
 /** One player direct hit on one enemy (02 §3.1, §4). */
@@ -41,12 +51,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   e.hitStopTicks = maxStop(e.hitStopTicks, stop);
   if (g.kind === 'melee' && !spec.multiHit) w.body.hitStopTicks = maxStop(w.body.hitStopTicks, stop);
   if (killed) {
-    e.hp = 0;
-    e.dead = true;
-    e.deathTicks = ENEMY.DEATH_ANIM_TICKS;
-    cancelEnemyAttack(w, e);
-    removeEnemyGroups(w, e);
-    w.pendingDeaths.push(e);
+    killEnemy(w, e);
     return;
   }
   // Poise and stagger, then knockback (full if staggered; ignored if committed otherwise).

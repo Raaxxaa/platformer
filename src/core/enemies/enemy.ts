@@ -51,6 +51,11 @@ export interface EnemyState {
   damagedTicks: number;            // ticks since the last damage (dummy heal, HP bar)
   everDamaged: boolean;
   hurtFlashTicks: number;
+  /** Arena waves: 0.5 s spawn-in, invulnerable and unable to act (04 §2.2). */
+  spawnInTicks: number;
+  /** Arena waves never return home (04 §2.2); `arena` is the arena id for the stuck rule (06 §9.2). */
+  waveArena: string | null;
+  outsideTicks: number;
 }
 
 /** Stage-scaled attack damage A (a float; 02 §3.3 rounds it). */
@@ -70,7 +75,7 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
     ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false },
     hitStopTicks: 0, frozenAtTickStart: false, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,
-    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0,
+    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0,
   };
 }
 
