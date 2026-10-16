@@ -8,6 +8,7 @@ There are two kinds of chats:
 
 - **The design chat** decides what the game is. It owns `docs/GAME_PLAN.md`, `docs/spec/` and `docs/plans/`.
 - **Build chats** (you) build exactly what those documents say: code, UI, art and sound.
+- **An art chat** may run alongside a code chat. It follows the `ART*` plans in `docs/plans/` and only touches `tools/`, `public/assets/`, `docs/art/` and the `assets` script line in `package.json`. A code chat never edits those art files; it only loads them.
 
 **Do not change the design.** If the spec is missing something or seems wrong:
 1. Pick the simplest option that matches `docs/GAME_PLAN.md`.
