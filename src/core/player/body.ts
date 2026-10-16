@@ -25,7 +25,8 @@ export interface PlayerBody extends AABBBody {
   dashPressPt: number; dashReadyPt: number; lastWallPt: number; lastWallDir: 1 | -1;
   steerLockTicks: number; dashIframes: boolean; preDashSpeed: number;
   // Implementation fields beyond 01 §15:
-  hitStopTicks: number;   // player hit-stop (02); always 0 until M2
+  hitStopTicks: number;   // player hit-stop (02 §4.1); freezes the player while > 0
+  hurtTicks: number;      // length of the current `hurt` stun (01 §12.2)
   landSpeed: number;      // impact speed of the last landing, for the 'land' event's listeners
   lastGroundY: number;    // feet y on the last grounded tick (camera look-down, 01 §14.1)
   climbFromX: number;     // ledge climb (01 §10.2): where the grab snapped the body,
@@ -43,7 +44,7 @@ export function createPlayerBody(x: number, y: number): PlayerBody {
     coyoteValid: false, lastGroundPt: NEVER, jumpPressPt: NEVER, jumpPressFresh: false,
     dashPressPt: NEVER, dashReadyPt: 0, lastWallPt: NEVER, lastWallDir: 1,
     steerLockTicks: 0, dashIframes: false, preDashSpeed: 0,
-    hitStopTicks: 0, landSpeed: 0, lastGroundY: y,
+    hitStopTicks: 0, hurtTicks: 0, landSpeed: 0, lastGroundY: y,
     climbFromX: 0, climbFromY: 0, climbTop: 0, climbStandX: 0,
   };
 }
