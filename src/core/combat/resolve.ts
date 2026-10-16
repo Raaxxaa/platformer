@@ -3,13 +3,13 @@ import { enemyCenter, enemyDamageA, enemyRect, type EnemyState } from '../enemie
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { roundHalfUp } from '../math.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { COMBAT, ENEMY, RUSH } from '../tuning.ts';
+import { COMBAT, ENEMY } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
 import { applyControl, applyEnemyKnockback, damagePoise, isCommitted } from './enemyReactions.ts';
 import { hurtPlayer } from './health.ts';
 import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
 import { maxStop, meleeHitStopTicks } from './hitStop.ts';
-import { rushLevel } from './rush.ts';
+import { rushGoldMult, rushLevel } from './rush.ts';
 
 /** The player hurtbox as a rect. */
 export function playerRect(w: GameWorld): Rect {
@@ -104,7 +104,7 @@ export function processDeaths(w: GameWorld): void {
     const tier = e.def.elite ? 'elite' : 'regular';
     w.onPlayerKill(e, tier);
     // SPEC-GAP: M2 credits gold instantly; coins in M4
-    w.gold += roundHalfUp(e.def.gold * RUSH.GOLD_MULT[rushLevel(w.rush)]);
+    w.gold += roundHalfUp(e.def.gold * rushGoldMult(rushLevel(w.rush)));
     w.events.push({ t: 'kill', enemyId: e.id, tier });
   }
   w.pendingDeaths = [];

@@ -153,6 +153,20 @@ export const RUSH = {
   ATTACK_SPEED_HEAVY: [1.00, 1.15, 1.30, 1.45],
   SPEED_PERCENT: [0, 0.05, 0.10, 0.15],
   GOLD_MULT: [1.00, 1.10, 1.20, 1.30],
+  HIT: 3,                       // first direct hit of an attack instance
+  DASH_HIT: 5,                  // extra, during a dash or ≤ 0.20 s after one
+  DASH_HIT_WINDOW: 0.20, DASH_HIT_WINDOW_TICKS: ticks(0.20),
+  DASH_THROUGH: 4,              // per enemy per dash
+  KILL_REGULAR: 15,
+  KILL_ELITE: 40,
+  MOVE_GAIN: 6,                 // per second while |vx| ≥ 60% of base run max
+  MOVE_FRACTION: 0.6,
+  STILL_SPEED: 20,              // px/s
+  STILL_DRAIN: 50,              // per second
+  STILL_DELAY: 0.5, STILL_DELAY_TICKS: ticks(0.5),
+  STILL_ATTACK_WINDOW: 1.0, STILL_ATTACK_WINDOW_TICKS: ticks(1.0),
+  NO_GAIN_DELAY: 4.0, NO_GAIN_DELAY_TICKS: ticks(4.0),
+  NO_GAIN_DRAIN: 15,            // per second
 } as const;
 
 /** Stage scaling (04 §2.3, 00-README). */

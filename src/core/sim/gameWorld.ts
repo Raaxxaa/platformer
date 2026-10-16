@@ -3,11 +3,14 @@
 import { createCamera, stepCamera, type CameraState } from '../camera.ts';
 import { createHealth, type PlayerHealth } from '../combat/health.ts';
 import type { HitGroup } from '../combat/hitGroups.ts';
-import { createRush } from '../combat/rush.ts';
+import { addRush, createRush, rushLevel, rushSpeedPercent, stepRush } from '../combat/rush.ts';
+import { enemyRect } from '../enemies/enemy.ts';
+import { overlaps } from '../combat/hitGroups.ts';
+import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
 import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
-import { FLASK } from '../tuning.ts';
+import { FLASK, RUSH } from '../tuning.ts';
 import type { InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { isGrounded } from '../physics/collide.ts';
@@ -66,6 +69,10 @@ export class GameWorld {
   enemies: EnemyState[] = [];
   pendingDeaths: EnemyState[] = [];
   dive: DiveState | null = null;
+  lastDashEndTick = -100000;
+  lastAttackStartTick = -100000;
+  private rushedInstances = new Set<number>();
+  private dashThrough = new Set<number>();
   /** Was the player already in hit-stop when this tick started (its melee boxes are frozen)? */
   playerFrozenAtTickStart = false;
   events: WorldEvent[] = [];
@@ -117,6 +124,10 @@ export class GameWorld {
     this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
     this.pendingDeaths = [];
     this.dive = null;
+    this.lastDashEndTick = -100000;
+    this.lastAttackStartTick = -100000;
+    this.rushedInstances = new Set();
+    this.dashThrough = new Set();
   }
 
   restart(): void {
@@ -137,6 +148,10 @@ export class GameWorld {
   /** A player hit group landed a direct hit on an enemy (Rush hooks). */
   onPlayerLandedHit(g: HitGroup, e: EnemyState): void {
     if (g.attackInstance < 0) onDiveGroupHit(this, g, e.id);
+    if (this.rushedInstances.has(g.attackInstance)) return;
+    this.rushedInstances.add(g.attackInstance);
+    const dashing = this.body.state === 'dash' || this.tick - this.lastDashEndTick <= RUSH.DASH_HIT_WINDOW_TICKS;
+    addRush(this, RUSH.HIT + (dashing ? RUSH.DASH_HIT : 0));
   }
 
   /** An enemy took player damage: instant awareness (04 §2.4). */
@@ -150,11 +165,23 @@ export class GameWorld {
   /** On-kill effects that belong to other systems (flask, Rush). */
   onPlayerKill(_e: EnemyState, tier: 'regular' | 'elite'): void {
     onKillFill(this, tier);
+    addRush(this, tier === 'elite' ? RUSH.KILL_ELITE : RUSH.KILL_REGULAR);
   }
 
   /** Drinking the flask (filled in by the flask task). */
   isDrinking(): boolean {
     return this.drinking !== null;
+  }
+
+  /** Dashing through an enemy: +4 Rush per enemy per dash (02 §8.2). */
+  private dashThroughRush(): void {
+    if (this.body.state !== 'dash') return;
+    const pr = playerRect(this);
+    for (const e of this.enemies) {
+      if (e.dead || e.dormant || this.dashThrough.has(e.id) || !overlaps(pr, enemyRect(e))) continue;
+      this.dashThrough.add(e.id);
+      addRush(this, RUSH.DASH_THROUGH);
+    }
   }
 
   /** Step 5 for one enemy: hit-stop, reactions, attack, AI and movement. */
@@ -193,6 +220,7 @@ export class GameWorld {
     stepDrink(this);
     if (this.drinking) this.mods.actionMoveMult = FLASK.MOVE_CAP;
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
+    this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush))];
     const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
     for (const e of moveEvents) {
       this.events.push({ t: 'move', e });
@@ -200,6 +228,8 @@ export class GameWorld {
       else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') { cancelAttack(this, 'jump'); cancelDrink(this); }
       else if (e === 'diveStart') cancelAttack(this, 'dive');
     }
+    if (moveEvents.includes('dashStart')) this.dashThrough.clear();
+    if (moveEvents.includes('dashEnd')) this.lastDashEndTick = this.tick;
     onDiveEvents(this, moveEvents, input);
     syncPlayerGroups(this);
     // 5. Enemy AI and movement.
@@ -214,6 +244,8 @@ export class GameWorld {
     // 8. Statuses (none in M2). 9. Deaths.
     processDeaths(this);
     stepDiveImpact(this);
+    this.dashThroughRush();
+    stepRush(this);
     stepFlask(this);
     // 10. Rush and flask.
     stepCamera(this.camera, this.body);

@@ -96,6 +96,7 @@ function startStep(w: GameWorld, slot: Slot, step: number, input: InputState): v
     lens: { startup: phaseTicks(st.startup, atk), active: phaseTicks(st.active, atk), recovery: phaseTicks(st.recovery, atk) },
   };
   c.current = cur;
+  w.lastAttackStartTick = w.tick;
   c.queued = false;
   c.otherPending = null;
   c.comboStep[slot === 0 ? 1 : 0] = 0;                                   // switching resets the other weapon's combo
