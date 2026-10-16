@@ -62,7 +62,7 @@ export function onBossKilled(w: GameWorld, e: EnemyState): void {
   w.projectiles = w.projectiles.filter((p) => p.owner !== e.id);
   w.rockMarkers = [];
   w.flask.charges = w.flask.maxCharges;
-  // SPEC-GAP: boss weapon drop arrives with loot in M4
+  // SPEC-GAP: boss weapon drop arrives with loot in M5
   w.events.push({ t: 'bossDefeated', bossId: e.def.id, stage: w.stage });
   w.onStageBossDefeated();
   const a = w.arenas.get(e.boss!.arenaId);

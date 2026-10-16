@@ -112,7 +112,7 @@ export function processDeaths(w: GameWorld): void {
   for (const e of w.pendingDeaths) {
     const tier = e.def.elite ? 'elite' : 'regular';
     w.onPlayerKill(e, tier);
-    // SPEC-GAP: M2 credits gold instantly; coins in M4
+    // SPEC-GAP: M2 credits gold instantly; coins in M5
     w.gold += roundHalfUp(e.def.gold * rushGoldMult(rushLevel(w.rush)));
     w.events.push({ t: 'kill', enemyId: e.id, tier });
     if (e.boss) onBossKilled(w, e);
