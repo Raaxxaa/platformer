@@ -1,6 +1,7 @@
 // The player's movement body, states and events (01 §15).
 import type { AABBBody } from '../physics/collide.ts';
 import { MOVE } from '../tuning.ts';
+import type { ForcedRt } from './forcedMove.ts';
 
 export type MoveStateId = 'ground' | 'air' | 'dash' | 'slide' | 'crawl' | 'wallSlide' | 'ledgeClimb'
   | 'diveWindup' | 'diveFall' | 'diveLand' | 'hurt' | 'forced' | 'minecart' | 'dead';
@@ -34,6 +35,8 @@ export interface PlayerBody extends AABBBody {
   climbFromY: number;
   climbTop: number;       // the ledge top L,
   climbStandX: number;    // and the standing spot's x
+  forced: ForcedRt | null;      // the running ForcedMove (01 §12.3)
+  lastForced: ForcedRt | null;  // the last one that ended (its owner reads endReason)
 }
 
 export function createPlayerBody(x: number, y: number): PlayerBody {
@@ -46,7 +49,7 @@ export function createPlayerBody(x: number, y: number): PlayerBody {
     dashPressPt: NEVER, dashReadyPt: 0, lastWallPt: NEVER, lastWallDir: 1,
     steerLockTicks: 0, dashIframes: false, preDashSpeed: 0,
     hitStopTicks: 0, hurtTicks: 0, endSlideRequested: false, landSpeed: 0, lastGroundY: y,
-    climbFromX: 0, climbFromY: 0, climbTop: 0, climbStandX: 0,
+    climbFromX: 0, climbFromY: 0, climbTop: 0, climbStandX: 0, forced: null, lastForced: null,
   };
 }
 

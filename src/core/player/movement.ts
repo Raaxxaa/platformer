@@ -11,6 +11,7 @@ import { defaultModifiers, runMaxEff, type MoveContext, type MoveModifiers } fro
 import { leaveWall, updateWallSlide } from './wall.ts';
 import { checkLedgeGrab, stepLedgeClimb } from './ledge.ts';
 import { stepDivePhases, tryStartDive } from './dive.ts';
+import { forcedAfterMove, forcedTimeAndCancels, forcedVelocity } from './forcedMove.ts';
 
 interface Rates { accel: number; decel: number; turn: number; overspeed: number }
 const GROUND_RATES: Rates = { accel: MOVE.GROUND_ACCEL, decel: MOVE.GROUND_DECEL, turn: MOVE.GROUND_TURN, overspeed: MOVE.OVERSPEED_DECAY_GROUND };
@@ -36,6 +37,7 @@ export function applyKnockback(b: PlayerBody, vx: number, vy: number, stunTicks:
   if (b.state === 'minecart' || b.state === 'dead') return;
   if (b.state === 'dash' || b.state === 'slide') endDashOrSlide(b, mods);
   if (b.state === 'wallSlide') leaveWall(b);
+  if (b.forced) { b.forced.endReason = 'knockback'; b.lastForced = b.forced; b.forced = null; }   // 01 §12.2
   b.vx = vx;
   b.vy = vy;
   b.dashIframes = false;
@@ -211,6 +213,7 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
   const ended = stepDashOrSlide(b, g, mods);
   if (ended) ev.push(ended);
   stepDivePhases(b);
+  forcedTimeAndCancels(b, input, g, mods);
   // 3. Record presses.
   if (input.jump.pressed) {
     b.jumpPressPt = b.pt;
@@ -241,8 +244,11 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
   } else {
     const vxStart = b.vx, vyStart = b.vy;
     // 6–7. Velocities.
-    horizontalVelocity(b, input, mods);
-    verticalVelocity(b, input, mods);
+    if (b.state === 'forced') forcedVelocity(b);
+    else {
+      horizontalVelocity(b, input, mods);
+      verticalVelocity(b, input, mods);
+    }
     b.vx = clampAbs(b.vx, MOVE.MAX_SPEED);
     b.vy = clampAbs(b.vy, MOVE.MAX_SPEED);
     if (b.vy >= 0) b.jumpCuttable = false;
@@ -258,12 +264,15 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
     }
     if (b.state === 'air' && vyStart < 0 && b.vy >= 0) oneWayApexSnap(b, g);
     // 9. After move.
-    const grabbed = afterMove(b, input, g, mods, hitWall, ev);
-    if (!grabbed) pushOut(b, g);
+    if (b.state === 'forced') forcedAfterMove(b, g, mods, hitWall);
+    else {
+      const grabbed = afterMove(b, input, g, mods, hitWall, ev);
+      if (!grabbed) pushOut(b, g);
+    }
   }
-  // 10. Facing and box.
+  // 10. Facing and box (a ForcedMove keeps its box).
   updateFacing(b, input, mods);
-  updateBox(b, g);
+  if (b.state !== 'forced') updateBox(b, g);
   b.jumpPressFresh = false;
   return ev;
 }
