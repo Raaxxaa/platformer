@@ -39,7 +39,7 @@
 | # | My assumption | Other option |
 |---|---|---|
 | A2 | It's a **roguelite**: if you die, the run restarts from Stage 1. | Restart only the current stage |
-| A4 | Stage layouts are **hand-made and the same every run** (so speedrunners can learn routes). Only loot, Lucky Blocks and the Dragon are random. | Random layouts like Dead Cells |
+| A4 | **For now:** stage layouts are hand-made and the same every run. **Later (decided):** layouts change a little every run, Dead Cells style. See 14.1 | — |
 | A5 | **Pixel art**, 2D, side view. | |
 
 ---
@@ -667,10 +667,31 @@ Each milestone ends with something you can play.
 | M8 | **Art + sound pass** | Stages 1–2 and the villages look and sound real, class outfits |
 | M9 | **Stages 3–4 + Dragon** | Border Village, Enemy Kingdom, Rebel Camp, King's Castle, Black Knight, Enemy King, the Dragon event, all 17 abilities, all 19 weapons, Rush meter, timed doors |
 | M10 | **Speedrun extras + polish** | Seeds, practice mode, ghosts, balance |
+| M11 | **Layout variety** | Each section of each stage has several hand-made versions; every run picks a different mix (14.1) |
 
 **First thing to make fun: M1.** If running and jumping around the empty test level isn't fun, nothing else will be.
 
 ---
+
+### 14.1 Later: layouts that change every run (idea, not built yet)
+
+**Your idea:** like Dead Cells, the map layout should be a little different every run.
+
+**How it would work (Dead Cells does it the same way):**
+- Each stage keeps its **8 sections in the same order** (start, combat stretch, traversal, branch, arena, traversal 2, loot area, boss). The biome, enemies, boss and story stay the same.
+- But each section has **3–4 hand-made versions** ("room variants"). Every run, the game picks one version per section using the run's seed. 8 sections × 3–4 versions = thousands of different stages, and every piece is still hand-designed, so it's always fair and fun.
+- **Connectors:** every version of a section starts and ends at the same height, so any version fits next to any other.
+- Chests, keys, Lucky Blocks and enemies have **slots** in each version. The counts per stage stay the same (4 Lucky Blocks, 2 keys, 40 regular enemies…), only where they are changes.
+- The arena and boss arena stay fixed, so the fights stay learnable.
+
+**Speedrunning still works:**
+- **Same seed = same layout.** Races on a typed seed are fair, and practice mode can use a fixed seed.
+- Players learn each section's versions rather than one fixed map, the way Dead Cells speedrunners do.
+- Personal bests stay per class and road. An optional "fixed layout" setting could keep the classic map for players who want it (to decide later).
+
+**Why this is cheap to add later:** the level builder already makes each section from its own file (`s1.txt` … `s8.txt` in M3). Adding variants means drawing more files per section and letting the seed pick. The checks we already have (enemy counts, jump limits) would run on every possible combination.
+
+**When:** after the full game works (M11). Until then every run uses version 1 of each section.
 
 ## 15. What's left to discuss
 
