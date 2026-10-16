@@ -1,12 +1,13 @@
 // 02 §2.1 steps 7a, 7b and 9: hit resolution and deaths.
-import { enemyCenter, enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
+import { enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { roundHalfUp } from '../math.ts';
 import { onBossKilled } from '../enemies/boss.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, ENEMY } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
-import { applyControl, applyEnemyKnockback, damagePoise, isCommitted } from './enemyReactions.ts';
+import { applyEnemyKnockback, applyLaunch, applyPull, controlOrPoise, damagePoise, isCommitted } from './enemyReactions.ts';
+import { guaranteedCrit, hitBonus, kbDir, targetMult } from './hitMods.ts';
 import { hurtPlayer } from './health.ts';
 import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
 import { maxStop, meleeHitStopTicks } from './hitStop.ts';
@@ -35,11 +36,13 @@ export function killEnemy(w: GameWorld, e: EnemyState): void {
 /** One player direct hit on one enemy (02 §3.1, §4). */
 function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const spec = g.spec;
-  const grade = g.slot !== undefined ? w.combat.slots[g.slot]?.grade ?? 'C' : 'C';
-  // A broken boss takes its break multiplier (04 §9.1, a step-6 target multiplier).
-  const targetMult = e.def.boss && e.control?.type === 'stagger' ? e.def.boss.breakMult : 1;
-  const matched = g.slot !== undefined && w.classState.weaponMatched[g.slot];
-  const { damage } = playerHitDamage({ base: spec.damage, grade, matched, isWeapon: true, targetMult });
+  const isWeapon = g.ability === undefined;
+  const inst = g.slot !== undefined ? w.combat.slots[g.slot] : null;
+  const matched = isWeapon && g.slot !== undefined && w.classState.weaponMatched[g.slot];
+  const crit = guaranteedCrit(w, g, e);
+  const { damage } = playerHitDamage({
+    base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: targetMult(w, g, e),
+  });
   e.hp -= damage;
   e.lastPlayerHitTick = w.tick;
   e.damagedTicks = 0;
@@ -47,26 +50,31 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   e.hurtFlashTicks = ENEMY.HURT_FLASH_TICKS;
   const killed = e.def.tier !== 'dummy' && e.hp <= 0;
   if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
-  w.events.push({ t: 'hit', target: e.id, amount: damage, crit: false, heavy: !!spec.heavy });
+  w.events.push({ t: 'hit', target: e.id, amount: damage, crit, heavy: !!spec.heavy });
   if (spec.heavy) w.shakeLevel('small');
   w.onPlayerLandedHit(g, e);
-  // Hit-stop: melee freezes both, a shot only the target.
-  const stop = meleeHitStopTicks(spec.hitStop, false, killed);
+  // Hit-stop (02 §4.1): melee freezes both, a shot or a multi-hit group only the target.
+  const stop = meleeHitStopTicks(spec.hitStop, crit, killed);
   e.hitStopTicks = maxStop(e.hitStopTicks, stop);
-  if (g.kind === 'melee' && !spec.multiHit) w.body.hitStopTicks = maxStop(w.body.hitStopTicks, stop);
+  if (g.kind === 'melee' && !spec.multiHit && !g.noPlayerStop) w.body.hitStopTicks = maxStop(w.body.hitStopTicks, stop);
   if (killed) {
     killEnemy(w, e);
+    g.onHit?.(w, g, e, { damage, killed });
     return;
   }
-  // Poise and stagger, then knockback (full if staggered; ignored if committed otherwise).
+  // Poise and stagger, then knockback (full if staggered; ignored if committed otherwise), then control.
   const committed = isCommitted(e);
   const staggered = damagePoise(w, e, spec.poise, !!spec.heavy);
-  const c = enemyCenter(e).x;
-  const dir: 1 | -1 = c === w.body.x ? w.body.facing : c > w.body.x ? 1 : -1;
-  if (staggered || !committed) applyEnemyKnockback(e, spec.kb, dir);
-  if (spec.control?.type === 'knockdown') applyControl(w, e, 'knockdown', spec.control.duration);
+  const dir = kbDir(w, g, e);
+  const frozen = e.control?.type === 'pin';
+  const ctl = spec.control;
+  if (ctl?.type === 'launch') applyLaunch(w, e, spec.kb, dir);
+  else if (!frozen && (staggered || !committed)) applyEnemyKnockback(e, spec.kb, dir);
+  if (ctl?.type === 'knockdown' || ctl?.type === 'stun') controlOrPoise(w, e, ctl.type, ctl.duration);
+  else if (ctl?.type === 'pull' && g.pullTo) applyPull(w, e, g.pullTo);
   // Instant awareness: resolved while unaware, flips right after (04 §2.4).
   w.onEnemyHitByPlayer(e);
+  g.onHit?.(w, g, e, { damage, killed });
 }
 
 /** 7a: player hit groups vs enemies, groups in creation order, targets by ascending id. */
@@ -74,12 +82,16 @@ export function resolvePlayerHits(w: GameWorld): void {
   if (w.health.dead) return;                               // no hits from a dead player
   const playerFrozen = w.playerFrozenAtTickStart;
   const targets = [...w.enemies].sort((a, b) => a.id - b.id);
-  for (const g of [...w.hitGroups]) {
+  // Index loop: a group made during 7a (an orb's blast) is resolved on the same tick.
+  for (let i = 0; i < w.hitGroups.length; i++) {
+    const g = w.hitGroups[i];
     if (g.owner !== 'player' || !g.active) continue;
-    if (g.kind === 'melee' && playerFrozen) continue;      // a frozen melee box doesn't test overlap
+    if (g.kind === 'melee' && playerFrozen && !g.ability) continue;   // a frozen melee box doesn't test overlap
     for (const e of targets) {
+      if (!g.active) break;                                 // a projectile that stopped
       if (!hittable(e) || !canHit(g, e.id, w.tick)) continue;
       if (!overlaps(g.rect, enemyRect(e))) continue;
+      if (g.contact?.(w, g, e)) continue;
       markHit(g, e.id, w.tick);
       applyPlayerHit(w, g, e);
     }

@@ -195,6 +195,9 @@ export const COMBAT = {
   POISE_REFILL: 1.5, POISE_REFILL_TICKS: ticks(1.5),
   ELITE_POISE_IMMUNE: 2.0, ELITE_POISE_IMMUNE_TICKS: ticks(2.0),
   ELITE_CONTROL_MULT: 0.5,
+  LAUNCH_LAND: 0.2, LAUNCH_LAND_TICKS: ticks(0.2),   // 02 §4.4: launched enemies act again 0.2 s after landing
+  PULL_MAX: 0.3, PULL_MAX_TICKS: ticks(0.3), PULL_ARRIVE: 4,
+  BOSS_CONTROL_POISE: 30,
   FRONTAL_DX: 4,
 } as const;
 

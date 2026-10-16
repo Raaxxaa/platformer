@@ -2,6 +2,8 @@
 import { ticks } from '../tuning.ts';
 import type { Box, HitSpec } from './types.ts';
 import type { EnemyHit } from '../enemies/types.ts';
+import type { EnemyState } from '../enemies/enemy.ts';
+import type { GameWorld } from '../sim/gameWorld.ts';
 
 /** Axis-aligned rectangle, top-left corner, world px. */
 export interface Rect { x: number; y: number; w: number; h: number }
@@ -19,6 +21,20 @@ export interface HitGroup {
   slot?: 0 | 1;
   box?: Box;                         // attached melee groups: recomputed from the owner's feet every tick
   enemyHit?: EnemyHit;               // enemy-owned groups: the attack's hit data
+  // Player groups beyond weapon swings:
+  ability?: string;                  // an ability hit: skips grade and match (03 §7.8)
+  bonus?: number;                    // extra additive bonus on every hit (link, Warden, Gladiator)
+  dir?: 1 | -1;                      // knockback x direction (projectiles and waves: travel direction)
+  kbFromX?: number;                  // knockback away from this x (explosions); default the player's x
+  projectile?: number;               // the player projectile this group belongs to
+  /** Overlap that is not a normal hit (an orb touching an enemy explodes instead). Returns true to skip the hit. */
+  contact?: (w: GameWorld, g: HitGroup, e: EnemyState) => boolean;
+  /** After a direct hit landed (pins, pulls, pierce counting...). */
+  onHit?: (w: GameWorld, g: HitGroup, e: EnemyState, info: { damage: number; killed: boolean }) => void;
+  /** Hit-stop on the player too? Melee groups without multiHit (02 §4.1); ability melee may opt out. */
+  noPlayerStop?: boolean;
+  /** Overrides the size/elite rules for a control effect (pull target point). */
+  pullTo?: { x: number; y: number; speed: number };
 }
 
 /** 02 §2.2: `box` is a center offset from the feet facing right; mirror dx when facing left. */

@@ -8,6 +8,16 @@ import type { BossState } from './boss.ts';
 
 export type AiStateId = 'idle' | 'patrol' | 'alert' | 'engage' | 'attack' | 'return' | 'dazed';
 
+/** Stagger and dazed (04) plus 02 §4.4's control effects. Launch counts down only after landing; pull moves to `to`. */
+export interface EnemyControl {
+  type: 'stagger' | 'knockdown' | 'dazed' | 'stun' | 'pin' | 'launch' | 'pull';
+  ticks: number;
+  landed?: boolean;
+  to?: { x: number; y: number; speed: number };
+  /** Stun to apply when a pull ends (Grapple Arrow). */
+  thenStun?: number;
+}
+
 export interface RunningAttack {
   def: EnemyAttackDef;
   phase: 'tele' | 'act' | 'rec';
@@ -41,7 +51,7 @@ export interface EnemyState {
   ai: AiState;
   hitStopTicks: number;
   frozenAtTickStart: boolean;      // in hit-stop when the tick began: its attack boxes don't test overlap (02 §2.1)
-  control: { type: 'stagger' | 'knockdown' | 'dazed'; ticks: number } | null;
+  control: EnemyControl | null;
   knockback: boolean;
   grounded: boolean;
   hitWall: boolean;                // moveX hit a wall this tick

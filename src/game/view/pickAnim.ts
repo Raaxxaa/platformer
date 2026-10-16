@@ -92,7 +92,7 @@ export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, r
 /** What an enemy view needs to know (a subset of EnemyState). */
 export interface EnemyAnimState {
   dead: boolean; vx: number; vy: number; knockback: boolean;
-  control: { type: 'stagger' | 'knockdown' | 'dazed' } | null;
+  control: { type: 'stagger' | 'knockdown' | 'dazed' | 'stun' | 'pin' | 'launch' | 'pull' } | null;
   attack: { id: string; phase: string; t: number; len: number } | null;
   boss: { introTicks: number } | null;
   /** The boar's ledge skid (04 §3). */
