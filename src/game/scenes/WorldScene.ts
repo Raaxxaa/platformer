@@ -8,8 +8,9 @@ import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { specToInput, type InputSpec } from '../../core/sim/playerSim.ts';
 import { ENEMY } from '../../core/tuning.ts';
 import { formatTime } from '../../core/time.ts';
+import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
-import { drawTerrain, Parallax } from '../art/artViews.ts';
+import { drawTerrain, Parallax } from '../view/levelView.ts';
 import type { AnimDef } from '../view/animClock.ts';
 import { AnimBank } from '../view/animBank.ts';
 import { EnemySprite, OUTFIT, PlayerSprite, ProjectileSprites, type PlayerViewEvents } from '../view/EntitySprites.ts';
@@ -37,9 +38,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected debug = false;
   protected prevSpec: InputSpec = {};
   protected gfx!: Phaser.GameObjects.Graphics;
-  protected hud!: Phaser.GameObjects.Text;
+  protected hud!: Phaser.GameObjects.BitmapText;
   protected overlay!: Phaser.GameObjects.Graphics;
-  protected overlayText!: Phaser.GameObjects.Text;
+  protected overlayText!: Phaser.GameObjects.BitmapText;
   protected marks = new Map<number, Phaser.GameObjects.Text>();
   protected boxes!: Phaser.GameObjects.Graphics;
   protected parallax!: Parallax;
@@ -80,12 +81,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.vfx = new VfxDirector(new VfxPool(this, this.bank));
     this.markersGfx = this.add.graphics().setDepth(DEPTH.markers);
     this.gfx = this.add.graphics().setDepth(DEPTH.projectiles);
-    this.hud = this.add.text(4, 4, '', { fontFamily: 'monospace', fontSize: '10px', color: '#ffffff', stroke: '#0d0b14', strokeThickness: 2 })
+    this.hud = this.add.bitmapText(4, 4, FONTS.small, '')
       .setScrollFactor(0).setDepth(DEPTH.hud);
     const { width, height } = this.scale;
     this.overlay = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 5);
     this.overlay.fillStyle(DRAW.overlay, DRAW.overlayAlpha).fillRect(0, 0, width, height);
-    this.overlayText = this.add.text(width / 2, height / 2, 'You died — press R', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff' })
+    this.overlayText = this.add.bitmapText(width / 2, height / 2, FONTS.large, 'You died — press R')
       .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
     this.debug = debugEnabled();
     if (this.debug) installCombatDebugApi(this);
@@ -252,7 +253,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected hudLines(): string[] {
     const w = this.world;
     const f = w.flask;
-    const pips = '●'.repeat(f.charges) + '○'.repeat(f.maxCharges - f.charges);
+    const pips = `${f.charges}/${f.maxCharges}`;
     const weapons = w.combat.slots.map((s, i) => {
       if (!s) return `${i + 1}: -`;
       const name = s.weaponId.split('_').map((p) => p[0].toUpperCase() + p.slice(1)).join(' ');

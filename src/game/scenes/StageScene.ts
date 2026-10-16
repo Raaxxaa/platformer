@@ -9,7 +9,9 @@ import type { HintAction } from '../../core/run/zones.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { formatTime } from '../../core/time.ts';
 import { TICK_RATE } from '../../core/tuning.ts';
+import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
+import { DoorViews, drawGuideArrows } from '../view/levelView.ts';
 import { STAGE_UI } from '../../data/stageUi.ts';
 import { WorldScene } from './WorldScene.ts';
 
@@ -38,16 +40,17 @@ export class StageScene extends WorldScene {
   private levelId = 'plains';
   private level!: LevelData;
   private props!: Phaser.GameObjects.Graphics;
-  private labels: Phaser.GameObjects.Text[] = [];
-  private doorText = new Map<string, Phaser.GameObjects.Text>();
-  private hintText!: Phaser.GameObjects.Text;
-  private timerText!: Phaser.GameObjects.Text;
-  private splitText!: Phaser.GameObjects.Text;
+  private labels: Phaser.GameObjects.BitmapText[] = [];
+  private doorText = new Map<string, Phaser.GameObjects.BitmapText>();
+  private doorViews!: DoorViews;
+  private hintText!: Phaser.GameObjects.BitmapText;
+  private timerText!: Phaser.GameObjects.BitmapText;
+  private splitText!: Phaser.GameObjects.BitmapText;
   private splitUntil = -1;
   private bossBarGfx!: Phaser.GameObjects.Graphics;
-  private bossText!: Phaser.GameObjects.Text;
+  private bossText!: Phaser.GameObjects.BitmapText;
   private clearOverlay!: Phaser.GameObjects.Graphics;
-  private clearText!: Phaser.GameObjects.Text;
+  private clearText!: Phaser.GameObjects.BitmapText;
 
   constructor() {
     super('Stage');
@@ -80,18 +83,19 @@ export class StageScene extends WorldScene {
     this.props = this.add.graphics().setDepth(DEPTH.terrain + 5);
     for (const m of this.world.markers) {
       const y = CENTER_MARKERS.has(m.type) ? m.y + U.marker / 2 : m.y;
-      this.labels.push(this.add.text(m.x, y - U.marker / 2, MARKER_LETTER[m.type] ?? '?', { fontFamily: 'monospace', fontSize: '9px', color: '#ffffff' })
+      this.labels.push(this.add.bitmapText(m.x, y - U.marker / 2, FONTS.small, MARKER_LETTER[m.type] ?? '?')
         .setOrigin(0.5).setDepth(DEPTH.terrain + 6));
     }
-    const ui = { fontFamily: 'monospace', fontSize: '10px', color: '#ffffff', stroke: '#0d0b14', strokeThickness: 2 };
-    this.hintText = this.add.text(width / 2, height - U.hintBottom, '', ui).setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.timerText = this.add.text(width - 4, 4, '', { ...ui, fontSize: '12px' }).setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.splitText = this.add.text(width - 4, 20, '', { ...ui, color: '#ffd84a' }).setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.doorViews = new DoorViews(this);
+    drawGuideArrows(this, this.level.objects);
+    this.hintText = this.add.bitmapText(width / 2, height - U.hintBottom, FONTS.small, '').setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.timerText = this.add.bitmapText(width - 4, 4, FONTS.large, '').setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.splitText = this.add.bitmapText(width - 4, 24, FONTS.small, '').setTint(0xffd84a).setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
     this.bossBarGfx = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud);
-    this.bossText = this.add.text(width / 2, U.bossBarY - 2, '', ui).setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.bossText = this.add.bitmapText(width / 2, U.bossBarY - 2, FONTS.small, '').setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
     this.clearOverlay = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 5);
     this.clearOverlay.fillStyle(0x000000, 0.6).fillRect(0, 0, width, height);
-    this.clearText = this.add.text(width / 2, height / 2, '', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff', align: 'center' })
+    this.clearText = this.add.bitmapText(width / 2, height / 2, FONTS.large, '').setCenterAlign()
       .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
     this.installStageDebug();
   }
@@ -121,32 +125,20 @@ export class StageScene extends WorldScene {
   protected renderExtra(): void {
     const w = this.world, U = STAGE_UI;
     const g = this.props.clear();
-    // Doors and other bodies.
+    // Doors (sprites) and the timed door's countdown.
+    this.doorViews.update(w);
     for (const b of w.bodies.list) {
-      if (b.id.startsWith('arena_door') || w.timedDoors.some((t) => t.id === b.id)) {
-        const timed = w.timedDoors.find((t) => t.id === b.id);
-        const state = timed ? w.run.timedDoors[b.id] : null;
-        const color = state === 'missed' ? U.doorMissed : state === 'open' ? U.doorOpen : b.active ? U.doorActive : U.door;
-        if (b.active) g.fillStyle(color, 1).fillRect(b.x, b.y, b.w, b.h);
-        else g.lineStyle(1, color, 1).strokeRect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
-        if (timed) {
-          let t = this.doorText.get(b.id);
-          if (!t) { t = this.add.text(0, 0, '', { fontFamily: 'monospace', fontSize: '9px', color: '#ffffff', stroke: '#0d0b14', strokeThickness: 2 }).setOrigin(0.5, 1).setDepth(DEPTH.terrain + 6); this.doorText.set(b.id, t); }
-          t.setPosition(b.x + b.w / 2, b.y - 2).setText(state === 'pending' ? `${Math.ceil(timedDoorTimeLeft(w, b.id))}` : '');
-        }
-      }
+      const timed = w.timedDoors.find((t) => t.id === b.id);
+      if (!timed) continue;
+      const state = w.run.timedDoors[b.id];
+      let t = this.doorText.get(b.id);
+      if (!t) { t = this.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.doors + 1); this.doorText.set(b.id, t); }
+      t.setPosition(b.x + b.w / 2, b.y - 2).setText(state === 'pending' ? `${Math.ceil(timedDoorTimeLeft(w, b.id))}` : '');
     }
     // Loot markers (grey boxes with a letter) and guide arrows.
     for (const m of w.markers) {
       const cy = CENTER_MARKERS.has(m.type) ? m.y : m.y - U.marker / 2;
       g.fillStyle(U.markerColor, 1).fillRect(m.x - U.marker / 2, cy - U.marker / 2, U.marker, U.marker);
-    }
-    for (const a of this.level.objects.filter((o) => o.type === 'guide_arrow')) {
-      const ang = (Number(a.props.angle ?? 0) * Math.PI) / 180, L = U.arrowLen;
-      const tx = a.x + Math.cos(ang) * L / 2, ty = a.y + Math.sin(ang) * L / 2;
-      g.lineStyle(2, 0xffffff, 1).lineBetween(a.x - Math.cos(ang) * L / 2, a.y - Math.sin(ang) * L / 2, tx, ty);
-      g.fillStyle(0xffffff, 1).fillTriangle(tx + Math.cos(ang) * 4, ty + Math.sin(ang) * 4,
-        tx + Math.cos(ang + 2.4) * 6, ty + Math.sin(ang + 2.4) * 6, tx + Math.cos(ang - 2.4) * 6, ty + Math.sin(ang - 2.4) * 6);
     }
     // Hint, timer, split popup, boss bar, stage clear.
     this.hintText.setText(w.activeHint && !this.overview ? HINT_TEXT[w.activeHint] : '');

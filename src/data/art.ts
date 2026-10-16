@@ -50,6 +50,9 @@ export const OVERLAY = {
   spawnIn: { color: 0x6a3a94, alphaFrom: 0.8 },
 } as const;
 
+/** 08 §8 doors: opening and closing slide 48 px in 0.15 s. */
+export const DOOR = { slide: 48, slideTime: 0.15 } as const;
+
 /** 08 §4.1 player weapon + smear frame: 160 × 96, feet at (80, 72). */
 export const WEAPON_FRAME = { w: 160, h: 96, anchorX: 80, anchorY: 72 } as const;
 

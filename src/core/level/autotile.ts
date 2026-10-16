@@ -1,5 +1,5 @@
 // Blob autotiling and tile picking (08 §9.2–9.4). Pure: no Phaser.
-import type { TileGrid } from '../../core/level/tiles.ts';
+import type { TileGrid } from './tiles.ts';
 import { TILESET } from '../../data/art.ts';
 
 const N = 1, NE = 2, E = 4, SE = 8, S = 16, SW = 32, W = 64, NW = 128;

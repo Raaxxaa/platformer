@@ -6,7 +6,7 @@ import type { GameWorld, WorldEvent } from '../../core/sim/gameWorld.ts';
 import { TICK_RATE } from '../../core/tuning.ts';
 import { DEATH_BURST_COLORS, DEPTH, VFX } from '../../data/art.ts';
 import { WEAPONS } from '../../data/weapons.ts';
-import { hash2 } from '../art/autotile.ts';
+import { hash2 } from '../../core/level/autotile.ts';
 import { timeFrame } from './animClock.ts';
 import type { AnimBank } from './animBank.ts';
 

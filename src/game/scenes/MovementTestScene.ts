@@ -7,7 +7,7 @@ import { MOVEMENT_TEST } from '../../data/levels/movementTest.ts';
 import { debugEnabled, installDebugApi, type DebugHost } from '../debug.ts';
 import { Devices } from '../input/devices.ts';
 import { COLOR, NOSE, STATE_COLOR } from '../greybox.ts';
-import { drawTerrain, Parallax } from '../art/artViews.ts';
+import { drawTerrain, Parallax } from '../view/levelView.ts';
 import { loadAssets } from '../assets/loadAssets.ts';
 import { DEPTH } from '../../data/art.ts';
 

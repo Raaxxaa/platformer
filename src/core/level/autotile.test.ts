@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { BLOB_MASKS, blobIndex, hash2, onewayPiece, reduceMask, terrainTile, ONEWAY_COL } from './autotile.ts';
-import { gridFromRects } from '../../core/level/build.ts';
+import { gridFromRects } from './build.ts';
 
 describe('blob autotiling (08 §9.2)', () => {
   it('the 256 masks reduce to exactly 47 values, sorted into blob indexes', () => {
@@ -9,6 +9,9 @@ describe('blob autotiling (08 §9.2)', () => {
     expect(blobIndex(85)).toBe(21);
     expect(blobIndex(124)).toBe(31);
     expect(blobIndex(255)).toBe(46);
+  });
+  it('the masks agree with tools/art/tiles.py (its BLOB_MASKS, printed by Python)', () => {
+    expect(BLOB_MASKS).toEqual([0,1,4,5,7,16,17,20,21,23,28,29,31,64,65,68,69,71,80,81,84,85,87,92,93,95,112,113,116,117,119,124,125,127,193,197,199,209,213,215,221,223,241,245,247,253,255]);
   });
   it('a diagonal bit only counts when both neighbouring cardinals are set', () => {
     expect(reduceMask(2)).toBe(0);             // NE alone
