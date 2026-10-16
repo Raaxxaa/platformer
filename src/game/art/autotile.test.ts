@@ -35,6 +35,11 @@ describe('blob autotiling (08 §9.2)', () => {
     const g = gridFromRects(4, 3, [{ x0: 1, y0: 1, x1: 1, y1: 1, kind: 'ice' }]);
     expect(terrainTile(g, 1, 1)!.index).toBe(4 * 16 + blobIndex(0));
   });
+  it('spikes use row 3 cols 8–11 (up, right, down, left); bodies do not change the drawn terrain', () => {
+    const g = gridFromRects(4, 3, [{ x0: 1, y0: 1, x1: 1, y1: 1, kind: 'spikeUp' }, { x0: 2, y0: 1, x1: 2, y1: 1, kind: 'spikeLeft' }]);
+    expect(terrainTile(g, 1, 1)!.index).toBe(3 * 16 + 8);
+    expect(terrainTile(g, 2, 1)!.index).toBe(3 * 16 + 11);
+  });
   it('hash2 is the spec function', () => {
     expect(hash2(0, 0, 0)).toBe(0);
     expect(hash2(3, 7, 1)).toBe(hash2(3, 7, 1));

@@ -13,7 +13,9 @@ import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDri
 import { CAMERA, FLASK, RESTART, RUSH } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
-import { isGrounded } from '../physics/collide.ts';
+import { isGrounded, pushOut } from '../physics/collide.ts';
+import { Bodies, type SolidBody } from '../physics/bodies.ts';
+import { checkSpikes } from '../hazards/spikes.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
@@ -51,6 +53,8 @@ export interface GameWorldOptions {
   stage?: Stage;
   runSeed?: number;
   enemies?: EnemySpawn[];
+  /** Solid bodies at stage load (doors etc.); copied fresh on every restart. */
+  bodies?: SolidBody[];
 }
 
 export class GameWorld {
@@ -72,6 +76,7 @@ export class GameWorld {
   runTicks = 0;
   gold = 0;
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
+  bodies!: Bodies;
   hitGroups: HitGroup[] = [];
   enemies: EnemyState[] = [];
   pendingDeaths: EnemyState[] = [];
@@ -110,6 +115,9 @@ export class GameWorld {
 
   private reset(): void {
     const { grid, spawn } = this.opts;
+    this.bodies = new Bodies(grid.w, grid.h);
+    for (const b of this.opts.bodies ?? []) this.bodies.add({ ...b });
+    grid.bodies = this.bodies;
     this.body = createPlayerBody(spawn.x, spawn.y);
     if (!isGrounded(this.body, grid, 0)) {
       this.body.state = 'air';
@@ -152,6 +160,17 @@ export class GameWorld {
 
   restart(): void {
     this.reset();
+  }
+
+  /** Adds a solid body now (tests, debug). */
+  addBody(b: SolidBody): void {
+    this.bodies.add({ ...b });
+  }
+
+  /** Turns a body on or off. A body turning on over the player pushes the player out (01 §13.9, §2.8). */
+  setBodyActive(id: string, on: boolean): void {
+    this.bodies.setActive(id, on);
+    if (on) pushOut(this.body, this.grid);
   }
 
   /** Debug: a fresh player body with its feet at (x, y); everything else stays. */
@@ -321,6 +340,7 @@ export class GameWorld {
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
     this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush))];
     const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
+    if (checkSpikes(this)) moveEvents.push('spikeHit');   // 01 §3 step 9
     for (const e of moveEvents) {
       this.events.push({ t: 'move', e });
       if (e === 'dashStart' || e === 'slideStart') { cancelAttack(this, 'dash'); cancelDrink(this); }

@@ -11,6 +11,7 @@ export const TILESET = {
   fullVariants: 5,                         // mask 255: blob 46 or row 3 cols 0–3
   iceRow: 4,                               // ice blob tiles: rows 4–6
   onewayRow: 3, onewayCols: { left: 4, middle: 5, right: 6, single: 7 },
+  spikeCols: { spikeUp: 8, spikeRight: 9, spikeDown: 10, spikeLeft: 11 },   // row 3
   topDecoRow: 7, topDecoCol: 8, topDecoCount: 8, topDecoChance: 30,
   hangDecoRow: 8, hangDecoCol: 0, hangDecoCount: 8, hangDecoChance: 20,
 } as const;

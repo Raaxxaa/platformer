@@ -116,6 +116,14 @@ export const CAMERA = {
   SHAKE_MEDIUM: { amplitude: 4, seconds: 0.25 },
 } as const;
 
+/** Spikes (01 §13.4): 20 damage, not stage-scaled; hurt zones are inset inside the tile. */
+export const SPIKES = {
+  DAMAGE: 20,
+  INSET_SIDE: 2, DEPTH: 8,                      // zone: 12 px wide, 8 px deep from the base
+  UP_VY: -330, DOWN_VY: 150,
+  SIDE_VX: 220, SIDE_VY: -200, SIDE_LOCK: 14,   // ticks of steering lock
+} as const;
+
 /** Death and restart (06 §6). */
 export const RESTART = {
   DEATH_SIM: 1.0, DEATH_SIM_TICKS: ticks(1.0),          // the world keeps running after death
