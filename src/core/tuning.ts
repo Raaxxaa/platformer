@@ -141,3 +141,6 @@ export const COMBAT = {
   ELITE_CONTROL_MULT: 0.5,
   FRONTAL_DX: 4,
 } as const;
+
+/** Ground move cap while attacking, by weapon weight (02 §9.3). */
+export const WEIGHT_MOVE_MULT = { light: 0.60, medium: 0.40, heavy: 0.25 } as const;
