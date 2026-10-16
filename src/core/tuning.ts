@@ -112,3 +112,32 @@ export const CAMERA = {
   MARGIN_Y: 48,             // px between the player box and the top/bottom screen edges
   SNAP_DIST: 160,           // px, a single-tick player move larger than this snaps
 } as const;
+
+/** Combat numbers (02 §2–9). Seconds, with tick twins where code counts ticks. */
+export const COMBAT = {
+  GRADE_MULT: { F: 0.8, C: 1.0, B: 1.25, A: 1.6, S: 2.0 },
+  MATCH_MULT: 1.25,
+  CRIT_MULT: 2.0,
+  HIT_STOP_CAP: 0.125,           // s (02 §4.1)
+  HIT_STOP_CRIT_BONUS: 0.025,
+  HIT_STOP_KILL_BONUS: 0.025,
+  HURT_HIT_STOP: 0.075, HURT_HIT_STOP_TICKS: ticks(0.075),
+  HURT_IFRAMES: 0.80, HURT_IFRAMES_TICKS: ticks(0.80),
+  HITSTUN: 0.20, HITSTUN_TICKS: ticks(0.20),
+  HURT_KB_X: 180, HURT_KB_Y: -160,
+  COMBO_WINDOW: 0.35, COMBO_WINDOW_TICKS: ticks(0.35),
+  INPUT_BUFFER: 0.15, INPUT_BUFFER_TICKS: ticks(0.15),
+  RUSH_HURT: -75,
+  MAX_HP: 100,
+  KILL_CREDIT_WINDOW: 5.0, KILL_CREDIT_TICKS: ticks(5.0),
+  // Enemy reactions (02 §4.2–4.4)
+  ENEMY_KB_DECAY_GROUND: 1600,   // px/s²
+  ENEMY_KB_DECAY_AIR: 400,
+  ENEMY_KB_CONTROL_SPEED: 20,    // px/s: AI resumes below this
+  STAGGER: 0.5, STAGGER_TICKS: ticks(0.5),
+  STAGGER_HEAVY: 0.8, STAGGER_HEAVY_TICKS: ticks(0.8),
+  POISE_REFILL: 1.5, POISE_REFILL_TICKS: ticks(1.5),
+  ELITE_POISE_IMMUNE: 2.0, ELITE_POISE_IMMUNE_TICKS: ticks(2.0),
+  ELITE_CONTROL_MULT: 0.5,
+  FRONTAL_DX: 4,
+} as const;
