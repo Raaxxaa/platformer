@@ -2,12 +2,10 @@
 import { boxToWorld, sweep, type Rect } from '../combat/hitGroups.ts';
 import { boxFree } from '../physics/collide.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { TICK, TILE_SIZE } from '../tuning.ts';
+import { ENEMY, TICK, TILE_SIZE } from '../tuning.ts';
 import type { EnemyState } from './enemy.ts';
 import type { EnemyProjectileDef } from './types.ts';
 
-/** Aimed shots clamp to ±30° from horizontal (04 §2.7). */
-const AIM_CLAMP_DEG = 30;
 
 export interface EnemyProjectile {
   id: number; def: EnemyProjectileDef; owner: number;
@@ -27,7 +25,7 @@ export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProj
   const speed = def.speed ?? 0;
   let x: number, y: number, vx: number, vy: number;
   if (def.motion === 'floorWave') {
-    const feet = at ?? boxToWorld({ dx: 24, dy: 0, w: 0, h: 0 }, e.x, e.y, e.facing);
+    const feet = at ?? boxToWorld({ dx: ENEMY.WAVE_SPAWN_DX, dy: 0, w: 0, h: 0 }, e.x, e.y, e.facing);
     x = feet.x; y = feet.y - def.h / 2;
     vx = e.facing * speed; vy = 0;
   } else {
@@ -37,7 +35,7 @@ export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProj
     if (aim === 'player') {
       const tx = w.body.x, ty = w.body.y - w.body.h / 2;
       const a = Math.atan2(ty - y, (tx - x) * e.facing);
-      const lim = (AIM_CLAMP_DEG * Math.PI) / 180;
+      const lim = (ENEMY.AIM_CLAMP_DEG * Math.PI) / 180;
       ang += Math.max(-lim, Math.min(lim, a));
     }
     vx = e.facing * Math.cos(ang) * speed;

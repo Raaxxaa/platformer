@@ -1,15 +1,12 @@
 // Stage 1 enemy specials (04 §3 notes): leaps, attack moves, the Boar charge, shots and the Brute wave.
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { ticks } from '../tuning.ts';
+import { ENEMY, ticks } from '../tuning.ts';
 import { ENEMY_PROJECTILES } from '../../data/enemyProjectiles.ts';
 import { removeEnemyGroups, type AttackHooks } from './attack.ts';
 import { supportAhead } from './body.ts';
 import type { EnemyState } from './enemy.ts';
 import { spawnEnemyProjectile } from './projectiles.ts';
 
-/** Boar: a charge into a wall dazes it for 1.2 s instead of Rec, with camera.shake(2, 0.15) (04 §3). */
-const BOAR_DAZE = 1.2;
-const BOAR_WALL_SHAKE = { amplitude: 2, seconds: 0.15 } as const;
 
 function fireShots(w: GameWorld, e: EnemyState): void {
   for (const s of e.ai.attack?.def.shots ?? []) {
@@ -28,8 +25,8 @@ function dazeAfterWall(w: GameWorld, e: EnemyState): void {
   e.ai.state = 'engage';
   e.ai.gapTicks = 0;
   e.vx = 0;
-  e.control = { type: 'dazed', ticks: ticks(BOAR_DAZE) };
-  w.requestShake(BOAR_WALL_SHAKE.amplitude, BOAR_WALL_SHAKE.seconds);
+  e.control = { type: 'dazed', ticks: ENEMY.BOAR_DAZE_TICKS };
+  w.requestShake(ENEMY.BOAR_WALL_SHAKE.amplitude, ENEMY.BOAR_WALL_SHAKE.seconds);   // Boar: wall → dazed 1.2 s (04 §3)
 }
 
 /** The attack hooks for an enemy's running attack. */

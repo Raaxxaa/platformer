@@ -30,7 +30,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   e.lastPlayerHitTick = w.tick;
   e.damagedTicks = 0;
   e.everDamaged = true;
-  e.hurtFlashTicks = 2;
+  e.hurtFlashTicks = ENEMY.HURT_FLASH_TICKS;
   const killed = e.def.tier !== 'dummy' && e.hp <= 0;
   if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
   w.events.push({ t: 'hit', target: e.id, amount: damage, crit: false, heavy: !!spec.heavy });
@@ -62,7 +62,8 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
 
 /** 7a: player hit groups vs enemies, groups in creation order, targets by ascending id. */
 export function resolvePlayerHits(w: GameWorld): void {
-  const playerFrozen = w.body.hitStopTicks > 0 && w.playerFrozenAtTickStart;
+  if (w.health.dead) return;                               // no hits from a dead player
+  const playerFrozen = w.playerFrozenAtTickStart;
   const targets = [...w.enemies].sort((a, b) => a.id - b.id);
   for (const g of [...w.hitGroups]) {
     if (g.owner !== 'player' || !g.active) continue;
@@ -82,16 +83,16 @@ export function resolveEnemyHits(w: GameWorld): void {
   for (const g of [...w.hitGroups]) {
     if (typeof g.owner !== 'number' || !g.active || !g.enemyHit) continue;
     const owner = w.enemies.find((e) => e.id === g.owner);
-    if (g.kind === 'melee' && (!owner || owner.dead || owner.hitStopTicks > 0)) continue;
+    if (g.kind === 'melee' && (!owner || owner.dead || owner.frozenAtTickStart)) continue;
     if (!canHit(g, 0, w.tick) || !overlaps(g.rect, pr)) continue;
     const attackerCx = g.kind === 'melee' && owner ? owner.x : g.rect.x + g.rect.w / 2;
-    const landed = hurtPlayer(w, {
+    const dealt = hurtPlayer(w, {
       kind: 'enemyHit', enemyId: g.owner, enemyDefId: owner?.def.id ?? 'enemy', damageA: enemyDamageA(w, g.enemyHit.damage),
       attackerCx, melee: g.kind === 'melee', playerKb: g.enemyHit.playerKb,
     });
-    if (!landed) continue;                                  // invulnerable: not marked, may hit later
+    if (dealt === 0) continue;                                  // invulnerable: not marked, may hit later
     markHit(g, 0, w.tick);
-    w.events.push({ t: 'hit', target: 'player', amount: 0, crit: false, heavy: false });
+    w.events.push({ t: 'hit', target: 'player', amount: dealt, crit: false, heavy: false });
     w.shakeLevel('small');
     if (g.kind === 'melee' && owner) owner.hitStopTicks = maxStop(owner.hitStopTicks, COMBAT.HURT_HIT_STOP_TICKS);
     w.onEnemyShotLanded(g);

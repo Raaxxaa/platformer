@@ -39,6 +39,7 @@ export interface EnemyState {
   aware: boolean; noticeT: number;
   ai: AiState;
   hitStopTicks: number;
+  frozenAtTickStart: boolean;      // in hit-stop when the tick began: its attack boxes don't test overlap (02 §2.1)
   control: { type: 'stagger' | 'knockdown' | 'dazed'; ticks: number } | null;
   knockback: boolean;
   grounded: boolean;
@@ -67,7 +68,7 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
     hp: maxHp, maxHp, poise: def.poiseMax, poiseImmuneTicks: 0, noPoiseHitTicks: 0,
     aware: false, noticeT: 0,
     ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false },
-    hitStopTicks: 0, control: null, knockback: false, grounded: true, hitWall: false,
+    hitStopTicks: 0, frozenAtTickStart: false, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,
     damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0,
   };

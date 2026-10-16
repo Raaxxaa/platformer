@@ -6,7 +6,7 @@ import type { EnemyId } from '../../core/enemies/types.ts';
 import { FixedStepper } from '../../core/sim/fixedStep.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { specToInput, type InputSpec } from '../../core/sim/playerSim.ts';
-import { ENEMY, TICK_RATE } from '../../core/tuning.ts';
+import { COMBAT, ENEMY, TICK_RATE } from '../../core/tuning.ts';
 import { COMBAT_TEST } from '../../data/levels/combatTest.ts';
 import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../debug.ts';
 import { COLOR, drawLevel, NOSE, STATE_COLOR } from '../greybox.ts';
@@ -95,7 +95,7 @@ export class CombatTestScene extends Phaser.Scene implements CombatDebugHost {
 
     const b = w.body;
     const left = b.x - b.w / 2, top = b.y - b.h;
-    const blink = w.health.iframeTicks > 0 && Math.floor(w.tick / 4) % 2 === 0;
+    const blink = w.health.iframeTicks > 0 && Math.floor(w.tick / COMBAT.IFRAME_BLINK_TICKS) % 2 === 0;
     g.fillStyle(STATE_COLOR[b.state], blink ? 0.4 : 1).fillRect(left, top, b.w, b.h);
     g.fillRect(b.facing > 0 ? left + b.w : left - NOSE, top + 4, NOSE, NOSE);
     if (this.debug) g.lineStyle(1, COLOR.hurtbox, 1).strokeRect(left + 0.5, top + 0.5, b.w - 1, b.h - 1);

@@ -28,19 +28,20 @@ const blocks = (): boolean => false;
 const secondWind = (): boolean => false;
 
 /**
- * 02 §5.2 for one enemy direct hit or hazard. Returns whether damage landed.
+ * 02 §5.2 for one enemy direct hit or hazard. Returns the damage dealt (0 = it did not land).
  * Spikes run steps 1, 5, 6, 8, 10; a level hazard 1, 5–10; an enemy hit 1–10.
  */
-export function hurtPlayer(w: GameWorld, src: HurtSource): boolean {
+export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   const h = w.health, b = w.body;
-  if (h.dead) return false;
+  if (h.dead) return 0;
   // 1. Invulnerability. Hazards only respect hurt i-frames.
-  if (h.iframeTicks > 0) return false;
-  if (src.kind === 'enemyHit' && b.dashIframes) return false;
+  if (h.iframeTicks > 0) return 0;
+  if (src.kind === 'enemyHit' && b.dashIframes) return 0;
   // 2–4. Riposte, parry, block: hooks.
-  if (src.kind === 'enemyHit' && (ripostes() || parries() || blocks())) return false;
+  if (src.kind === 'enemyHit' && (ripostes() || parries() || blocks())) return 0;
   // 5. Damage.
-  h.hp -= enemyHitDamage(src.damageA, 1, null);
+  const dealt = enemyHitDamage(src.damageA, 1, null);
+  h.hp -= dealt;
   // 6. Death.
   if (h.hp <= 0 && !secondWind()) {
     h.hp = 0;
@@ -48,7 +49,7 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): boolean {
     h.deathCause = src.kind === 'enemyHit' ? src.enemyDefId : src.cause;
     setDead(b);
     w.onPlayerDied(h.deathCause);
-    return true;
+    return dealt;
   }
   const spikes = src.kind === 'hazard' && src.cause === 'spikes';
   // 7. Hitstun and knockback (cancels the attack, drink and combo).
@@ -69,5 +70,5 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): boolean {
   if (!spikes) b.hitStopTicks = maxStop(b.hitStopTicks, COMBAT.HURT_HIT_STOP_TICKS);
   // 10. Rush −75.
   addRushValue(w.rush, COMBAT.RUSH_HURT);
-  return true;
+  return dealt;
 }

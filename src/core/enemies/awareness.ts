@@ -1,6 +1,6 @@
 // Noticing the player: sight, the notice timer, alert reaction and spread (04 §2.4).
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { ENEMY, TILE_SIZE, ticks } from '../tuning.ts';
+import { ENEMY, ticks } from '../tuning.ts';
 import { enemyCenter, type EnemyState } from './enemy.ts';
 
 /** dY = player hurtbox center y − enemy hurtbox center y (negative = player above). */
@@ -11,7 +11,7 @@ export function playerDY(w: GameWorld, e: EnemyState): number {
 /** Line of sight over solid tiles (one-way tiles never block), stepping the tile grid. */
 export function lineOfSight(w: GameWorld, x0: number, y0: number, x1: number, y1: number): boolean {
   const dist = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
-  const steps = Math.max(1, Math.ceil(dist / (TILE_SIZE / 4)));
+  const steps = Math.max(1, Math.ceil(dist / ENEMY.LOS_STEP));
   for (let i = 0; i <= steps; i++) {
     const x = x0 + ((x1 - x0) * i) / steps, y = y0 + ((y1 - y0) * i) / steps;
     if (w.grid.isSolidPx(Math.floor(x), Math.floor(y))) return false;

@@ -125,6 +125,7 @@ export const RESTART = {
 
 /** Combat numbers (02 §2–9). Seconds, with tick twins where code counts ticks. */
 export const COMBAT = {
+  IFRAME_BLINK: 0.05, IFRAME_BLINK_TICKS: ticks(0.05),   // sprite alpha toggle while in i-frames (02 §5.2 step 8)
   GRADE_MULT: { F: 0.8, C: 1.0, B: 1.25, A: 1.6, S: 2.0 },
   MATCH_MULT: 1.25,
   CRIT_MULT: 2.0,
@@ -206,6 +207,12 @@ export const ENEMY = {
   MAX_TOKENS_MELEE: 2, MAX_TOKENS_RANGED: 2,
   LEAP_MAX: 1.0, LEAP_MAX_TICKS: ticks(1.0),
   DUMMY_HEAL_DELAY: 1.0, DUMMY_HEAL_TICKS: ticks(1.0),
+  BOAR_DAZE: 1.2, BOAR_DAZE_TICKS: ticks(1.2),             // Boar charge into a wall (04 §3)
+  BOAR_WALL_SHAKE: { amplitude: 2, seconds: 0.15 },
+  AIM_CLAMP_DEG: 30,            // aimed shots clamp to ±30° from horizontal (04 §2.7)
+  WAVE_SPAWN_DX: 24,            // floor waves start this far in front of the feet
+  HURT_FLASH_TICKS: 2,          // enemy hurt flash (02 §4.6: 2 ticks)
+  LOS_STEP: 4,                  // px between line-of-sight samples
   TELEGRAPH_FLASH_LAST: 0.15, TELEGRAPH_FLASH_LAST_TICKS: ticks(0.15),   // last part of a telegraph flashes near-white
 } as const;
 

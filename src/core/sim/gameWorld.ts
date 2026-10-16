@@ -27,7 +27,7 @@ import { attackHooks } from '../enemies/special.ts';
 import { removeProjectile, stepProjectiles, type EnemyProjectile } from '../enemies/projectiles.ts';
 import { stepEnemyReactions } from '../combat/enemyReactions.ts';
 import { processDeaths, resolveEnemyHits, resolvePlayerHits } from '../combat/resolve.ts';
-import { onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
+import { endDive, onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
 import type { EnemySpawn } from '../enemies/types.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
@@ -177,6 +177,11 @@ export class GameWorld {
   onPlayerDied(cause: string): void {
     this.phase = 'dead';
     this.deathTick = this.tick;
+    // No ghost hits: every player hit group goes now; Rush resets at death (02 §8.1).
+    cancelAttack(this, 'hurt');
+    endDive(this);
+    this.hitGroups = this.hitGroups.filter((g) => g.owner !== 'player');
+    this.rush.value = 0;
     this.events.push({ t: 'playerDied', cause });
   }
 
@@ -228,7 +233,7 @@ export class GameWorld {
         this.restart();
         return true;
       }
-      if (this.phase === 'deathScreen') return false;
+      return false;                               // while dead only a press counts (06 §6.2)
     }
     if (!r.held) {
       this.restartHoldTicks = 0;
@@ -302,6 +307,7 @@ export class GameWorld {
     const input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
     this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
+    for (const e of this.enemies) e.frozenAtTickStart = e.hitStopTicks > 0;
     if (!this.health.dead) this.runTicks += 1;
     // Wall-clock timers.
     if (this.health.iframeTicks > 0) this.health.iframeTicks -= 1;

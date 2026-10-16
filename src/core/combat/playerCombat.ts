@@ -188,7 +188,12 @@ export function stepPlayerCombat(w: GameWorld, input: InputState): void {
 
   // Hit-stop: timers pause; presses are buffered and the buffer starts when hit-stop ends.
   if (b.hitStopTicks > 0) {
-    if (press !== null) { c.bufferedSlot = press; c.bufferTicks = COMBAT.INPUT_BUFFER_TICKS; }
+    if (press !== null) {
+      const cur = c.current;
+      if (cur && cur.slot === press) c.queued = true;            // one queued step, as outside hit-stop (02 §9.2)
+      else if (cur) c.otherPending = press;
+      else { c.bufferedSlot = press; c.bufferTicks = COMBAT.INPUT_BUFFER_TICKS; }
+    }
     return;
   }
 

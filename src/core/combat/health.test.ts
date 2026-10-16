@@ -13,23 +13,23 @@ describe('player health and hurt pipeline (02 §5)', () => {
   });
   it('a 12 hit takes 100 to 88; another at +0.79 s is ignored, at +0.81 s it applies (checklist 7)', () => {
     const w = arenaWorld();
-    expect(hurtPlayer(w, hit())).toBe(true);
+    expect(hurtPlayer(w, hit())).toBeGreaterThan(0);
     expect(w.health.hp).toBe(88);
     stepSpec(w, {}, 95);
-    expect(hurtPlayer(w, hit())).toBe(false);
+    expect(hurtPlayer(w, hit())).toBe(0);
     expect(w.health.hp).toBe(88);
     stepSpec(w, {}, 2);
-    expect(hurtPlayer(w, hit())).toBe(true);
+    expect(hurtPlayer(w, hit())).toBeGreaterThan(0);
     expect(w.health.hp).toBe(76);
   });
   it('dash i-frames block enemy hits; spikes still apply: damage, i-frames, Rush −75, no hitstun or knockback', () => {
     const w = arenaWorld();
     stepSpec(w, { dash: true });
     expect(w.body.dashIframes).toBe(true);
-    expect(hurtPlayer(w, hit())).toBe(false);
+    expect(hurtPlayer(w, hit())).toBe(0);
     expect(w.health.hp).toBe(100);
     w.rush.value = 150;
-    expect(hurtPlayer(w, { kind: 'hazard', cause: 'spikes', damageA: 20 })).toBe(true);
+    expect(hurtPlayer(w, { kind: 'hazard', cause: 'spikes', damageA: 20 })).toBeGreaterThan(0);
     expect(w.health.hp).toBe(80);
     expect(w.health.iframeTicks).toBe(COMBAT.HURT_IFRAMES_TICKS);
     expect(w.rush.value).toBe(75);
