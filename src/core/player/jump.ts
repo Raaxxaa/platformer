@@ -5,9 +5,10 @@ import { MOVE } from '../tuning.ts';
 import { NEVER, setState, type MoveEvent, type MoveStateId, type PlayerBody } from './body.ts';
 import { endDashOrSlide, standingFits } from './dash.ts';
 import type { MoveModifiers } from './modifiers.ts';
+import { wallJump, wallJumpDir } from './wall.ts';
 
 /** States a jump can start from. Others (crawl, …) keep the press buffered (01 §6.4). */
-const JUMP_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'dash', 'slide']);
+const JUMP_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'dash', 'slide', 'wallSlide']);
 
 /** The jump buffer is active while the last press is under 12 ticks old and unused (01 §6.4). */
 export function jumpBufferActive(b: PlayerBody): boolean {
@@ -30,7 +31,7 @@ function startJump(b: PlayerBody, vy: number, mods: MoveModifiers): void {
  * §3 step 5b: tries the §6.4 jump priority if the buffer is active.
  * Returns the event of the jump that happened, or null (the press then stays buffered).
  */
-export function tryJump(b: PlayerBody, _input: InputState, g: TileGrid, mods: MoveModifiers): MoveEvent | null {
+export function tryJump(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers): MoveEvent | null {
   if (!jumpBufferActive(b)) return null;
   if (mods.rooted || !mods.canJump || !JUMP_STATES.has(b.state)) return null;
   // Slide-jump needs room to stand (01 §9.2); otherwise the press stays buffered.
@@ -40,6 +41,15 @@ export function tryJump(b: PlayerBody, _input: InputState, g: TileGrid, mods: Mo
   if (b.grounded || (b.coyoteValid && b.pt - b.lastGroundPt <= MOVE.COYOTE_TICKS)) {
     startJump(b, MOVE.JUMP_V, mods);
     return 'jump';
+  }
+  // 3. Wall jump: a wall within 3 px on either side, or wall coyote.
+  if (!b.grounded) {
+    const away = wallJumpDir(b, input, g);
+    if (away !== 0) {
+      startJump(b, MOVE.WALL_JUMP_VY, mods);
+      wallJump(b, away);
+      return 'wallJump';
+    }
   }
   // 4. Double jump.
   if (b.doubleJumpAvailable && mods.canDoubleJump) {

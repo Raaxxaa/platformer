@@ -8,6 +8,7 @@ import { setState, type MoveEvent, type PlayerBody } from './body.ts';
 import { endDashOrSlide, standingFits, stepDashOrSlide, tryStartDash } from './dash.ts';
 import { applyJumpCut, tryJump } from './jump.ts';
 import { runMaxEff, type MoveContext, type MoveModifiers } from './modifiers.ts';
+import { leaveWall, updateWallSlide } from './wall.ts';
 
 interface Rates { accel: number; decel: number; turn: number; overspeed: number }
 const GROUND_RATES: Rates = { accel: MOVE.GROUND_ACCEL, decel: MOVE.GROUND_DECEL, turn: MOVE.GROUND_TURN, overspeed: MOVE.OVERSPEED_DECAY_GROUND };
@@ -30,10 +31,16 @@ function fall(vy: number, gravity: number, cap: number): number {
 
 /** Step 6: horizontal velocity by state (01 §5). Dash and slide keep their speed. */
 function horizontalVelocity(b: PlayerBody, input: InputState, mods: MoveModifiers): void {
+  if (b.steerLockTicks > 0) {
+    // Wall-jump steering lock: vx is not changed by input, accel, decel or decay (01 §8.3).
+    b.steerLockTicks -= 1;
+    if (b.state === 'ground' || b.state === 'air' || b.state === 'crawl') return;
+  }
   switch (b.state) {
     case 'ground': steer(b, input.moveX, runMaxEff(b, mods), GROUND_RATES, mods); break;
     case 'air': steer(b, input.moveX, runMaxEff(b, mods), AIR_RATES, mods); break;
     case 'crawl': steer(b, input.moveX, runMaxEff(b, mods, MOVE.CRAWL_MAX), GROUND_RATES, mods); break;
+    case 'wallSlide': b.vx = 0; break;
     default: break;
   }
 }
@@ -47,6 +54,9 @@ function verticalVelocity(b: PlayerBody, input: InputState, mods: MoveModifiers)
       b.vy = fall(b.vy, MOVE.GRAVITY * mods.gravityMult, cap);
       break;
     }
+    case 'wallSlide':
+      b.vy = fall(b.vy, MOVE.GRAVITY, input.moveY === 1 ? MOVE.WALL_SLIDE_MAX_DOWN_HELD : MOVE.WALL_SLIDE_MAX);
+      break;
     default: break;
   }
 }
@@ -60,8 +70,8 @@ function land(b: PlayerBody, ev: MoveEvent[]): void {
   ev.push('land');
 }
 
-/** Step 9: grounded check, landing and leaving the ground (01 §5.5), wall hits, crawl. */
-function afterMove(b: PlayerBody, g: TileGrid, mods: MoveModifiers, hitWall: boolean, ev: MoveEvent[]): void {
+/** Step 9: grounded check, landing and leaving the ground (01 §5.5), wall hits, wall slide, crawl. */
+function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers, hitWall: boolean, ev: MoveEvent[]): void {
   const wasGrounded = b.grounded;
   const grounded = isGrounded(b, g, b.vy);
   b.grounded = grounded;
@@ -76,7 +86,8 @@ function afterMove(b: PlayerBody, g: TileGrid, mods: MoveModifiers, hitWall: boo
   }
 
   if (grounded) {
-    if (b.state === 'air') land(b, ev);
+    if (b.state === 'wallSlide') leaveWall(b);
+    if (b.state === 'air' || b.state === 'wallSlide') land(b, ev);
     b.lastGroundPt = b.pt;
     if (b.state !== 'dash' && b.state !== 'slide') {
       // Standing on the ground refreshes both (a landing, or a dash that ended on the ground).
@@ -94,11 +105,13 @@ function afterMove(b: PlayerBody, g: TileGrid, mods: MoveModifiers, hitWall: boo
     ev.push(endDashOrSlide(b, mods));     // 01 §9.2: slide ends, vx kept
     setState(b, 'air', 0);
   }
+  updateWallSlide(b, input, g);
 }
 
 /** Step 10: facing follows moveX in the free-moving states unless combat locked it. */
 function updateFacing(b: PlayerBody, input: InputState, mods: MoveModifiers): void {
-  if (mods.facingLocked || input.moveX === 0) return;
+  // SPEC-GAP: does facing follow moveX during the wall-jump steering lock? Chosen: no (keeps facing away from the wall).
+  if (mods.facingLocked || input.moveX === 0 || b.steerLockTicks > 0) return;
   if (b.state === 'ground' || b.state === 'air' || b.state === 'crawl') b.facing = input.moveX;
 }
 
@@ -152,7 +165,7 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
     b.jumpCuttable = false;
   }
   // 9. After move.
-  afterMove(b, g, mods, hitWall, ev);
+  afterMove(b, input, g, mods, hitWall, ev);
   pushOut(b, g);
   // 10. Facing and box.
   updateFacing(b, input, mods);

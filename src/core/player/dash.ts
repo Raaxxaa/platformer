@@ -5,9 +5,10 @@ import { boxFree } from '../physics/collide.ts';
 import { MOVE } from '../tuning.ts';
 import { NEVER, setState, type MoveEvent, type MoveStateId, type PlayerBody } from './body.ts';
 import { runMaxEff, type MoveModifiers } from './modifiers.ts';
+import { leaveWall } from './wall.ts';
 
 /** States a dash or slide can start from (01 §7.1). */
-const DASH_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'crawl']);
+const DASH_STATES: ReadonlySet<MoveStateId> = new Set<MoveStateId>(['ground', 'air', 'crawl', 'wallSlide']);
 
 /** The dash buffer is active while the last press is under 12 ticks old and unused. */
 export function dashBufferActive(b: PlayerBody): boolean {
@@ -48,7 +49,12 @@ export function tryStartDash(b: PlayerBody, input: InputState, _g: TileGrid, mod
   if (!b.grounded && !b.airDashAvailable) return null;
 
   const slide = b.grounded && (input.moveY === 1 || b.state === 'crawl');
-  const dir: 1 | -1 = input.moveX !== 0 ? input.moveX : b.facing;
+  // Direction: moveX, else facing; from a wall slide always away from the wall (01 §7.1).
+  let dir: 1 | -1 = input.moveX !== 0 ? input.moveX : b.facing;
+  if (b.state === 'wallSlide') {
+    dir = -b.lastWallDir as -1 | 1;
+    leaveWall(b);
+  }
   b.preDashSpeed = Math.sign(b.vx) === dir ? Math.abs(b.vx) : 0;
   b.vx = dir * Math.max(slide ? MOVE.SLIDE_SPEED : MOVE.DASH_SPEED, b.preDashSpeed);
   b.vy = 0;
