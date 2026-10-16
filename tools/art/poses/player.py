@@ -108,3 +108,49 @@ POSES.update({
 
 FPS.update({'jump': 12, 'fall': 12, 'double_jump': 24, 'wall_jump': 16, 'land': 20, 'wall_slide': 8,
             'crawl': 8, 'dive_fall': 16, 'hurt': 10, 'dead': 10, 'cart_ride': 6})
+
+
+# ---------------------------------------------------------------- weapon attack steps (08 §6.3), ART4
+# Each step: 5 frames [S0, S1, A, R0, R1]. 'weapon' = weapon angle (0 down, 90 forward, 180 up),
+# 'behind' = weapon drawn behind the body (08 §4.2 weaponBehind). SMEAR = (from S1 angle, to A angle) along the swing.
+
+def _atk(arm, wpn, behind=False, **kw):
+    d = _p(armF=arm, armB=(arm[0] - 15, arm[1] + 10), **kw)
+    d['weapon'] = wpn
+    d['behind'] = behind
+    return d
+
+
+LUNGE = dict(lean=2, tilt=8, legF=(34, 26), legB=(-24, 6))
+WIDE = dict(legF=(22, 10), legB=(-18, 4))
+
+def _lunge(hx, dip=0):
+    return dict(hipOffset=(hx, (3 if hx else 0) + dip), lean=2, legF=(34 + hx * 3 + dip * 4, 26 + hx * 4 + dip * 8),
+                legB=(-24 - hx * 2 - dip * 3, 6 + dip * 4))
+
+
+# Hit poses (A frames): natural swings that keep the weapon above the floor, picked by searching for the best
+# cover of 02's boxes (deep lunges lower the hands). Coverage numbers: docs/art/SPEC-GAPS-art.md #4.
+ATTACKS = {
+    'atk_greatsword_1': [_atk((170, 30), -153, True, **WIDE), _atk((-170, 40), -135, True, tilt=-6, **WIDE),
+                         _atk((60, 0), 90, **_lunge(4, 3)), _atk((70, 10), 117, **_lunge(4, 2)),
+                         _atk((60, 20), 135, **WIDE)],
+    'atk_greatsword_2': [_atk((-100, 10), -117, True, **WIDE), _atk((-80, 10), -90, True, tilt=-4, **WIDE),
+                         _atk((120, 20), 135, tilt=16, **_lunge(0)), _atk((140, 20), 153, tilt=10, **_lunge(0)),
+                         _atk((150, 20), 153, **WIDE)],
+    'atk_greatsword_3': [_atk((170, 0), 180, **WIDE), _atk((-176, 20), -153, True, tilt=-8, **WIDE),
+                         _atk((50, 10), 90, **_lunge(6, 3)), _atk((60, 10), 117, **_lunge(6, 2)),
+                         _atk((60, 20), 135, **WIDE)],
+    'atk_war_maul_1': [_atk((170, 30), -153, True, **WIDE), _atk((-170, 40), -135, True, tilt=-6, **WIDE),
+                       _atk((60, 0), 90, **_lunge(4, 3)), _atk((70, 10), 117, **_lunge(4, 2)),
+                       _atk((60, 20), 135, **WIDE)],
+    'atk_war_maul_2': [_atk((176, 0), 180, **WIDE), _atk((-170, 20), -153, True, tilt=-10, **WIDE),
+                       _atk((70, 10), 63, tilt=16, **_lunge(0)), _atk((76, 10), 63, tilt=16, **_lunge(0)),
+                       _atk((60, 20), 90, **WIDE)],
+}
+SMEAR = {'atk_greatsword_1': (225, 90), 'atk_greatsword_2': (-90, 135), 'atk_greatsword_3': (207, 90),
+         'atk_war_maul_1': (225, 90), 'atk_war_maul_2': (207, 63)}
+GROUND_SHOCK = {'atk_war_maul_2': 56}     # smash: the smear also shows the shock along the floor to this reach
+# Weapon angles over the body's dive frames (windup, fall, land), 2 frames each.
+DIVE_WEAPON = {'dive_windup': (180, 153), 'dive_fall': (0, 0), 'dive_land': (27, 27)}
+POSES.update(ATTACKS)

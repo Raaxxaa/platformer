@@ -1237,6 +1237,194 @@
   "mode": "once"
  },
  {
+  "key": "atk_greatsword_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_greatsword_1_00",
+   "atk_greatsword_1_01",
+   "atk_greatsword_1_02",
+   "atk_greatsword_1_03",
+   "atk_greatsword_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_2",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_greatsword_2_00",
+   "atk_greatsword_2_01",
+   "atk_greatsword_2_02",
+   "atk_greatsword_2_03",
+   "atk_greatsword_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_3",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_greatsword_3_00",
+   "atk_greatsword_3_01",
+   "atk_greatsword_3_02",
+   "atk_greatsword_3_03",
+   "atk_greatsword_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_war_maul_1_00",
+   "atk_war_maul_1_01",
+   "atk_war_maul_1_02",
+   "atk_war_maul_1_03",
+   "atk_war_maul_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_2",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_war_maul_2_00",
+   "atk_war_maul_2_01",
+   "atk_war_maul_2_02",
+   "atk_war_maul_2_03",
+   "atk_war_maul_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
   "key": "cart_ride",
   "atlas": "player_archer",
   "frames": [
@@ -1507,6 +1695,194 @@
    "apex_00"
   ],
   "mode": "once"
+ },
+ {
+  "key": "atk_greatsword_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_greatsword_1_00",
+   "atk_greatsword_1_01",
+   "atk_greatsword_1_02",
+   "atk_greatsword_1_03",
+   "atk_greatsword_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_2",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_greatsword_2_00",
+   "atk_greatsword_2_01",
+   "atk_greatsword_2_02",
+   "atk_greatsword_2_03",
+   "atk_greatsword_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_3",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_greatsword_3_00",
+   "atk_greatsword_3_01",
+   "atk_greatsword_3_02",
+   "atk_greatsword_3_03",
+   "atk_greatsword_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_war_maul_1_00",
+   "atk_war_maul_1_01",
+   "atk_war_maul_1_02",
+   "atk_war_maul_1_03",
+   "atk_war_maul_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_2",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_war_maul_2_00",
+   "atk_war_maul_2_01",
+   "atk_war_maul_2_02",
+   "atk_war_maul_2_03",
+   "atk_war_maul_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
  },
  {
   "key": "cart_ride",
@@ -1779,6 +2155,194 @@
    "apex_00"
   ],
   "mode": "once"
+ },
+ {
+  "key": "atk_greatsword_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_greatsword_1_00",
+   "atk_greatsword_1_01",
+   "atk_greatsword_1_02",
+   "atk_greatsword_1_03",
+   "atk_greatsword_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_2",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_greatsword_2_00",
+   "atk_greatsword_2_01",
+   "atk_greatsword_2_02",
+   "atk_greatsword_2_03",
+   "atk_greatsword_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_3",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_greatsword_3_00",
+   "atk_greatsword_3_01",
+   "atk_greatsword_3_02",
+   "atk_greatsword_3_03",
+   "atk_greatsword_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_war_maul_1_00",
+   "atk_war_maul_1_01",
+   "atk_war_maul_1_02",
+   "atk_war_maul_1_03",
+   "atk_war_maul_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_2",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_war_maul_2_00",
+   "atk_war_maul_2_01",
+   "atk_war_maul_2_02",
+   "atk_war_maul_2_03",
+   "atk_war_maul_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
  },
  {
   "key": "cart_ride",
@@ -2051,6 +2615,194 @@
    "apex_00"
   ],
   "mode": "once"
+ },
+ {
+  "key": "atk_greatsword_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_greatsword_1_00",
+   "atk_greatsword_1_01",
+   "atk_greatsword_1_02",
+   "atk_greatsword_1_03",
+   "atk_greatsword_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_2",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_greatsword_2_00",
+   "atk_greatsword_2_01",
+   "atk_greatsword_2_02",
+   "atk_greatsword_2_03",
+   "atk_greatsword_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_3",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_greatsword_3_00",
+   "atk_greatsword_3_01",
+   "atk_greatsword_3_02",
+   "atk_greatsword_3_03",
+   "atk_greatsword_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_war_maul_1_00",
+   "atk_war_maul_1_01",
+   "atk_war_maul_1_02",
+   "atk_war_maul_1_03",
+   "atk_war_maul_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_2",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_war_maul_2_00",
+   "atk_war_maul_2_01",
+   "atk_war_maul_2_02",
+   "atk_war_maul_2_03",
+   "atk_war_maul_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
  },
  {
   "key": "cart_ride",
@@ -2455,5 +3207,97 @@
   ],
   "mode": "loop",
   "fps": 10
+ },
+ {
+  "key": "dive_greatsword_fall",
+  "atlas": "weapon_greatsword",
+  "frames": [
+   "dive_greatsword_fall_00",
+   "dive_greatsword_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_greatsword_land",
+  "atlas": "weapon_greatsword",
+  "frames": [
+   "dive_greatsword_land_00",
+   "dive_greatsword_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_greatsword_windup",
+  "atlas": "weapon_greatsword",
+  "frames": [
+   "dive_greatsword_windup_00",
+   "dive_greatsword_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_war_maul_fall",
+  "atlas": "weapon_war_maul",
+  "frames": [
+   "dive_war_maul_fall_00",
+   "dive_war_maul_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_war_maul_land",
+  "atlas": "weapon_war_maul",
+  "frames": [
+   "dive_war_maul_land_00",
+   "dive_war_maul_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_war_maul_windup",
+  "atlas": "weapon_war_maul",
+  "frames": [
+   "dive_war_maul_windup_00",
+   "dive_war_maul_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
  }
 ]

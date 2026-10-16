@@ -32,7 +32,15 @@ def build(assets, preview):
         A.pack_atlas('player_' + o, body, atl)
         A.pack_atlas(f'player_{o}_trim', trim, atl)
         for key, poses in POSES.items():
-            if key.startswith('atk_') or key.startswith('cast_'):
+            if key.startswith('atk_'):
+                # 08 §6.3: phase-driven [S0, S1, A, R0, R1]; weaponBehind lists the frames drawn behind the body
+                seg = [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'active', 'frames': [2]},
+                       {'phase': 'recovery', 'frames': [3, 4]}]
+                d = A.anim(key, 'player_' + o, len(poses), 'phase', segments=seg)
+                behind = [i for i, p in enumerate(poses) if p.get('behind')]
+                if behind:
+                    d['weaponBehind'] = behind
+                anims.append(d)
                 continue
             mode, fps = MODES[key]
             seg = [{'phase': 'all', 'frames': list(range(len(poses)))}] if mode == 'phase' else None
