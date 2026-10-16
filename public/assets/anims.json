@@ -257,6 +257,25 @@
   "mode": "speed"
  },
  {
+  "key": "training_dummy_hit",
+  "atlas": "enemies_extra",
+  "frames": [
+   "training_dummy_hit_00",
+   "training_dummy_hit_01",
+   "training_dummy_hit_02"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "training_dummy_idle",
+  "atlas": "enemies_extra",
+  "frames": [
+   "training_dummy_idle_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "bandit_archer_atk_arrow",
   "atlas": "enemies_plains",
   "frames": [
@@ -975,6 +994,174 @@
   ],
   "mode": "loop",
   "fps": 6
+ },
+ {
+  "key": "ability_altar_idle",
+  "atlas": "objects",
+  "frames": [
+   "ability_altar_idle_00",
+   "ability_altar_idle_01"
+  ],
+  "mode": "loop",
+  "fps": 1
+ },
+ {
+  "key": "class_statue_archer",
+  "atlas": "objects",
+  "frames": [
+   "class_statue_archer_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "class_statue_swordsman",
+  "atlas": "objects",
+  "frames": [
+   "class_statue_swordsman_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "class_statue_tank",
+  "atlas": "objects",
+  "frames": [
+   "class_statue_tank_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "class_statue_wizard",
+  "atlas": "objects",
+  "frames": [
+   "class_statue_wizard_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "cottage_a",
+  "atlas": "objects",
+  "frames": [
+   "cottage_a_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "cottage_b",
+  "atlas": "objects",
+  "frames": [
+   "cottage_b_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "gate_idle",
+  "atlas": "objects",
+  "frames": [
+   "gate_idle_00",
+   "gate_idle_01"
+  ],
+  "mode": "loop",
+  "fps": 2
+ },
+ {
+  "key": "inn",
+  "atlas": "objects",
+  "frames": [
+   "inn_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "loot_stand",
+  "atlas": "objects",
+  "frames": [
+   "loot_stand_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "market_roof",
+  "atlas": "objects",
+  "frames": [
+   "market_roof_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "mirror_spot",
+  "atlas": "objects",
+  "frames": [
+   "mirror_spot_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "seed_board",
+  "atlas": "objects",
+  "frames": [
+   "seed_board_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "shop_flask",
+  "atlas": "objects",
+  "frames": [
+   "shop_flask_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "shop_item",
+  "atlas": "objects",
+  "frames": [
+   "shop_item_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "shop_key",
+  "atlas": "objects",
+  "frames": [
+   "shop_key_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "shop_refill_idle",
+  "atlas": "objects",
+  "frames": [
+   "shop_refill_idle_00",
+   "shop_refill_idle_01",
+   "shop_refill_idle_02",
+   "shop_refill_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "shop_reroll",
+  "atlas": "objects",
+  "frames": [
+   "shop_reroll_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "unlocks_board",
+  "atlas": "objects",
+  "frames": [
+   "unlocks_board_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "well",
+  "atlas": "objects",
+  "frames": [
+   "well_00"
+  ],
+  "mode": "once"
  },
  {
   "key": "idle",

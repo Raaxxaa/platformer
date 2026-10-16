@@ -1,5 +1,125 @@
 {
  "frames": {
+  "ability_altar_idle_00": {
+   "frame": {
+    "h": 24,
+    "w": 24,
+    "x": 2,
+    "y": 686
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 24,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 24,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "ability_altar_idle_01": {
+   "frame": {
+    "h": 24,
+    "w": 24,
+    "x": 28,
+    "y": 686
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 24,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 24,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "class_statue_archer_00": {
+   "frame": {
+    "h": 48,
+    "w": 32,
+    "x": 2,
+    "y": 484
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "class_statue_swordsman_00": {
+   "frame": {
+    "h": 48,
+    "w": 32,
+    "x": 36,
+    "y": 484
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "class_statue_tank_00": {
+   "frame": {
+    "h": 48,
+    "w": 32,
+    "x": 70,
+    "y": 484
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "class_statue_wizard_00": {
+   "frame": {
+    "h": 48,
+    "w": 32,
+    "x": 104,
+    "y": 484
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "cottage_a_00": {
    "frame": {
     "h": 72,
@@ -40,6 +160,46 @@
    },
    "trimmed": false
   },
+  "gate_idle_00": {
+   "frame": {
+    "h": 64,
+    "w": 32,
+    "x": 2,
+    "y": 418
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 64,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 64,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "gate_idle_01": {
+   "frame": {
+    "h": 64,
+    "w": 32,
+    "x": 36,
+    "y": 418
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 64,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 64,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "inn_00": {
    "frame": {
     "h": 160,
@@ -55,6 +215,26 @@
    "spriteSourceSize": {
     "h": 160,
     "w": 128,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "loot_stand_00": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 2,
+    "y": 778
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
     "x": 0,
     "y": 0
    },
@@ -80,12 +260,232 @@
    },
    "trimmed": false
   },
+  "mirror_spot_00": {
+   "frame": {
+    "h": 40,
+    "w": 24,
+    "x": 2,
+    "y": 610
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 40,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 40,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "seed_board_00": {
+   "frame": {
+    "h": 32,
+    "w": 24,
+    "x": 2,
+    "y": 652
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shop_flask_00": {
+   "frame": {
+    "h": 24,
+    "w": 16,
+    "x": 2,
+    "y": 752
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 24,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 24,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shop_item_00": {
+   "frame": {
+    "h": 16,
+    "w": 24,
+    "x": 2,
+    "y": 734
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shop_key_00": {
+   "frame": {
+    "h": 24,
+    "w": 16,
+    "x": 20,
+    "y": 752
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 24,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 24,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shop_refill_idle_00": {
+   "frame": {
+    "h": 20,
+    "w": 24,
+    "x": 2,
+    "y": 712
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 20,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 20,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shop_refill_idle_01": {
+   "frame": {
+    "h": 20,
+    "w": 24,
+    "x": 28,
+    "y": 712
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 20,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 20,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shop_refill_idle_02": {
+   "frame": {
+    "h": 20,
+    "w": 24,
+    "x": 54,
+    "y": 712
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 20,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 20,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shop_refill_idle_03": {
+   "frame": {
+    "h": 20,
+    "w": 24,
+    "x": 80,
+    "y": 712
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 20,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 20,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shop_reroll_00": {
+   "frame": {
+    "h": 24,
+    "w": 16,
+    "x": 38,
+    "y": 752
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 24,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 24,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "unlocks_board_00": {
+   "frame": {
+    "h": 32,
+    "w": 32,
+    "x": 2,
+    "y": 576
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "well_00": {
    "frame": {
     "h": 40,
     "w": 32,
     "x": 2,
-    "y": 418
+    "y": 534
    },
    "rotated": false,
    "sourceSize": {
@@ -107,7 +507,7 @@
   "image": "objects.png",
   "scale": "1",
   "size": {
-   "h": 460,
+   "h": 796,
    "w": 500
   },
   "version": "1"
