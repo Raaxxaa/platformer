@@ -1,4 +1,4 @@
-// Animation frame picking from core state (08 §5.1). Pure: no Phaser, never Phaser's anim clock.
+// Animation clocks and frame math (08 §5.1). Pure: no Phaser, never Phaser's anim clock.
 import { ANIM } from '../../data/art.ts';
 import { TICK_RATE } from '../../core/tuning.ts';
 
@@ -33,4 +33,24 @@ export function runFps(vx: number): number {
 export function walkFps(vx: number, walk: number): number {
   if (walk <= 0) return ANIM.WALK_FPS_MIN;
   return Math.min(ANIM.WALK_FPS_MAX, Math.max(ANIM.WALK_FPS_MIN, (ANIM.WALK_FPS_AT * Math.abs(vx)) / walk));
+}
+
+/**
+ * A view's own anim time (08 §5.1): advances by the world ticks since the last render, stands still in hit-stop,
+ * and resets when the anim key changes. `runPhase` is the speed-driven accumulator, in frames.
+ */
+export class AnimClock {
+  key = '';
+  t = 0;
+  runPhase = 0;
+  lastTick = -1;
+  /** Returns the seconds this render advanced (0 when frozen or on a key change). */
+  advance(key: string, worldTick: number, frozen: boolean, timeScale = 1): number {
+    const dt = this.lastTick < 0 ? 0 : (Math.max(0, worldTick - this.lastTick) / TICK_RATE) * timeScale;
+    this.lastTick = worldTick;
+    if (key !== this.key) { this.key = key; this.t = 0; this.runPhase = 0; return 0; }
+    if (frozen) return 0;
+    this.t += dt;
+    return dt;
+  }
 }

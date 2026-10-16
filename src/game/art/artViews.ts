@@ -5,7 +5,7 @@ import type { EnemyState } from '../../core/enemies/enemy.ts';
 import type { PlayerBody } from '../../core/player/body.ts';
 import type { TileGrid } from '../../core/level/tiles.ts';
 import { ANCHOR, ANIM, DEPTH, OVERLAY, PARALLAX, TILESET, TRIM_TINT, VIEW } from '../../data/art.ts';
-import { phaseFrame, runFps, timeFrame, walkFps, type AnimDef } from './anims.ts';
+import { AnimClock, phaseFrame, runFps, timeFrame, walkFps, type AnimDef } from '../view/animClock.ts';
 import { decoTile, terrainTile } from './autotile.ts';
 
 /** The player outfit while there are no classes yet. */
@@ -64,21 +64,6 @@ export class Parallax {
       s.tilePositionX = Math.round(camX * set.layers[i].fx);
       s.y = Math.round((this.levelHeightPx - VIEW.h - camY) * set.layers[i].fy);
     });
-  }
-}
-
-/** Ticks a view advanced since its last render, and the anim time it keeps (08 §5.1). */
-class AnimClock {
-  key = '';
-  t = 0;            // seconds in the current anim
-  runPhase = 0;     // speed-driven accumulator (frames)
-  lastTick = -1;
-  advance(key: string, worldTick: number, frozen: boolean): number {
-    const dt = this.lastTick < 0 ? 0 : Math.max(0, worldTick - this.lastTick) / TICK_RATE;
-    this.lastTick = worldTick;
-    if (key !== this.key) { this.key = key; this.t = 0; this.runPhase = 0; return 0; }
-    if (!frozen) this.t += dt;
-    return frozen ? 0 : dt;
   }
 }
 

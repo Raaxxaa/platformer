@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { phaseFrame, runFps, timeFrame, type AnimDef } from './anims.ts';
+import { AnimClock, phaseFrame, runFps, timeFrame, type AnimDef } from './animClock.ts';
 
 const loop: AnimDef = { key: 'x_idle', atlas: 'a', frames: ['0', '1', '2', '3'], mode: 'loop', fps: 6 };
 const once: AnimDef = { key: 'x_death', atlas: 'a', frames: ['0', '1', '2', '3'], mode: 'once', fps: 10 };
@@ -32,5 +32,28 @@ describe('animation clocks (08 §5.1)', () => {
     expect(runFps(170)).toBe(14);
     expect(runFps(10)).toBe(8);
     expect(runFps(1000)).toBe(24);
+  });
+});
+
+describe('V1 Task 2 pins', () => {
+  it('a 3-frame Tele segment at 50% progress shows frame 1', () => {
+    const d: AnimDef = { key: 'k', atlas: 'a', frames: ['0', '1', '2', '3'], mode: 'phase', segments: [{ phase: 'tele', frames: [0, 1, 2] }, { phase: 'act', frames: [3] }] };
+    expect(phaseFrame(d, 'tele', 30, 60)).toBe(1);
+  });
+  it('frames do not advance while the entity is in hit-stop', () => {
+    const c = new AnimClock();
+    c.advance('idle', 0, false);
+    c.advance('idle', 12, false);
+    expect(c.t).toBeCloseTo(0.1);
+    expect(c.advance('idle', 24, true)).toBe(0);
+    expect(c.t).toBeCloseTo(0.1);
+    c.advance('idle', 36, false);
+    expect(c.t).toBeCloseTo(0.2);
+  });
+  it('a new key restarts the clock', () => {
+    const c = new AnimClock();
+    c.advance('idle', 0, false); c.advance('idle', 60, false);
+    c.advance('run', 61, false);
+    expect(c.t).toBe(0);
   });
 });

@@ -29,6 +29,16 @@ export const ANIM = {
   KNOCKDOWN_F0: 0.1,                        // knockdown: f0 for 0.1 s, then f1
   BREAK_F0: 0.2, BREAK_FPS: 4,              // boss break: f0 for 0.2 s, then [1, 2] at 4 fps
   PROJ_ANGLE_STEP: 22.5,                    // projectiles rotate to the velocity angle in 22.5° steps
+  // 08 §6.1 player movement anims.
+  SKID_SPEED: 100,                          // skid: grounded, facing opposite to vx, abs(vx) > 100
+  RUN_MIN_SPEED: 1,                         // below this the grounded player idles
+  AIR_APEX_VY: 60,                          // jump vy < −60 / apex abs(vy) ≤ 60 / fall vy > 60
+  LAND_MIN_VY: 200,                         // land plays when landing at vy ≥ 200
+  DASH_FRAME_STARTS: [4, 14],               // dash ticks 0–3 → f0, 4–13 → f1, 14+ → f2
+  SLIDE_F0_TICKS: 6,
+  CRAWL_MOVE_SPEED: 10,
+  DRINK_FRAME_ENDS: [0.10, 0.25, 0.33],     // drink: 0–0.10 s f0, –0.25 f1, –0.33 f2, then f3
+  SMEAR_RECOVERY_TICKS: 6,                  // smear shows in the active phase and the first 6 ticks of recovery
 } as const;
 
 /** 08 §5.3 overlay flashes. */
