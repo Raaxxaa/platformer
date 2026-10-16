@@ -6,13 +6,17 @@ import type { EnemyId } from '../../core/enemies/types.ts';
 import { FixedStepper } from '../../core/sim/fixedStep.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { specToInput, type InputSpec } from '../../core/sim/playerSim.ts';
-import { COMBAT, ENEMY } from '../../core/tuning.ts';
+import { ENEMY } from '../../core/tuning.ts';
 import { formatTime } from '../../core/time.ts';
 import { DEPTH } from '../../data/art.ts';
-import { animTable, drawTerrain, EnemyView, Parallax, PlayerView, ProjectileViews } from '../art/artViews.ts';
+import { drawTerrain, Parallax } from '../art/artViews.ts';
+import type { AnimDef } from '../view/animClock.ts';
+import { AnimBank } from '../view/animBank.ts';
+import { EnemySprite, OUTFIT, PlayerSprite, ProjectileSprites, type PlayerViewEvents } from '../view/EntitySprites.ts';
+import { drawMarkers, VfxDirector, VfxPool, type TickEvent } from '../view/vfx.ts';
 import { loadAssets } from '../assets/loadAssets.ts';
 import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../debug.ts';
-import { COLOR } from '../greybox.ts';
+import { COLOR, STATE_COLOR } from '../greybox.ts';
 import { Devices } from '../input/devices.ts';
 
 /** Grey-box enemy colors (plan M2, Task 17). */
@@ -39,10 +43,18 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected marks = new Map<number, Phaser.GameObjects.Text>();
   protected boxes!: Phaser.GameObjects.Graphics;
   protected parallax!: Parallax;
-  protected playerView!: PlayerView;
-  protected enemyViews = new Map<EnemyState, EnemyView>();
-  protected animDefs!: ReturnType<typeof animTable>;
-  protected projViews!: ProjectileViews;
+  protected playerView!: PlayerSprite;
+  protected enemyViews = new Map<EnemyState, EnemySprite>();
+  protected bank!: AnimBank;
+  protected projViews!: ProjectileSprites;
+  protected vfx!: VfxDirector;
+  protected markersGfx!: Phaser.GameObjects.Graphics;
+  /** Events of every tick since the last render (core clears `world.events` each tick). */
+  protected frameEvents: TickEvent[] = [];
+  private playerEv: PlayerViewEvents = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
+  private lastRenderTick = -1;
+  /** `?boxes=1`: the old grey boxes instead of sprites (debugging). */
+  protected boxesMode = false;
   /** Debug overview: the camera zooms out to show this world rect (screenshots of whole sections). */
   overview: { x: number; y: number; w: number; h: number } | null = null;
 
@@ -58,12 +70,15 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   create(): void {
     this.world = this.makeWorld();
     this.devices = new Devices();
-    this.animDefs = animTable(this);
+    this.bank = new AnimBank(this.cache.json.get('anims') as AnimDef[]);
+    this.boxesMode = new URLSearchParams(window.location.search).get('boxes') === '1';
     this.parallax = new Parallax(this, this.world.grid.heightPx);
     drawTerrain(this, this.world.grid);
     this.boxes = this.add.graphics().setDepth(DEPTH.enemies);
-    this.playerView = new PlayerView(this, this.animDefs);
-    this.projViews = new ProjectileViews(this, this.animDefs);
+    this.playerView = new PlayerSprite(this, this.bank);
+    this.projViews = new ProjectileSprites(this, this.bank);
+    this.vfx = new VfxDirector(new VfxPool(this, this.bank));
+    this.markersGfx = this.add.graphics().setDepth(DEPTH.markers);
     this.gfx = this.add.graphics().setDepth(DEPTH.projectiles);
     this.hud = this.add.text(4, 4, '', { fontFamily: 'monospace', fontSize: '10px', color: '#ffffff', stroke: '#0d0b14', strokeThickness: 2 })
       .setScrollFactor(0).setDepth(DEPTH.hud);
@@ -75,6 +90,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.debug = debugEnabled();
     if (this.debug) installCombatDebugApi(this);
     this.createExtra();
+    const api = window.__game as unknown as Record<string, unknown> | undefined;
+    if (api) api.vfx = () => this.vfx.pool.counts();
     this.render();
   }
 
@@ -89,16 +106,22 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   /** Runs n ticks holding `spec` (buttons pressed on the first tick only). */
   stepSpec(spec: InputSpec, n: number): void {
     for (let i = 0; i < n; i++) {
-      this.world.step(specToInput(this.prevSpec, spec));
+      this.stepWorld(specToInput(this.prevSpec, spec));
       this.prevSpec = spec;
     }
+  }
+
+  /** One world tick, keeping its events for the next render. */
+  protected stepWorld(input: Parameters<GameWorld['step']>[0]): void {
+    this.world.step(input);
+    for (const e of this.world.events) this.frameEvents.push({ tick: this.world.tick, e });
   }
 
   update(_time: number, delta: number): void {
     this.devices.pollGamepad();
     if (!this.manual) {
       const n = this.stepper.advance(delta / 1000);
-      for (let i = 0; i < n; i++) this.world.step(this.devices.builder.build());
+      for (let i = 0; i < n; i++) this.stepWorld(this.devices.builder.build());
     }
     this.render();
   }
@@ -120,19 +143,31 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.parallax.update(cam.x + cam.shakeX, cam.y + cam.shakeY);
     const g = this.gfx.clear();
     this.boxes.clear();
+    // A restart rewinds the tick: drop effects of the old run.
+    if (w.tick < this.lastRenderTick) { this.vfx.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 }; }
+    this.lastRenderTick = w.tick;
+    for (const { tick, e } of this.frameEvents) {
+      if (e.t === 'move' && e.e === 'doubleJump') this.playerEv.lastDoubleJumpTick = tick;
+      if (e.t === 'move' && e.e === 'wallJump') this.playerEv.lastWallJumpTick = tick;
+    }
 
     this.syncEnemyViews();
     for (const e of w.enemies) this.drawEnemy(g, e);
 
-    this.projViews.update(w.projectiles, w.tick);
+    const proj = this.projViews.update(this.boxesMode ? [] : w.projectiles, w.tick);
+    for (const p of proj.spawned) this.vfx.muzzle(p.x, p.y, w.tick);
     for (const p of w.projectiles) {
-      if (!this.projViews.hasArt(p.def.id)) g.fillStyle(DRAW.projectile, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
+      if (this.boxesMode || !this.projViews.hasArt(p.def.id)) g.fillStyle(DRAW.projectile, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
     }
 
     const b = w.body;
     const left = b.x - b.w / 2, top = b.y - b.h;
-    const hurtAgo = w.health.iframeTicks > 0 ? COMBAT.HURT_IFRAMES_TICKS - w.health.iframeTicks : Number.MAX_SAFE_INTEGER;
-    this.playerView.update(b, w.tick, w.health.iframeTicks, hurtAgo);
+    this.playerView.setVisible(!this.boxesMode);
+    if (this.boxesMode) this.boxes.fillStyle(STATE_COLOR[b.state], 1).fillRect(left, top, b.w, b.h);
+    else this.playerView.update(w, this.playerEv);
+    this.vfx.update(w, this.frameEvents, { atlas: `player_${OUTFIT}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
+    this.vfx.pool.update(w.tick);
+    drawMarkers(this.markersGfx.clear(), w);
     if (this.debug) g.lineStyle(1, COLOR.hurtbox, 1).strokeRect(left + 0.5, top + 0.5, b.w - 1, b.h - 1);
 
     // Active attack hitboxes: the player's always (M2), the enemies' with ?debug=1.
@@ -147,6 +182,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.overlay.setVisible(dead);
     this.overlayText.setVisible(dead);
     this.renderExtra();
+    this.frameEvents = [];
   }
 
   /** One view per enemy; a restart makes new enemies, so stale views go. */
@@ -155,15 +191,22 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     for (const [e, v] of this.enemyViews) if (!live.has(e)) { v.destroy(); this.enemyViews.delete(e); }
     for (const e of this.world.enemies) {
       let v = this.enemyViews.get(e);
-      if (!v) { v = new EnemyView(this, this.animDefs, e); this.enemyViews.set(e, v); }
+      if (!v) {
+        v = new EnemySprite(this, this.bank, e);
+        this.enemyViews.set(e, v);
+        if (e.spawnInTicks > 0) this.vfx.spawnIn(e, this.world.tick);
+      }
+      if (this.boxesMode) continue;
+      const wasGone = v.gone;
       v.update(this.world.tick);
+      if (v.gone && !wasGone) this.vfx.deathBurst(e, this.world.tick);
     }
   }
 
   private drawEnemy(g: Phaser.GameObjects.Graphics, e: EnemyState): void {
     if (e.dead && e.deathTicks <= 0) return;
     const r = enemyRect(e);
-    if (!this.enemyViews.get(e)?.hasArt) this.drawEnemyBox(this.boxes, e);
+    if (this.boxesMode || !this.enemyViews.get(e)?.hasArt) this.drawEnemyBox(this.boxes, e);
     if (this.debug) g.lineStyle(1, DRAW.enemyHurtbox, 1).strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
     // HP bar: elites always, regulars after the first damage.
     if (!e.dead && (e.def.hpBar === 'always' || e.everDamaged)) {

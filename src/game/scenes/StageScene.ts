@@ -148,17 +148,11 @@ export class StageScene extends WorldScene {
       g.fillStyle(0xffffff, 1).fillTriangle(tx + Math.cos(ang) * 4, ty + Math.sin(ang) * 4,
         tx + Math.cos(ang + 2.4) * 6, ty + Math.sin(ang + 2.4) * 6, tx + Math.cos(ang - 2.4) * 6, ty + Math.sin(ang - 2.4) * 6);
     }
-    // Rockfall floor markers.
-    for (const r of w.rockMarkers) {
-      const a = [...w.arenas.values()].find((x) => x.kind === 'boss');
-      const floor = a ? a.rect.y + a.rect.h : r.topY;
-      g.fillStyle(U.rockMarker, 0.5 + 0.5 * Math.sin(w.tick / 4)).fillRect(r.x - 9, floor - 3, 18, 3);
-    }
     // Hint, timer, split popup, boss bar, stage clear.
     this.hintText.setText(w.activeHint && !this.overview ? HINT_TEXT[w.activeHint] : '');
     this.timerText.setVisible(!this.overview);
     this.timerText.setText(formatTime(w.run.runTicks));
-    for (const e of w.events) if (e.t === 'split') { this.splitUntil = w.tick + U.splitSeconds * TICK_RATE; this.splitText.setText(`Split ${e.index}  ${formatTime(e.runTicks)}`); }
+    for (const { e } of this.frameEvents) if (e.t === 'split') { this.splitUntil = w.tick + U.splitSeconds * TICK_RATE; this.splitText.setText(`Split ${e.index}  ${formatTime(e.runTicks)}`); }
     this.splitText.setVisible(w.tick < this.splitUntil);
     const bar = w.bossBar;
     const bg = this.bossBarGfx.clear();
