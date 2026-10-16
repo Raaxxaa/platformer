@@ -1,30 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { GameWorld } from '../sim/gameWorld.ts';
-import { feet, levelFrom, rect } from '../testkit/levelData.ts';
+import { bossLevel } from '../testkit/levelData.ts';
 import { stepSpec } from '../testkit/combatWorld.ts';
 import { killEnemy } from '../combat/resolve.ts';
 import { startEnemyAttack } from './attack.ts';
 import type { EnemyState } from './enemy.ts';
 
-/** 46 × 20 tiles. Boss arena boss1: inner x 4–39, y 3–16 (576 × 224 px); entry door x 3, exit door x 40 (rows 14–16); floor row 17. */
-function bossLevel() {
-  const rows: string[] = [];
-  for (let y = 0; y < 20; y++) {
-    let r = '';
-    for (let x = 0; x < 46; x++) {
-      const wall = (x === 3 || x === 40) && y <= 13;
-      const ceil = y === 2 && x >= 3 && x <= 40;
-      r += y >= 17 || wall || ceil || x === 0 || x === 45 ? '#' : '.';
-    }
-    rows.push(r);
-  }
-  return levelFrom(rows, [
-    feet('player_start', 1, 16),
-    rect('arena', 4, 3, 36, 14, { id: 'boss1', kind: 'boss', boss: 'great_boar', entry: 'left' }),
-    rect('arena_door', 3, 14, 1, 3, { arena: 'boss1', role: 'entry' }),
-    rect('arena_door', 40, 14, 1, 3, { arena: 'boss1', role: 'exit' }),
-  ]);
-}
 const world = (seed = 'A') => GameWorld.fromLevel(bossLevel(), { seedText: seed });
 const boss = (w: GameWorld) => w.enemies.find((e) => e.def.id === 'great_boar')!;
 const walkIn = (w: GameWorld) => { for (let i = 0; i < 600 && !w.run.arenas.boss1?.locked; i++) stepSpec(w, { moveX: 1 }); };

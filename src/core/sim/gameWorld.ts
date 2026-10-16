@@ -63,7 +63,8 @@ export type WorldEvent =
   | { t: 'arenaCleared'; arenaId: string; clearTicks: number; fast: boolean }
   | { t: 'timedDoorOpened'; doorId: string }
   | { t: 'timedDoorMissed'; doorId: string }
-  | { t: 'bossDefeated'; bossId: string; stage: Stage };
+  | { t: 'bossDefeated'; bossId: string; stage: Stage }
+  | { t: 'split'; index: number; runTicks: number; segmentTicks: number; deltaTicks: number | null; bestSegment: boolean };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -98,7 +99,6 @@ export class GameWorld {
   drinkBufferTicks = 0;
   camera!: CameraState;
   tick = 0;
-  runTicks = 0;
   gold = 0;
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
   bodies!: Bodies;
@@ -127,10 +127,6 @@ export class GameWorld {
   events: WorldEvent[] = [];
   phase: WorldPhase = 'stage';
   deathTick = 0;
-  /** Consecutive ticks restart has been held (06 §6.2); survives restarts. */
-  restartHoldTicks = 0;
-  /** After a hold restart the button must be released once before a new hold counts. */
-  restartNeedsRelease = false;
   private nextId = 1;
 
   constructor(opts: GameWorldOptions) {
@@ -173,8 +169,12 @@ export class GameWorld {
     grid.bodies = this.bodies;
     this.body = createPlayerBody(spawn.x, spawn.y);
     this.body.facing = this.opts.facing ?? 1;
+    // The restart hold survives a restart (06 §6.2: holding through one never restarts twice).
+    const hold = this.run ? { h: this.run.restartHoldTicks, n: this.run.restartNeedsRelease } : { h: 0, n: false };
     this.run = createRunState(this.opts.seedText ?? '');
     this.run.runSeed = this.runSeed;
+    this.run.restartHoldTicks = hold.h;
+    this.run.restartNeedsRelease = hold.n;
     if (!isGrounded(this.body, grid, 0)) {
       this.body.state = 'air';
       this.body.grounded = false;
@@ -192,7 +192,6 @@ export class GameWorld {
     ]);
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
-    this.runTicks = 0;
     this.gold = 0;
     this.rng = {
       enemyAI: new Rng(deriveSeed(this.runSeed, 'enemyAI', this.stage)),
@@ -220,6 +219,21 @@ export class GameWorld {
 
   restart(): void {
     this.reset();
+  }
+
+  /** Run time in ticks (06 §5.1). */
+  get runTicks(): number {
+    return this.run.runTicks;
+  }
+
+  /** The stage boss died (06 §2.5): split 1 on this tick, unless the player died on an earlier tick. */
+  onStageBossDefeated(): void {
+    const r = this.run;
+    if (r.phase === 'dead' && r.deathTick !== this.tick) return;
+    if (r.splits[0] !== null) return;
+    r.splits[0] = r.runTicks;
+    // PB comparison (deltaTicks, bestSegment) arrives with save data in M7.
+    this.events.push({ t: 'split', index: 1, runTicks: r.runTicks, segmentTicks: r.runTicks, deltaTicks: null, bestSegment: false });
   }
 
   /** The boss bar while a boss arena is locked (04 §9.4). */
@@ -261,6 +275,8 @@ export class GameWorld {
   onPlayerDied(cause: string): void {
     this.phase = 'dead';
     this.deathTick = this.tick;
+    this.run.phase = 'dead';
+    this.run.deathTick = this.tick;
     // No ghost hits: every player hit group goes now; Rush resets at death (02 §8.1).
     cancelAttack(this, 'hurt');
     endDive(this);
@@ -310,25 +326,29 @@ export class GameWorld {
   /** Restart rules (06 §6.1–6.2). Returns true when the world restarted this tick. */
   private handleRestart(input: InputState): boolean {
     const r = input.restart;
+    if (this.run.phase === 'stageClear') {          // M3's temporary stage-clear screen: a fresh press runs again
+      if (r.pressed) { this.run.restartNeedsRelease = r.held; this.run.restartHoldTicks = 0; this.restart(); return true; }
+      return false;
+    }
     if (this.phase === 'deathScreen' || this.phase === 'dead') {
       if (r.pressed && this.tick + 1 - this.deathTick >= RESTART.PRESS_AFTER_TICKS) {
-        this.restartNeedsRelease = r.held;
-        this.restartHoldTicks = 0;
+        this.run.restartNeedsRelease = r.held;
+        this.run.restartHoldTicks = 0;
         this.restart();
         return true;
       }
       return false;                               // while dead only a press counts (06 §6.2)
     }
     if (!r.held) {
-      this.restartHoldTicks = 0;
-      this.restartNeedsRelease = false;
+      this.run.restartHoldTicks = 0;
+      this.run.restartNeedsRelease = false;
       return false;
     }
-    if (this.restartNeedsRelease) return false;
-    this.restartHoldTicks += 1;
-    if (this.restartHoldTicks >= RESTART.HOLD_TICKS) {
-      this.restartHoldTicks = 0;
-      this.restartNeedsRelease = true;
+    if (this.run.restartNeedsRelease) return false;
+    this.run.restartHoldTicks += 1;
+    if (this.run.restartHoldTicks >= RESTART.HOLD_TICKS) {
+      this.run.restartHoldTicks = 0;
+      this.run.restartNeedsRelease = true;
       this.restart();
       return true;
     }
@@ -398,14 +418,13 @@ export class GameWorld {
   step(rawInput: InputState): void {
     this.events = [];
     if (this.handleRestart(rawInput)) return;
-    if (this.phase === 'deathScreen') return;
+    if (this.phase === 'deathScreen' || this.run.phase === 'stageClear') return;   // frozen; clocks stopped
     // A dead player takes no input; the world keeps running around them.
     const input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
     stepClocks(this.run);
     this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
     for (const e of this.enemies) e.frozenAtTickStart = e.hitStopTicks > 0;
-    if (!this.health.dead) this.runTicks += 1;
     // Wall-clock timers.
     if (this.health.iframeTicks > 0) this.health.iframeTicks -= 1;
     if (this.health.hitstunTicks > 0 && this.body.hitStopTicks === 0) this.health.hitstunTicks -= 1;

@@ -64,6 +64,7 @@ export function onBossKilled(w: GameWorld, e: EnemyState): void {
   w.flask.charges = w.flask.maxCharges;
   // SPEC-GAP: boss weapon drop arrives with loot in M4
   w.events.push({ t: 'bossDefeated', bossId: e.def.id, stage: w.stage });
+  w.onStageBossDefeated();
   const a = w.arenas.get(e.boss!.arenaId);
   if (a) {
     for (const id of a.exitDoorIds) w.setBodyActive(id, false);

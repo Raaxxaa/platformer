@@ -18,3 +18,23 @@ export const feet = (type: string, tx: number, ty: number, props: LevelObject['p
 /** A rect object in tiles. */
 export const rect = (type: string, tx: number, ty: number, tw: number, th: number, props: LevelObject['props'] = {}): Omit<LevelObject, 'id'> =>
   ({ type, x: tx * T, y: ty * T, w: tw * T, h: th * T, props });
+
+/** 46 × 20 tiles. Boss arena boss1: inner x 4–39, y 3–16 (576 × 224 px); entry door x 3, exit door x 40 (rows 14–16); floor row 17. */
+export function bossLevel() {
+  const rows: string[] = [];
+  for (let y = 0; y < 20; y++) {
+    let r = '';
+    for (let x = 0; x < 46; x++) {
+      const wall = (x === 3 || x === 40) && y <= 13;
+      const ceil = y === 2 && x >= 3 && x <= 40;
+      r += y >= 17 || wall || ceil || x === 0 || x === 45 ? '#' : '.';
+    }
+    rows.push(r);
+  }
+  return levelFrom(rows, [
+    feet('player_start', 1, 16),
+    rect('arena', 4, 3, 36, 14, { id: 'boss1', kind: 'boss', boss: 'great_boar', entry: 'left' }),
+    rect('arena_door', 3, 14, 1, 3, { arena: 'boss1', role: 'entry' }),
+    rect('arena_door', 40, 14, 1, 3, { arena: 'boss1', role: 'exit' }),
+  ]);
+}
