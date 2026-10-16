@@ -1091,5 +1091,145 @@
    "run_07"
   ],
   "mode": "speed"
+ },
+ {
+  "key": "brute_wave",
+  "atlas": "projectiles",
+  "frames": [
+   "brute_wave_00",
+   "brute_wave_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "enemy_arrow",
+  "atlas": "projectiles",
+  "frames": [
+   "enemy_arrow_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "falling_rock",
+  "atlas": "projectiles",
+  "frames": [
+   "falling_rock_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "falling_rock_shatter",
+  "atlas": "projectiles",
+  "frames": [
+   "falling_rock_shatter_00",
+   "falling_rock_shatter_01",
+   "falling_rock_shatter_02",
+   "falling_rock_shatter_03"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "shockwave",
+  "atlas": "projectiles",
+  "frames": [
+   "shockwave_00",
+   "shockwave_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "crit_spark",
+  "atlas": "vfx",
+  "frames": [
+   "crit_spark_00",
+   "crit_spark_01",
+   "crit_spark_02",
+   "crit_spark_03"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "debris",
+  "atlas": "vfx",
+  "frames": [
+   "debris_00",
+   "debris_01",
+   "debris_02",
+   "debris_03"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "dust_jump",
+  "atlas": "vfx",
+  "frames": [
+   "dust_jump_00",
+   "dust_jump_01",
+   "dust_jump_02",
+   "dust_jump_03"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "dust_land",
+  "atlas": "vfx",
+  "frames": [
+   "dust_land_00",
+   "dust_land_01",
+   "dust_land_02",
+   "dust_land_03"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "hit_heavy",
+  "atlas": "vfx",
+  "frames": [
+   "hit_heavy_00",
+   "hit_heavy_01",
+   "hit_heavy_02",
+   "hit_heavy_03"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "hit_spark",
+  "atlas": "vfx",
+  "frames": [
+   "hit_spark_00",
+   "hit_spark_01",
+   "hit_spark_02"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "muzzle",
+  "atlas": "vfx",
+  "frames": [
+   "muzzle_00",
+   "muzzle_01"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "stun_stars",
+  "atlas": "vfx",
+  "frames": [
+   "stun_stars_00",
+   "stun_stars_01",
+   "stun_stars_02",
+   "stun_stars_03"
+  ],
+  "mode": "loop",
+  "fps": 10
  }
 ]

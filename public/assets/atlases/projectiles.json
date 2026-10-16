@@ -1,0 +1,215 @@
+{
+ "frames": {
+  "brute_wave_00": {
+   "frame": {
+    "h": 12,
+    "w": 16,
+    "x": 2,
+    "y": 40
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 12,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 12,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "brute_wave_01": {
+   "frame": {
+    "h": 12,
+    "w": 16,
+    "x": 20,
+    "y": 40
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 12,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 12,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "enemy_arrow_00": {
+   "frame": {
+    "h": 4,
+    "w": 12,
+    "x": 2,
+    "y": 54
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 4,
+    "w": 12
+   },
+   "spriteSourceSize": {
+    "h": 4,
+    "w": 12,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "falling_rock_00": {
+   "frame": {
+    "h": 18,
+    "w": 18,
+    "x": 2,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 18,
+    "w": 18
+   },
+   "spriteSourceSize": {
+    "h": 18,
+    "w": 18,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "falling_rock_shatter_00": {
+   "frame": {
+    "h": 18,
+    "w": 18,
+    "x": 22,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 18,
+    "w": 18
+   },
+   "spriteSourceSize": {
+    "h": 18,
+    "w": 18,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "falling_rock_shatter_01": {
+   "frame": {
+    "h": 18,
+    "w": 18,
+    "x": 42,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 18,
+    "w": 18
+   },
+   "spriteSourceSize": {
+    "h": 18,
+    "w": 18,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "falling_rock_shatter_02": {
+   "frame": {
+    "h": 18,
+    "w": 18,
+    "x": 62,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 18,
+    "w": 18
+   },
+   "spriteSourceSize": {
+    "h": 18,
+    "w": 18,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "falling_rock_shatter_03": {
+   "frame": {
+    "h": 18,
+    "w": 18,
+    "x": 82,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 18,
+    "w": 18
+   },
+   "spriteSourceSize": {
+    "h": 18,
+    "w": 18,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shockwave_00": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 2,
+    "y": 22
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shockwave_01": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 20,
+    "y": 22
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  }
+ },
+ "meta": {
+  "app": "rushblade tools/art/atlas.py",
+  "format": "RGBA8888",
+  "image": "projectiles.png",
+  "scale": "1",
+  "size": {
+   "h": 60,
+   "w": 102
+  },
+  "version": "1"
+ }
+}

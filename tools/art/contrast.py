@@ -57,6 +57,10 @@ def entities():
         b, ta, tb = render(draw(o, POSES['idle'][0]))
         col = P.CLASS_COLORS[o]
         out['player_' + o] = compose_player(b, ta, tb, col, col)
+    from . import projectiles
+    pfr, _ = projectiles.build_frames()
+    for pid in ('enemy_arrow', 'brute_wave', 'shockwave', 'falling_rock'):
+        out[pid] = pfr[pid + '_00']
     return out
 
 
