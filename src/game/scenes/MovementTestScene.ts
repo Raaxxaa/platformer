@@ -1,11 +1,14 @@
-// M1 grey-box test level: steps the core at 120 Hz and draws it with plain rectangles.
+// M1 movement test level: steps the core at 120 Hz. Plains tiles and background; the player stays a
+// state-colored box here so every movement state stays readable.
 import Phaser from 'phaser';
 import { FixedStepper } from '../../core/sim/fixedStep.ts';
 import { PlayerSim } from '../../core/sim/playerSim.ts';
 import { MOVEMENT_TEST } from '../../data/levels/movementTest.ts';
 import { debugEnabled, installDebugApi, type DebugHost } from '../debug.ts';
 import { Devices } from '../input/devices.ts';
-import { COLOR, drawLevel, NOSE, STATE_COLOR } from '../greybox.ts';
+import { COLOR, NOSE, STATE_COLOR } from '../greybox.ts';
+import { drawTerrain, Parallax, preloadArt } from '../art/artViews.ts';
+import { DEPTH } from '../../data/art.ts';
 
 export class MovementTestScene extends Phaser.Scene implements DebugHost {
   sim!: PlayerSim;
@@ -15,19 +18,25 @@ export class MovementTestScene extends Phaser.Scene implements DebugHost {
   private debug = false;
   private player!: Phaser.GameObjects.Graphics;
   private hud: Phaser.GameObjects.Text | null = null;
+  private parallax!: Parallax;
 
   constructor() {
     super('MovementTest');
   }
 
+  preload(): void {
+    preloadArt(this);
+  }
+
   create(): void {
     this.sim = new PlayerSim(MOVEMENT_TEST.grid, MOVEMENT_TEST.spawn);
     this.devices = new Devices();
-    drawLevel(this, MOVEMENT_TEST.grid);
-    this.player = this.add.graphics();
+    this.parallax = new Parallax(this, MOVEMENT_TEST.grid.heightPx);
+    drawTerrain(this, MOVEMENT_TEST.grid);
+    this.player = this.add.graphics().setDepth(DEPTH.player);
     this.debug = debugEnabled();
     if (this.debug) {
-      this.hud = this.add.text(4, 4, '', { fontFamily: 'monospace', fontSize: '10px', color: '#ffffff' }).setScrollFactor(0).setDepth(10);
+      this.hud = this.add.text(4, 4, '', { fontFamily: 'monospace', fontSize: '10px', color: '#ffffff', stroke: '#0d0b14', strokeThickness: 2 }).setScrollFactor(0).setDepth(DEPTH.hud);
       installDebugApi(this);
     }
     this.render();
@@ -51,6 +60,7 @@ export class MovementTestScene extends Phaser.Scene implements DebugHost {
     const b = this.sim.body;
     const cam = this.sim.camera;
     this.cameras.main.setScroll(cam.x, cam.y);
+    this.parallax.update(cam.x, cam.y);
 
     const left = b.x - b.w / 2, top = b.y - b.h;
     const g = this.player.clear();
