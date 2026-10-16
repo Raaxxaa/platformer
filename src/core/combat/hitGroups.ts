@@ -16,6 +16,7 @@ export interface HitGroup {
   hitCount: Map<number, number>;
   attackInstance: number;
   slot?: 0 | 1;
+  box?: Box;                         // attached melee groups: recomputed from the owner's feet every tick
 }
 
 /** 02 §2.2: `box` is a center offset from the feet facing right; mirror dx when facing left. */

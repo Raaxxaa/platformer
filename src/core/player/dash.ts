@@ -85,20 +85,27 @@ export function stepDashOrSlide(b: PlayerBody, g: TileGrid, mods: MoveModifiers)
     return event;
   }
   if (b.state === 'slide') {
-    if (b.stateTicks > MOVE.SLIDE_TICKS) {
-      const event = endDashOrSlide(b, mods);
-      if (standingFits(b, g)) {
-        b.h = MOVE.BOX_H;
-        setState(b, 'ground', 1);
-      } else {
-        setState(b, 'crawl', 1);
-      }
-      clampEndSpeed(b, mods);
-      return event;
+    if (b.stateTicks > MOVE.SLIDE_TICKS || b.endSlideRequested) {
+      b.endSlideRequested = false;
+      return endSlideNatural(b, g, mods);
     }
     b.dashIframes = b.stateTicks <= MOVE.SLIDE_IFRAMES_TICKS;
   }
+  b.endSlideRequested = false;
   return null;
+}
+
+/** The slide's natural end (01 §9.3), also used when an attack press ends it (§9.2): ground, or crawl under a ceiling. */
+function endSlideNatural(b: PlayerBody, g: TileGrid, mods: MoveModifiers): 'slideEnd' {
+  endDashOrSlide(b, mods);
+  if (standingFits(b, g)) {
+    b.h = MOVE.BOX_H;
+    setState(b, 'ground', 1);
+  } else {
+    setState(b, 'crawl', 1);
+  }
+  clampEndSpeed(b, mods);
+  return 'slideEnd';
 }
 
 /** 01 §7.4: every "refund the dash" / "reset the dash cooldown" effect calls this. */

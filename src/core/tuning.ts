@@ -148,4 +148,9 @@ export const WEIGHT_MOVE_MULT = { light: 0.60, medium: 0.40, heavy: 0.25 } as co
 /** Rush meter (02 §8). */
 export const RUSH = {
   MAX: 300,
+  LEVEL_STEP: 100,                                   // level = floor(value / 100); 3 only at exactly 300
+  ATTACK_SPEED_LIGHT_MEDIUM: [1.00, 1.05, 1.10, 1.15],
+  ATTACK_SPEED_HEAVY: [1.00, 1.15, 1.30, 1.45],
+  SPEED_PERCENT: [0, 0.05, 0.10, 0.15],
+  GOLD_MULT: [1.00, 1.10, 1.20, 1.30],
 } as const;

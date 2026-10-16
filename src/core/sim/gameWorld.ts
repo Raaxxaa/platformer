@@ -4,6 +4,7 @@ import { createCamera, stepCamera, type CameraState } from '../camera.ts';
 import { createHealth, type PlayerHealth } from '../combat/health.ts';
 import type { HitGroup } from '../combat/hitGroups.ts';
 import { createRush } from '../combat/rush.ts';
+import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { HealRefusedReason, RushState } from '../combat/types.ts';
 import type { InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
@@ -42,6 +43,7 @@ export class GameWorld {
   ctx!: MoveContext;
   health!: PlayerHealth;
   rush!: RushState;
+  combat!: PlayerCombat;
   camera!: CameraState;
   tick = 0;
   runTicks = 0;
@@ -75,6 +77,10 @@ export class GameWorld {
     this.ctx = { slotUsable: [true, true] };
     this.health = createHealth();
     this.rush = createRush();
+    this.combat = createPlayerCombat([
+      { weaponId: 'greatsword', grade: 'C', element: null, perk: null },
+      { weaponId: 'war_maul', grade: 'C', element: null, perk: null },
+    ]);
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
     this.runTicks = 0;
@@ -100,7 +106,12 @@ export class GameWorld {
 
   /** Hurt pipeline hook: hitstun cancels the attack, charge and drink (02 §5.2 step 7). */
   onPlayerHitstun(): void {
-    // Filled in by the combat and flask tasks.
+    cancelAttack(this, 'hurt');
+  }
+
+  /** Drinking the flask (filled in by the flask task). */
+  isDrinking(): boolean {
+    return false;
   }
 
   /** One 120 Hz tick in 02 §2.1 order. */
@@ -112,8 +123,16 @@ export class GameWorld {
     if (this.health.iframeTicks > 0) this.health.iframeTicks -= 1;
     if (this.health.hitstunTicks > 0 && this.body.hitStopTicks === 0) this.health.hitstunTicks -= 1;
     // 3. Player actions.
-    // 4. Player movement and collision.
-    for (const e of stepPlayer(this.body, input, this.grid, this.mods, this.ctx)) this.events.push({ t: 'move', e });
+    this.ctx.slotUsable = [this.combat.slots[0] !== null, this.combat.slots[1] !== null];
+    stepPlayerCombat(this, input);
+    // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
+    for (const e of stepPlayer(this.body, input, this.grid, this.mods, this.ctx)) {
+      this.events.push({ t: 'move', e });
+      if (e === 'dashStart' || e === 'slideStart') cancelAttack(this, 'dash');
+      else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') cancelAttack(this, 'jump');
+      else if (e === 'diveStart') cancelAttack(this, 'dive');
+    }
+    syncPlayerGroups(this);
     // 5. Enemy AI and movement. 6. Moving hit groups. 7. Hit resolution. 8. Statuses. 9. Deaths. 10. Rush and flask.
     stepCamera(this.camera, this.body);
   }
