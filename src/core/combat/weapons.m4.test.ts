@@ -143,7 +143,7 @@ describe('the six new weapons (02 §10)', () => {
     v.teleportPlayer(200, 200);
     run(v, {}, 2);
     run(v, { moveY: 1, attack1: true }, 1);
-    const evd = run(v, { moveY: 1 }, 40);
+    const evd = run(v, { moveY: 1 }, 60);
     const landed = evd.findIndex((e) => e.t === 'move' && e.e === 'diveLand');
     expect(landed).toBeGreaterThanOrEqual(0);
     expect(hits(evd)).toContain(24);

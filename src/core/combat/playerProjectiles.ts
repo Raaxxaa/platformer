@@ -89,12 +89,15 @@ export function firePlayerProjectile(w: GameWorld, slot: 0 | 1, attackInstance: 
   return p;
 }
 
-/** Step 6: blasts from last tick go; projectiles move, test terrain and range; the hit group becomes the swept box. */
-export function stepPlayerProjectiles(w: GameWorld): void {
+/** Tick start: last tick's one-tick groups (blasts, slams, bolts) and the groups of ended projectiles go. */
+export function clearSpentGroups(w: GameWorld): void {
   const gone = new Set(w.blasts);
-  // Last tick's blasts, and the groups of projectiles that ended (a projectile's group id is its own id).
   w.hitGroups = w.hitGroups.filter((g) => !gone.has(g.id) && !(g.projectile === g.id && !g.active));
   w.blasts = [];
+}
+
+/** Step 6: projectiles move, test terrain and range; the hit group becomes the swept box. */
+export function stepPlayerProjectiles(w: GameWorld): void {
   for (const p of [...w.playerProjectiles]) {
     const prev = rectOf(p);
     p.vy += p.def.gravity * TICK;

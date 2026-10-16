@@ -97,14 +97,14 @@ export function endSpecial(_w: GameWorld, _cur: CurrentAttack): void {}
 export function scheduleHammerDiveBolt(w: GameWorld, slot: 0 | 1, attackInstance: number): void {
   const H = S.hammerDiveBolt;
   const x = w.body.x, y = w.body.y;
-  let left = ticks(H.delayS);
+  const at = w.tick + ticks(H.delayS);
   w.abilityEntities.push({
     id: w.newId(), kind: 'hammer_dive_bolt',
     step: (ww) => {
-      if (--left > 0) return true;
+      if (ww.tick < at) return true;
       spawnBlast(ww, x + H.box.dx, y + H.box.dy, { w: H.box.w, h: H.box.h }, H.hit, slot, attackInstance);
       return false;
     },
-    view: () => ({ x, y, left }),
+    view: () => ({ x, y, at }),
   });
 }

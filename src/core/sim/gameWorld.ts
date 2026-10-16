@@ -9,7 +9,7 @@ import { overlaps } from '../combat/hitGroups.ts';
 import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
-import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
+import { addFlaskFill, cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
 import { CAMERA, FLASK, RESTART, RUSH } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
@@ -21,8 +21,10 @@ import { cloneLoadout, createAbilityRuntime, defaultLoadout, type Loadout } from
 import type { AbilityId, AbilityRuntime, BondId, ClassState, HybridId } from '../abilities/types.ts';
 import { clearAbilityEffects, fillAbilities, onCastCancelMove, onCastHurt, stepAbilities } from '../abilities/abilitySystem.ts';
 import { stepAbilityEntities, type AbilityEntity } from '../abilities/entities.ts';
+import '../abilities/list/index.ts';
+import { vampireTenths } from '../abilities/list/vampire.ts';
 import { hammerOutIn, removeHammer, stepHammer, type HammerState } from '../combat/stormHammer.ts';
-import { clearPlayerProjectiles, stepPlayerProjectiles, type PlayerProjectile } from '../combat/playerProjectiles.ts';
+import { clearPlayerProjectiles, clearSpentGroups, stepPlayerProjectiles, type PlayerProjectile } from '../combat/playerProjectiles.ts';
 import { classChanged, computeClassState } from '../classes/classState.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
@@ -357,7 +359,7 @@ export class GameWorld {
     if (g.attackInstance < 0) onDiveGroupHit(this, g, e.id);
     if (this.rushedInstances.has(g.attackInstance)) return;
     this.rushedInstances.add(g.attackInstance);
-    const dashing = this.body.state === 'dash' || this.tick - this.lastDashEndTick <= RUSH.DASH_HIT_WINDOW_TICKS;
+    const dashing = g.dashAttack || this.body.state === 'dash' || this.tick - this.lastDashEndTick <= RUSH.DASH_HIT_WINDOW_TICKS;
     addRush(this, RUSH.HIT + (dashing ? RUSH.DASH_HIT : 0));
   }
 
@@ -419,6 +421,8 @@ export class GameWorld {
   /** On-kill effects that belong to other systems (flask, Rush). */
   onPlayerKill(_e: EnemyState, tier: 'regular' | 'elite'): void {
     onKillFill(this, tier);
+    const vamp = vampireTenths(this);
+    if (vamp > 0) addFlaskFill(this, vamp);                       // 03 §12
     addRush(this, tier === 'elite' ? RUSH.KILL_ELITE : RUSH.KILL_REGULAR);
   }
 
@@ -483,6 +487,7 @@ export class GameWorld {
     // A dead player takes no input; the world keeps running around them.
     const input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
+    clearSpentGroups(this);
     stepClocks(this.run);
     this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
     for (const e of this.enemies) e.frozenAtTickStart = e.hitStopTicks > 0;

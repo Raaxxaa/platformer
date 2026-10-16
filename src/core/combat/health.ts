@@ -22,6 +22,15 @@ export type HurtSource =
   | { kind: 'enemyHit'; enemyId: number; enemyDefId: string; damageA: number; attackerCx: number; melee: boolean; playerKb?: [number, number] }
   | { kind: 'hazard'; cause: 'spikes' | 'hazard'; damageA: number };
 
+/** Super armor sources (02 §5.3): Shoulder Charge, Rage, Iron Will while attacking (03). */
+const SUPER_ARMOR: ((w: GameWorld) => boolean)[] = [];
+export function addSuperArmor(f: (w: GameWorld) => boolean): void {
+  SUPER_ARMOR.push(f);
+}
+export function hasSuperArmor(w: GameWorld): boolean {
+  return SUPER_ARMOR.some((f) => f(w));
+}
+
 /** Hooks for later milestones (02 §5.2 steps 2–4, Second Wind). They never handle the hit in M2. */
 const ripostes = (): boolean => false;
 const parries = (): boolean => false;
@@ -53,8 +62,8 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
     return dealt;
   }
   const spikes = src.kind === 'hazard' && src.cause === 'spikes';
-  // 7. Hitstun and knockback (cancels the attack, drink and combo).
-  if (!spikes) {
+  // 7. Hitstun and knockback (cancels the attack, drink and combo) — not under super armor (02 §5.3).
+  if (!spikes && !hasSuperArmor(w)) {
     w.onPlayerHitstun();
     let kbx: number = COMBAT.HURT_KB_X, kby: number = COMBAT.HURT_KB_Y;
     let dir: 1 | -1 = (-b.facing) as 1 | -1;

@@ -35,6 +35,8 @@ export interface HitGroup {
   noPlayerStop?: boolean;
   /** Overrides the size/elite rules for a control effect (pull target point). */
   pullTo?: { x: number; y: number; speed: number };
+  /** Rush `dashAttack` (02 §8.2): Blade Dash and Shoulder Charge. */
+  dashAttack?: boolean;
   /** Recomputes the rect after player movement (swept moving attacks). */
   follow?: (w: GameWorld, g: HitGroup) => void;
 }

@@ -11,5 +11,7 @@ export interface AbilityEntity {
 }
 
 export function stepAbilityEntities(w: GameWorld): void {
+  // Ability groups that switched off (their move ended) go; one-tick groups go with the blasts.
+  w.hitGroups = w.hitGroups.filter((g) => !(g.ability !== undefined && !g.active));
   w.abilityEntities = w.abilityEntities.filter((e) => e.step(w));
 }
