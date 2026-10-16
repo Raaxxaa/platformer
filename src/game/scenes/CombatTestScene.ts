@@ -1,4 +1,4 @@
-// M2 grey-box combat test level: steps GameWorld at 120 Hz and draws it with plain rectangles.
+// M2 combat test level: steps GameWorld at 120 Hz and draws it with the Plains art (boxes where art doesn't exist yet).
 import Phaser from 'phaser';
 import { rushLevel } from '../../core/combat/rush.ts';
 import { enemyRect, type EnemyState } from '../../core/enemies/enemy.ts';
@@ -7,9 +7,11 @@ import { FixedStepper } from '../../core/sim/fixedStep.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { specToInput, type InputSpec } from '../../core/sim/playerSim.ts';
 import { COMBAT, ENEMY, TICK_RATE } from '../../core/tuning.ts';
+import { DEPTH } from '../../data/art.ts';
+import { animTable, drawTerrain, EnemyView, Parallax, PlayerView, preloadArt } from '../art/artViews.ts';
 import { COMBAT_TEST } from '../../data/levels/combatTest.ts';
 import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../debug.ts';
-import { COLOR, drawLevel, NOSE, STATE_COLOR } from '../greybox.ts';
+import { COLOR } from '../greybox.ts';
 import { Devices } from '../input/devices.ts';
 
 /** Grey-box enemy colors (plan M2, Task 17). */
@@ -40,22 +42,36 @@ export class CombatTestScene extends Phaser.Scene implements CombatDebugHost {
   private overlay!: Phaser.GameObjects.Graphics;
   private overlayText!: Phaser.GameObjects.Text;
   private marks = new Map<number, Phaser.GameObjects.Text>();
+  private boxes!: Phaser.GameObjects.Graphics;
+  private parallax!: Parallax;
+  private playerView!: PlayerView;
+  private enemyViews = new Map<EnemyState, EnemyView>();
+  private animDefs!: ReturnType<typeof animTable>;
 
   constructor() {
     super('CombatTest');
   }
 
+  preload(): void {
+    preloadArt(this);
+  }
+
   create(): void {
     this.world = new GameWorld({ grid: COMBAT_TEST.grid, spawn: COMBAT_TEST.spawn, enemies: COMBAT_TEST.enemies });
     this.devices = new Devices();
-    drawLevel(this, COMBAT_TEST.grid);
-    this.gfx = this.add.graphics();
-    this.hud = this.add.text(4, 4, '', { fontFamily: 'monospace', fontSize: '10px', color: '#ffffff' }).setScrollFactor(0).setDepth(10);
+    this.animDefs = animTable(this);
+    this.parallax = new Parallax(this, COMBAT_TEST.grid.heightPx);
+    drawTerrain(this, COMBAT_TEST.grid);
+    this.boxes = this.add.graphics().setDepth(DEPTH.enemies);
+    this.playerView = new PlayerView(this, this.animDefs);
+    this.gfx = this.add.graphics().setDepth(DEPTH.projectiles);
+    this.hud = this.add.text(4, 4, '', { fontFamily: 'monospace', fontSize: '10px', color: '#ffffff', stroke: '#0d0b14', strokeThickness: 2 })
+      .setScrollFactor(0).setDepth(DEPTH.hud);
     const { width, height } = this.scale;
-    this.overlay = this.add.graphics().setScrollFactor(0).setDepth(20);
+    this.overlay = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 5);
     this.overlay.fillStyle(DRAW.overlay, DRAW.overlayAlpha).fillRect(0, 0, width, height);
     this.overlayText = this.add.text(width / 2, height / 2, 'You died — press R', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff' })
-      .setOrigin(0.5).setScrollFactor(0).setDepth(21);
+      .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
     this.debug = debugEnabled();
     if (this.debug) installCombatDebugApi(this);
     this.render();
@@ -87,17 +103,19 @@ export class CombatTestScene extends Phaser.Scene implements CombatDebugHost {
     const w = this.world;
     const cam = w.camera;
     this.cameras.main.setScroll(cam.x + cam.shakeX, cam.y + cam.shakeY);
+    this.parallax.update(cam.x + cam.shakeX, cam.y + cam.shakeY);
     const g = this.gfx.clear();
+    this.boxes.clear();
 
+    this.syncEnemyViews();
     for (const e of w.enemies) this.drawEnemy(g, e);
 
     for (const p of w.projectiles) g.fillStyle(DRAW.projectile, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
 
     const b = w.body;
     const left = b.x - b.w / 2, top = b.y - b.h;
-    const blink = w.health.iframeTicks > 0 && Math.floor(w.tick / COMBAT.IFRAME_BLINK_TICKS) % 2 === 0;
-    g.fillStyle(STATE_COLOR[b.state], blink ? 0.4 : 1).fillRect(left, top, b.w, b.h);
-    g.fillRect(b.facing > 0 ? left + b.w : left - NOSE, top + 4, NOSE, NOSE);
+    const hurtAgo = w.health.iframeTicks > 0 ? COMBAT.HURT_IFRAMES_TICKS - w.health.iframeTicks : Number.MAX_SAFE_INTEGER;
+    this.playerView.update(b, w.tick, w.health.iframeTicks, hurtAgo);
     if (this.debug) g.lineStyle(1, COLOR.hurtbox, 1).strokeRect(left + 0.5, top + 0.5, b.w - 1, b.h - 1);
 
     // Active attack hitboxes: the player's always (M2), the enemies' with ?debug=1.
@@ -113,8 +131,32 @@ export class CombatTestScene extends Phaser.Scene implements CombatDebugHost {
     this.overlayText.setVisible(dead);
   }
 
+  /** One view per enemy; a restart makes new enemies, so stale views go. */
+  private syncEnemyViews(): void {
+    const live = new Set(this.world.enemies);
+    for (const [e, v] of this.enemyViews) if (!live.has(e)) { v.destroy(); this.enemyViews.delete(e); }
+    for (const e of this.world.enemies) {
+      let v = this.enemyViews.get(e);
+      if (!v) { v = new EnemyView(this, this.animDefs, e); this.enemyViews.set(e, v); }
+      v.update(this.world.tick);
+    }
+  }
+
   private drawEnemy(g: Phaser.GameObjects.Graphics, e: EnemyState): void {
     if (e.dead && e.deathTicks <= 0) return;
+    const r = enemyRect(e);
+    if (!this.enemyViews.get(e)?.hasArt) this.drawEnemyBox(this.boxes, e);
+    if (this.debug) g.lineStyle(1, DRAW.enemyHurtbox, 1).strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
+    // HP bar: elites always, regulars after the first damage.
+    if (!e.dead && (e.def.hpBar === 'always' || e.everDamaged)) {
+      const y = r.y - DRAW.hpGap;
+      g.fillStyle(DRAW.hpBack, 1).fillRect(r.x, y, r.w, 1);
+      g.fillStyle(DRAW.hpFill, 1).fillRect(r.x, y, Math.max(0, Math.round((r.w * e.hp) / e.maxHp)), 1);
+    }
+  }
+
+  /** Enemies without art yet (the Training Dummy) stay grey boxes. */
+  private drawEnemyBox(g: Phaser.GameObjects.Graphics, e: EnemyState): void {
     const r = enemyRect(e);
     const alpha = e.dead ? e.deathTicks / ENEMY.DEATH_ANIM_TICKS : 1;
     let color = ENEMY_COLOR[e.def.id] ?? 0xffffff;
@@ -126,13 +168,6 @@ export class CombatTestScene extends Phaser.Scene implements CombatDebugHost {
     // The eye on the facing side.
     const ex = e.facing > 0 ? r.x + r.w - DRAW.eye - 1 : r.x + 1;
     g.fillStyle(0x000000, alpha).fillRect(ex, r.y + 2, DRAW.eye, DRAW.eye);
-    if (this.debug) g.lineStyle(1, DRAW.enemyHurtbox, 1).strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
-    // HP bar: elites always, regulars after the first damage.
-    if (!e.dead && (e.def.hpBar === 'always' || e.everDamaged)) {
-      const y = r.y - DRAW.hpGap;
-      g.fillStyle(DRAW.hpBack, 1).fillRect(r.x, y, r.w, 1);
-      g.fillStyle(DRAW.hpFill, 1).fillRect(r.x, y, Math.max(0, Math.round((r.w * e.hp) / e.maxHp)), 1);
-    }
   }
 
   /** A "?" above an enemy that is noticing the player but not yet aware. */
@@ -143,7 +178,7 @@ export class CombatTestScene extends Phaser.Scene implements CombatDebugHost {
       seen.add(e.id);
       let t = this.marks.get(e.id);
       if (!t) {
-        t = this.add.text(0, 0, '?', { fontFamily: 'monospace', fontSize: '10px', color: '#ffd84a' }).setOrigin(0.5, 1).setDepth(5);
+        t = this.add.text(0, 0, '?', { fontFamily: 'monospace', fontSize: '10px', color: '#ffd84a' }).setOrigin(0.5, 1).setDepth(DEPTH.projectiles);
         this.marks.set(e.id, t);
       }
       const r = enemyRect(e);
