@@ -93,7 +93,7 @@ describe('wall jump (01 §8.3, checklist 16, 17)', () => {
       expect(ev).toContain('wallJump');
       expect(sim.body.airDashAvailable).toBe(true);
       expect(sim.body.doubleJumpAvailable).toBe(true);
-      expect(sim.body.facing).toBe(-1);
+      expect(sim.body.facing).toBe(1);   // still holding toward the wall: facing follows moveX, velocity doesn't
       expect(sim.body.jumpCuttable).toBe(true);
       sim.stepSpec({ moveX: 1, jump: true }, 13);
       xAfterLock = sim.body.x;
@@ -124,10 +124,15 @@ describe('wall jump (01 §8.3, checklist 16, 17)', () => {
       if (expected === 'wallJump') expect(sim.body.vx).toBe(-220);
     }
   });
-  it('during the 14-tick lock input does not change vx', () => {
+  it('during the 14-tick lock input does not change vx, but facing follows moveX', () => {
     const sim = sliding();
     sim.stepSpec({ moveX: 1, jump: true });
-    for (let i = 2; i <= 14; i++) { sim.stepSpec({ moveX: i % 2 ? 1 : -1, jump: true }); expect(sim.body.vx).toBe(-220); }
+    for (let i = 2; i <= 14; i++) {
+      const dir = i % 2 ? 1 : -1;
+      sim.stepSpec({ moveX: dir, jump: true });
+      expect(sim.body.vx).toBe(-220);
+      expect(sim.body.facing).toBe(dir);
+    }
     sim.stepSpec({ moveX: 1, jump: true });
     expect(sim.body.vx).toBeGreaterThan(-220);
   });
@@ -150,11 +155,12 @@ describe('wall jump (01 §8.3, checklist 16, 17)', () => {
     ]);
     const a = new PlayerSim(corridor(), { x: 311, y: 200 });   // gaps: left 1, right 3
     a.stepSpec({ moveX: 1, jump: true });
-    expect(a.body.facing).toBe(-1);
+    expect(a.body.x).toBeLessThan(311);       // went left, away from the right wall
     const b = new PlayerSim(corridor(), { x: 311, y: 200 });
     b.body.facing = -1;
     b.stepSpec({ jump: true });
-    expect(b.body.facing).toBe(1);
+    expect(b.body.facing).toBe(1);           // no moveX: facing = away (right)
+    expect(b.body.x).toBeGreaterThan(311);
   });
   it('single-wall climbing works: the test level shaft is climbed to the top platform within 10 s', () => {
     const sim = new PlayerSim(MOVEMENT_TEST.grid, { x: 900, y: 432 });

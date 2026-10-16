@@ -38,9 +38,9 @@ export function tryJump(b: PlayerBody, input: InputState, g: TileGrid, mods: Mov
   if (mods.rooted || !mods.canJump) return null;
 
   // 1. Drop-through (01 §13.1): a fresh press with down, grounded, and every support one-way.
-  // SPEC-GAP: this also applies during a slide or dash on a one-way platform (so down + jump there drops instead of slide-jumping).
-  if (b.jumpPressFresh && input.moveY === 1 && b.grounded && b.state !== 'ledgeClimb' && supportIsOnlyOneWay(b, g)) {
-    if (b.state === 'dash' || b.state === 'slide') endDashOrSlide(b, mods);
+  // Never from a slide: a jump during a slide is always a slide-jump.
+  if (b.jumpPressFresh && input.moveY === 1 && b.grounded && b.state !== 'ledgeClimb' && b.state !== 'slide' && supportIsOnlyOneWay(b, g)) {
+    if (b.state === 'dash') endDashOrSlide(b, mods);
     b.y += 1;
     b.vy = 0;
     b.coyoteValid = false;

@@ -15,14 +15,15 @@ describe('camera (01 §14)', () => {
     sim.stepSpec({}, 120);
     expect(sim.body.y - sim.camera.y).toBe(220);
   });
-  it('the anchor ignores a full jump and the camera does not move vertically before the fall reaches 300 px/s', () => {
+  it('a full jump never moves the camera vertically (no look-down above the takeoff height)', () => {
     const sim = new PlayerSim(tallWorld(), { x: 400, y: 480 });
     sim.stepSpec({}, 120);
     const y0 = sim.camera.y, anchor0 = sim.camera.anchorY;
     sim.stepSpec({ jump: true });
     for (let i = 0; i < 80 && sim.body.state !== 'ground'; i++) {
       expect(sim.camera.anchorY).toBe(anchor0);
-      if (sim.body.vy < 300) expect(sim.camera.y).toBe(y0);
+      expect(sim.camera.lookDown).toBe(0);
+      expect(sim.camera.y).toBe(y0);
       sim.stepSpec({ jump: true });
     }
     expect(sim.body.state).toBe('ground');

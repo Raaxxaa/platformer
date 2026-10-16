@@ -100,6 +100,7 @@ function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModi
       ev.push('diveLand');
     }
     b.lastGroundPt = b.pt;
+    b.lastGroundY = b.y;
     if (b.state !== 'dash' && b.state !== 'slide') {
       // Standing on the ground refreshes both (a landing, or a dash that ended on the ground).
       b.airDashAvailable = true;
@@ -126,8 +127,8 @@ function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModi
 
 /** Step 10: facing follows moveX in the free-moving states unless combat locked it. */
 function updateFacing(b: PlayerBody, input: InputState, mods: MoveModifiers): void {
-  // SPEC-GAP: does facing follow moveX during the wall-jump steering lock? Chosen: no (keeps facing away from the wall).
-  if (mods.facingLocked || input.moveX === 0 || b.steerLockTicks > 0) return;
+  // Facing follows moveX even during the wall-jump steering lock; only velocity is locked (01 §8.3).
+  if (mods.facingLocked || input.moveX === 0) return;
   if (b.state === 'ground' || b.state === 'air' || b.state === 'crawl') b.facing = input.moveX;
 }
 

@@ -75,8 +75,9 @@ export function stepCamera(c: CameraState, b: PlayerBody): void {
   else if (b.y < c.anchorY - CAMERA.AIR_UP_SLACK) c.anchorY = b.y + CAMERA.AIR_UP_SLACK;
   // Look-ahead and look-down move linearly toward their targets.
   c.lookX = approach(c.lookX, lookTarget(b), CAMERA.LOOK_RATE * TICK);
-  // SPEC-GAP: a plain full jump lands at 400 px/s, so this look-down also dips the camera at the end of every full jump. Intended?
-  const downTarget = b.vy >= CAMERA.LOOK_DOWN_VY || b.state === 'diveFall' ? CAMERA.LOOK_DOWN : 0;
+  // Look down only when falling fast below the last grounded height (a normal jump never dips the camera).
+  const fallingBelow = b.vy >= CAMERA.LOOK_DOWN_VY && b.y > b.lastGroundY;
+  const downTarget = fallingBelow || b.state === 'diveFall' ? CAMERA.LOOK_DOWN : 0;
   c.lookDown = approach(c.lookDown, downTarget, CAMERA.LOOK_DOWN_RATE * TICK);
   // 2–3. Desired center, smoothed.
   c.cx += (b.x + c.lookX - c.cx) * SMOOTH_X;

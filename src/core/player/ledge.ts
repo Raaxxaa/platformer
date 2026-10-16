@@ -72,6 +72,7 @@ export function finishClimb(b: PlayerBody): void {
   b.vy = 0;
   b.grounded = true;
   b.lastGroundPt = b.pt;
+  b.lastGroundY = b.y;
   b.airDashAvailable = true;
   b.doubleJumpAvailable = true;
   setState(b, 'ground', 1);

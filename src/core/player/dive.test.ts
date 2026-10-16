@@ -170,6 +170,16 @@ describe('one-way platforms and drop-through (01 §2.6, §2.7.3, §13.1, checkli
     const sim = new PlayerSim(flatWorld(), { x: 300, y: 432 });
     expect(sim.stepSpec({ moveY: 1, jump: true })).toEqual(['jump']);
   });
+  it('down + jump during a slide on a one-way platform is a slide-jump, not a drop', () => {
+    const sim = new PlayerSim(MOVEMENT_TEST.grid, { x: 1290, y: 384 });
+    sim.stepSpec({}, 2);
+    sim.stepSpec({ moveX: 1, moveY: 1, dash: true });
+    expect(sim.body.state).toBe('slide');
+    const ev = sim.stepSpec({ moveX: 1, moveY: 1, jump: true });
+    expect(ev).toEqual(expect.arrayContaining(['slideEnd', 'jump']));
+    expect(ev).not.toContain('dropThrough');
+    expect(sim.body.vy).toBeLessThan(0);
+  });
   it('a buffered press never drops through', () => {
     const sim = new PlayerSim(MOVEMENT_TEST.grid, { x: 1300, y: 330 });
     sim.body.doubleJumpAvailable = false;
