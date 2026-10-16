@@ -35,6 +35,9 @@ import { buildWorldParts, type LevelData, type LevelEnemySpawn, type LevelObject
 import { createRunState, type RunState } from '../run/runState.ts';
 import { fnv1a32 } from '../rng.ts';
 import { buildArenas, stepArenas, type ArenaRt } from '../run/arenas.ts';
+import { buildTimedDoors, stepTimedDoors, type TimedDoorRt } from '../run/timedDoors.ts';
+import { stepZones, type HintAction } from '../run/zones.ts';
+import { stepClocks } from '../run/runState.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -55,7 +58,9 @@ export type WorldEvent =
   | { t: 'drink' }
   | { t: 'arenaLocked'; arenaId: string }
   | { t: 'arenaWave'; arenaId: string; wave: number }
-  | { t: 'arenaCleared'; arenaId: string; clearTicks: number; fast: boolean };
+  | { t: 'arenaCleared'; arenaId: string; clearTicks: number; fast: boolean }
+  | { t: 'timedDoorOpened'; doorId: string }
+  | { t: 'timedDoorMissed'; doorId: string };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -96,6 +101,8 @@ export class GameWorld {
   bodies!: Bodies;
   run!: RunState;
   arenas = new Map<string, ArenaRt>();
+  timedDoors: TimedDoorRt[] = [];
+  activeHint: HintAction | null = null;
   readonly level: LevelData | null;
   readonly waveSpawns: LevelEnemySpawn[];
   readonly markers: LevelObject[];
@@ -200,6 +207,8 @@ export class GameWorld {
     this.rushedInstances = new Set();
     this.dashThrough = new Set();
     this.arenas = buildArenas(this);
+    this.timedDoors = buildTimedDoors(this);
+    this.activeHint = null;
     this.phase = 'stage';
     this.deathTick = 0;
   }
@@ -377,6 +386,7 @@ export class GameWorld {
     // A dead player takes no input; the world keeps running around them.
     const input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
+    stepClocks(this.run);
     this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
     for (const e of this.enemies) e.frozenAtTickStart = e.hitStopTicks > 0;
     if (!this.health.dead) this.runTicks += 1;
@@ -420,6 +430,8 @@ export class GameWorld {
     stepRush(this);
     stepFlask(this);
     // 10. Rush and flask. 11. Level logic (06 §2.8).
+    stepTimedDoors(this);
+    stepZones(this);
     stepArenas(this);
     stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());
     if (this.phase === 'dead' && this.tick - this.deathTick >= RESTART.DEATH_SIM_TICKS) this.phase = 'deathScreen';

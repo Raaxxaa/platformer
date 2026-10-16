@@ -133,6 +133,9 @@ export const ARENA = {
   FILL_FAST: 400, FILL_SLOW: 250,
 } as const;
 
+/** Timed doors (06 §9.5). */
+export const TIMED_DOOR = { TRIGGER_W: 48 } as const;   // px strip in front of the door
+
 /** Death and restart (06 §6). */
 export const RESTART = {
   DEATH_SIM: 1.0, DEATH_SIM_TICKS: ticks(1.0),          // the world keeps running after death
