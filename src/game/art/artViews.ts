@@ -11,20 +11,7 @@ import { decoTile, terrainTile } from './autotile.ts';
 /** The player outfit while there are no classes yet. */
 // SPEC-GAP: no class or starting kit exists before M5, so the outfit is fixed to the Swordsman with Neutral trims.
 export const OUTFIT = 'swordsman';
-const BIOME = 'plains';
-
-/** Load everything the Plains art needs (08 §9.1, §10.1, §12.5). */
-export function preloadArt(scene: Phaser.Scene): void {
-  const l = scene.load;
-  l.atlas('enemies_plains', 'assets/atlases/enemies_plains.png', 'assets/atlases/enemies_plains.json');
-  l.atlas(`player_${OUTFIT}`, `assets/atlases/player_${OUTFIT}.png`, `assets/atlases/player_${OUTFIT}.json`);
-  l.atlas(`player_${OUTFIT}_trim`, `assets/atlases/player_${OUTFIT}_trim.png`, `assets/atlases/player_${OUTFIT}_trim.json`);
-  l.atlas('boss_great_boar', 'assets/atlases/boss_great_boar.png', 'assets/atlases/boss_great_boar.json');
-  l.atlas('projectiles', 'assets/atlases/projectiles.png', 'assets/atlases/projectiles.json');
-  l.image(`tiles_${BIOME}`, `assets/tiles/tiles_${BIOME}.png`);
-  for (let i = 0; i < 3; i++) l.image(`bg_${BIOME}_${i}`, `assets/bg/bg_${BIOME}_${i}.png`);
-  l.json('anims', 'assets/anims.json');
-}
+import { BIOME } from '../assets/loadAssets.ts';
 
 export function animTable(scene: Phaser.Scene): Map<string, AnimDef> {
   const list = scene.cache.json.get('anims') as AnimDef[];

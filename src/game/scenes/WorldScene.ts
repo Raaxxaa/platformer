@@ -9,7 +9,8 @@ import { specToInput, type InputSpec } from '../../core/sim/playerSim.ts';
 import { COMBAT, ENEMY } from '../../core/tuning.ts';
 import { formatTime } from '../../core/time.ts';
 import { DEPTH } from '../../data/art.ts';
-import { animTable, drawTerrain, EnemyView, Parallax, PlayerView, preloadArt, ProjectileViews } from '../art/artViews.ts';
+import { animTable, drawTerrain, EnemyView, Parallax, PlayerView, ProjectileViews } from '../art/artViews.ts';
+import { loadAssets } from '../assets/loadAssets.ts';
 import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../debug.ts';
 import { COLOR } from '../greybox.ts';
 import { Devices } from '../input/devices.ts';
@@ -51,7 +52,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected renderExtra(): void {}
 
   preload(): void {
-    preloadArt(this);
+    loadAssets(this);
   }
 
   create(): void {
