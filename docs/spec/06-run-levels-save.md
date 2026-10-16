@@ -239,8 +239,8 @@ Every stage chains these 8 sections, in order (GAME_PLAN 7.5). Length = main pat
 | # | Section | Main path (tiles) | Regular mobs | Elites | Speedrunner | First time |
 |---|---|---|---|---|---|---|
 | 1 | Start: short run-in | 30–40 | 0 | 0 | 4 s | 15 s |
-| 2 | Combat stretch: 3–4 mob groups on open ground | 100–120 | 10 | 1 | 14 s | 60 s |
-| 3 | Traversal: biome gimmick | 110–130 | 4 | 0 | 13 s | 45 s |
+| 2 | Combat stretch: 3–4 mob groups on open ground (Stage 1: 6 small groups, §8.6) | 100–120 (Stage 1: 150–170) | 10 | 1 | 14 s | 60 s |
+| 3 | Traversal: biome gimmick | 110–130 (Stage 1: 120–140) | 4 | 0 | 13 s | 45 s |
 | 4 | Branch: main path, side path, skip route | 100–120 (+60–90 side path) | 8 (6 main, 2 side) | 1 (side) | 11 s | 60 s |
 | 5 | Arena: doors lock, waves | 38 (one locked screen) | 9 (in waves) | 1 (last wave) | 12 s | 35 s |
 | 6 | Traversal 2: harder gimmick | 130–150 | 5 | 0 | 15 s | 50 s |
@@ -299,6 +299,15 @@ Built on 01 §10.4 and 03 §7.2 (always assume Lv1 abilities).
 | Everywhere | No bottomless pits (01 §2.3); block areas with ceilings, not tall walls alone (01 §8); `guide_arrow` at every fork pointing along the main path |
 
 ---
+
+
+### 8.6 Early-game spacing (Stage 1 only)
+Added after playtesting (new players were overwhelmed by the first fights). In Stage 1 sections 2 and 3:
+- a group has **at most 2 regular enemies**; elites are alone;
+- two groups are **at least 24 tiles apart** (edge to edge), with a calm stretch of at least 4 flat tiles and no enemies between them, so only one group is on screen at a time (the screen is 40 tiles wide);
+- the first group of the stage is a single `bandit`.
+
+Counts and the per-type mix stay as §8.2 and 05 §9.5. `validateLevel` checks these rules for `plains` (§13).
 
 ## 9. Arenas, doors and the side arena
 
@@ -416,12 +425,23 @@ When 05 §12 says the merchant is present (rolled at stage load), the loader add
 | Object | Tile x (center) | Interaction |
 |---|---|---|
 | `player_start` | 3 | Facing right. Spawns with `save.lastKit` equipped (or empty-handed on the very first launch) |
+| `training_gate` | rect, tiles x 1–2, rows 16–19 | Enters the Training Yard (§12.4). The first time the player confirms a class at a statue, 07 asks "Try the Training Yard first?" (Yes enters it; No closes) |
 | `class_statue` swordsman, tank, archer, wizard | 9, 13, 17, 21 | Opens the class pick popup (07) for that class: pick one of its starting weapons (the 2 from 03 §3, plus a 3rd once `save.unlocks.startWeapons` has it, 05 §14.3). Confirm → the kit replaces the current loadout at once; `lastKit` saved |
 | `mirror_spot` | 25 | Not interactable yet. The future character mirror (GAME_PLAN 4.5, M12); until then an empty frame |
 | `enemy` `training_dummy` (04 §2.10) | 28 | Hit it to try the kit |
 | `unlocks_board` | 34 | Opens the unlocks / classes discovered page (07) |
 | `seed_board` | 37 | Opens seed entry (07): type a seed or clear it. The board shows the active typed seed |
 | `exit` (gate) | rect, tiles x 45–46, rows 16–19 | Starts the run (§2.3) if a kit is equipped |
+
+
+### 12.4 Training Yard (tutorial)
+Level `training_yard`, layout and stations in `docs/levels/training-yard.md`. Map about **300 × 40 tiles**, `plains` tiles, `village_home` background.
+- **Entry:** the Home Village `training_gate` (from M7); until then the start screen and `?start=training`. The player keeps their kit. If they have none, the 4 class statues at the yard's start work like the Home Village ones (§12.3).
+- **No timer, no death:** the run timer does not run. Damage can't take HP below 1. Pits are `respawn` zones: touching one fades out 0.3 s and puts the player at that station's checkpoint (full flask, no damage).
+- **Rush works** here (not frozen like villages) and resets to 0 at each checkpoint.
+- **Stations:** zone objects `station` (`id` 1–17, `check` = the rule from the level doc). When the check is met: emit `stationDone {id}`, the check flag turns green, sound `ui_confirm`. Each station has a `checkpoint` point and a `hint` zone with its sign text.
+- **Progress:** the set of done station ids is kept in memory until M7, then saved as `save.training` (a list of ids).
+- **Leaving** (an `exit` at either end, or the pause menu): the loadout resets to the picked kit (practice items from the armory are removed), and the player returns where they came from.
 
 ---
 

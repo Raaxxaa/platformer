@@ -16,7 +16,8 @@ Morning meadow → open fields with the first fights → a wooded ravine you cli
 2. **The main path is obvious.** Light (open sky), guide arrows at every fork, enemies facing the way you came. Side paths are darker or narrower.
 3. **Speed is rewarded, never required.** Every section has at least one faster line (a dash-jump over a gap the main path walks around, a wall-jump shortcut, a drop-through) that saves 1–3 s.
 4. **Fair enemy placement.** No enemy is off-screen when it can hit you. Archers always stand where you can see them first. No enemy right after a blind drop.
-5. **Heights and gaps** follow 06 §8.5. Section 1–2 gaps are at most 3 tiles up and 4 across. Wall-jump shafts are 4 tiles wide.
+5. **Spacing (Stage 1, 06 §8.6):** in §2 and §3, groups have **at most 2 regular enemies** (the Brute is always alone), and two groups are **at least 24 tiles apart** with a calm stretch between, so only one group is on screen at a time. Later sections may be denser (the arena is meant to be busy).
+6. **Heights and gaps** follow 06 §8.5. Section 1–2 gaps are at most 3 tiles up and 4 across. Wall-jump shafts are 4 tiles wide.
 
 ---
 
@@ -36,27 +37,30 @@ P  !move   !jump    S !interact      !attack           ____
 - The `attack` hint near the end, just before the first enemy of §2 becomes visible.
 - **Speed line:** none needed. A speedrunner holds right and skips the stand.
 
-## § 2 — Open Fields (combat stretch) · 100–120 tiles · ~60 s / 14 s
+## § 2 — Open Fields (combat stretch) · 150–170 tiles · ~70 s / 16 s
 
-**Purpose:** the first real fights, one enemy type at a time, then mixed. Teaches dash (through attacks) and Lucky Blocks.
+**Purpose:** the first real fights, **one small group at a time**, so new players are never swarmed. Teaches dash (through attacks) and Lucky Blocks. (Spread out after playtesting: friends found the first fights overwhelming.)
 
 ```
- !dash        L !lucky                              a(on hill)
-   w w w           b b              o         a  ______   o
- _________     ___________    _____________  /      \______B___
-#########  ##  ###########  ##############  ##      #############
-         gap 3            gap 2
+ !dash         L !lucky                                          a(low hill)                       a
+   b                w w               o              b b          w               o                B
+ ________     ______________     _____________   ____________   _______     ______________   ______________
+#########  ##  ##############  ##############  ##############  ##########  ################  ################
+   G1   calm      G2       calm      G3      calm     G4      calm  G5    calm      G6      calm    Brute
 ```
 
-- **Group 1:** 3 wolves (pack) on a flat field. The `dash` hint just before them, so the player learns to dash through a lunge. Easy and wide open.
-- **Lucky Block #1** above the path on a 2-tile rise, with the `lucky_block` hint ("hit it!").
-- **Group 2:** 3 bandits on a wide flat stretch, spaced so at most 2 attack at once.
-- **Group 3:** 1 boar on a long flat run, so its charge is easy to see and dodge, and 1 archer on a low hill behind it.
-- **Group 4:** 1 archer on a hill and 1 boar, plus **Brute #1** at the end on flat ground with room to move around him.
+- **Group 1:** 1 bandit, alone on flat ground. The slowest, easiest enemy to read comes first. The `dash` hint just before him.
+- **Lucky Block #1** above the path on a 2-tile rise, with the `lucky_block` hint, in the calm stretch after group 1.
+- **Group 2:** 2 wolves (a pack of 2) on a wide flat field.
+- **Group 3:** 1 boar alone on a long flat run (at least 20 tiles), so its charge is easy to see and dodge.
+- **Group 4:** 2 bandits, spaced 6+ tiles apart so only one reaches you at a time.
+- **Group 5:** 1 archer on a low hill (2 tiles up) and 1 wolf below it.
+- **Group 6:** 1 boar on the flat and 1 archer on a hill behind it.
+- **Brute #1** alone at the end, on flat ground with room to move around him and a calm stretch before him.
 - Gaps are 2–3 tiles across with ground underneath (never deadly).
-- **Speed line:** a dash-jump over a hill skips group 3's archer.
+- **Speed line:** a dash-jump over the group 5 hill skips the archer.
 
-## § 3 — Wooded Ravine (traversal) · 110–130 tiles · ~45 s / 13 s
+## § 3 — Wooded Ravine (traversal) · 120–140 tiles · ~48 s / 13 s
 
 **Purpose:** platforming. Teaches double jump, wall jump and slide. First spikes.
 
@@ -74,7 +78,7 @@ P  !move   !jump    S !interact      !attack           ____
 - **Lucky Block #2** on the rim.
 - **Slide tunnel:** a low rock overhang, 1 tile high and 7 tiles long, with the `slide` hint.
 - **Key #1:** a short detour up the side (2 platforms and one dash-jump), about 5 s there and back.
-- Enemies at the end, on flat ground after the tunnel: 2 wolves (pack), 1 archer, 1 boar.
+- Enemies at the end, on flat ground after the tunnel, in **two groups** with a calm stretch between: first 2 wolves (pack), then, 24+ tiles later, 1 archer and 1 boar.
 - **Speed line:** a skilled single-wall climb gets up the shaft faster. A dash-jump across the spike pit skips the double jump.
 
 ## § 4 — The Old Grove (branch) · 100–120 tiles main, +60–90 side · ~60 s / 11 s

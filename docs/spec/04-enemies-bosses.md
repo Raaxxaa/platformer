@@ -134,6 +134,15 @@ special states: spawnIn, hanging, submerged, stone, channel, dazed, perched/pass
 ### 2.10 Training Dummy (Home Village)
 `training_dummy`: size medium, hurtbox 16 × 32, HP 9999, poiseMax 50, kbResist 1.0, never acts, never dies (HP returns to max 1.0 s after the last damage), faces right (backstabs work), no rewards. Not stage-scaled.
 
+### 2.11 Sparring Dummy (Training Yard)
+`sparring_dummy`: the Training Dummy with a wooden practice sword (06 §12.4). Same body numbers as §2.10 (medium, 16 × 32, HP 9999, never dies, HP back to max 1.0 s after the last damage, no rewards, not stage-scaled), but it **attacks** so players can practise dodging:
+- Always aware; never moves; turns to face the player at the start of each Tele.
+- **Practice Swing**, every 2.0 s while the player's center is within 64 px: Tele **0.6 s** (the normal orange telegraph flash), Act 0.1 s with box `24, −16, 40, 28`, Recovery 1.3 s.
+- A hit deals **0 damage** but runs the rest of the hurt pipeline (02 §5.2: hitstun, small knockback `120, −80`, the hit counts as "hit" for the station check). Dash i-frames avoid it as usual.
+
+### 2.12 Straw Target (Training Yard)
+`straw_target`: a straw figure on a post. Size small, hurtbox 12 × 24, **HP 1**, never acts, never moves, no rewards, not stage-scaled. Breaks like a normal death but gives no gold, flask fill or kill counters. **For Rush only** it counts as an enemy: hits on it and dashing through it gain Rush (02 §8.2), and breaking it counts as a regular kill (+15), so the Rush station works. It **respawns 3.0 s** after breaking, at its spawn point. A dive slam's descent box hitting it causes the normal dive bounce (01 §11).
+
 ## 3. Stage 1 — Plains & Forest
 
 | Enemy | id | Size | Hurtbox | HP | Poise | kbRes | Walk / Chase | Notice range / time | Preferred | Gold | Traits |
@@ -503,7 +512,7 @@ export type EnemyId =
   | 'bog_zombie' | 'giant_spider' | 'wisp' | 'swamp_witch' | 'treant'
   | 'soldier' | 'crossbowman' | 'war_hound' | 'battle_mage' | 'knight'
   | 'royal_guard' | 'gargoyle' | 'castle_mage' | 'living_armor' | 'royal_executioner'
-  | 'spiderling' | 'training_dummy'
+  | 'spiderling' | 'training_dummy' | 'sparring_dummy' | 'straw_target'
   | 'great_boar' | 'stone_colossus' | 'spider_queen' | 'black_knight' | 'enemy_king' | 'dragon';
 export type DragonColor = 'red' | 'white' | 'storm' | 'green';
 export type SizeClass = 'small' | 'medium' | 'large' | 'boss';

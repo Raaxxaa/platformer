@@ -3,6 +3,10 @@
 > Draft v8. Read it over and mark anything you want changed. Every section is
 > numbered so you can say things like "change 6.2" or "cut section 10".
 
+### What changed in v9 (from playtesting with friends)
+- **Training Yard tutorial:** next to the Home Village, 17 stations teach every move, combat basic and speed technique on dummies. You can't die there → 9.3
+- **Gentler Stage 1 start:** the first fights come one small group at a time (max 2 enemies, never two groups on screen together). Same enemies, more space → 7.5, `docs/levels/plains.md`
+
 ### What changed in v8
 - **Engine decided: Phaser 4.2.1** (TypeScript, runs in the browser). It was the only engine I could build, run and screenshot end to end here → 13
 - **Art decided: original pixel art drawn in code by Claude.** You approve a style board before mass production → 12
@@ -616,6 +620,9 @@ Selling gives back about **half** of what you spent on that ability.
 
 ---
 
+### 9.3 Training Yard (tutorial)
+A practice area through a gate on the left of the Home Village. One path of **17 stations**: movement (run, jump, double jump, dash, wall jump, ledge grab, slide and crawl, drop-through, dive slam), combat (combo, two weapons, dodging a sparring dummy's swings, healing, abilities and the link, the Rush meter) and speed techniques (dash-jump, slide-jump, dive bounce). Each has a sign with the keys and a flag that turns green when you do it. You can't die, pits put you back at the station, and a board shows what you've finished. The first time you pick a class the game asks if you want to try it. Details: `docs/levels/training-yard.md`.
+
 ## 10. Progression
 
 ### 10.1 Inside a run
@@ -693,7 +700,8 @@ Each milestone ends with something you can play.
 | ART3 | **Villages** | Art for the Home Village and Crossroads Village: backgrounds, inn, shop objects, class statues, NPCs, training dummy (art chat). Can run alongside M3–M5 |
 | ART4 | **Stage 1 finished + loot art** | Every player move in all 4 outfits, Greatsword and War Maul attacks, doors and decorations, chests, keys, coins, all HUD icons and fonts, movement and loot effects and sounds (art chat) |
 | ART5 | **Class weapons + abilities art** | The 6 new starting weapons, their projectiles, ability poses, effects and sounds for M4 (art chat) |
-| M4 | **Classes, abilities, weapons (basics)** | Pick a class and starting weapon; 2 abilities per class + Vampire; all 4 Connection bonuses and 6 hybrids; weapon match; the 6 starting weapons that were missing (Katana, Iron Fists, Bow, Crossbow, Storm Hammer, Staff); a Training Ground with an armory and a training dummy |
+| M3.1 | **Gentler Stage 1 start** | The first fights spread out into small groups with breathing room (after playtesting) |
+| M4 | **Classes, abilities, weapons (basics)** | Pick a class and starting weapon; 2 abilities per class + Vampire; all 4 Connection bonuses and 6 hybrids; weapon match; the 6 starting weapons that were missing (Katana, Iron Fists, Bow, Crossbow, Storm Hammer, Staff); the **Training Yard** tutorial (17 stations) with an armory and dummies |
 | M5 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest, timed chest, coins, boss weapon drop, merchant items |
 | M6 | ~~Classes + abilities~~ | Moved into M4 |
 | M7 | **Villages + Stage 2** | Home Village, Crossroads Village, inn and sleeping, shop with prices, buying and selling abilities, upgrading them Lv1–5, both Stage 2 roads with their mobs and Guardians, stat upgrades, run summary, saved best times |
@@ -744,7 +752,7 @@ Each milestone ends with something you can play.
 | **Harder modes after you win** | Replay value | "Heat" levels 1–5: faster enemies, fewer flask charges, tighter timed doors. Each level gets its own best times |
 | **Stat upgrades** | The pick-1-of-3 pool after each boss | About 12 options |
 | **Gold drops** | How much gold a stage gives, to set the prices in 9.3 | Aim for 400–600 per stage, tune in playtesting |
-| **Tutorial** | How new players learn the moves | Stage 1 teaches everything as you play, no separate tutorial |
+| **Tutorial** | How new players learn the moves | **Decided:** a Training Yard next to the Home Village with 17 practice stations on dummies (9.3), and Stage 1 still teaches as you play |
 | **Accessibility** | Options for players who struggle | Assist mode (slower game speed, extra flask charge). Assist runs don't count for best times |
 
 ### 15.3 Quick checks on my guesses
