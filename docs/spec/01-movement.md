@@ -311,7 +311,7 @@ Results: tap (held for 1 tick) = 14 px; tap double jump = 10 px; full hold = 56 
 
 The jump buffer is **active** when `pt - jumpPressPt < 12` and that press hasn't been used. Each tick it is active, try in order; the first that applies is executed and the press is used up:
 
-1. **Drop-through** (§13.1): only if `jumpPressFresh` (pressed this tick, not from the buffer), `moveY = +1`, grounded, and all support is one-way.
+1. **Drop-through** (§13.1): only if `jumpPressFresh` (pressed this tick, not from the buffer), `moveY = +1`, grounded, all support is one-way, and the state is **not `slide`** (a jump during a slide is always a slide-jump, even holding down; design decision, SPEC-GAP 2).
 2. **Ground jump:** grounded, or `coyoteValid` and `pt - lastGroundPt <= 12`. Also from `dash` (on ground or within coyote), `slide` (needs room to stand, §9.2), `diveLand`, `ledgeClimb` (§10.3). Not from `crawl`.
 3. **Wall jump** (§8.3): airborne and a wall in wall-jump range (gap 0–3 px, §8.1) on either side, or `pt - lastWallPt <= 12`.
 4. **Double jump:** airborne and `doubleJumpAvailable`.
@@ -373,7 +373,7 @@ The **gap** on side `S` is the number of empty pixel columns between the box and
 ### 8.3 Wall jump
 
 - Direction `away = -S`. If walls are in range on **both** sides: jump away from the side `moveX` points to; if `moveX = 0`, away from the side the player faces. With only wall coyote, use `-lastWallDir`.
-- `vx = 220 * away` (not scaled by `speedMult`), `vy = −380`, facing = away.
+- `vx = 220 * away` (not scaled by `speedMult`), `vy = −380`, facing = away. During the 14-tick steering lock, **facing still follows `moveX`** (only velocity is locked), so the player can turn and attack back toward the wall. (Design decision, SPEC-GAP 1.)
 - **Steering lock 14 ticks:** `vx` is not changed by input, accel, decel or decay. Gravity applies. Dash, double jump and dive slam are allowed during the lock (a dash ends the lock; a double jump does not).
 - **Refreshes** `airDashAvailable = true` and `doubleJumpAvailable = true`. Cuttable. Peak 48 px; moves 25.7 px away during the lock.
 - **Single-wall climbing is possible and intended:** wall jump, then (after the lock) hold toward the wall and double jump near the apex; this returns to the wall about 80 px higher every ~0.58 s. Level design (06) must use ceilings, not tall walls alone, to block areas.
@@ -638,7 +638,7 @@ Camera math is a pure function in `src/core/camera.ts` (updated every tick, test
 | Look-ahead change rate | 240 px/s (linear toward the target) |
 | Feet offset | feet sit 40 px below the screen center (screen y 220) |
 | Air up-slack | 80 px |
-| Fall look-down | +64 px when `vy >= 300` or in `diveFall`, else 0; changes at 300 px/s |
+| Fall look-down | +64 px when (`vy >= 300` **and** the feet are below the last grounded height, i.e. `y > lastGroundY`) or in `diveFall`, else 0; changes at 300 px/s. A normal jump that lands at or above its takeoff height never dips the camera (design decision, SPEC-GAP 3) |
 | Smoothing | exponential, time constant 0.08 s (x), 0.12 s (y): `c += (desired - c) * (1 - exp(-TICK / tau))` |
 | Edge margins | the player box stays ≥ 64 px from the left/right screen edges and ≥ 48 px from the top/bottom edges (near a level edge the bounds clamp wins) |
 | Bounds blend | 0.4 s |
