@@ -5,7 +5,9 @@ import { createHealth, type PlayerHealth } from '../combat/health.ts';
 import type { HitGroup } from '../combat/hitGroups.ts';
 import { createRush } from '../combat/rush.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
-import type { HealRefusedReason, RushState } from '../combat/types.ts';
+import type { FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
+import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
+import { FLASK } from '../tuning.ts';
 import type { InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { isGrounded } from '../physics/collide.ts';
@@ -52,6 +54,9 @@ export class GameWorld {
   health!: PlayerHealth;
   rush!: RushState;
   combat!: PlayerCombat;
+  flask!: FlaskState;
+  drinking: DrinkState | null = null;
+  drinkBufferTicks = 0;
   camera!: CameraState;
   tick = 0;
   runTicks = 0;
@@ -90,6 +95,9 @@ export class GameWorld {
     this.ctx = { slotUsable: [true, true] };
     this.health = createHealth();
     this.rush = createRush();
+    this.flask = createFlask();
+    this.drinking = null;
+    this.drinkBufferTicks = 0;
     this.combat = createPlayerCombat([
       { weaponId: 'greatsword', grade: 'C', element: null, perk: null },
       { weaponId: 'war_maul', grade: 'C', element: null, perk: null },
@@ -123,6 +131,7 @@ export class GameWorld {
   /** Hurt pipeline hook: hitstun cancels the attack, charge and drink (02 §5.2 step 7). */
   onPlayerHitstun(): void {
     cancelAttack(this, 'hurt');
+    cancelDrink(this);
   }
 
   /** A player hit group landed a direct hit on an enemy (Rush hooks). */
@@ -139,11 +148,13 @@ export class GameWorld {
   onEnemyShotLanded(_g: HitGroup): void {}
 
   /** On-kill effects that belong to other systems (flask, Rush). */
-  onPlayerKill(_e: EnemyState, _tier: 'regular' | 'elite'): void {}
+  onPlayerKill(_e: EnemyState, tier: 'regular' | 'elite'): void {
+    onKillFill(this, tier);
+  }
 
   /** Drinking the flask (filled in by the flask task). */
   isDrinking(): boolean {
-    return false;
+    return this.drinking !== null;
   }
 
   /** Step 5 for one enemy: hit-stop, reactions, attack, AI and movement. */
@@ -178,12 +189,15 @@ export class GameWorld {
     // 3. Player actions.
     this.ctx.slotUsable = [this.combat.slots[0] !== null, this.combat.slots[1] !== null];
     stepPlayerCombat(this, input);
+    tryStartDrink(this, input);
+    stepDrink(this);
+    if (this.drinking) this.mods.actionMoveMult = FLASK.MOVE_CAP;
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
     const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
     for (const e of moveEvents) {
       this.events.push({ t: 'move', e });
-      if (e === 'dashStart' || e === 'slideStart') cancelAttack(this, 'dash');
-      else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') cancelAttack(this, 'jump');
+      if (e === 'dashStart' || e === 'slideStart') { cancelAttack(this, 'dash'); cancelDrink(this); }
+      else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') { cancelAttack(this, 'jump'); cancelDrink(this); }
       else if (e === 'diveStart') cancelAttack(this, 'dive');
     }
     onDiveEvents(this, moveEvents, input);
@@ -200,6 +214,7 @@ export class GameWorld {
     // 8. Statuses (none in M2). 9. Deaths.
     processDeaths(this);
     stepDiveImpact(this);
+    stepFlask(this);
     // 10. Rush and flask.
     stepCamera(this.camera, this.body);
   }

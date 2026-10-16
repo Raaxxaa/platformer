@@ -183,3 +183,16 @@ export const ENEMY = {
   LEAP_MAX: 1.0, LEAP_MAX_TICKS: ticks(1.0),
   DUMMY_HEAL_DELAY: 1.0, DUMMY_HEAL_TICKS: ticks(1.0),
 } as const;
+
+/** Heal flask (02 §7). Fill is in tenths of a percent. */
+export const FLASK = {
+  START_CHARGES: 2,
+  MAX_CHARGES: 4,
+  FULL_TENTHS: 1000,
+  DRINK: 0.40, DRINK_TICKS: ticks(0.40),
+  SIP: 0.25, SIP_TICKS: ticks(0.25),
+  HEAL_FRACTION: 0.40,
+  MOVE_CAP: 0.40,
+  FILL_REGULAR: 50,
+  FILL_ELITE: 150,
+} as const;

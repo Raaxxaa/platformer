@@ -15,6 +15,8 @@ export interface InputSpec {
   dash?: boolean;
   attack1?: boolean;
   attack2?: boolean;
+  heal?: boolean;
+  restart?: boolean;
 }
 
 function button(before: boolean | undefined, now: boolean | undefined): ButtonState {
@@ -31,6 +33,8 @@ export function specToInput(prev: InputSpec, next: InputSpec): InputState {
   s.dash = button(prev.dash, next.dash);
   s.attack1 = button(prev.attack1, next.attack1);
   s.attack2 = button(prev.attack2, next.attack2);
+  s.heal = button(prev.heal, next.heal);
+  s.restart = button(prev.restart, next.restart);
   return s;
 }
 
