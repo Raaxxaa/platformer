@@ -1,6 +1,7 @@
 // Hit groups: world-space boxes and once-per-target bookkeeping (02 §2).
 import { ticks } from '../tuning.ts';
 import type { Box, HitSpec } from './types.ts';
+import type { EnemyHit } from '../enemies/types.ts';
 
 /** Axis-aligned rectangle, top-left corner, world px. */
 export interface Rect { x: number; y: number; w: number; h: number }
@@ -17,6 +18,7 @@ export interface HitGroup {
   attackInstance: number;
   slot?: 0 | 1;
   box?: Box;                         // attached melee groups: recomputed from the owner's feet every tick
+  enemyHit?: EnemyHit;               // enemy-owned groups: the attack's hit data
 }
 
 /** 02 §2.2: `box` is a center offset from the feet facing right; mirror dx when facing left. */

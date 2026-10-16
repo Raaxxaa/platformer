@@ -14,6 +14,9 @@ import { defaultModifiers, type MoveContext, type MoveModifiers } from '../playe
 import { stepPlayer } from '../player/movement.ts';
 import { deriveSeed, Rng } from '../rng.ts';
 import { activateEnemies, spawnEnemy, type EnemyState } from '../enemies/enemy.ts';
+import { stepEnemyAttack, syncEnemyGroups } from '../enemies/attack.ts';
+import { stepEnemyReactions } from '../combat/enemyReactions.ts';
+import { processDeaths, resolveEnemyHits, resolvePlayerHits } from '../combat/resolve.ts';
 import type { EnemySpawn } from '../enemies/types.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
@@ -54,6 +57,9 @@ export class GameWorld {
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
   hitGroups: HitGroup[] = [];
   enemies: EnemyState[] = [];
+  pendingDeaths: EnemyState[] = [];
+  /** Was the player already in hit-stop when this tick started (its melee boxes are frozen)? */
+  playerFrozenAtTickStart = false;
   events: WorldEvent[] = [];
   private nextId = 1;
 
@@ -98,6 +104,7 @@ export class GameWorld {
     this.events = [];
     this.nextId = 1;
     this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
+    this.pendingDeaths = [];
   }
 
   restart(): void {
@@ -114,15 +121,47 @@ export class GameWorld {
     cancelAttack(this, 'hurt');
   }
 
+  /** A player hit group landed a direct hit on an enemy (Rush hooks). */
+  onPlayerLandedHit(_g: HitGroup, _e: EnemyState): void {}
+
+  /** An enemy took player damage: instant awareness (04 §2.4). */
+  onEnemyHitByPlayer(e: EnemyState): void {
+    e.aware = true;
+  }
+
+  /** An enemy shot hit the player (projectiles stop). */
+  onEnemyShotLanded(_g: HitGroup): void {}
+
+  /** On-kill effects that belong to other systems (flask, Rush). */
+  onPlayerKill(_e: EnemyState, _tier: 'regular' | 'elite'): void {}
+
   /** Drinking the flask (filled in by the flask task). */
   isDrinking(): boolean {
     return false;
+  }
+
+  /** Step 5 for one enemy: hit-stop, reactions, attack, AI and movement. */
+  private stepEnemy(e: EnemyState): void {
+    if (e.dormant) return;
+    if (e.dead) {
+      if (e.deathTicks > 0) e.deathTicks -= 1;
+      return;
+    }
+    if (e.hitStopTicks > 0) {
+      e.hitStopTicks -= 1;
+      return;
+    }
+    stepEnemyReactions(e);
+    for (const [id, n] of e.ai.cooldowns) if (n > 0) e.ai.cooldowns.set(id, n - 1);
+    if (e.ai.gapTicks > 0) e.ai.gapTicks -= 1;
+    if (e.ai.attack && !e.control) stepEnemyAttack(this, e);
   }
 
   /** One 120 Hz tick in 02 §2.1 order. */
   step(input: InputState): void {
     this.events = [];
     this.tick += 1;
+    this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
     if (!this.health.dead) this.runTicks += 1;
     // Wall-clock timers.
     if (this.health.iframeTicks > 0) this.health.iframeTicks -= 1;
@@ -140,7 +179,15 @@ export class GameWorld {
     syncPlayerGroups(this);
     // 5. Enemy AI and movement.
     activateEnemies(this);
-    // 6. Moving hit groups. 7. Hit resolution. 8. Statuses. 9. Deaths. 10. Rush and flask.
+    for (const e of [...this.enemies].sort((a, b) => a.id - b.id)) this.stepEnemy(e);
+    syncEnemyGroups(this);
+    // 6. Moving hit groups.
+    // 7. Hit resolution: player hits first (ties go to the player), then enemy hits.
+    resolvePlayerHits(this);
+    resolveEnemyHits(this);
+    // 8. Statuses (none in M2). 9. Deaths.
+    processDeaths(this);
+    // 10. Rush and flask.
     stepCamera(this.camera, this.body);
   }
 }
