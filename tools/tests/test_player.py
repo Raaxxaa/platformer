@@ -26,7 +26,7 @@ class PlayerTest(unittest.TestCase):
         self.assertEqual(len([n for n in names if n.startswith('run_')]), 8)
 
     def test_colors(self):
-        body_ok = P.allowed(P.PLAYER_BODY_RAMPS)
+        body_ok = P.allowed(player_art.BODY_RAMPS)
         trim_ok = P.allowed(['trim'])
         for o in OUTFITS:
             body, trim = self.built[o]

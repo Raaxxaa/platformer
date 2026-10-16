@@ -1229,6 +1229,170 @@
   "mode": "once"
  },
  {
+  "key": "apex",
+  "atlas": "player_archer",
+  "frames": [
+   "apex_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "cart_ride",
+  "atlas": "player_archer",
+  "frames": [
+   "cart_ride_00",
+   "cart_ride_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "crawl",
+  "atlas": "player_archer",
+  "frames": [
+   "crawl_00",
+   "crawl_01",
+   "crawl_02",
+   "crawl_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "dash",
+  "atlas": "player_archer",
+  "frames": [
+   "dash_00",
+   "dash_01",
+   "dash_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dead",
+  "atlas": "player_archer",
+  "frames": [
+   "dead_00",
+   "dead_01",
+   "dead_02",
+   "dead_03",
+   "dead_04",
+   "dead_05"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "dive_fall",
+  "atlas": "player_archer",
+  "frames": [
+   "dive_fall_00",
+   "dive_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_land",
+  "atlas": "player_archer",
+  "frames": [
+   "dive_land_00",
+   "dive_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_windup",
+  "atlas": "player_archer",
+  "frames": [
+   "dive_windup_00",
+   "dive_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "double_jump",
+  "atlas": "player_archer",
+  "frames": [
+   "double_jump_00",
+   "double_jump_01",
+   "double_jump_02",
+   "double_jump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "drink",
+  "atlas": "player_archer",
+  "frames": [
+   "drink_00",
+   "drink_01",
+   "drink_02",
+   "drink_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "fall",
+  "atlas": "player_archer",
+  "frames": [
+   "fall_00",
+   "fall_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "hurt",
+  "atlas": "player_archer",
+  "frames": [
+   "hurt_00",
+   "hurt_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
   "key": "idle",
   "atlas": "player_archer",
   "frames": [
@@ -1241,6 +1405,48 @@
   ],
   "mode": "loop",
   "fps": 8
+ },
+ {
+  "key": "jump",
+  "atlas": "player_archer",
+  "frames": [
+   "jump_00",
+   "jump_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "land",
+  "atlas": "player_archer",
+  "frames": [
+   "land_00",
+   "land_01"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "ledge_climb",
+  "atlas": "player_archer",
+  "frames": [
+   "ledge_climb_00",
+   "ledge_climb_01",
+   "ledge_climb_02",
+   "ledge_climb_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
  },
  {
   "key": "run",
@@ -1256,6 +1462,207 @@
    "run_07"
   ],
   "mode": "speed"
+ },
+ {
+  "key": "skid",
+  "atlas": "player_archer",
+  "frames": [
+   "skid_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "slide",
+  "atlas": "player_archer",
+  "frames": [
+   "slide_00",
+   "slide_01"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wall_jump",
+  "atlas": "player_archer",
+  "frames": [
+   "wall_jump_00",
+   "wall_jump_01"
+  ],
+  "mode": "once",
+  "fps": 16
+ },
+ {
+  "key": "wall_slide",
+  "atlas": "player_archer",
+  "frames": [
+   "wall_slide_00",
+   "wall_slide_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "apex",
+  "atlas": "player_swordsman",
+  "frames": [
+   "apex_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "cart_ride",
+  "atlas": "player_swordsman",
+  "frames": [
+   "cart_ride_00",
+   "cart_ride_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "crawl",
+  "atlas": "player_swordsman",
+  "frames": [
+   "crawl_00",
+   "crawl_01",
+   "crawl_02",
+   "crawl_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "dash",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dash_00",
+   "dash_01",
+   "dash_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dead",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dead_00",
+   "dead_01",
+   "dead_02",
+   "dead_03",
+   "dead_04",
+   "dead_05"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "dive_fall",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dive_fall_00",
+   "dive_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_land",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dive_land_00",
+   "dive_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_windup",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dive_windup_00",
+   "dive_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "double_jump",
+  "atlas": "player_swordsman",
+  "frames": [
+   "double_jump_00",
+   "double_jump_01",
+   "double_jump_02",
+   "double_jump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "drink",
+  "atlas": "player_swordsman",
+  "frames": [
+   "drink_00",
+   "drink_01",
+   "drink_02",
+   "drink_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "fall",
+  "atlas": "player_swordsman",
+  "frames": [
+   "fall_00",
+   "fall_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "hurt",
+  "atlas": "player_swordsman",
+  "frames": [
+   "hurt_00",
+   "hurt_01"
+  ],
+  "mode": "once",
+  "fps": 10
  },
  {
   "key": "idle",
@@ -1272,6 +1679,48 @@
   "fps": 8
  },
  {
+  "key": "jump",
+  "atlas": "player_swordsman",
+  "frames": [
+   "jump_00",
+   "jump_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "land",
+  "atlas": "player_swordsman",
+  "frames": [
+   "land_00",
+   "land_01"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "ledge_climb",
+  "atlas": "player_swordsman",
+  "frames": [
+   "ledge_climb_00",
+   "ledge_climb_01",
+   "ledge_climb_02",
+   "ledge_climb_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
   "key": "run",
   "atlas": "player_swordsman",
   "frames": [
@@ -1287,6 +1736,207 @@
   "mode": "speed"
  },
  {
+  "key": "skid",
+  "atlas": "player_swordsman",
+  "frames": [
+   "skid_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "slide",
+  "atlas": "player_swordsman",
+  "frames": [
+   "slide_00",
+   "slide_01"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wall_jump",
+  "atlas": "player_swordsman",
+  "frames": [
+   "wall_jump_00",
+   "wall_jump_01"
+  ],
+  "mode": "once",
+  "fps": 16
+ },
+ {
+  "key": "wall_slide",
+  "atlas": "player_swordsman",
+  "frames": [
+   "wall_slide_00",
+   "wall_slide_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "apex",
+  "atlas": "player_tank",
+  "frames": [
+   "apex_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "cart_ride",
+  "atlas": "player_tank",
+  "frames": [
+   "cart_ride_00",
+   "cart_ride_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "crawl",
+  "atlas": "player_tank",
+  "frames": [
+   "crawl_00",
+   "crawl_01",
+   "crawl_02",
+   "crawl_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "dash",
+  "atlas": "player_tank",
+  "frames": [
+   "dash_00",
+   "dash_01",
+   "dash_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dead",
+  "atlas": "player_tank",
+  "frames": [
+   "dead_00",
+   "dead_01",
+   "dead_02",
+   "dead_03",
+   "dead_04",
+   "dead_05"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "dive_fall",
+  "atlas": "player_tank",
+  "frames": [
+   "dive_fall_00",
+   "dive_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_land",
+  "atlas": "player_tank",
+  "frames": [
+   "dive_land_00",
+   "dive_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_windup",
+  "atlas": "player_tank",
+  "frames": [
+   "dive_windup_00",
+   "dive_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "double_jump",
+  "atlas": "player_tank",
+  "frames": [
+   "double_jump_00",
+   "double_jump_01",
+   "double_jump_02",
+   "double_jump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "drink",
+  "atlas": "player_tank",
+  "frames": [
+   "drink_00",
+   "drink_01",
+   "drink_02",
+   "drink_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "fall",
+  "atlas": "player_tank",
+  "frames": [
+   "fall_00",
+   "fall_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "hurt",
+  "atlas": "player_tank",
+  "frames": [
+   "hurt_00",
+   "hurt_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
   "key": "idle",
   "atlas": "player_tank",
   "frames": [
@@ -1299,6 +1949,48 @@
   ],
   "mode": "loop",
   "fps": 8
+ },
+ {
+  "key": "jump",
+  "atlas": "player_tank",
+  "frames": [
+   "jump_00",
+   "jump_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "land",
+  "atlas": "player_tank",
+  "frames": [
+   "land_00",
+   "land_01"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "ledge_climb",
+  "atlas": "player_tank",
+  "frames": [
+   "ledge_climb_00",
+   "ledge_climb_01",
+   "ledge_climb_02",
+   "ledge_climb_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
  },
  {
   "key": "run",
@@ -1316,6 +2008,207 @@
   "mode": "speed"
  },
  {
+  "key": "skid",
+  "atlas": "player_tank",
+  "frames": [
+   "skid_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "slide",
+  "atlas": "player_tank",
+  "frames": [
+   "slide_00",
+   "slide_01"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wall_jump",
+  "atlas": "player_tank",
+  "frames": [
+   "wall_jump_00",
+   "wall_jump_01"
+  ],
+  "mode": "once",
+  "fps": 16
+ },
+ {
+  "key": "wall_slide",
+  "atlas": "player_tank",
+  "frames": [
+   "wall_slide_00",
+   "wall_slide_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "apex",
+  "atlas": "player_wizard",
+  "frames": [
+   "apex_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "cart_ride",
+  "atlas": "player_wizard",
+  "frames": [
+   "cart_ride_00",
+   "cart_ride_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "crawl",
+  "atlas": "player_wizard",
+  "frames": [
+   "crawl_00",
+   "crawl_01",
+   "crawl_02",
+   "crawl_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "dash",
+  "atlas": "player_wizard",
+  "frames": [
+   "dash_00",
+   "dash_01",
+   "dash_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dead",
+  "atlas": "player_wizard",
+  "frames": [
+   "dead_00",
+   "dead_01",
+   "dead_02",
+   "dead_03",
+   "dead_04",
+   "dead_05"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "dive_fall",
+  "atlas": "player_wizard",
+  "frames": [
+   "dive_fall_00",
+   "dive_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_land",
+  "atlas": "player_wizard",
+  "frames": [
+   "dive_land_00",
+   "dive_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_windup",
+  "atlas": "player_wizard",
+  "frames": [
+   "dive_windup_00",
+   "dive_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "double_jump",
+  "atlas": "player_wizard",
+  "frames": [
+   "double_jump_00",
+   "double_jump_01",
+   "double_jump_02",
+   "double_jump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "drink",
+  "atlas": "player_wizard",
+  "frames": [
+   "drink_00",
+   "drink_01",
+   "drink_02",
+   "drink_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "fall",
+  "atlas": "player_wizard",
+  "frames": [
+   "fall_00",
+   "fall_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "hurt",
+  "atlas": "player_wizard",
+  "frames": [
+   "hurt_00",
+   "hurt_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
   "key": "idle",
   "atlas": "player_wizard",
   "frames": [
@@ -1328,6 +2221,48 @@
   ],
   "mode": "loop",
   "fps": 8
+ },
+ {
+  "key": "jump",
+  "atlas": "player_wizard",
+  "frames": [
+   "jump_00",
+   "jump_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "land",
+  "atlas": "player_wizard",
+  "frames": [
+   "land_00",
+   "land_01"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "ledge_climb",
+  "atlas": "player_wizard",
+  "frames": [
+   "ledge_climb_00",
+   "ledge_climb_01",
+   "ledge_climb_02",
+   "ledge_climb_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
  },
  {
   "key": "run",
@@ -1343,6 +2278,43 @@
    "run_07"
   ],
   "mode": "speed"
+ },
+ {
+  "key": "skid",
+  "atlas": "player_wizard",
+  "frames": [
+   "skid_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "slide",
+  "atlas": "player_wizard",
+  "frames": [
+   "slide_00",
+   "slide_01"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wall_jump",
+  "atlas": "player_wizard",
+  "frames": [
+   "wall_jump_00",
+   "wall_jump_01"
+  ],
+  "mode": "once",
+  "fps": 16
+ },
+ {
+  "key": "wall_slide",
+  "atlas": "player_wizard",
+  "frames": [
+   "wall_slide_00",
+   "wall_slide_01"
+  ],
+  "mode": "loop",
+  "fps": 8
  },
  {
   "key": "brute_wave",

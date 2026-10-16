@@ -194,7 +194,6 @@ LAYOUT = {
                    ('shop_key_00', 32), ('shop_reroll_00', 35)],
     'home': [('class_statue_swordsman_00', 9), ('class_statue_tank_00', 13), ('class_statue_archer_00', 17),
              ('class_statue_wizard_00', 21),
-             # SPEC-GAP: 06 §12.3 has no mirror spot; tile 25 is the free gap (docs/art/SPEC-GAPS-art.md #2)
              ('mirror_spot_00', 25), ('training_dummy_idle_00', 28), ('unlocks_board_00', 34),
              ('seed_board_00', 37), ('gate_idle_00', 45.5)],
 }

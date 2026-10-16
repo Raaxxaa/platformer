@@ -1,10 +1,14 @@
 """Player outfits (08 §6.4) drawn on the humanoid rig (08 §12.3)."""
 import numpy as np
+from PIL import Image
 
 from . import palette as P
 from . import raster as R
 from .rig import humanoid_fk
 from .poses.player import POSES
+
+# The drink pose holds the red flask (08 §6.1 drink; flask colors = `fx_heal`, the flask ramp).
+BODY_RAMPS = P.PLAYER_BODY_RAMPS + ['fx_heal']
 
 W = H = 48
 ANCHOR = (24, 46)
@@ -66,8 +70,19 @@ def _torso(f, j, mat, width, bottom_extra=1):
     t = f.part('torso', mat)
     hw = width / 2
     cx, hx = c[0] + 0.5, hp[0] + 0.5
-    R.fill_polygon(f.L, [(cx - hw, c[1]), (cx + hw, c[1]), (hx + hw - 0.5, hp[1] + 1 + bottom_extra),
-                         (hx - hw + 0.5, hp[1] + 1 + bottom_extra)], t)
+    dx, dy = c[0] - hp[0], c[1] - hp[1]
+    if abs(dx) <= 3:                       # upright (idle, run): the original trapezoid
+        R.fill_polygon(f.L, [(cx - hw, c[1]), (cx + hw, c[1]), (hx + hw - 0.5, hp[1] + 1 + bottom_extra),
+                             (hx - hw + 0.5, hp[1] + 1 + bottom_extra)], t)
+        return t
+    # tilted: a quad across the spine
+    ln = (dx * dx + dy * dy) ** 0.5
+    ux, uy = dx / ln, dy / ln              # hip -> chest
+    px, py = -uy, ux                       # across the spine
+    b = 1 + bottom_extra
+    R.fill_polygon(f.L, [(cx + px * hw, c[1] + 0.5 + py * hw), (cx - px * hw, c[1] + 0.5 - py * hw),
+                         (hx - px * (hw - 0.5) - ux * b, hp[1] + 0.5 - py * (hw - 0.5) - uy * b),
+                         (hx + px * (hw - 0.5) - ux * b, hp[1] + 0.5 + py * (hw - 0.5) - uy * b)], t)
     return t
 
 
@@ -84,10 +99,20 @@ def _head(f, j):
     return hx, hy
 
 
-def _eye(f, j):
+def _eye(f, j, closed=False):
     hx, hy = j['head']
     e = f.part('eye', 'ink')
-    _box(f, hx + 2, hy - 1, hx + 2, hy, e)
+    if closed:
+        _box(f, hx + 1, hy, hx + 2, hy, e)
+    else:
+        _box(f, hx + 2, hy - 1, hx + 2, hy, e)
+
+
+def _flask(f, j):
+    hx, hy = j['handF']
+    g = f.part('flask', 'fx_heal')
+    R.ellipse(f.L, hx + 1, hy - 1, 2.2, 2.4, g)
+    _box(f, hx + 1, hy - 5, hx + 1, hy - 3, g)
 
 
 def draw(outfit, pose, skip=()):
@@ -114,7 +139,7 @@ def draw(outfit, pose, skip=()):
         R.fill_polygon(f.L, [(hx - 4, hy + 1), (hx - 5, hy - 5), (hx - 2, hy - 4), (hx - 1, hy - 7),
                              (hx + 1, hy - 4), (hx + 3, hy - 6), (hx + 4, hy - 3), (hx + 4.5, hy - 2),
                              (hx + 1, hy - 2), (hx - 1, hy - 1), (hx - 1, hy + 2)], hair)
-        _eye(f, j)
+        _eye(f, j, pose.get('dead'))
         scarf = f.part('scarf', 'trim', 0, 'a')
         _box(f, cx - 3, cy - 1, cx + 3, cy, scarf)
         _arm(f, j, 'F', 'p_cloth', 'skin', 0, cuff='b')
@@ -141,7 +166,7 @@ def draw(outfit, pose, skip=()):
         R.ellipse(f.L, hx, hy, 4.2, 4.4, helm)
         visor = f.part('visor', 'p_steel', 3)
         _box(f, hx, hy - 1, hx + 4, hy, visor)
-        _eye(f, j)
+        _eye(f, j, pose.get('dead'))
         pf = f.part('pauldronF', 'p_steel')
         _arm(f, j, 'F', 'p_cloth', 'p_steel', 0, cuff='b')
         R.ellipse(f.L, j['shoulderF'][0], j['shoulderF'][1], 2.8, 2.5, pf)
@@ -171,7 +196,7 @@ def draw(outfit, pose, skip=()):
         R.ellipse(f.L, hx + 2, hy + 0.5, 2.7, 3.4, lining)
         face = f.part('head', 'skin')
         R.ellipse(f.L, hx + 2.6, hy + 0.8, 2.0, 2.7, face)
-        _eye(f, j)
+        _eye(f, j, pose.get('dead'))
         _arm(f, j, 'F', 'p_cloth', 'trim', 0)
         f.trim['foreF'] = 'b'
 
@@ -191,7 +216,7 @@ def draw(outfit, pose, skip=()):
         _head(f, j)
         hair = f.part('hair', 'hair')
         R.fill_polygon(f.L, [(hx - 4, hy + 3), (hx - 4, hy - 2), (hx - 1, hy - 2), (hx - 2, hy + 3)], hair)
-        _eye(f, j)
+        _eye(f, j, pose.get('dead'))
         if f.on('hat'):
             hat = f.part('hat', 'p_cloth')
             R.fill_polygon(f.L, [(hx - 3.5, hy - 2), (hx + 4.5, hy - 2), (hx + 1, hy - 7), (hx - 3, hy - 9),
@@ -202,6 +227,8 @@ def draw(outfit, pose, skip=()):
         _arm(f, j, 'F', 'p_cloth', 'p_cloth', 0, cuff='b')
     else:
         raise ValueError(outfit)
+    if pose.get('flask'):
+        _flask(f, j)
     return f
 
 
@@ -222,8 +249,53 @@ def render(f):
     return [c.to_image() for c in out]
 
 
+def _turn(imgs, k):
+    """Rotate the figure by k quarter turns (ccw) about its bounding-box center; same frame size."""
+    if not k:
+        return imgs
+    arrs = [np.array(im) for im in imgs]
+    a = np.zeros((H, W), bool)
+    for x in arrs:
+        a |= x[:, :, 3] > 0
+    ys, xs = np.nonzero(a)
+    y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+    cy, cx = (y0 + y1) // 2, (x0 + x1) // 2
+    out = []
+    for x in arrs:
+        r = np.rot90(x[y0:y1, x0:x1], k)
+        h, w = r.shape[:2]
+        o = np.zeros_like(x)
+        oy, ox = cy - h // 2, cx - w // 2
+        o[oy:oy + h, ox:ox + w] = r
+        out.append(Image.fromarray(o, 'RGBA'))
+    return out
+
+
+def _settle(imgs, ground):
+    """Grounded poses: lowest pixel on the sole row 45. Others: never below it."""
+    arrs = [np.array(im) for im in imgs]
+    a = np.zeros((H, W), bool)
+    for x in arrs:
+        a |= x[:, :, 3] > 0
+    low = int(np.nonzero(a.any(axis=1))[0].max())
+    shift = (45 - low) if ground else min(0, 45 - low)
+    if shift == 0:
+        return imgs
+    out = []
+    for x in arrs:
+        o = np.zeros_like(x)
+        if shift > 0:
+            o[shift:] = x[:-shift]
+        else:
+            o[:shift] = x[-shift:]
+        out.append(Image.fromarray(o, 'RGBA'))
+    return out
+
+
 def draw_player(outfit, pose):
-    return render(draw(outfit, pose))
+    imgs = render(draw(outfit, pose))
+    imgs = _turn(imgs, pose.get('rot', 0))
+    return _settle(imgs, pose.get('ground', False))
 
 
 def build_outfit(outfit):
