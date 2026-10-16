@@ -11,7 +11,7 @@ from art import palette  # noqa: E402
 from art import atlas, build_player, build_world, contrast, items, projectiles, style_board, vfx  # noqa: E402
 from art.enemies import plains as enemies_plains  # noqa: E402
 from art.bosses import great_boar  # noqa: E402
-from audio import sfx_defs  # noqa: E402
+from audio import listen_sheet, sfx_defs  # noqa: E402
 
 
 def build(root=ROOT):
@@ -35,6 +35,7 @@ def build(root=ROOT):
     style_board.build(preview)
     contrast.write_report(preview)
     sfx_defs.build(os.path.join(assets, 'audio', 'sfx'))
+    listen_sheet.build(os.path.join(root, 'docs', 'art'))
     atlas.write_anims(os.path.join(assets, 'anims.json'), anims)
     return assets
 

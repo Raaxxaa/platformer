@@ -36,8 +36,12 @@ class DeterminismTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as a:
             build_assets.build(a)
             fresh = hashes(os.path.join(a, 'public', 'assets'))
+            fresh_docs = {k: v for k, v in hashes(os.path.join(a, 'docs', 'art')).items()}
         committed = hashes(os.path.join(root, 'public', 'assets'))
         self.assertEqual(fresh, committed)
+        docs = hashes(os.path.join(root, 'docs', 'art'))
+        for name in ('sounds_stage1.wav', 'sounds_stage1.md'):
+            self.assertEqual(fresh_docs[name], docs[name], name)
 
 
 if __name__ == '__main__':
