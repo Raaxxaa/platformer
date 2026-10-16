@@ -1,6 +1,6 @@
 // Phaser views that draw core state with the generated art (08). They read state; they never change it.
 import Phaser from 'phaser';
-import { COMBAT, ENEMY, TICK_RATE } from '../../core/tuning.ts';
+import { BOSS, COMBAT, ENEMY, TICK_RATE } from '../../core/tuning.ts';
 import type { EnemyState } from '../../core/enemies/enemy.ts';
 import type { PlayerBody } from '../../core/player/body.ts';
 import type { TileGrid } from '../../core/level/tiles.ts';
@@ -19,6 +19,8 @@ export function preloadArt(scene: Phaser.Scene): void {
   l.atlas('enemies_plains', 'assets/atlases/enemies_plains.png', 'assets/atlases/enemies_plains.json');
   l.atlas(`player_${OUTFIT}`, `assets/atlases/player_${OUTFIT}.png`, `assets/atlases/player_${OUTFIT}.json`);
   l.atlas(`player_${OUTFIT}_trim`, `assets/atlases/player_${OUTFIT}_trim.png`, `assets/atlases/player_${OUTFIT}_trim.json`);
+  l.atlas('boss_great_boar', 'assets/atlases/boss_great_boar.png', 'assets/atlases/boss_great_boar.json');
+  l.atlas('projectiles', 'assets/atlases/projectiles.png', 'assets/atlases/projectiles.json');
   l.image(`tiles_${BIOME}`, `assets/tiles/tiles_${BIOME}.png`);
   for (let i = 0; i < 3; i++) l.image(`bg_${BIOME}_${i}`, `assets/bg/bg_${BIOME}_${i}.png`);
   l.json('anims', 'assets/anims.json');
@@ -26,8 +28,12 @@ export function preloadArt(scene: Phaser.Scene): void {
 
 export function animTable(scene: Phaser.Scene): Map<string, AnimDef> {
   const list = scene.cache.json.get('anims') as AnimDef[];
-  // Player outfits share anim keys ('idle', 'run'): keep them apart as `idle#swordsman`.
-  return new Map(list.map((a) => [a.atlas.startsWith('player_') ? `${a.key}#${a.atlas.slice('player_'.length)}` : a.key, a]));
+  // Player outfits share anim keys ('idle', 'run'): keep them apart as `idle#swordsman`. Boss atlases hold
+  // unprefixed keys ('idle'): they become `<bossId>_idle` like regular enemies. Projectiles become `proj_<id>`.
+  const keyOf = (a: AnimDef) => a.atlas.startsWith('player_') ? `${a.key}#${a.atlas.slice('player_'.length)}`
+    : a.atlas.startsWith('boss_') ? `${a.atlas.slice('boss_'.length)}_${a.key}`
+    : a.atlas === 'projectiles' ? `proj_${a.key}` : a.key;
+  return new Map(list.map((a) => [keyOf(a), a]));
 }
 
 /** Terrain (blob autotiles) at depth 20 and auto-deco at depth 10 (08 §9.2–9.4). */
@@ -61,6 +67,10 @@ export class Parallax {
       this.layers.push(scene.add.tileSprite(0, 0, VIEW.w, VIEW.h, `bg_${BIOME}_${i}`).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.parallax[i]));
     }
   }
+  setVisible(on: boolean): void {
+    for (const s of this.layers) s.setVisible(on);
+  }
+
   update(camX: number, camY: number): void {
     const set = PARALLAX[BIOME];
     this.layers.forEach((s, i) => {
@@ -146,7 +156,7 @@ export class EnemyView {
     this.hasArt = idle !== undefined;
     const atlas = idle?.atlas ?? 'enemies_plains';
     const frame = idle?.frames[0];
-    this.sprite = scene.add.sprite(0, 0, atlas, frame).setDepth(DEPTH.enemies).setVisible(this.hasArt);
+    this.sprite = scene.add.sprite(0, 0, atlas, frame).setDepth(DEPTH.enemies + (e.boss ? 1 : 0)).setVisible(this.hasArt);
     this.overlay = scene.add.sprite(0, 0, atlas, frame).setDepth(DEPTH.enemies).setTintMode(Phaser.TintModes.FILL).setVisible(false);
   }
 
@@ -156,12 +166,21 @@ export class EnemyView {
     if (e.dead) {
       const def = this.anims.get(`${id}_death`)!;
       const i = timeFrame(def, this.clock.t);
+      if (e.boss) return { key: 'death', frame: i, alpha: 1 };
       const last = def.frames.length - 1;
       const fadeStart = last / (def.fps ?? 1);
       const fade = i < last ? 1 : Math.max(0, 1 - (this.clock.t - fadeStart) * (def.fps ?? 1));
       return { key: 'death', frame: i, alpha: fade };
     }
     const c = e.control;
+    if (e.boss && e.boss.introTicks > 0 && has('intro')) {        // intro: phase over 1.0 s (08 §7.4)
+      const n = this.anims.get(`${id}_intro`)!.frames.length;
+      return { key: 'intro', frame: Math.min(n - 1, Math.floor(((BOSS.INTRO_TICKS - e.boss.introTicks) / BOSS.INTRO_TICKS) * n)), alpha: 1 };
+    }
+    if (e.boss && c?.type === 'stagger' && has('break')) {        // break: f0 for 0.2 s, then [1, 2] at 4 fps
+      const f = this.clock.t < ANIM.BREAK_F0 ? 0 : 1 + (Math.floor((this.clock.t - ANIM.BREAK_F0) * ANIM.BREAK_FPS) % 2);
+      return { key: 'break', frame: f, alpha: 1 };
+    }
     if (c?.type === 'knockdown' && has('knockdown')) return { key: 'knockdown', frame: this.clock.t < ANIM.KNOCKDOWN_F0 ? 0 : 1, alpha: 1 };
     if (c?.type === 'dazed' && has('dazed')) return { key: 'dazed', frame: timeFrame(this.anims.get(`${id}_dazed`)!, this.clock.t), alpha: 1 };
     if (c) return { key: 'stagger', frame: timeFrame(this.anims.get(`${id}_stagger`)!, this.clock.t), alpha: 1 };
@@ -181,7 +200,10 @@ export class EnemyView {
   update(worldTick: number): void {
     const e = this.e;
     if (!this.hasArt) return;
-    if (e.dead && e.deathTicks <= 0) { this.sprite.setVisible(false); this.overlay.setVisible(false); return; }
+    // Regular deaths last 0.4 s (04 §2.8); a boss's death animation plays its full 1.5 s (08 §7.4).
+    const bossDeath = this.anims.get(`${e.def.id}_death`);
+    const bossDeathDone = !!e.boss && !!bossDeath && this.clock.key === 'death' && this.clock.t >= bossDeath.frames.length / (bossDeath.fps ?? 1);
+    if (e.dead && (e.boss ? bossDeathDone : e.deathTicks <= 0)) { this.sprite.setVisible(false); this.overlay.setVisible(false); return; }
     const frozen = e.hitStopTicks > 0;
     // Pick once to learn the key, advance its clock, then pick again with the new time.
     const key0 = this.pick().key;
@@ -223,5 +245,37 @@ export class EnemyView {
   destroy(): void {
     this.sprite.destroy();
     this.overlay.destroy();
+  }
+}
+
+/** Enemy projectiles: one sprite each, drawn facing right and rotated to the velocity in 22.5° steps (08 §11). */
+export class ProjectileViews {
+  private readonly sprites = new Map<number, Phaser.GameObjects.Sprite>();
+  private readonly scene: Phaser.Scene;
+  private readonly anims: Map<string, AnimDef>;
+  constructor(scene: Phaser.Scene, anims: Map<string, AnimDef>) {
+    this.scene = scene;
+    this.anims = anims;
+  }
+
+  /** True if this projectile id has art (the rest stay boxes). */
+  hasArt(id: string): boolean {
+    return this.anims.has(`proj_${id}`);
+  }
+
+  update(list: { id: number; def: { id: string }; x: number; y: number; vx: number; vy: number }[], worldTick: number): void {
+    const live = new Set<number>();
+    for (const p of list) {
+      const def = this.anims.get(`proj_${p.def.id}`);
+      if (!def) continue;
+      live.add(p.id);
+      let s = this.sprites.get(p.id);
+      if (!s) { s = this.scene.add.sprite(0, 0, def.atlas, def.frames[0]).setDepth(DEPTH.projectiles); this.sprites.set(p.id, s); }
+      const i = def.mode === 'loop' ? timeFrame(def, worldTick / TICK_RATE) : 0;
+      const step = (ANIM.PROJ_ANGLE_STEP * Math.PI) / 180;
+      const ang = Math.round(Math.atan2(p.vy, p.vx) / step) * step;
+      s.setFrame(def.frames[i]).setPosition(p.x, p.y).setRotation(ang);
+    }
+    for (const [id, s] of this.sprites) if (!live.has(id)) { s.destroy(); this.sprites.delete(id); }
   }
 }

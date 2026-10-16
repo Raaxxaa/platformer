@@ -27,6 +27,8 @@ export const ANIM = {
   RUN_FPS_AT: 14, RUN_SPEED_REF: 170, RUN_FPS_MIN: 8, RUN_FPS_MAX: 24,
   WALK_FPS_AT: 10, WALK_FPS_MIN: 6, WALK_FPS_MAX: 20,
   KNOCKDOWN_F0: 0.1,                        // knockdown: f0 for 0.1 s, then f1
+  BREAK_F0: 0.2, BREAK_FPS: 4,              // boss break: f0 for 0.2 s, then [1, 2] at 4 fps
+  PROJ_ANGLE_STEP: 22.5,                    // projectiles rotate to the velocity angle in 22.5° steps
 } as const;
 
 /** 08 §5.3 overlay flashes. */

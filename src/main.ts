@@ -2,9 +2,11 @@ import Phaser from 'phaser';
 import { computeZoom, GAME_WIDTH, GAME_HEIGHT } from './game/zoom.ts';
 import { MovementTestScene } from './game/scenes/MovementTestScene.ts';
 import { CombatTestScene } from './game/scenes/CombatTestScene.ts';
+import { StageScene } from './game/scenes/StageScene.ts';
 
-// The combat test level by default; ?scene=movement opens the M1 movement level.
-const movement = new URLSearchParams(window.location.search).get('scene') === 'movement';
+// Stage 1 by default; ?scene=combat opens the M2 combat test level, ?scene=movement the M1 movement level.
+const which = new URLSearchParams(window.location.search).get('scene');
+const scene = which === 'movement' ? MovementTestScene : which === 'combat' ? CombatTestScene : StageScene;
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -19,7 +21,7 @@ const game = new Phaser.Game({
     zoom: computeZoom(window.innerWidth, window.innerHeight),
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: movement ? [MovementTestScene] : [CombatTestScene],
+  scene: [scene],
 });
 
 // Whole-number zoom only (2×, 3×, …); the black page background shows as bars.
