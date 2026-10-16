@@ -24,3 +24,10 @@ export const TILE_SIZE = 16;
 /** Game view (resolution) in pixels (00-README "Units"). */
 export const VIEW_W = 640;
 export const VIEW_H = 360;
+
+/** Collision forgiveness and safety distances, px (01 §2.7–2.8). */
+export const COLLIDE = {
+  STEP_UP_MAX: 4,         // §2.7.2 step-up lifts up to 4 px
+  CEILING_NUDGE_MAX: 4,   // §2.7.1 ceiling nudge shifts up to 4 px
+  PUSH_OUT_MAX: 32,       // §2.8 push-out search distance
+} as const;
