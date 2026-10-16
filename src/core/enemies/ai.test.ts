@@ -20,6 +20,13 @@ describe('enemy AI (04 §2.5–2.6)', () => {
     expect(w.enemies[0].x).toBeLessThan(330);
     expect(w.health.hp).toBeLessThan(100);
   });
+  it('a Bandit Archer walks away only when the player is closer than 96 px (04 §3)', () => {
+    const near = engaged([{ enemy: 'bandit_archer', x: 280, y: 320, facing: -1 }]);
+    const mid = engaged([{ enemy: 'bandit_archer', x: 310, y: 320, facing: -1 }]);
+    for (const w of [near, mid]) { w.health.iframeTicks = 100000; w.enemies[0].ai.gapTicks = 100000; stepSpec(w, {}, 60); }
+    expect(near.enemies[0].x).toBeGreaterThan(290);
+    expect(mid.enemies[0].x).toBe(310);
+  });
   it('with 3 Bandits in range and off cooldown, at most 2 are in Tele or Act at once (checklist 13)', () => {
     const w = engaged([{ enemy: 'bandit', x: 180, y: 320, facing: 1 }, { enemy: 'bandit', x: 222, y: 320, facing: -1 }, { enemy: 'bandit', x: 228, y: 320, facing: -1 }]);
     w.health.iframeTicks = 100000;                           // keep the player standing there

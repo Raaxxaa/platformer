@@ -28,7 +28,7 @@ export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'band
   },
   bandit_archer: {
     ...REGULAR, id: 'bandit_archer', size: 'medium', hurtbox: { w: 14, h: 28 }, hp: 28, poiseMax: 10, kbResist: 0.1,
-    walk: 50, chase: 70, notice: { range: 240, rangeY: ENEMY.NOTICE_RANGE_Y, time: 0.50 }, preferred: [120, 220], gold: 4,
+    walk: 50, chase: 70, notice: { range: 240, rangeY: ENEMY.NOTICE_RANGE_Y, time: 0.50 }, preferred: [120, 220], backOff: 96, gold: 4,
     attacks: [
       { id: 'arrow', use: { minX: 64, maxX: 240, minDY: ENEMY.RANGED_DY_MIN, maxDY: ENEMY.RANGED_DY_MAX }, cooldown: 1.8, token: 'ranged',
         telegraph: 0.60, active: 0, recovery: 0.50, shots: [{ projectile: 'enemy_arrow', angles: [0], aim: 'player' }] },

@@ -39,6 +39,7 @@ export interface EnemyDef {
   flying?: boolean; ghost?: boolean; dropsLedges?: boolean; waterWalker?: boolean; stationary?: boolean;
   notice: { range: number; rangeY: number; time: number };
   preferred: [number, number]; attackGap: number; turnDelay: number;
+  backOff?: number;             // walks away only when closer than this (default: the preferred band's min)
   noFacing?: boolean; blocksPlayer?: boolean;
   guard?: { guardMult: number; when: 'always' | 'notAttacking' | 'stance'; bypassAbove: boolean };
   armor?: { mult: number; heavyIgnores: boolean };

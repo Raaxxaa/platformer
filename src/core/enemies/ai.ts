@@ -84,9 +84,10 @@ function stepEngage(w: GameWorld, e: EnemyState): void {
   }
   facePlayer(w, e);
   const [min, max] = e.def.preferred;
+  // SPEC-GAP: 04 §3's Wolf "paces" after backing off is undefined; it stands in its band for now.
   const toward: 1 | -1 = w.body.x >= e.x ? 1 : -1;
   if (distX > max) e.vx = toward * e.def.chase;
-  else if (distX < min) {
+  else if (distX < (e.def.backOff ?? min)) {
     const away = (-toward) as 1 | -1;
     const speed = isRanged(e.def.attacks[0] ?? ({} as EnemyAttackDef)) ? e.def.walk : e.def.chase;
     e.vx = e.grounded && !supportAhead(w, e, away) ? 0 : away * speed;
