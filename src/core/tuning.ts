@@ -111,4 +111,120 @@ export const CAMERA = {
   MARGIN_X: 64,             // px between the player box and the left/right screen edges
   MARGIN_Y: 48,             // px between the player box and the top/bottom screen edges
   SNAP_DIST: 160,           // px, a single-tick player move larger than this snaps
+  SHAKE_MAX: 8,             // px
+  SHAKE_SMALL: { amplitude: 2, seconds: 0.12 },
+  SHAKE_MEDIUM: { amplitude: 4, seconds: 0.25 },
+} as const;
+
+/** Death and restart (06 §6). */
+export const RESTART = {
+  DEATH_SIM: 1.0, DEATH_SIM_TICKS: ticks(1.0),          // the world keeps running after death
+  PRESS_AFTER: 0.25, PRESS_AFTER_TICKS: ticks(0.25),    // a restart press counts from here
+  HOLD: 0.5, HOLD_TICKS: ticks(0.5),                    // instant restart hold
+} as const;
+
+/** Combat numbers (02 §2–9). Seconds, with tick twins where code counts ticks. */
+export const COMBAT = {
+  IFRAME_BLINK: 0.05, IFRAME_BLINK_TICKS: ticks(0.05),   // sprite alpha toggle while in i-frames (02 §5.2 step 8)
+  GRADE_MULT: { F: 0.8, C: 1.0, B: 1.25, A: 1.6, S: 2.0 },
+  MATCH_MULT: 1.25,
+  CRIT_MULT: 2.0,
+  HIT_STOP_CAP: 0.125,           // s (02 §4.1)
+  HIT_STOP_CRIT_BONUS: 0.025,
+  HIT_STOP_KILL_BONUS: 0.025,
+  HURT_HIT_STOP: 0.075, HURT_HIT_STOP_TICKS: ticks(0.075),
+  HURT_IFRAMES: 0.80, HURT_IFRAMES_TICKS: ticks(0.80),
+  HITSTUN: 0.20, HITSTUN_TICKS: ticks(0.20),
+  HURT_KB_X: 180, HURT_KB_Y: -160,
+  COMBO_WINDOW: 0.35, COMBO_WINDOW_TICKS: ticks(0.35),
+  INPUT_BUFFER: 0.15, INPUT_BUFFER_TICKS: ticks(0.15),
+  RUSH_HURT: -75,
+  MAX_HP: 100,
+  KILL_CREDIT_WINDOW: 5.0, KILL_CREDIT_TICKS: ticks(5.0),
+  // Enemy reactions (02 §4.2–4.4)
+  ENEMY_KB_DECAY_GROUND: 1600,   // px/s²
+  ENEMY_KB_DECAY_AIR: 400,
+  ENEMY_KB_CONTROL_SPEED: 20,    // px/s: AI resumes below this
+  STAGGER: 0.5, STAGGER_TICKS: ticks(0.5),
+  STAGGER_HEAVY: 0.8, STAGGER_HEAVY_TICKS: ticks(0.8),
+  POISE_REFILL: 1.5, POISE_REFILL_TICKS: ticks(1.5),
+  ELITE_POISE_IMMUNE: 2.0, ELITE_POISE_IMMUNE_TICKS: ticks(2.0),
+  ELITE_CONTROL_MULT: 0.5,
+  FRONTAL_DX: 4,
+} as const;
+
+/** Ground move cap while attacking, by weapon weight (02 §9.3). */
+export const WEIGHT_MOVE_MULT = { light: 0.60, medium: 0.40, heavy: 0.25 } as const;
+
+/** Rush meter (02 §8). */
+export const RUSH = {
+  MAX: 300,
+  LEVEL_STEP: 100,                                   // level = floor(value / 100); 3 only at exactly 300
+  ATTACK_SPEED_LIGHT_MEDIUM: [1.00, 1.05, 1.10, 1.15],
+  ATTACK_SPEED_HEAVY: [1.00, 1.15, 1.30, 1.45],
+  SPEED_PERCENT: [0, 0.05, 0.10, 0.15],
+  GOLD_MULT: [1.00, 1.10, 1.20, 1.30],
+  HIT: 3,                       // first direct hit of an attack instance
+  DASH_HIT: 5,                  // extra, during a dash or ≤ 0.20 s after one
+  DASH_HIT_WINDOW: 0.20, DASH_HIT_WINDOW_TICKS: ticks(0.20),
+  DASH_THROUGH: 4,              // per enemy per dash
+  KILL_REGULAR: 15,
+  KILL_ELITE: 40,
+  MOVE_GAIN: 6,                 // per second while |vx| ≥ 60% of base run max
+  MOVE_FRACTION: 0.6,
+  STILL_SPEED: 20,              // px/s
+  STILL_DRAIN: 50,              // per second
+  STILL_DELAY: 0.5, STILL_DELAY_TICKS: ticks(0.5),
+  STILL_ATTACK_WINDOW: 1.0, STILL_ATTACK_WINDOW_TICKS: ticks(1.0),
+  NO_GAIN_DELAY: 4.0, NO_GAIN_DELAY_TICKS: ticks(4.0),
+  NO_GAIN_DRAIN: 15,            // per second
+} as const;
+
+/** Stage scaling (04 §2.3, 00-README). */
+export const STAGE_SCALING = {
+  1: { mobHp: 1.0, bossHp: 1.0, dmg: 1.0 }, 2: { mobHp: 1.4, bossHp: 1.7, dmg: 1.3 },
+  3: { mobHp: 1.9, bossHp: 2.6, dmg: 1.5 }, 4: { mobHp: 2.4, bossHp: 3.6, dmg: 1.7 } } as const;
+
+/** Shared enemy rules (04 §2). */
+export const ENEMY = {
+  GRAVITY: 1500,
+  MAX_FALL: 400,
+  SEPARATION_DIST: 10,          // px between feet x
+  SEPARATION_SPEED: 40,         // px/s
+  ATTACK_GAP_REGULAR: 0.6,
+  ATTACK_GAP_ELITE: 0.8,
+  ALERT_REACTION: 0.25, ALERT_REACTION_TICKS: ticks(0.25),
+  ALERT_SPREAD_RANGE: 128,
+  ALERT_SPREAD_DELAY: 0.3, ALERT_SPREAD_TICKS: ticks(0.3),
+  NOTICE_RANGE_Y: 80,
+  LOSE_RANGE_MIN: 320,          // loseRange = max(320, 2 × range)
+  RETURN_AFTER: 5.0, RETURN_AFTER_TICKS: ticks(5.0),
+  PATROL_PAUSE: 1.0, PATROL_PAUSE_TICKS: ticks(1.0),
+  DEATH_ANIM: 0.4, DEATH_ANIM_TICKS: ticks(0.4),
+  ACTIVATION_MARGIN: 96,
+  MELEE_DY_MIN: -40, MELEE_DY_MAX: 24,
+  RANGED_DY_MIN: -96, RANGED_DY_MAX: 96,
+  MAX_TOKENS_MELEE: 2, MAX_TOKENS_RANGED: 2,
+  LEAP_MAX: 1.0, LEAP_MAX_TICKS: ticks(1.0),
+  DUMMY_HEAL_DELAY: 1.0, DUMMY_HEAL_TICKS: ticks(1.0),
+  BOAR_DAZE: 1.2, BOAR_DAZE_TICKS: ticks(1.2),             // Boar charge into a wall (04 §3)
+  BOAR_WALL_SHAKE: { amplitude: 2, seconds: 0.15 },
+  AIM_CLAMP_DEG: 30,            // aimed shots clamp to ±30° from horizontal (04 §2.7)
+  WAVE_SPAWN_DX: 24,            // floor waves start this far in front of the feet
+  HURT_FLASH_TICKS: 2,          // enemy hurt flash (02 §4.6: 2 ticks)
+  LOS_STEP: 4,                  // px between line-of-sight samples
+  TELEGRAPH_FLASH_LAST: 0.15, TELEGRAPH_FLASH_LAST_TICKS: ticks(0.15),   // last part of a telegraph flashes near-white
+} as const;
+
+/** Heal flask (02 §7). Fill is in tenths of a percent. */
+export const FLASK = {
+  START_CHARGES: 2,
+  MAX_CHARGES: 4,
+  FULL_TENTHS: 1000,
+  DRINK: 0.40, DRINK_TICKS: ticks(0.40),
+  SIP: 0.25, SIP_TICKS: ticks(0.25),
+  HEAL_FRACTION: 0.40,
+  MOVE_CAP: 0.40,
+  FILL_REGULAR: 50,
+  FILL_ELITE: 150,
 } as const;

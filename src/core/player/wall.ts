@@ -53,6 +53,13 @@ export function leaveWall(b: PlayerBody): void {
   b.lastWallPt = b.pt;
 }
 
+/** An attack press during a wall slide detaches the player, facing away from the wall (02 §9.3). */
+export function detachFromWall(b: PlayerBody): void {
+  leaveWall(b);
+  b.facing = -b.lastWallDir as -1 | 1;
+  setState(b, 'air', 0);
+}
+
 /**
  * §3 step 9 wall slide transitions (01 §8.2). While sliding, `lastWallDir` holds the wall's side.
  * Landing out of a wall slide is handled by the landing code.

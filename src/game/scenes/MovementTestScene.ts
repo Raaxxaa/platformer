@@ -1,28 +1,11 @@
 // M1 grey-box test level: steps the core at 120 Hz and draws it with plain rectangles.
 import Phaser from 'phaser';
-import type { TileGrid } from '../../core/level/tiles.ts';
-import type { MoveStateId } from '../../core/player/body.ts';
 import { FixedStepper } from '../../core/sim/fixedStep.ts';
 import { PlayerSim } from '../../core/sim/playerSim.ts';
-import { TILE_SIZE } from '../../core/tuning.ts';
 import { MOVEMENT_TEST } from '../../data/levels/movementTest.ts';
 import { debugEnabled, installDebugApi, type DebugHost } from '../debug.ts';
 import { Devices } from '../input/devices.ts';
-
-/** Grey-box colors (placeholder art for M1). */
-const COLOR = {
-  solid: 0x4a4f63,
-  oneway: 0x8a90a8,
-  hurtbox: 0x00ff00,
-} as const;
-const ONEWAY_STRIP = 4;   // px, one-way tiles are drawn as a strip at the tile top
-const NOSE = 3;           // px, marks the facing side
-
-const STATE_COLOR: Record<MoveStateId, number> = {
-  ground: 0xe8e8f0, air: 0x9ad0ff, dash: 0xffd84a, slide: 0xffd84a, wallSlide: 0x7affb0, ledgeClimb: 0xff9a3c,
-  diveWindup: 0xff5a5a, diveFall: 0xff5a5a, diveLand: 0xff5a5a, crawl: 0xc08aff,
-  hurt: 0xe8e8f0, forced: 0xe8e8f0, minecart: 0xe8e8f0, dead: 0xe8e8f0,
-};
+import { COLOR, drawLevel, NOSE, STATE_COLOR } from '../greybox.ts';
 
 export class MovementTestScene extends Phaser.Scene implements DebugHost {
   sim!: PlayerSim;
@@ -40,7 +23,7 @@ export class MovementTestScene extends Phaser.Scene implements DebugHost {
   create(): void {
     this.sim = new PlayerSim(MOVEMENT_TEST.grid, MOVEMENT_TEST.spawn);
     this.devices = new Devices();
-    this.drawLevel(MOVEMENT_TEST.grid);
+    drawLevel(this, MOVEMENT_TEST.grid);
     this.player = this.add.graphics();
     this.debug = debugEnabled();
     if (this.debug) {
@@ -62,24 +45,6 @@ export class MovementTestScene extends Phaser.Scene implements DebugHost {
       for (let i = 0; i < n; i++) this.sim.step(this.devices.builder.build());
     }
     this.render();
-  }
-
-  /** Solid tiles as merged row runs; one-way tiles as a strip at the tile top. */
-  private drawLevel(grid: TileGrid): void {
-    const g = this.add.graphics();
-    for (let ty = 0; ty < grid.h; ty++) {
-      let tx = 0;
-      while (tx < grid.w) {
-        if (grid.isSolidTile(tx, ty)) {
-          const start = tx;
-          while (tx < grid.w && grid.isSolidTile(tx, ty)) tx++;
-          g.fillStyle(COLOR.solid, 1).fillRect(start * TILE_SIZE, ty * TILE_SIZE, (tx - start) * TILE_SIZE, TILE_SIZE);
-        } else {
-          if (grid.kindAt(tx, ty) === 'oneway') g.fillStyle(COLOR.oneway, 1).fillRect(tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, ONEWAY_STRIP);
-          tx++;
-        }
-      }
-    }
   }
 
   private render(): void {

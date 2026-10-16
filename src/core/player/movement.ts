@@ -7,7 +7,7 @@ import { MOVE, TICK } from '../tuning.ts';
 import { setState, type MoveEvent, type PlayerBody } from './body.ts';
 import { endDashOrSlide, standingFits, stepDashOrSlide, tryStartDash } from './dash.ts';
 import { applyJumpCut, tryJump } from './jump.ts';
-import { runMaxEff, type MoveContext, type MoveModifiers } from './modifiers.ts';
+import { defaultModifiers, runMaxEff, type MoveContext, type MoveModifiers } from './modifiers.ts';
 import { leaveWall, updateWallSlide } from './wall.ts';
 import { checkLedgeGrab, stepLedgeClimb } from './ledge.ts';
 import { stepDivePhases, tryStartDive } from './dive.ts';
@@ -31,6 +31,47 @@ function fall(vy: number, gravity: number, cap: number): number {
   return Math.min(cap, vy + gravity * TICK);
 }
 
+/** Knockback (01 §12.2): ends any state but `minecart`/`dead`, sets the velocity, `hurt` for `stunTicks`. */
+export function applyKnockback(b: PlayerBody, vx: number, vy: number, stunTicks: number, mods: MoveModifiers = defaultModifiers()): void {
+  if (b.state === 'minecart' || b.state === 'dead') return;
+  if (b.state === 'dash' || b.state === 'slide') endDashOrSlide(b, mods);
+  if (b.state === 'wallSlide') leaveWall(b);
+  b.vx = vx;
+  b.vy = vy;
+  b.dashIframes = false;
+  b.steerLockTicks = 0;
+  b.jumpCuttable = false;
+  if (vy < 0) {
+    b.coyoteValid = false;
+    b.grounded = false;
+  }
+  b.hurtTicks = stunTicks;
+  setState(b, 'hurt', 0);
+}
+
+/** The body becomes `dead` (01 §5.4): it keeps falling and sliding but ignores input. */
+export function setDead(b: PlayerBody): void {
+  b.dashIframes = false;
+  b.steerLockTicks = 0;
+  b.jumpCuttable = false;
+  setState(b, 'dead', 0);
+}
+
+/** 01 §3 step 1: would a jump or dash pressed now be accepted? Tried on a copy of the body. */
+function pressWouldAct(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers): boolean {
+  const trial: PlayerBody = { ...b, pt: b.pt + 1 };
+  if (input.dash.pressed) {
+    trial.dashPressPt = trial.pt;
+    if (tryStartDash({ ...trial }, input, g, mods)) return true;
+  }
+  if (input.jump.pressed) {
+    trial.jumpPressPt = trial.pt;
+    trial.jumpPressFresh = true;
+    if (tryJump(trial, input, g, mods)) return true;
+  }
+  return false;
+}
+
 /** Step 6: horizontal velocity by state (01 §5). Dash and slide keep their speed. */
 function horizontalVelocity(b: PlayerBody, input: InputState, mods: MoveModifiers): void {
   if (b.steerLockTicks > 0) {
@@ -43,6 +84,10 @@ function horizontalVelocity(b: PlayerBody, input: InputState, mods: MoveModifier
     case 'air': steer(b, input.moveX, runMaxEff(b, mods), AIR_RATES, mods); break;
     case 'crawl': steer(b, input.moveX, runMaxEff(b, mods, MOVE.CRAWL_MAX), GROUND_RATES, mods); break;
     case 'wallSlide': case 'diveWindup': case 'diveFall': case 'diveLand': b.vx = 0; break;
+    case 'hurt': case 'dead':
+      // Input ignored: the no-input decel for the surface (01 §5.4, §12.2).
+      b.vx = approach(b.vx, 0, (b.grounded ? MOVE.GROUND_DECEL : MOVE.AIR_DECEL) * TICK);
+      break;
     default: break;
   }
 }
@@ -59,6 +104,9 @@ function verticalVelocity(b: PlayerBody, input: InputState, mods: MoveModifiers)
     }
     case 'wallSlide':
       b.vy = fall(b.vy, MOVE.GRAVITY, input.moveY === 1 ? MOVE.WALL_SLIDE_MAX_DOWN_HELD : MOVE.WALL_SLIDE_MAX);
+      break;
+    case 'hurt': case 'dead':
+      b.vy = b.grounded && b.vy >= 0 ? 0 : fall(b.vy, MOVE.GRAVITY, MOVE.MAX_FALL);
       break;
     default: break;
   }
@@ -93,7 +141,11 @@ function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModi
   if (grounded) {
     if (b.state === 'wallSlide') leaveWall(b);
     if (b.state === 'air' || b.state === 'wallSlide') land(b, ev);
-    else if (b.state === 'diveFall') {
+    else if ((b.state === 'hurt' || b.state === 'dead') && !wasGrounded) {
+      b.landSpeed = b.vy;
+      b.vy = 0;
+      ev.push('land');
+    } else if (b.state === 'diveFall') {
       b.landSpeed = b.vy;
       b.vy = 0;
       setState(b, 'diveLand', 0);
@@ -141,10 +193,21 @@ function updateBox(b: PlayerBody, g: TileGrid): void {
 /** Runs one movement tick for the player (01 §3). Returns this tick's movement events. */
 export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers, ctx: MoveContext): MoveEvent[] {
   const ev: MoveEvent[] = [];
-  // 1. Hit-stop: arrives with combat in M2 (hitStopTicks stays 0).
+  // 1. Hit-stop: frozen, unless a jump or dash pressed now can happen (then hit-stop ends and the move runs).
+  if (b.hitStopTicks > 0) {
+    if ((input.jump.pressed || input.dash.pressed) && pressWouldAct(b, input, g, mods)) {
+      b.hitStopTicks = 0;
+    } else {
+      b.hitStopTicks -= 1;
+      if (input.jump.pressed) b.jumpPressPt = b.pt;    // buffered, stamped with the frozen pt
+      if (input.dash.pressed) b.dashPressPt = b.pt;
+      return ev;
+    }
+  }
   // 2. Advance; end timed states.
   b.pt += 1;
   b.stateTicks += 1;
+  if (b.state === 'hurt' && b.stateTicks > b.hurtTicks) setState(b, b.grounded ? 'ground' : 'air', 1);
   const ended = stepDashOrSlide(b, g, mods);
   if (ended) ev.push(ended);
   stepDivePhases(b);
@@ -188,7 +251,8 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
     const dy = ((vyStart + b.vy) / 2) * TICK;
     const hitWall = moveX(b, g, dx, b.state !== 'diveFall') === 'wall';
     if (hitWall) b.vx = 0;
-    if (moveY(b, g, dy, { dropping: jumpEvent === 'dropThrough', preferDir: input.moveX }) === 'bonk') {
+    const ignoresInput = b.state === 'hurt' || b.state === 'dead';
+    if (moveY(b, g, dy, { dropping: jumpEvent === 'dropThrough', preferDir: ignoresInput ? 0 : input.moveX }) === 'bonk') {
       b.vy = 0;
       b.jumpCuttable = false;
     }
