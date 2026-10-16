@@ -14,6 +14,8 @@ import { drawTerrain, Parallax } from '../view/levelView.ts';
 import type { AnimDef } from '../view/animClock.ts';
 import { AnimBank } from '../view/animBank.ts';
 import { EnemySprite, OUTFIT, PlayerSprite, ProjectileSprites, type PlayerViewEvents } from '../view/EntitySprites.ts';
+import { SfxPlayer } from '../audio/sfx.ts';
+import { SfxWatch } from '../audio/sfxTriggers.ts';
 import { drawMarkers, VfxDirector, VfxPool, type TickEvent } from '../view/vfx.ts';
 import { loadAssets } from '../assets/loadAssets.ts';
 import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../debug.ts';
@@ -54,6 +56,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected frameEvents: TickEvent[] = [];
   private playerEv: PlayerViewEvents = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
   private lastRenderTick = -1;
+  protected sfx!: SfxPlayer;
+  private sfxWatch = new SfxWatch();
+  private soundNote!: Phaser.GameObjects.BitmapText;
   /** `?boxes=1`: the old grey boxes instead of sprites (debugging). */
   protected boxesMode = false;
   /** Debug overview: the camera zooms out to show this world rect (screenshots of whole sections). */
@@ -80,6 +85,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.projViews = new ProjectileSprites(this, this.bank);
     this.vfx = new VfxDirector(new VfxPool(this, this.bank));
     this.markersGfx = this.add.graphics().setDepth(DEPTH.markers);
+    this.sfx = new SfxPlayer(this);
+    // Browsers start audio only after a key press or click (08 §15, 07).
+    this.soundNote = this.add.bitmapText(4, this.scale.height - 4, FONTS.small, 'Click or press any key for sound')
+      .setOrigin(0, 1).setScrollFactor(0).setDepth(DEPTH.hud).setAlpha(0.8);
     this.gfx = this.add.graphics().setDepth(DEPTH.projectiles);
     this.hud = this.add.bitmapText(4, 4, FONTS.small, '')
       .setScrollFactor(0).setDepth(DEPTH.hud);
@@ -92,7 +101,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     if (this.debug) installCombatDebugApi(this);
     this.createExtra();
     const api = window.__game as unknown as Record<string, unknown> | undefined;
-    if (api) api.vfx = () => this.vfx.pool.counts();
+    if (api) { api.vfx = () => this.vfx.pool.counts(); api.sfxLog = () => [...this.sfx.log]; }
     this.render();
   }
 
@@ -145,7 +154,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     const g = this.gfx.clear();
     this.boxes.clear();
     // A restart rewinds the tick: drop effects of the old run.
-    if (w.tick < this.lastRenderTick) { this.vfx.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 }; }
+    if (w.tick < this.lastRenderTick) {
+      this.vfx.reset(); this.sfxWatch.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
+      this.sfx.play([{ id: 'restart' }], w.tick, { camCenterX: cam.x, playerX: w.body.x });
+    }
     this.lastRenderTick = w.tick;
     for (const { tick, e } of this.frameEvents) {
       if (e.t === 'move' && e.e === 'doubleJump') this.playerEv.lastDoubleJumpTick = tick;
@@ -169,6 +181,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.vfx.update(w, this.frameEvents, { atlas: `player_${OUTFIT}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
     this.vfx.pool.update(w.tick);
     drawMarkers(this.markersGfx.clear(), w);
+    const reqs = this.sfxWatch.collect(w, this.frameEvents, this.playerView.anim);
+    this.sfx.play(reqs, w.tick, { camCenterX: cam.x + this.scale.width / 2, playerX: b.x });
+    this.soundNote.setVisible(this.sfx.locked && !this.overview);
     if (this.debug) g.lineStyle(1, COLOR.hurtbox, 1).strokeRect(left + 0.5, top + 0.5, b.w - 1, b.h - 1);
 
     // Active attack hitboxes: the player's always (M2), the enemies' with ?debug=1.

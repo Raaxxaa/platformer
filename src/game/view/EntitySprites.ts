@@ -34,6 +34,8 @@ export class PlayerSprite {
   private readonly get: Lookup;
   /** The last frame drawn (afterimages copy it). */
   frameName = 'idle_00';
+  /** The anim key and frame index drawn last (footstep sounds). */
+  anim = { key: 'idle', frame: 0 };
   constructor(scene: Phaser.Scene, bank: AnimBank) {
     this.get = bank.player(OUTFIT);
     const body = `player_${OUTFIT}`, trim = `${body}_trim`;
@@ -70,6 +72,7 @@ export class PlayerSprite {
     const p = pickPlayerAnim(s, this.get, this.clock.t, this.clock.runPhase);
     const name = this.get(p.key)!.frames[p.frame];
     this.frameName = name;
+    this.anim = { key: p.key, frame: p.frame };
     const flip = b.facing < 0;
     const blink = w.health.iframeTicks > 0 && Math.floor(w.tick / COMBAT.IFRAME_BLINK_TICKS) % 2 === 0;
     const alpha = blink ? 0.4 : 1;
