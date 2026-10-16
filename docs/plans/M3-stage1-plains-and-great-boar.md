@@ -334,6 +334,8 @@ tests/e2e/stage1.spec.ts
 
     It reports `section, vertex index, problem`.
 
+**Level design document: `docs/levels/plains.md`.** Read it first. It describes every section's look, purpose, enemy groups, hints and speed lines; build the chunks to match it. The table below is the short version and the counts that must hold.
+
 **Level brief.** Size up to **720 × 64 tiles** (the spec allows 96 tall; 64 is enough). Main path **650–730 tiles**. Floor at varying heights. Every gap has a floor below it (no bottomless pits). Spikes only from section 3 on. A `guide_arrow` at every fork. Wolves are placed in packs that share a `group`.
 
 | § | Main path (tiles) | Layout and gimmick | Regulars | Elite | Objects | Hints |
