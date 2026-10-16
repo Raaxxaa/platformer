@@ -49,7 +49,7 @@ This folder is the **exact** version of `docs/GAME_PLAN.md`. The plan says what 
 - Durations in the spec are in seconds; code converts them to ticks with `Math.round(seconds * 120)` once, in the tuning file.
 - **The run timer counts ticks**, not wall-clock time, so times are fair and repeatable. Displayed time = ticks / 120.
 - **Hit-stop** (freeze on big hits) pauses the simulation ticks for the player and the hit enemy, but **the run timer keeps counting**.
-- All randomness uses a **seeded RNG** (`mulberry32`), never `Math.random()`. Each system gets its own stream derived from the run seed (`loot`, `lucky`, `shop`, `dragon`, `enemyAI`, `cosmetic`) so one system's rolls never shift another's. Same seed + same choices = same loot.
+- All randomness uses a **seeded RNG** (`mulberry32`), never `Math.random()`. Each system gets its own stream derived from the run seed (`loot`, `lucky`, `shop`, `dragon`, `enemyAI`, `enemyDrops`, `combat`, `statPick`, `blueprint`, `cosmetic`), each made with 06 §7.2's `deriveSeed(runSeed, stream, ...keys)`, so one system's rolls never shift another's. Scopes and keys: 06 §7.2 (long-lived streams) and 05 §2.1 (per-source loot streams). A file that adds a stream adds it to this list too. Same seed + same choices = same loot.
 
 ## Architecture (decided)
 
@@ -84,11 +84,14 @@ These anchor the balance. Section files build on them; don't change them in one 
 | Player / human-size enemy sprite frame | **48 × 48 px** (room for weapons); bosses bigger |
 | Flask | **2 charges** at start (max 4), each heals **40% of max HP** |
 | "Standard" weapon | A **C-grade, class-matched** weapon at Stage 1 deals **~45 damage per second** while attacking nonstop |
-| Regular mob HP, Stage 1 | **25–60**, so a C/B weapon kills it in **2–4 hits** (plan: "die fast") |
+| Regular mob HP, Stage 1 | **25–60**, so a C/B weapon kills it in **2–4 hits** (plan 5.6: "die fast", no damage sponges). Mob HP scaling below keeps it at 2–4 hits in every stage |
 | Elite HP, Stage 1 | **~150** |
 | Guardian HP, Stage 1 | **~900** (aim: 30–60 s fight) |
 | Mob hit on player, Stage 1 | **8–15 damage**; elite **~20**; boss attacks **15–30** |
-| Stage scaling (enemy HP / enemy damage) | Stage 1: **×1.0 / ×1.0** · Stage 2: **×1.7 / ×1.3** · Stage 3: **×2.6 / ×1.6** · Stage 4: **×3.6 / ×2.0** |
+| Stage scaling: regular mob and elite HP (`mobHp`) | Stage 1: **×1.0** · Stage 2: **×1.4** · Stage 3: **×1.9** · Stage 4: **×2.4**. Also used for summons, Ambush packs, Goblin Shaman barriers and Living Armor's revive HP. With a class-matched weapon of the expected grade (Stage 1 C, 2 B, 3 B–A, 4 A), an average regular mob dies in a median of about **2–3 / 3 / 3 / 3–4 hits** |
+| Stage scaling: boss HP (Guardians, Black Knight, Enemy King, Dragon) | Stage 1: **×1.0** · Stage 2: **×1.7** · Stage 3: **×2.6** · Stage 4: **×3.6** |
+| Stage scaling: enemy damage (every enemy and boss) | Stage 1: **×1.0** · Stage 2: **×1.3** · Stage 3: **×1.5** · Stage 4: **×1.7**. 04 §2.3 applies all three scaling rows (`STAGE_SCALING` in `src/core/tuning.ts`) |
+| Biggest single enemy hit (no Glass Bones, no curse) | **44**, in Stage 4 (Enemy King's Throne Beam, round(26 × 1.7)). Per stage: 22 / 34 / 39 / 44 (Stages 2–3: the Dragon's Dive Bomb). No single enemy hit is above 44, so it always takes **at least 3 hits** to kill a 100 HP player |
 | Grade damage multiplier | F **0.8** · C **1.0** · B **1.25** · A **1.6** · S **2.0** |
 | Weapon match bonus | **+25%** damage |
 | Crit | **×2** damage |
