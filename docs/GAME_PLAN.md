@@ -181,9 +181,9 @@ Your character's appearance has **nothing to do with your class**. Any class can
   - **Race:** Human, Elf (pointed ears), Dwarf (beard, stocky) or Orc (green skin, small tusks).
   - **Looks:** skin tone, hair style, hair color, face, beard.
   - **Clothes:** a few starting clothing sets, each with **colors you pick**.
-- **Accessories from mob drops:** hats, helmets, masks, capes, pauldrons and more. They drop rarely from enemies and bosses, themed by who dropped them. Examples:
+- **Accessories from every mob (cosmetics only):** every enemy type has its own accessory (hats, helmets, masks, capes, pauldrons…), themed by who it came from. **The first time you kill an enemy type, you get its accessory**, always. Examples:
 
-  | Dropped by | Accessory |
+  | Enemy | Accessory |
   |---|---|
   | Wolf | Wolf-pelt hood |
   | Bandit | Bandit bandana |
@@ -191,11 +191,12 @@ Your character's appearance has **nothing to do with your class**. Any class can
   | Wild Boar | Tusk necklace |
   | Bandit Brute | Spiked shoulder pads |
   | Great Boar | Boar-skull helmet |
-  | Dragon | Dragon-scale cape (in its color) |
+  | Dragon (each color) | Dragon-scale cape in that color |
 
-  - **Drop rates (starting idea):** about 1% from regular enemies, 5% from elites, 25% from bosses. The first kill of a boss is always a drop.
-  - **Kept forever:** a dropped accessory goes into your **collection** for every future run. It takes no inventory slot, and a popup says what you got.
-  - **Collection book:** shows every accessory you've found and outlines of the ones you haven't, as something to hunt for.
+  - That's about 30 enemy types, so about 30 accessories to collect over many runs.
+  - They're **kept forever** in your collection, take no inventory slot, and a popup says what you got.
+  - **Collection book:** shows every accessory you've found and outlines of the ones still missing.
+  - **Possible extra later:** a rare color variant of each accessory with a small chance on later kills, for players who want more to hunt.
 - **Your class still shows:** a thin glow or trim in your current class or hybrid color, so you can still tell your class at a glance.
 - **Fairness:** every race is the same size and has the same hitbox, and everything here is **looks only, with no stats**. That keeps speedrun times comparable.
 - **When:** a later milestone (M12). Until then the player uses the 4 starter looks from the art plan, and any class can use any of them.
