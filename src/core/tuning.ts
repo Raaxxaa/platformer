@@ -149,6 +149,15 @@ export const GREAT_BOAR = {
   ROCK_MARKER: 0.8, ROCK_MARKER_TICKS: ticks(0.8),
 } as const;
 
+/** Main-path movement limits for level design (06 §8.5), in tiles. "Late" = from section 3 on. */
+export const ROUTE = {
+  RISE: 5, RISE_LATE: 7,
+  ONEWAY_RISE: 3, ONEWAY_RISE_LATE: 6,
+  GAP: 4, GAP_LATE: 5,
+  LATE_SECTION: 3,
+  SHAFT_MIN: 3, SHAFT_MAX: 5,           // wall-jump shaft inner width
+} as const;
+
 /** Timed doors (06 §9.5). */
 export const TIMED_DOOR = { TRIGGER_W: 48 } as const;   // px strip in front of the door
 
