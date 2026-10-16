@@ -27,7 +27,7 @@ The other 8 abilities and 11 weapons come later (M9). Loot (grades, chests, Luck
 
 **Why these second abilities:** each one works with what is already built. Grapple Arrow needs grapple points (Dark Forest). Frost Burst needs Frozen and shatter (elements, M5). The others are fine but less needed for testing.
 
-**Since there is no Home Village or loot yet**, the player gets classes and items in a **Training Ground**: the combat test level gets four class statues, an armory of item stands, and a training dummy. In Stage 1, a kit picker opens before the run.
+**Since there is no Home Village or loot yet**, the player gets classes and items in the **Training Yard**: a tutorial level (`docs/levels/training-yard.md`) with 17 stations that teach every move and technique, four class statues at its start, and an armory of item stands and a training dummy at its end. In Stage 1, a kit picker opens before the run.
 
 **Architecture:**
 - **Pure core** (no Phaser):
@@ -82,7 +82,7 @@ The other 8 abilities and 11 weapons come later (M9). Loot (grades, chests, Luck
 - The 6 new weapons, player projectiles, charge weapons, Crossbow Pin, Storm Hammer throw and dive bolt.
 - `ForcedMove`, `teleport()`, `refundDash()` (if not already there).
 - Weapon and ability items on the ground: pickup, swap choice, dropping the old one with its level and charge state.
-- The Training Ground (combat test level), and the Stage 1 kit picker.
+- The Training Yard tutorial (17 stations, sparring dummy, straw targets), and the Stage 1 kit picker.
 - Training Dummy with the DPS readout.
 - Simple HUD: weapon slots with class icons, ability slots (cooldown shade, charges, level pips, link glow), class name and bond line.
 
@@ -311,20 +311,32 @@ If a file in the table already exists under another name, extend that one instea
 - [ ] **Implement** with 06 §11.1 interact targeting and 05 §5.7 drop and rest rules. Item stands in M4 are **endless**: taking an item leaves a copy, so the user can try everything. Mark it `// SPEC-GAP: M4 armory stands never run out (test only)`. This is the design chat's choice, so it doesn't go in `SPEC-GAPS.md`.
 - [ ] **Commit.**
 
-### Task 13: Training Ground and the kit pick
+### Task 13: Class pick, armory and dummies
 
-**Files:** `src/data/levels/combatTest.ts` (extend), `src/ui/popups/classPick.ts`, the Stage 1 scene, the Training Dummy, tests.
+**Files:** `src/ui/popups/classPick.ts`, the Stage 1 scene, the dummies (`src/data/enemies.ts`, `src/core/enemies/`), tests.
 
-- [ ] **Training Ground** (the combat test level, extended to the left or right):
+- [ ] **Parts for the Training Yard** (placed in Task 14; until then test them in the combat test level):
   - **4 class statue markers** (grey boxes with the class letter). Interact opens the class pick (07 §6.7) with that class's 2 starting weapons. Confirm equips the kit at once (03 §3: ability slot 1 Lv1, slot 2 empty, weapon slot 1 at C, slot 2 empty).
   - **Armory:** a row of endless stands with each M4 ability (Lv1) and each of the 8 weapons, grouped by class with a class-colored label.
-  - **Training Dummy** (04 §2.10) with the DPS readout (07 §5.8).
+  - **Training Dummy** (04 §2.10) with the DPS readout (07 §5.8), **Sparring Dummy** (04 §2.11) and **Straw Target** (04 §2.12).
   - **Dummy art:** the enemy view must accept an enemy that has only `idle` and `hit` anims (the dummy: play `hit` when struck, never stagger or die) and load the `enemies_extra` atlas. The art is already built; the art chat left `training_dummy_idle` and `training_dummy_hit` out of `anims.json` until the view handles them (`docs/art/SPEC-GAPS-art.md` #3). When this works, tell the user so the art chat can add the two lines back.
 - [ ] **Stage 1:** before the run starts, the same class pick panel opens with all 4 classes (left/right picks the class, up/down the weapon). The pick is kept for instant restart. `?kit=archer:bow` skips the panel (tests use it).
-- [ ] **Tests:** the kit equips the right items; restart keeps the kit; the dummy never dies and its HP returns 1.0 s after the last hit; the DPS formula.
+- [ ] **Tests:** the kit equips the right items; restart keeps the kit; the dummy never dies and its HP returns 1.0 s after the last hit; the DPS formula; the sparring dummy swings every 2.0 s with a 0.6 s Tele and deals 0 damage; a straw target breaks in 1 hit, gives +15 Rush and no gold, and respawns after 3.0 s.
 - [ ] **Commit.**
 
-### Task 14: HUD and ability visuals
+### Task 14: The Training Yard
+
+**Files:** `levels-src/training_yard/`, `public/levels/training_yard.json` (generated), `src/core/run/training.ts` + test, scene support.
+
+Design: `docs/levels/training-yard.md`. Rules: `docs/spec/06-run-levels-save.md` §12.4.
+
+- [ ] **Build the level** from the doc: 17 stations in 3 parts, the statues at the start, the checklist board, armory and training dummy at the end, an exit at both ends. Add `station`, `checkpoint` and `respawn` objects to the level format and `validateLevel` (a `training` level needs stations 1–17, each with a checkpoint and a hint).
+- [ ] **Station checks** (pure core, one test each): each station's "done when" rule from the doc, reading core events (for example station 3 = crossed the gap with an air dash; station 11 = 3 sparring swings dodged by dash i-frames in a row, reset when hit; station 13 = an `abilityLinked`; station 14 = Rush level ≥ 1; station 17 = 3 dive bounces without touching the pit).
+- [ ] **Rules:** no run timer; HP never drops below 1; pits fade 0.3 s and return you to the checkpoint with a full flask; Rush resets at checkpoints; leaving resets the loadout to the picked kit.
+- [ ] **View:** signs drawn as hint text with key names (M1 key names), check flags (grey → green with `ui_confirm`), the checklist board. Use ART4/ART5 art where it exists (`guide_arrow`, training dummy, fonts); the sparring dummy and straw target get art in ART5.
+- [ ] **Commit.**
+
+### Task 15: HUD and ability visuals
 
 **Files:** `src/ui/hud/abilityHud.ts`, `src/game/view/abilityView.ts`.
 
@@ -335,10 +347,11 @@ If a file in the table already exists under another name, extend that one instea
 - [ ] **Ability visuals**, grey-box style in class colors: dash trails, the Whirlwind box, the Shockwave box flash, the Arrow Rain zone with falling lines, Thunder Strike columns, a mark icon over marked enemies, a Blink flash at both ends, Lightning chain lines.
 - [ ] **Commit.**
 
-### Task 15: E2E, review, hand-off
+### Task 16: E2E, review, hand-off
 
 - [ ] **E2E** `tests/e2e/classes.spec.ts`:
-  - The Training Ground loads; pick each class at its statue and screenshot the HUD (`test-results/class-<cls>.png`).
+  - The Training Yard loads (`?start=training`); pick each class at its statue and screenshot the HUD (`test-results/class-<cls>.png`).
+  - Complete stations 1, 3, 4, 8, 11 and 14 with scripted inputs and assert `stationDone` for each; screenshot each part (`test-results/yard-a.png`, `yard-b.png`, `yard-c.png`).
   - Take a second ability of the same class from the armory and assert `connection` is true and the bond name is shown; screenshot.
   - Take one of another class and assert the hybrid name; screenshot.
   - Use each M4 ability next to the dummy and screenshot mid-effect (`test-results/ability-<id>.png`).
@@ -348,7 +361,7 @@ If a file in the table already exists under another name, extend that one instea
 - [ ] **Run everything:** `npm run typecheck && npm test && npm run build && npm run test:e2e`. **Read every screenshot.** Push to `main`; check that the site deploys.
 - [ ] **Hand-off to the user:**
   - Send screenshots and the link.
-  - Tell them in plain words: "Classes work now. In the Training Ground, pick a class at a statue, then grab abilities and weapons from the armory to try Connection bonuses and hybrids on the training dummy. Stage 1 asks you to pick a class first."
+  - Tell them in plain words: "Classes work now, and there is a Training Yard that teaches every move. Pick a class at a statue, go through the stations, then try other abilities and weapons in the armory at the end. Stage 1 asks you to pick a class first."
   - Ask them:
     - Which class feels best? Which feels weakest?
     - Do the abilities feel strong enough? Are cooldowns too long or too short?

@@ -83,7 +83,22 @@ From 08 §13.3:
 
 - [ ] **Tests** as in ART4. Add them to the listening sheet. **Commit.**
 
-### Task 7: Class board and hand-off
+### Task 7: Training Yard pieces
+
+For the tutorial level (`docs/levels/training-yard.md`, 04 §2.11–2.12):
+
+| Thing | Atlas, size | Anims |
+|---|---|---|
+| `sparring_dummy` | `enemies_extra`, 48 × 48 idle/hit; `atk_*` 96 × 48 (anchor (48, 46)) | `idle` 1, `tele` 2 (raising a wooden sword), `atk_practice_swing` 3, `hit` 3 at 20 fps. The reach rule (08 §4.1) holds for its box `24, −16, 40, 28` |
+| `straw_target` | `enemies_extra`, 32 × 32, anchor (16, 30) | `idle` 1, `death` 4 (straw bursting) at 20 fps |
+| `station_sign` | `objects`, 24 × 32 | — (a wooden sign; the code writes the text above it) |
+| `station_flag` | `objects`, 8 × 24 | `grey` and `green` frames |
+| `training_gate` | `objects`, 32 × 64 | — (a wooden arch with a straw-dummy emblem, for the Home Village's left edge) |
+
+- [ ] **Tests:** sizes, palette lock, reach rule. As with the training dummy, leave these anims out of `anims.json` if the game can't play them yet, and log it.
+- [ ] **Look, commit.**
+
+### Task 8: Class board and hand-off
 
 - [ ] **Board** `tools/out/preview/style_board_classes.png`: 4 rows, one per class, each in its outfit with its 2 starting weapons mid-attack and its 2 M4 abilities mid-effect next to a training dummy. Class trim colors from 08 §3.4.
 - [ ] **Run** `npm run assets`, all `tools/tests`, `npm run test:e2e`. Two builds identical.

@@ -12,7 +12,7 @@
 
 Sounds play on game events. Gameplay doesn't change at all.
 
-**When:** for the **code chat**, after **M3** and after the art chat has finished **ART2**. Do not start before both are on `main`.
+**When:** for the **code chat**, after **M3.1** and with **ART2 and ART4** on `main`.
 
 **Architecture:** A view-only layer in `src/game/`:
 - an asset loader for `anims.json` and the atlases;
@@ -40,18 +40,21 @@ Also `07-ui-hud-controls.md` for the "click or press a key to enable sound" note
 ## Scope
 
 **In:**
-- Player body sprite (the `swordsman` starter look for every class until M12, since the look isn't tied to class). Only `idle` and `run` exist so far: use `idle` for standing, `run` for moving, and `idle` frame 0 for every other state, with a `// SPEC-GAP: player anims beyond idle/run arrive with the M8 art pass`.
+- Player body sprite (the `swordsman` starter look for every class until M12, since the look isn't tied to class), with **every move from ART4** (08 §6.1), picked by 08 §5.2.
+- **Weapon layers and smears** for the Greatsword and War Maul, including dives (08 §6.3, ART4).
+- **Stage 1 objects from ART4:** arena doors and the timed door (lamps), guide arrows, Plains decoration tiles (08 §9.4).
+- **Fonts** (`rb_*`) for the timer, hints and banners.
 - Trim tinted with the class color.
 - Enemies and the boss, with every anim.
 - Overlays: hit flash, telegraph, telegraph "go", spawn-in.
 - Hit-stop jiggle.
-- VFX: `hit_spark`, `hit_heavy`, `crit_spark`, `stun_stars`, `dust_land`, `dust_jump`, `muzzle`, `death_burst`, telegraph floor markers.
+- VFX: `hit_spark`, `hit_heavy`, `crit_spark`, `stun_stars`, `dust_land`, `dust_jump`, `muzzle`, `death_burst`, telegraph floor markers, plus ART4's movement, flask and Rush effects (`ring_djump`, `dust_walljump`, `dust_wall`, `dust_slide`, `dive_*`, `spike_spark`, `flask_orb`, `heal`, `rush_up`, `dash_refund`, `spawn_in`).
 - Projectiles drawn rotated to their velocity in 22.5° steps.
 - Plains tiles with blob autotiling.
 - Parallax.
-- All sounds from ART2.
+- All sounds from ART2, and ART4's movement, Rush, run and menu sounds.
 
-**Out:** the real HUD (later), weapon sprites and smears (M8), music.
+**Out:** the real HUD (M4 builds it with the `ui` atlas), loot art (M5), music.
 
 ## Global Constraints
 
@@ -151,5 +154,5 @@ Also `07-ui-hud-controls.md` for the "click or press a key to enable sound" note
 - **Run** the full check suite, **read every screenshot**, and push to `main` (the site deploys).
 - **Hand-off:**
   - Send screenshots and the link.
-  - Tell the user, in plain words: Stage 1 now has real art and sound. Click or press a key to turn sound on. The other player animations (jump, dash, attacks) come with the full art pass.
+  - Tell the user, in plain words: Stage 1 now has real art and sound. Click or press a key to turn sound on. Every move and the Greatsword and War Maul swings are animated.
   - Ask how it looks and sounds in motion.
