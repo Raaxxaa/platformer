@@ -687,7 +687,9 @@ Each milestone ends with something you can play.
 | M1 | **Movement feel** | A grey test level with all moves from section 3 |
 | M2 | **Combat + Stage 1 enemies** | Greatsword + War Maul, all 5 Stage 1 enemies (Wolf, Bandit, Bandit Archer, Wild Boar, Bandit Brute), HP, flask, Rush, hit-stop, death and restart |
 | ART1 | **Style board (Stage 1)** | Real art for the 4 player outfits, all Stage 1 enemies, Plains tiles and background, on one image for you to approve. Can run alongside M2 |
+| ART2 | **Stage 1 enemies finished** | Great Boar boss art, enemy projectiles, hit/stun effects, sounds for every Stage 1 enemy and combat (art chat). Style board v1 approved |
 | M3 | **Stage 1 + Great Boar** | The full Plains & Forest stage (8 sections, arena with waves, timed door, hints) and the Great Boar boss fight, with the timer and split. Loot shows as grey markers until M4 |
+| V1 | **Stage 1 with real art and sound** | The builder swaps the grey boxes for the real sprites, tiles, background, effects and sounds (after M3 + ART2) |
 | M4 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest |
 | M5 | ~~First Guardian~~ | Moved into M3 |
 | M6 | **Classes + abilities** | Class select with 4 starting kits, 2 abilities per class + Vampire (all Lv1 for now), Connection bonuses, hybrids, weapon match |
