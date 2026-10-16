@@ -9,3 +9,6 @@ export const TICK = 1 / TICK_RATE;
 export function ticks(seconds: number): number {
   return Math.round(seconds * TICK_RATE);
 }
+
+/** Longest real frame the fixed-step loop catches up on; longer hitches are dropped (00-README). */
+export const MAX_FRAME_SECONDS = 0.25;
