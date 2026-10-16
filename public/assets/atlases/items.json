@@ -1,0 +1,155 @@
+{
+ "frames": {
+  "chest_key_closed_00": {
+   "frame": {
+    "h": 16,
+    "w": 24,
+    "x": 2,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "chest_key_open_00": {
+   "frame": {
+    "h": 16,
+    "w": 24,
+    "x": 28,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "glow_weapon_greatsword": {
+   "frame": {
+    "h": 18,
+    "w": 18,
+    "x": 2,
+    "y": 20
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 18,
+    "w": 18
+   },
+   "spriteSourceSize": {
+    "h": 18,
+    "w": 18,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "lucky_block_idle_00": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 2,
+    "y": 40
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "lucky_block_idle_01": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 20,
+    "y": 40
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "lucky_block_idle_02": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 38,
+    "y": 40
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "lucky_block_idle_03": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 56,
+    "y": 40
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  }
+ },
+ "meta": {
+  "app": "rushblade tools/art/atlas.py",
+  "format": "RGBA8888",
+  "image": "items.png",
+  "scale": "1",
+  "size": {
+   "h": 58,
+   "w": 74
+  },
+  "version": "1"
+ }
+}
