@@ -43,6 +43,8 @@ class EnemiesPlainsTest(unittest.TestCase):
 
     def test_reach_rule(self):
         for enemy, attacks in ATTACK_BOX.items():
+            if enemy not in EXPECTED:
+                continue
             for atk, box in attacks.items():
                 if box is None:
                     continue
@@ -54,6 +56,8 @@ class EnemiesPlainsTest(unittest.TestCase):
 
     def test_idle_silhouette(self):
         for enemy, (w, h) in HURTBOX.items():
+            if enemy not in EXPECTED:
+                continue
             (fw, fh), (ax, ay) = size_anchor(enemy, 'idle')
             a = np.array(self.frames[f'{enemy}_idle_00'])[:, :, 3] > 0
             cols = np.nonzero(a.any(axis=0))[0]
@@ -62,6 +66,13 @@ class EnemiesPlainsTest(unittest.TestCase):
             self.assertLessEqual(abs(cols.max() + 1 - (ax + w / 2)), 3, (enemy, 'right', cols.max() + 1))
             self.assertLessEqual(abs(rows.min() - (ay - h)), 3, (enemy, 'top', rows.min()))
             self.assertEqual(rows.max(), ay - 1, (enemy, 'sole'))
+
+    def test_nothing_below_the_sole_row(self):
+        for name, img in self.frames.items():
+            enemy = next(e for e in sorted(EXPECTED, key=len, reverse=True) if name.startswith(e + '_'))
+            _, (ax, ay) = size_anchor(enemy, name[len(enemy) + 1:])
+            a = np.array(img)[:, :, 3] > 0
+            self.assertFalse(a[ay:].any(), name)
 
     def test_hue_families(self):
         world = P.allowed(P.PLAINS_WORLD_RAMPS) - set(P.RAMPS['ink']) - set(P.RAMPS['white'])

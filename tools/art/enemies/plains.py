@@ -28,6 +28,20 @@ def finish(f):
     return c.to_image()
 
 
+def on_ground(img, anchor_y):
+    """Lift a frame so nothing is drawn below the sole row (anchor_y - 1); 08 §4.1."""
+    import numpy as np
+    from PIL import Image
+    a = np.array(img)
+    rows = np.nonzero(a[:, :, 3].any(axis=1))[0]
+    over = int(rows.max()) - (anchor_y - 1) if len(rows) else 0
+    if over <= 0:
+        return img
+    out = np.zeros_like(a)
+    out[:-over] = a[over:]
+    return Image.fromarray(out, 'RGBA')
+
+
 def seg(p, deg, length):
     r = math.radians(deg)
     return (p[0] + length * math.sin(r), p[1] + length * math.cos(r))
@@ -153,6 +167,7 @@ def draw_human(enemy, pose, size, feet):
         sh = f.part('shin' + side, s['pants'], shift)
         b = f.part('boot' + side, s['boots'], shift + 1)
         kn, ft = j['knee' + side], j['foot' + side]
+        ft = (ft[0], min(ft[1], feet[1]))                 # feet never sink into the ground
         R.capsule(f.L, (hpx, hpy + 1), kn, tw, t)
         R.capsule(f.L, kn, (ft[0], ft[1] - int(tw - 1) // 2), tw - 1, sh)
         bw = 3 if big else 2
@@ -378,6 +393,7 @@ def draw_wolf(pose, size, feet):
         lo = f.part('lo' + key, 'en_slate', shift)
         kn = seg(root, hd, 5.5 if hind else 4)
         ft = seg(kn, hd + (kd if hind else -kd), 4)
+        ft = (ft[0], min(ft[1], fy))                      # feet never sink into the ground
         R.capsule(f.L, ip(root), ip(kn), 4 if hind else 3, up)
         R.capsule(f.L, ip(kn), ip((ft[0], ft[1] - 1)), 2, lo)
         paw = f.part('paw' + key, 'en_slate', shift + 1)
@@ -498,6 +514,7 @@ def draw_boar(pose, size, feet):
         hoof = f.part('hoof' + key, 'en_slate', shift + 2)
         kn = seg(root, hd, 3)
         ft = seg(kn, hd + (kd if hind else -kd), 3)
+        ft = (ft[0], min(ft[1], fy))                      # feet never sink into the ground
         R.capsule(f.L, ip(root), ip(kn), 4, up)
         R.capsule(f.L, ip(kn), ip((ft[0], ft[1] - 1)), 3, up)
         box(f, rnd(ft[0]) - 1, rnd(ft[1]), rnd(ft[0]) + 1, rnd(ft[1]), hoof)
@@ -640,7 +657,7 @@ def build_frames():
         for anim, poses in table.items():
             size, (ax, ay) = frame_size(enemy, anim)
             for i, pose in enumerate(poses):
-                frames[f'{enemy}_{anim}_{i:02d}'] = drawer(pose, size, (ax, ay - 2))
+                frames[f'{enemy}_{anim}_{i:02d}'] = on_ground(drawer(pose, size, (ax, ay - 2)), ay)
             anims.append(anim_def(enemy, anim, len(poses)))
     return frames, anims
 
