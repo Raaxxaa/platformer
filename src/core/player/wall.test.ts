@@ -82,7 +82,7 @@ describe('wall slide (01 §8.2, checklist 15)', () => {
 });
 
 describe('wall jump (01 §8.3, checklist 16, 17)', () => {
-  it('without release rises 48 px, moves 25-26 px away during the 14-tick lock and refreshes both', () => {
+  it('without release rises 53 px, moves 22 px away during the 12-tick lock and refreshes both', () => {
     const sim = sliding();
     sim.body.airDashAvailable = false;
     sim.body.doubleJumpAvailable = false;
@@ -95,39 +95,39 @@ describe('wall jump (01 §8.3, checklist 16, 17)', () => {
       expect(sim.body.doubleJumpAvailable).toBe(true);
       expect(sim.body.facing).toBe(1);   // still holding toward the wall: facing follows moveX, velocity doesn't
       expect(sim.body.jumpCuttable).toBe(true);
-      sim.stepSpec({ moveX: 1, jump: true }, 13);
+      sim.stepSpec({ moveX: 1, jump: true }, 11);
       xAfterLock = sim.body.x;
       sim.stepSpec({ moveX: 1, jump: true }, 40);
     });
-    expect(x0 - xAfterLock).toBeGreaterThanOrEqual(25);
-    expect(x0 - xAfterLock).toBeLessThanOrEqual(26);
-    expect(rise).toBeGreaterThanOrEqual(47);
-    expect(rise).toBeLessThanOrEqual(49);
+    expect(x0 - xAfterLock).toBeGreaterThanOrEqual(21);
+    expect(x0 - xAfterLock).toBeLessThanOrEqual(23);
+    expect(rise).toBeGreaterThanOrEqual(52);
+    expect(rise).toBeLessThanOrEqual(54);
   });
-  it('a 3 px gap is a wall jump; a 4 px gap is a double jump', () => {
-    const near = new PlayerSim(wallWorld(), { x: 311, y: 200 });
+  it('a 4 px gap is a wall jump; a 5 px gap is a double jump (checklist 17)', () => {
+    const near = new PlayerSim(wallWorld(), { x: 310, y: 200 });
     expect(near.stepSpec({ jump: true })).toContain('wallJump');
     expect(near.body.vx).toBe(-220);
-    const far = new PlayerSim(wallWorld(), { x: 310, y: 200 });
+    const far = new PlayerSim(wallWorld(), { x: 309, y: 200 });
     expect(far.stepSpec({ jump: true })).toContain('doubleJump');
   });
   it('wall coyote: within 12 ticks of leaving the wall a jump is a wall jump away from it', () => {
-    for (const [after, expected] of [[10, 'wallJump'], [13, 'doubleJump']] as const) {
+    for (const [after, expected] of [[11, 'wallJump'], [13, 'doubleJump']] as const) {
       const sim = sliding();
       sim.stepSpec({ moveX: -1 });
       const left = sim.body.lastWallPt;
       expect(left).toBe(sim.body.pt);
       while (sim.body.pt < left + after - 1) sim.stepSpec({ moveX: -1 });
-      expect(wallGap(sim.body, sim.grid, 1)).toBeGreaterThan(3);
+      expect(wallGap(sim.body, sim.grid, 1)).toBeGreaterThan(4);
       const ev = sim.stepSpec({ moveX: -1, jump: true });
       expect(ev).toContain(expected);
       if (expected === 'wallJump') expect(sim.body.vx).toBe(-220);
     }
   });
-  it('during the 14-tick lock input does not change vx, but facing follows moveX', () => {
+  it('during the 12-tick lock input does not change vx, but facing follows moveX', () => {
     const sim = sliding();
     sim.stepSpec({ moveX: 1, jump: true });
-    for (let i = 2; i <= 14; i++) {
+    for (let i = 2; i <= 12; i++) {
       const dir = i % 2 ? 1 : -1;
       sim.stepSpec({ moveX: dir, jump: true });
       expect(sim.body.vx).toBe(-220);
@@ -138,7 +138,7 @@ describe('wall jump (01 §8.3, checklist 16, 17)', () => {
   });
   it('a dash ends the lock; a double jump does not', () => {
     const sim = sliding();
-    sim.stepSpec({ moveX: 1, jump: true }); sim.stepSpec({ moveX: 1 });
+    sim.stepSpec({ moveX: 1, jump: true }); sim.stepSpec({ moveX: 1 }, 3);     // out of wall-jump range
     expect(sim.stepSpec({ moveX: 1, jump: true })).toContain('doubleJump');
     expect(sim.body.steerLockTicks).toBeGreaterThan(0);
     expect(sim.body.vx).toBe(-220);
@@ -153,7 +153,7 @@ describe('wall jump (01 §8.3, checklist 16, 17)', () => {
       { x0: 18, y0: 0, x1: 18, y1: 26, kind: 'solid' },
       { x0: 20, y0: 0, x1: 20, y1: 26, kind: 'solid' },
     ]);
-    const a = new PlayerSim(corridor(), { x: 311, y: 200 });   // gaps: left 1, right 3
+    const a = new PlayerSim(corridor(), { x: 311, y: 200 });   // gaps: left 1, right 3 (both in range)
     a.stepSpec({ moveX: 1, jump: true });
     expect(a.body.x).toBeLessThan(311);       // went left, away from the right wall
     const b = new PlayerSim(corridor(), { x: 311, y: 200 });
@@ -164,19 +164,22 @@ describe('wall jump (01 §8.3, checklist 16, 17)', () => {
   });
   it('single-wall climbing works: the test level shaft is climbed to the top platform within 10 s', () => {
     const sim = new PlayerSim(MOVEMENT_TEST.grid, { x: 900, y: 432 });
-    // Hold jump (full-height jumps); let go for one tick whenever a fresh press is wanted.
+    // Press jump when a wall jump (touching the wall, lock over) or a double jump (falling, away from the wall)
+    // is wanted; otherwise keep holding it for full height. A press needs one released tick first.
     let prevJump = false;
     let t = 0;
     for (; t < 1200; t++) {
       const b = sim.body;
       if (b.state === 'ground' && b.y === 80) break;
-      const want = b.grounded || b.state === 'wallSlide' || wallGap(b, sim.grid, 1) <= 3 || (b.vy >= 0 && b.doubleJumpAvailable);
-      const jump: boolean = !(want && prevJump);
+      const nearWall = wallGap(b, sim.grid, 1) <= 4;
+      const want = b.grounded || b.state === 'wallSlide' || (nearWall && b.steerLockTicks === 0)
+        || (!nearWall && b.vy >= 0 && b.doubleJumpAvailable);
+      const jump: boolean = prevJump ? !want : want;
       sim.stepSpec({ moveX: 1, jump });
       prevJump = jump;
     }
     expect(sim.body.y).toBe(80);
-    expect(sim.body.x + 6).toBeGreaterThan(960);   // standing on the platform (row 5 starts at x 960)
+    expect(sim.body.x + 6).toBeGreaterThan(928);   // standing on the platform (row 5 starts at x 928)
     expect(t).toBeLessThan(1200);
   });
 });

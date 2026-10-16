@@ -15,11 +15,12 @@ describe('MOVEMENT_TEST level', () => {
   it('the tunnel under the wall is exactly 16 px high', () => {
     for (let x = 40; x <= 47; x++) { expect(g.kindAt(x, 25)).toBe('solid'); expect(g.kindAt(x, 26)).toBe('empty'); }
   });
-  it('the shaft has a 32 px opening on the left and a platform at row 5', () => {
+  it('the 64 px shaft has a 32 px opening on the left and a platform at row 5', () => {
     expect(g.kindAt(53, 24)).toBe('solid'); expect(g.kindAt(53, 25)).toBe('empty'); expect(g.kindAt(53, 26)).toBe('empty');
-    expect(g.kindAt(60, 26)).toBe('solid'); expect(g.kindAt(60, 6)).toBe('solid');
-    for (let x = 60; x <= 75; x++) expect(g.kindAt(x, 5)).toBe('solid');
-    for (let x = 54; x <= 59; x++) expect(g.kindAt(x, 5)).toBe('empty');
+    expect(g.kindAt(58, 26)).toBe('solid'); expect(g.kindAt(58, 6)).toBe('solid');
+    for (let x = 54; x <= 57; x++) for (let y = 5; y <= 26; y++) expect(g.kindAt(x, y)).toBe('empty');   // 4 tiles = 64 px
+    for (let x = 59; x <= 60; x++) expect(g.kindAt(x, 20)).toBe('empty');
+    for (let x = 58; x <= 75; x++) expect(g.kindAt(x, 5)).toBe('solid');
   });
   it('has the one-way platforms and the low overhang', () => {
     expect(g.kindAt(80, 24)).toBe('oneway'); expect(g.kindAt(87, 20)).toBe('oneway'); expect(g.kindAt(84, 16)).toBe('oneway');

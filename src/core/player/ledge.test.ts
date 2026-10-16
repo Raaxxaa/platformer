@@ -70,9 +70,9 @@ describe('ledge grab (01 §10, checklist 18, 19)', () => {
   });
   it('grabs when the apex leaves the feet 10 px below the wall top (checklist 18)', () => {
     // wall face x 320, top y 304 (tile row 19); a mid-air double jump (40 px) from y 354 peaks at feet 314.
-    // Start 4 px from the wall (out of wall-jump range) and drift into it while rising.
+    // Start 5 px from the wall (out of wall-jump range) and drift into it while rising.
     const g = gridFromRects(40, 30, [{ x0: 0, y0: 27, x1: 39, y1: 29, kind: 'solid' }, { x0: 20, y0: 19, x1: 25, y1: 26, kind: 'solid' }]);
-    const sim = new PlayerSim(g, { x: 310, y: 354 });
+    const sim = new PlayerSim(g, { x: 309, y: 354 });
     let grabbedAt = -1, minY = 999;
     for (let t = 1; t <= 40 && grabbedAt < 0; t++) {
       if (sim.stepSpec({ moveX: 1, jump: true }).includes('ledgeGrab')) grabbedAt = sim.body.y;

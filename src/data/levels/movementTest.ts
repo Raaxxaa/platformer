@@ -10,8 +10,8 @@ const RECTS: Rect[] = [
   { x0: 31, y0: 21, x1: 34, y1: 26, kind: 'solid' },     // 4  ledge 96 px up (needs the double jump)
   { x0: 40, y0: 18, x1: 47, y1: 25, kind: 'solid' },     // 5  wall with a 16 px tunnel under it (slide)
   { x0: 53, y0: 6, x1: 53, y1: 24, kind: 'solid' },      // 6  shaft left wall (32 px opening at the bottom)
-  { x0: 60, y0: 6, x1: 60, y1: 26, kind: 'solid' },      // 7  shaft right wall (wall-jump up the 96 px shaft)
-  { x0: 60, y0: 5, x1: 75, y1: 5, kind: 'solid' },       // 8  platform at the top of the shaft
+  { x0: 58, y0: 6, x1: 58, y1: 26, kind: 'solid' },      // 7  shaft right wall (wall-jump up the 64 px shaft)
+  { x0: 58, y0: 5, x1: 75, y1: 5, kind: 'solid' },       // 8  platform at the top of the shaft
   { x0: 80, y0: 24, x1: 84, y1: 24, kind: 'oneway' },    // 9  one-way platform 48 px up
   { x0: 87, y0: 20, x1: 91, y1: 20, kind: 'oneway' },    // 10 one-way 64 px above #9 (double jump)
   { x0: 80, y0: 16, x1: 84, y1: 16, kind: 'oneway' },    // 11 one-way 64 px above #10

@@ -68,9 +68,9 @@ export const MOVE = {
   WALL_SLIDE_MAX: 90,
   WALL_SLIDE_MAX_DOWN_HELD: 400,
   WALL_JUMP_VX: 220,
-  WALL_JUMP_VY: -380,
-  WALL_JUMP_LOCK: 0.12, WALL_JUMP_LOCK_TICKS: ticks(0.12),
-  WALL_JUMP_RANGE: 3,            // px, max gap to a wall for a wall jump
+  WALL_JUMP_VY: -400,
+  WALL_JUMP_LOCK: 0.10, WALL_JUMP_LOCK_TICKS: ticks(0.10),
+  WALL_JUMP_RANGE: 4,            // px, max gap to a wall for a wall jump
   WALL_COYOTE: 0.10, WALL_COYOTE_TICKS: ticks(0.10),
   LEDGE_WINDOW_MIN: 5,           // px, ledge top at least this far above the feet
   LEDGE_WINDOW_MAX: 24,          // px, and at most this far

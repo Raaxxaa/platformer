@@ -18,7 +18,8 @@ describe('MOVE tuning (01 §4)', () => {
     expect(MOVE.DASH_TIME).toBe(0.15); expect(MOVE.DASH_TICKS).toBe(18);
     expect(MOVE.COYOTE).toBe(0.10); expect(MOVE.COYOTE_TICKS).toBe(12);
     expect(MOVE.DASH_COOLDOWN).toBe(0.35); expect(MOVE.DASH_COOLDOWN_TICKS).toBe(42);
-    expect(MOVE.SLIDE_TICKS).toBe(36); expect(MOVE.WALL_JUMP_LOCK_TICKS).toBe(14);
+    expect(MOVE.SLIDE_TICKS).toBe(36); expect(MOVE.WALL_JUMP_LOCK_TICKS).toBe(12);
+    expect(MOVE.WALL_JUMP_VY).toBe(-400); expect(MOVE.WALL_JUMP_RANGE).toBe(4);
     expect(MOVE.LEDGE_CLIMB_UP_TICKS).toBe(12); expect(MOVE.LEDGE_CLIMB_OVER_TICKS).toBe(6);
     expect(MOVE.DIVE_WINDUP_TICKS).toBe(6); expect(MOVE.DIVE_LAND_LAG_TICKS).toBe(12);
   });

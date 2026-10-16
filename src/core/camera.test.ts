@@ -113,7 +113,7 @@ describe('camera (01 §14)', () => {
     let seed = 12345;
     const rand = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
     let marginChecks = 0, maxX = 0;
-    const segments = [{ x: 72, endX: 840 }, { x: 900, endX: 960 }, { x: 1250, endX: 1880 }];
+    const segments = [{ x: 72, endX: 840 }, { x: 890, endX: 928 }, { x: 1250, endX: 1880 }];
     for (const seg of segments) {
       const sim = new PlayerSim(g, { x: seg.x, y: 432 });
       let spec: InputSpec = {};
