@@ -2,26 +2,11 @@
 import type { InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { isGrounded, moveX, moveY, pushOut } from '../physics/collide.ts';
+import { approach, clampAbs } from '../math.ts';
 import { MOVE, TICK } from '../tuning.ts';
-import type { MoveEvent, MoveStateId, PlayerBody } from './body.ts';
-import { speedMult, type MoveContext, type MoveModifiers } from './modifiers.ts';
-
-/** Moves `v` toward `target` by at most `delta` without passing it. */
-export function approach(v: number, target: number, delta: number): number {
-  return v < target ? Math.min(v + delta, target) : Math.max(v - delta, target);
-}
-
-/** Enters a state. States entered at step 5 count their first tick as 1; at step 9 the next tick is 1. */
-export function setState(b: PlayerBody, s: MoveStateId, stateTicks: number): void {
-  b.state = s;
-  b.stateTicks = stateTicks;
-}
-
-/** 01 §5.2 effective run max. `actionMoveMult` only applies while grounded (ground, crawl). */
-export function runMaxEff(b: PlayerBody, mods: MoveModifiers, base: number = MOVE.RUN_MAX): number {
-  const action = b.state === 'ground' || b.state === 'crawl' ? mods.actionMoveMult : 1;
-  return base * speedMult(mods) * action * mods.statusMult;
-}
+import { setState, type MoveEvent, type PlayerBody } from './body.ts';
+import { runMaxEff, type MoveContext, type MoveModifiers } from './modifiers.ts';
+import { applyJumpCut, tryJump } from './jump.ts';
 
 interface Rates { accel: number; decel: number; turn: number; overspeed: number }
 const GROUND_RATES: Rates = { accel: MOVE.GROUND_ACCEL, decel: MOVE.GROUND_DECEL, turn: MOVE.GROUND_TURN, overspeed: MOVE.OVERSPEED_DECAY_GROUND };
@@ -40,10 +25,6 @@ function steer(b: PlayerBody, dir: -1 | 0 | 1, max: number, r: Rates, mods: Move
 function fall(vy: number, gravity: number, cap: number): number {
   if (vy > cap) return Math.max(cap, vy - MOVE.FALL_CAP_DECEL * TICK);
   return Math.min(cap, vy + gravity * TICK);
-}
-
-function clampAbs(v: number, max: number): number {
-  return Math.max(-max, Math.min(max, v));
 }
 
 /** Step 6: horizontal velocity by state (01 §5). */
@@ -105,13 +86,22 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
   // 2. Advance.
   b.pt += 1;
   b.stateTicks += 1;
+  // 3. Record presses.
+  if (input.jump.pressed) {
+    b.jumpPressPt = b.pt;
+    b.jumpPressFresh = true;
+  }
   // 5. Actions (velocities after them are the "start" velocities of the trapezoid move).
+  const jumpEvent = tryJump(b, input, g, mods);
+  if (jumpEvent) ev.push(jumpEvent);
+  else applyJumpCut(b, input);
   const vxStart = b.vx, vyStart = b.vy;
   // 6–7. Velocities.
   horizontalVelocity(b, input, mods);
   verticalVelocity(b, input, mods);
   b.vx = clampAbs(b.vx, MOVE.MAX_SPEED);
   b.vy = clampAbs(b.vy, MOVE.MAX_SPEED);
+  if (b.vy >= 0) b.jumpCuttable = false;
   // 8. Move (trapezoid rule, 01 §2.4).
   const dx = ((vxStart + b.vx) / 2) * TICK;
   const dy = ((vyStart + b.vy) / 2) * TICK;
@@ -125,5 +115,6 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
   pushOut(b, g);
   // 10. Facing and box.
   updateFacing(b, input, mods);
+  b.jumpPressFresh = false;
   return ev;
 }

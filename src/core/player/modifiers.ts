@@ -1,5 +1,6 @@
 // Inputs from other systems (combat, abilities, curses) to movement (01 §12.1).
 import { MOVE } from '../tuning.ts';
+import type { PlayerBody } from './body.ts';
 
 export interface MoveModifiers {
   speedPercents: number[];        // e.g. [+0.20, +0.25, -0.20]; summed in 01 §5.2
@@ -32,4 +33,10 @@ export function defaultModifiers(): MoveModifiers {
 export function speedMult(m: MoveModifiers): number {
   const sum = m.speedPercents.reduce((a, p) => a + p, 0);
   return Math.min(MOVE.SPEED_MULT_MAX, Math.max(MOVE.SPEED_MULT_MIN, 1 + sum));
+}
+
+/** 01 §5.2 effective max speed for `base` (RUN_MAX, or CRAWL_MAX in crawl). `actionMoveMult` only applies while grounded. */
+export function runMaxEff(b: PlayerBody, mods: MoveModifiers, base: number = MOVE.RUN_MAX): number {
+  const action = b.state === 'ground' || b.state === 'crawl' ? mods.actionMoveMult : 1;
+  return base * speedMult(mods) * action * mods.statusMult;
 }

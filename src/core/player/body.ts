@@ -41,3 +41,9 @@ export function createPlayerBody(x: number, y: number): PlayerBody {
     hitStopTicks: 0, landSpeed: 0,
   };
 }
+
+/** Enters a state. States entered at §3 step 5 count their first tick as 1; at step 9, the next tick is 1. */
+export function setState(b: PlayerBody, s: MoveStateId, stateTicks: number): void {
+  b.state = s;
+  b.stateTicks = stateTicks;
+}
