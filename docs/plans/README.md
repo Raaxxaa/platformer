@@ -1,0 +1,39 @@
+# Roadmap: every milestone and art plan
+
+Build chats do these **in order**. The design chat writes each detailed plan just before it's needed, because each one changes with playtest feedback. A milestone without a plan file yet has its goal here and in `docs/GAME_PLAN.md` §14.
+
+## Code (builder chat)
+
+| Milestone | What you get | Plan | Status |
+|---|---|---|---|
+| M0–M1 | Project setup, all movement | `M0-M1-foundation-and-movement.md` | Done |
+| M2 | Combat, Stage 1 enemies, flask, Rush | `M2-combat-and-stage1-enemies.md` | Done |
+| M3 | Stage 1 level and the Great Boar | `M3-stage1-plains-and-great-boar.md` | Done |
+| M3.1 | Gentler Stage 1 start (playtest) | `M3.1-stage1-gentler-start.md` | Done |
+| V1 | Stage 1 real art and sound | `V1-stage1-sprites-and-sound.md` | Done |
+| M4 | Classes, 8 abilities + Vampire, 6 new weapons, Training Yard | `M4-classes-abilities-weapons-basics.md` | Done |
+| M4.1 | Full HUD, popups, pause tabs, start screen | `M4.1-full-hud-and-popups.md` | Done |
+| **M5** | **Loot: grades, elements, perks, S moves, chests, keys, Lucky Blocks, gold, merchant, boss drop** | `M5-loot.md` | **Next** |
+| M7 | Villages: Home Village (statues, gate, Training Yard gate), Crossroads (shop, sell, upgrade, inn), stat upgrades after bosses, saving (best times, unlocks, blueprints), run summary | to write after M5 | Planned |
+| M7.1 | Stage 2: both roads (Caves & Mountains, Dark Forest & Swamps), their enemies and Guardians | to write | Planned |
+| M9 | Stages 3–4 (Enemy Kingdom, King's Castle), Black Knight, Enemy King, the Dragon, the other 8 abilities and 11 weapons | to write | Planned |
+| M10 | Speedrun extras: seeds, practice mode, ghosts, balance | to write | Planned |
+| M11 | Layout variety: sections change between runs | to write | Planned |
+| M12 | Character customization: looks, colors, cosmetics from mobs and shops | to write | Planned |
+
+(M6 and M8 were folded into other milestones: classes moved into M4, and the art pass happens as we go in the ART plans.)
+
+## Art (art chat)
+
+| Plan | What | Status |
+|---|---|---|
+| ART1 | Style board: player outfits, Stage 1 enemies, Plains | Done |
+| ART2 | Great Boar, projectiles, hit effects, Stage 1 sounds | Done |
+| ART3 | Home Village and Crossroads | Done |
+| ART4 | Every player move, Greatsword and War Maul, loot items, all icons, fonts, effects, sounds | Done |
+| ART5 | 6 new weapons, ability poses and effects, Training Yard pieces, popup skin | Done |
+| **ART6** | **Elements, S-grade signature effects, loot effects, element sounds (for M5)** | **Next** |
+| ART7 | Stage 2 biomes: Caves & Mountains and Dark Forest & Swamps (tiles, backgrounds, 8 enemies, 2 elites, 2 Guardians), shop UI art | Planned (for M7.1) |
+| ART8 | Stages 3–4, the Black Knight, Enemy King, the Dragon (4 colors), the other abilities and weapons | Planned (for M9) |
+| ART9 | Music | Planned |
+| ART10 | Character customization art (races, colors, accessories) | Planned (for M12) |

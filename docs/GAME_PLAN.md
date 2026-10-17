@@ -704,6 +704,7 @@ Each milestone ends with something you can play.
 | M3.1 | **Gentler Stage 1 start** | The first fights spread out into small groups with breathing room (after playtesting) |
 | M4 | **Classes, abilities, weapons (basics)** | Pick a class and starting weapon; 2 abilities per class + Vampire; all 4 Connection bonuses and 6 hybrids; weapon match; the 6 starting weapons that were missing (Katana, Iron Fists, Bow, Crossbow, Storm Hammer, Staff); the **Training Yard** tutorial (17 stations) with an armory and dummies |
 | M4.1 | **Full HUD and popups** | Big health bar, HUD plates, item cards for choosing abilities, framed popups, pause menu with a LOADOUT tab (after playtesting) |
+| ART6 | **Elements and loot effects** | The 5 element looks, S-grade move effects, Lucky Block and chest effects, element sounds (art chat, for M5) |
 | M5 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest, timed chest, coins, boss weapon drop, merchant items |
 | M6 | ~~Classes + abilities~~ | Moved into M4 |
 | M7 | **Villages + Stage 2** | Home Village, Crossroads Village, inn and sleeping, shop with prices, buying and selling abilities, upgrading them Lv1–5, both Stage 2 roads with their mobs and Guardians, stat upgrades, run summary, saved best times |
