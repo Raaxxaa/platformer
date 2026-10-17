@@ -5,7 +5,7 @@
 
 ### What changed in v9 (from playtesting with friends)
 - **Training Yard tutorial:** next to the Home Village, 17 stations teach every move, combat basic and speed technique on dummies. You can't die there → 9.3
-- **Clearer HUD and menus:** a bigger health bar with a heart, dark plates behind the HUD, framed popups, and a pause menu with a `LOADOUT` tab that explains your weapons, abilities and class bonus. Built in M4
+- **Clearer HUD and menus:** a bigger health bar with a heart, dark plates behind the HUD, framed popups, and a pause menu with a `LOADOUT` tab that explains your weapons, abilities and class bonus. Built in M4.1
 - **Gentler Stage 1 start:** the first fights come one small group at a time (max 2 enemies, never two groups on screen together). Same enemies, more space → 7.5, `docs/levels/plains.md`
 
 ### What changed in v8
@@ -703,6 +703,7 @@ Each milestone ends with something you can play.
 | ART5 | **Class weapons + abilities art** | The 6 new starting weapons, their projectiles, ability poses, effects and sounds for M4 (art chat) |
 | M3.1 | **Gentler Stage 1 start** | The first fights spread out into small groups with breathing room (after playtesting) |
 | M4 | **Classes, abilities, weapons (basics)** | Pick a class and starting weapon; 2 abilities per class + Vampire; all 4 Connection bonuses and 6 hybrids; weapon match; the 6 starting weapons that were missing (Katana, Iron Fists, Bow, Crossbow, Storm Hammer, Staff); the **Training Yard** tutorial (17 stations) with an armory and dummies |
+| M4.1 | **Full HUD and popups** | Big health bar, HUD plates, item cards for choosing abilities, framed popups, pause menu with a LOADOUT tab (after playtesting) |
 | M5 | **Loot** | Grades F–S, elements, free loot, Lucky Blocks, keys + key chests, cursed chest, timed chest, coins, boss weapon drop, merchant items |
 | M6 | ~~Classes + abilities~~ | Moved into M4 |
 | M7 | **Villages + Stage 2** | Home Village, Crossroads Village, inn and sleeping, shop with prices, buying and selling abilities, upgrading them Lv1–5, both Stage 2 roads with their mobs and Guardians, stat upgrades, run summary, saved best times |

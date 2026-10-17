@@ -267,7 +267,7 @@ Every stage chains these 8 sections, in order (GAME_PLAN 7.5). Length = main pat
 
 | Level | Max size (W × H tiles) | Gimmicks and where |
 |---|---|---|
-| `plains` | 720 × 96 | Teaches moves (`hint` zones, §13.3). §3: open fields, first gaps, first wall-jump shaft, first slide tunnel. §4: tree-top skip route (wall jumps, dash-jumps) above the ground main path. §6: forest canopy with one-way branches. Spike pits only from §3 on. |
+| `plains` | 800 × 96 (main path 710–790 after the §8.6 spacing) | Teaches moves (`hint` zones, §13.3). §3: open fields, first gaps, first wall-jump shaft, first slide tunnel. §4: tree-top skip route (wall jumps, dash-jumps) above the ground main path. §6: forest canopy with one-way branches. Spike pits only from §3 on. |
 | `mountains` | 560 × 176 | §3: vertical climb of ≥ 60 tiles with `falling_rocks`. §4: skip through a `cracked_wall` or grapple points. §6: icy peaks (ice tiles), then a minecart ride of ≥ 120 tiles down into the caves. |
 | `swamps` | 720 × 96 | Swamp water covers ≥ 30% of the floor length in §2, §3, §6. `dark_zone`s with fireflies in §3 and §6. Grapple-vine skip route in §4. |
 | `kingdom` | 720 × 112 | §4: town streets (main) vs rooftops (skip, 20–30 tiles above). ≥ 3 cannons each in §3 and §6. Crossbowmen on walls and rooftops. |
@@ -435,7 +435,7 @@ When 05 §12 says the merchant is present (rolled at stage load), the loader add
 
 
 ### 12.4 Training Yard (tutorial)
-Level `training_yard`, layout and stations in `docs/levels/training-yard.md`. Map about **300 × 40 tiles**, `plains` tiles, `village_home` background.
+Level `training_yard`, layout and stations in `docs/levels/training-yard.md`. Map about **490 × 40 tiles** (all 17 stations at their listed sizes), `plains` tiles, `village_home` background.
 - **Entry:** the Home Village `training_gate` (from M7); until then the start screen and `?start=training`. The player keeps their kit. If they have none, the 4 class statues at the yard's start work like the Home Village ones (§12.3).
 - **No timer, no death:** the run timer does not run. Damage can't take HP below 1. Pits are `respawn` zones: touching one fades out 0.3 s and puts the player at that station's checkpoint (full flask, no damage).
 - **Rush works** here (not frozen like villages) and resets to 0 at each checkpoint.
