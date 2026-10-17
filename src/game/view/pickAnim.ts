@@ -2,7 +2,7 @@
 import type { MoveStateId } from '../../core/player/body.ts';
 import { BOSS, MOVE, TICK_RATE } from '../../core/tuning.ts';
 import { ANIM } from '../../data/art.ts';
-import { weaponDiveKey, weaponStepKey, WEAPON_ART } from '../../data/animKeys.ts';
+import { weaponChargeKey, weaponChargedKey, weaponDiveKey, weaponStepKey, weaponThrowKey, WEAPON_ART } from '../../data/animKeys.ts';
 import { phaseFrame, timeFrame, type AnimDef } from './animClock.ts';
 
 export type Lookup = (key: string) => AnimDef | undefined;
@@ -11,7 +11,9 @@ export interface PlayerAnimState {
   state: MoveStateId; stateTicks: number; vx: number; vy: number; facing: 1 | -1; landSpeed: number;
   dead: boolean;
   /** The current weapon step (phaseTicks counts from 1, like core). */
-  attack: { weaponId: string; step: number; phase: 'startup' | 'active' | 'recovery'; phaseTicks: number; lens: Record<'startup' | 'active' | 'recovery', number> } | null;
+  attack: { weaponId: string; step: number; phase: 'startup' | 'active' | 'recovery'; phaseTicks: number; lens: Record<'startup' | 'active' | 'recovery', number>; kind?: 'combo' | 'charged' | 'throw' } | null;
+  /** The weapon being charged (02 §9.4), for its `charge_<id>` pose. */
+  charging?: string | null;
   /** Weapon whose dive layer draws during dive states. */
   diveWeapon: string | null;
   drinkTicks: number | null;
@@ -68,12 +70,27 @@ export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, r
   if (s.dead || s.state === 'dead') return { key: 'dead', frame: timeFrame(get('dead')!, viewT), weapon: null };
   if (s.state === 'hurt') return { key: 'hurt', frame: timeFrame(get('hurt')!, sec(s.stateTicks)), weapon: null };
   const a = s.attack;
-  if (a && WEAPON_ART[a.weaponId] && a.step < WEAPON_ART[a.weaponId].steps) {
-    const key = weaponStepKey(a.weaponId, a.step);
-    const def = get(key)!;
-    const frame = phaseFrame(def, a.phase, a.phaseTicks - 1, a.lens[a.phase]);
-    const smearOn = a.phase === 'active' || (a.phase === 'recovery' && a.phaseTicks <= ANIM.SMEAR_RECOVERY_TICKS);
-    return { key, frame, weapon: { atlas: `weapon_${a.weaponId}`, frame: def.frames[frame], behind: !!def.weaponBehind?.includes(frame), smear: smearOn ? `${key}_smear` : null } };
+  const art = a ? WEAPON_ART[a.weaponId] : undefined;
+  if (a && art) {
+    const key = a.kind === 'charged' && art.charged ? weaponChargedKey(a.weaponId)
+      : a.kind === 'throw' && art.throw ? weaponThrowKey(a.weaponId)
+      : a.kind === 'combo' || a.kind === undefined ? (a.step < art.steps ? weaponStepKey(a.weaponId, a.step) : null) : null;
+    const def = key ? get(key) : undefined;
+    if (key && def) {
+      // Ranged anims have no `active` segment: hold the last startup frame through it.
+      const hold = a.phase === 'active' && !def.segments?.some((g) => g.phase === 'active');
+      const startup = def.segments?.find((g) => g.phase === 'startup');
+      const frame = hold && startup ? startup.frames[startup.frames.length - 1] : phaseFrame(def, a.phase, a.phaseTicks - 1, a.lens[a.phase]);
+      const smearOn = art.smear && a.kind !== 'throw' && (a.phase === 'active' || (a.phase === 'recovery' && a.phaseTicks <= ANIM.SMEAR_RECOVERY_TICKS));
+      return { key, frame, weapon: { atlas: `weapon_${a.weaponId}`, frame: def.frames[frame], behind: !!def.weaponBehind?.includes(frame), smear: smearOn ? `${key}_smear` : null } };
+    }
+  }
+  if (s.charging && WEAPON_ART[s.charging]?.charge) {
+    const key = weaponChargeKey(s.charging), def = get(key);
+    if (def) {
+      const frame = timeFrame(def, viewT);
+      return { key, frame, weapon: { atlas: `weapon_${s.charging}`, frame: def.frames[frame], behind: !!def.weaponBehind?.includes(frame), smear: null } };
+    }
   }
   if (s.drinkTicks !== null) {
     const t = sec(s.drinkTicks), e = ANIM.DRINK_FRAME_ENDS;

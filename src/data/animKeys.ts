@@ -4,7 +4,8 @@
 /** Atlases loaded for a stage (08 §12.5). `trim` atlases hold `a/<frame>` and `b/<frame>`. */
 export const ATLASES = [
   'player_swordsman', 'player_swordsman_trim', 'player_tank', 'player_tank_trim', 'player_archer', 'player_archer_trim',
-  'player_wizard', 'player_wizard_trim', 'weapon_greatsword', 'weapon_war_maul',
+  'player_wizard', 'player_wizard_trim', 'weapon_greatsword', 'weapon_war_maul', 'weapon_katana', 'weapon_iron_fists',
+  'weapon_storm_hammer', 'weapon_bow', 'weapon_crossbow', 'weapon_staff',
   'enemies_plains', 'enemies_extra', 'boss_great_boar', 'projectiles', 'vfx', 'objects', 'items',
 ] as const;
 export type AtlasKey = (typeof ATLASES)[number];
@@ -17,12 +18,22 @@ export const PLAYER_ANIMS = [
 export type PlayerAnim = (typeof PLAYER_ANIMS)[number];
 
 /** 08 §6.3: weapons with art and their combo step count. Body keys `atk_<id>_<n>`, weapon frames of the same name. */
-export const WEAPON_ART: Record<string, { steps: number }> = {
-  greatsword: { steps: 3 },
-  war_maul: { steps: 2 },
+export const WEAPON_ART: Record<string, { steps: number; smear: boolean; charged?: boolean; charge?: boolean; throw?: boolean }> = {
+  greatsword: { steps: 3, smear: true },
+  war_maul: { steps: 2, smear: true },
+  // ART5: `atk_<id>_charged` / `charge_<id>` for charge weapons, `atk_storm_hammer_throw`; ranged weapons have no smear.
+  katana: { steps: 3, smear: true, charged: true, charge: true },
+  iron_fists: { steps: 4, smear: true },
+  storm_hammer: { steps: 2, smear: true, throw: true },
+  bow: { steps: 1, smear: false, charged: true, charge: true },
+  crossbow: { steps: 1, smear: false },
+  staff: { steps: 1, smear: false, charged: true, charge: true },
 };
 export const DIVE_PARTS = ['windup', 'fall', 'land'] as const;
 export const weaponStepKey = (weaponId: string, step: number) => `atk_${weaponId}_${step + 1}`;
+export const weaponChargedKey = (weaponId: string) => `atk_${weaponId}_charged`;
+export const weaponThrowKey = (weaponId: string) => `atk_${weaponId}_throw`;
+export const weaponChargeKey = (weaponId: string) => `charge_${weaponId}`;
 export const weaponDiveKey = (weaponId: string, part: (typeof DIVE_PARTS)[number]) => `dive_${weaponId}_${part}`;
 
 /** 08 §7.1–7.3: the anims each Stage 1 enemy uses (keys `<id>_<anim>` in `enemies_plains`). */
