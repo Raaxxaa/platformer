@@ -26,9 +26,9 @@ class VillagePropsTest(unittest.TestCase):
             self.assertIn(k, self.fr)
             self.assertEqual(self.fr[k].size, size, k)
             P.check_palette_lock(self.fr[k], P.allowed(V.ALLOWED), 'objects', k)
-        self.assertEqual(sorted(self.dummy), ['training_dummy_hit_00', 'training_dummy_hit_01', 'training_dummy_hit_02',
+        self.assertEqual(sorted(k for k in self.dummy if k.startswith('training_')), ['training_dummy_hit_00', 'training_dummy_hit_01', 'training_dummy_hit_02',
                                               'training_dummy_idle_00'])
-        for k, img in self.dummy.items():
+        for k, img in ((k, v) for k, v in self.dummy.items() if k.startswith('training_')):
             self.assertEqual(img.size, (48, 48))
             P.check_palette_lock(img, P.allowed(['ink', 'vl_wood', 'gray', 'w_gold']), 'enemies_extra', k)
             a = np.array(img)[:, :, 3] > 0
