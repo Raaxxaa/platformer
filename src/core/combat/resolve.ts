@@ -7,7 +7,7 @@ import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, ENEMY } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
 import { applyEnemyKnockback, applyLaunch, applyPull, controlOrPoise, damagePoise, isCommitted } from './enemyReactions.ts';
-import { guaranteedCrit, hitBonus, kbDir, targetMult } from './hitMods.ts';
+import { afterHit, guaranteedCrit, hitBonus, kbDir, onLanding, targetMult } from './hitMods.ts';
 import { elementOf, lightningChain } from './elements.ts';
 import { hurtPlayer } from './health.ts';
 import { refundDash } from '../player/dash.ts';
@@ -41,7 +41,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const isWeapon = g.ability === undefined;
   const inst = g.slot !== undefined ? w.combat.slots[g.slot] : null;
   const matched = isWeapon && g.slot !== undefined && w.classState.weaponMatched[g.slot];
-  w.noteLanding(g);                                         // hit streak first: Blademaster's 3rd landing crits itself
+  if (w.noteLanding(g)) onLanding(w, g, e);                 // hit streak first: Blademaster's 3rd landing crits itself
   const crit = guaranteedCrit(w, g, e);
   const { damage, procBase } = playerHitDamage({
     base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: targetMult(w, g, e),
@@ -65,6 +65,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   if (g.kind === 'melee' && !spec.multiHit && !g.noPlayerStop) w.body.hitStopTicks = maxStop(w.body.hitStopTicks, stop);
   if (killed) {
     killEnemy(w, e);
+    afterHit(w, g, e, { damage, killed });
     g.onHit?.(w, g, e, { damage, killed });
     return;
   }
@@ -80,6 +81,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   else if (ctl?.type === 'pull' && g.pullTo) applyPull(w, e, g.pullTo);
   // Instant awareness: resolved while unaware, flips right after (04 §2.4).
   w.onEnemyHitByPlayer(e);
+  afterHit(w, g, e, { damage, killed });
   g.onHit?.(w, g, e, { damage, killed });
 }
 

@@ -21,7 +21,7 @@ export const HAMMER_THROW_STEP: AttackStep = {
 };
 
 /** Hooks other systems add to every weapon projectile (Warden, Arcane Archer...). */
-type FireHook = (w: GameWorld, cur: CurrentAttack, weaponId: string, opts: FireOpts) => FireOpts;
+type FireHook = (w: GameWorld, cur: CurrentAttack, weaponId: string, opts: FireOpts, projectile: string) => FireOpts;
 const FIRE_HOOKS: FireHook[] = [];
 export function addFireHook(h: FireHook): void {
   FIRE_HOOKS.push(h);
@@ -50,9 +50,14 @@ export function onActiveStart(w: GameWorld, cur: CurrentAttack, st: AttackStep):
   const b = w.body;
   if (cur.kind === 'throw') { launchHammer(w, cur); return; }
   if (st.projectiles) {
-    let opts: FireOpts = inst.weaponId === 'crossbow' ? { onHit: (ww, g, e) => crossbowPin(ww, g, e) } : {};
-    for (const h of FIRE_HOOKS) opts = h(w, cur, inst.weaponId, opts);
-    for (const p of st.projectiles) firePlayerProjectile(w, cur.slot, cur.attackInstance, p.id, p.angle, opts);
+    const base: FireOpts = {};                                 // the instance's own bonus is added at hit time
+    if (inst.weaponId === 'crossbow') base.onHit = (ww, g, e) => crossbowPin(ww, g, e);
+    // Hooks run once per step (a Warden prime is used by every projectile of the step), then per projectile.
+    for (const p of st.projectiles) {
+      let opts: FireOpts = { ...base };
+      for (const h of FIRE_HOOKS) opts = h(w, cur, inst.weaponId, opts, p.id);
+      firePlayerProjectile(w, cur.slot, cur.attackInstance, p.id, p.angle, opts);
+    }
   }
   if (inst.weaponId === 'katana' && cur.kind === 'charged') {
     // Dash-slash: 90 px in 0.15 s, gravity off, stops at walls, invulnerable; hits every enemy in the swept path once.

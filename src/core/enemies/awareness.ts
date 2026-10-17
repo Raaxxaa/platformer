@@ -61,5 +61,5 @@ export function stepAwareness(w: GameWorld, e: EnemyState): void {
   if (e.ai.pendingAwareAt >= 0 && w.tick >= e.ai.pendingAwareAt) { becomeAware(w, e, false); return; }
   if (canSee(w, e)) e.noticeT += 1;
   else e.noticeT = Math.max(0, e.noticeT - 1);
-  if (e.noticeT >= ticks(e.def.notice.time * w.noticeTimeMult)) becomeAware(w, e, false);
+  if (e.noticeT >= ticks(e.def.notice.time * w.noticeTime)) becomeAware(w, e, false);
 }

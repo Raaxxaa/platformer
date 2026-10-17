@@ -27,6 +27,7 @@ import { hammerOutIn, removeHammer, stepHammer, type HammerState } from '../comb
 import { clearPlayerProjectiles, clearSpentGroups, stepPlayerProjectiles, type PlayerProjectile } from '../combat/playerProjectiles.ts';
 import { classChanged, computeClassState } from '../classes/classState.ts';
 import { onBondChange, stepBonds } from '../classes/bonds.ts';
+import { clearHybridState, hybridNoticeMult, hybridSpeed } from '../classes/hybrids.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
 import { deriveSeed, Rng } from '../rng.ts';
@@ -80,7 +81,8 @@ export type WorldEvent =
   | { t: 'abilityUsed'; slot: 0 | 1; id: AbilityId; linked: boolean }
   | { t: 'abilityLinked'; slot: 0 | 1 }
   | { t: 'abilityFizzle'; slot: 0 | 1 }
-  | { t: 'abilityNotReady'; slot: 0 | 1 };
+  | { t: 'abilityNotReady'; slot: 0 | 1 }
+  | { t: 'lockpickUsed' };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -126,6 +128,10 @@ export class GameWorld {
   streakCrit = new Set<number>();
   /** HP Iron Will added when it turned on (03 §5.3). */
   ironWillAddedHP = 0;
+  /** Extra additive bonus per attack instance (Gladiator switch, Warden melee prime). */
+  instanceBonus = new Map<number, number>();
+  /** Thunderlord bolts called per attack instance (03 §6.5). */
+  thunderBolts = new Map<number, number>();
   flask!: FlaskState;
   drinking: DrinkState | null = null;
   drinkBufferTicks = 0;
@@ -157,6 +163,10 @@ export class GameWorld {
   lastAttackStartTick = -100000;
   /** Player-side notice multipliers (Thief Silent Steps, 03); 1 by default. */
   noticeTimeMult = 1;
+  /** 04 §2.4 player-side notice time: the base times Thief's ×2 (03 §6.1). */
+  get noticeTime(): number {
+    return this.noticeTimeMult * hybridNoticeMult(this);
+  }
   noticeRangeMult = 1;
   private rushedInstances = new Set<number>();
   private dashThrough = new Set<number>();
@@ -233,6 +243,7 @@ export class GameWorld {
     this.landedInstances = new Set();
     this.streakCrit = new Set();
     this.ironWillAddedHP = 0;
+    this.instanceBonus = new Map();
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
     this.gold = 0;
@@ -287,6 +298,7 @@ export class GameWorld {
     const next = computeClassState(this.abilities.slots.map((s) => s?.id ?? null), this.combat.slots.map((s) => s?.weaponId ?? null));
     this.classState = next;
     onBondChange(this, prev, next);
+    if (prev.hybrid !== next.hybrid) clearHybridState(this);
     if (classChanged(prev, next)) this.events.push({ t: 'classChanged', displayName: next.displayName, bond: next.bond, hybrid: next.hybrid });
     const found = next.bond ?? next.hybrid;
     if (found && !this.discoveredClasses.has(found)) {
@@ -355,6 +367,7 @@ export class GameWorld {
     cancelAttack(this, 'hurt');
     endDive(this);
     clearAbilityEffects(this);
+    clearHybridState(this);
     clearPlayerProjectiles(this);
     removeHammer(this, true);
     this.hitGroups = this.hitGroups.filter((g) => g.owner !== 'player');
@@ -363,12 +376,13 @@ export class GameWorld {
   }
 
   /** 02 §1: an attack instance's first direct hit on an enemy adds 1 to the hit streak. */
-  noteLanding(g: HitGroup): void {
-    if (this.landedInstances.has(g.attackInstance)) return;
+  noteLanding(g: HitGroup): boolean {
+    if (this.landedInstances.has(g.attackInstance)) return false;
     this.landedInstances.add(g.attackInstance);
     this.hitStreak += 1;
     this.lastLandingTick = this.tick;
     if (this.hitStreak % 3 === 0) this.streakCrit.add(g.attackInstance);
+    return true;
   }
 
   /** Unblocked damage to the player resets the hit streak (02 §5.2 step 10). */
@@ -535,7 +549,7 @@ export class GameWorld {
     if (this.tick - this.lastLandingTick > COMBAT.HIT_STREAK_TIMEOUT_TICKS) this.hitStreak = 0;
     stepBonds(this);
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
-    this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush))];
+    this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush)), ...hybridSpeed(this)];
     const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
     if (checkSpikes(this)) moveEvents.push('spikeHit');   // 01 §3 step 9
     for (const e of moveEvents) {

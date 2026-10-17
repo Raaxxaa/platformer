@@ -5,6 +5,10 @@ import type { GameWorld } from '../sim/gameWorld.ts';
 import type { HitGroup } from './hitGroups.ts';
 
 export interface HitModSource {
+  /** Before damage, on the landing (first direct hit) of an attack instance on an enemy. */
+  landing?(w: GameWorld, g: HitGroup, e: EnemyState): void;
+  /** After a direct hit's damage. */
+  afterHit?(w: GameWorld, g: HitGroup, e: EnemyState, info: { damage: number; killed: boolean }): void;
   bonus?(w: GameWorld, g: HitGroup, e: EnemyState): number;
   crit?(w: GameWorld, g: HitGroup, e: EnemyState): boolean;
   targetMult?(w: GameWorld, g: HitGroup, e: EnemyState): number;
@@ -16,9 +20,16 @@ export function addHitMod(m: HitModSource): void {
   SOURCES.push(m);
 }
 
+export function onLanding(w: GameWorld, g: HitGroup, e: EnemyState): void {
+  for (const m of SOURCES) m.landing?.(w, g, e);
+}
+export function afterHit(w: GameWorld, g: HitGroup, e: EnemyState, info: { damage: number; killed: boolean }): void {
+  for (const m of SOURCES) m.afterHit?.(w, g, e, info);
+}
+
 /** Step 4: Σ attacker bonuses (the group's own, e.g. the link, plus every registered source). */
 export function hitBonus(w: GameWorld, g: HitGroup, e: EnemyState): number {
-  return (g.bonus ?? 0) + SOURCES.reduce((s, m) => s + (m.bonus?.(w, g, e) ?? 0), 0);
+  return (g.bonus ?? 0) + (w.instanceBonus.get(g.attackInstance) ?? 0) + SOURCES.reduce((s, m) => s + (m.bonus?.(w, g, e) ?? 0), 0);
 }
 
 /** §3.2 guaranteed crits. */

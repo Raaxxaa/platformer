@@ -5,6 +5,7 @@ import { detachFromWall } from '../player/wall.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, ticks, WEIGHT_MOVE_MULT } from '../tuning.ts';
 import { hammerOutIn, recallHammer, throwReady } from './stormHammer.ts';
+import { keepComboOnSwap } from '../classes/hybrids.ts';
 import { WEAPONS, WEAPON_SPECIAL } from '../../data/weapons.ts';
 import { endSpecial, HAMMER_THROW_STEP, onActiveStart, onRecoveryStart } from './weaponSpecials.ts';
 import { boxToWorld } from './hitGroups.ts';
@@ -39,6 +40,8 @@ export interface PlayerCombat {
   charge: ChargeState | null;
   heldSinceStart: boolean;          // the step's button held continuously since the press that started it
   uppercutUsed: boolean;            // Iron Fists uppercut lift, once per airtime (02 §10.5)
+  /** The last counted combo step per slot (1-based) and when it counted (Gladiator, 03 §6.2). */
+  lastCounted: [{ step: number; tick: number } | null, { step: number; tick: number } | null];
 }
 
 const NEVER = -100000;
@@ -46,7 +49,7 @@ const NEVER = -100000;
 export function createPlayerCombat(slots: [WeaponInstance | null, WeaponInstance | null]): PlayerCombat {
   return {
     slots, current: null, queued: false, otherPending: null, comboStep: [0, 0], comboEndTick: [NEVER, NEVER],
-    bufferTicks: 0, bufferedSlot: null, nextAttackInstance: 1, charge: null, heldSinceStart: false, uppercutUsed: false,
+    bufferTicks: 0, bufferedSlot: null, nextAttackInstance: 1, charge: null, heldSinceStart: false, uppercutUsed: false, lastCounted: [null, null],
   };
 }
 
@@ -99,14 +102,19 @@ function spawnStepGroup(w: GameWorld, cur: CurrentAttack): void {
 function startStep(w: GameWorld, slot: Slot, step: number, input: InputState, kind: CurrentAttack['kind'] = 'combo'): void {
   const c = w.combat, b = w.body;
   const weapon = weaponIn(w, slot)!;
-  const st = kind === 'charged' ? weapon.chargedStep! : kind === 'throw' ? HAMMER_THROW_STEP : weapon.combo[step];
+  let st = kind === 'charged' ? weapon.chargedStep! : kind === 'throw' ? HAMMER_THROW_STEP : weapon.combo[step];
   let faceAway = false;
   if (b.state === 'slide') b.endSlideRequested = true;                 // 01 §9.2: the press ends the slide
   if (b.state === 'wallSlide') { detachFromWall(b); faceAway = true; }  // 02 §9.3: detach, face away
   if (!faceAway && input.moveX !== 0) b.facing = input.moveX;
   const atk = attackSpeed(w, weapon.weight);
+  const instance = c.nextAttackInstance++;
+  if (kind === 'combo') {
+    step = keepComboOnSwap(w, slot, step, instance);              // Gladiator (03 §6.2)
+    st = weapon.combo[step];
+  }
   const cur: CurrentAttack = {
-    slot, step, phase: 'startup', phaseTicks: 1, attackInstance: c.nextAttackInstance++, faceAway, kind,
+    slot, step, phase: 'startup', phaseTicks: 1, attackInstance: instance, faceAway, kind,
     lens: { startup: phaseTicks(st.startup, atk), active: phaseTicks(st.active, atk), recovery: phaseTicks(st.recovery, atk) },
   };
   // Moving specials keep their move time (02 §9.9: not scaled by attack speed).
@@ -148,6 +156,7 @@ function finishStep(w: GameWorld, cur: CurrentAttack, endTick: number): void {
   const len = weaponIn(w, cur.slot)!.combo.length;
   // A charged attack or a throw resets the combo (02 §9.4); a combo step moves it on.
   c.comboStep[cur.slot] = cur.kind === 'combo' ? (cur.step + 1) % len : 0;
+  if (cur.kind === 'combo') c.lastCounted[cur.slot] = { step: cur.step + 1, tick: endTick };
   c.comboEndTick[cur.slot] = endTick;
   removeAttackGroups(w, cur.attackInstance);
   c.current = null;
@@ -164,6 +173,7 @@ export function cancelAttack(w: GameWorld, reason: 'dash' | 'jump' | 'dive' | 'h
     } else if (cur.phase === 'recovery') {
       c.comboStep[cur.slot] = cur.kind === 'combo' ? (cur.step + 1) % weaponIn(w, cur.slot)!.combo.length : 0;
       c.comboEndTick[cur.slot] = w.tick;
+      if (cur.kind === 'combo') c.lastCounted[cur.slot] = { step: cur.step + 1, tick: w.tick };
     } else {
       c.comboStep[cur.slot] = cur.step;
       c.comboEndTick[cur.slot] = w.tick;
