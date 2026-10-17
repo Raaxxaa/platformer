@@ -3,10 +3,13 @@ import { computeZoom, GAME_WIDTH, GAME_HEIGHT } from './game/zoom.ts';
 import { MovementTestScene } from './game/scenes/MovementTestScene.ts';
 import { CombatTestScene } from './game/scenes/CombatTestScene.ts';
 import { StageScene } from './game/scenes/StageScene.ts';
+import { TitleScene } from './game/scenes/TitleScene.ts';
 
-// Stage 1 by default; ?scene=combat opens the M2 combat test level, ?scene=movement the M1 movement level.
-const which = new URLSearchParams(window.location.search).get('scene');
-const scene = which === 'movement' ? MovementTestScene : which === 'combat' ? CombatTestScene : StageScene;
+// The start screen by default; ?start=plains / ?start=training skip it. ?scene=combat opens the M2 combat test level,
+// ?scene=movement the M1 movement level.
+const q = new URLSearchParams(window.location.search);
+const which = q.get('scene');
+const scene = which === 'movement' ? MovementTestScene : which === 'combat' ? CombatTestScene : q.get('start') ? StageScene : TitleScene;
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -21,7 +24,8 @@ const game = new Phaser.Game({
     zoom: computeZoom(window.innerWidth, window.innerHeight),
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [scene],
+  // The start screen is always registered so leaving the Training Yard or quitting can return to it.
+  scene: scene === TitleScene ? [TitleScene] : scene === StageScene ? [StageScene, TitleScene] : [scene],
 });
 
 // Whole-number zoom only (2×, 3×, …); the black page background shows as bars.

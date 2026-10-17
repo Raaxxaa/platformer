@@ -7,6 +7,7 @@ import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
 import { ABILITY_BLURB, CLASS_COLOR, CLASS_STYLE, UI_COLOR, WEAPON_BLURB, WEAPON_NAME } from '../../data/uiText.ts';
 import type { ClassPickModel, Kit } from './classPickModel.ts';
+import { box, SKIN } from '../skin.ts';
 
 const P = { x: 210, y: 72, w: 220, h: 176, pad: 8, rowY: 112, rowGap: 14 } as const;
 
@@ -15,6 +16,7 @@ export class ClassPickView {
   private readonly texts: Phaser.GameObjects.BitmapText[] = [];
   private readonly icon: Phaser.GameObjects.Image;
   private readonly scene: Phaser.Scene;
+  private panel: Phaser.GameObjects.GameObject[] = [];
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.g = scene.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 10);
@@ -30,10 +32,11 @@ export class ClassPickView {
   draw(m: ClassPickModel, equipped: Kit | null): void {
     for (const t of this.texts) t.destroy();
     this.texts.length = 0;
-    const g = this.g.clear();
-    g.fillStyle(UI_COLOR.panel, 0.95).fillRect(P.x, P.y, P.w, P.h);
-    g.lineStyle(1, UI_COLOR.panelBorder, 1).strokeRect(P.x + 0.5, P.y + 0.5, P.w - 1, P.h - 1);
+    this.g.clear();
     const cx = P.x + P.w / 2, cls = m.cls, col = CLASS_COLOR[cls];
+    // The popup skin (07 §3.4), edged in the class color.
+    for (const o of this.panel) o.destroy();
+    this.panel = box(this.scene, SKIN.panel, P.x, P.y, P.w, P.h, SKIN.corner.panel, { edge: col }).map((o) => o.setDepth(DEPTH.hud + 10));
     this.icon.setFrame(`icon_class_${cls}`);
     const name = m.classes.length > 1 ? `< ${CLASS_NAME[cls]} >` : CLASS_NAME[cls];
     this.text(cx, P.y + 24, name, col, true);
@@ -55,5 +58,6 @@ export class ClassPickView {
     this.g.destroy();
     this.icon.destroy();
     for (const t of this.texts) t.destroy();
+    for (const o of this.panel) o.destroy();
   }
 }

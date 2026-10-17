@@ -7,7 +7,10 @@ export const STAGE_UI = {
   rockMarker: 0xff4040,
   hintBottom: 16,                   // px from the bottom edge
   splitSeconds: 3,
-  bossBarW: 300, bossBarH: 4, bossBarY: 24,
+  // 07 §4.11 timer block, §4.12 boss bar (bottom center), §6.9 alert line for splits.
+  doorInfoRange: 640, doorInfoBadS: 5,
+  timer: [632, 8], segment: [632, 27], info: [632, 38], alert: [320, 10],
+  bossName: [160, 321], bossTitleRight: 480, bossHp: [160, 332, 320, 10], bossPoise: [160, 343, 320, 4],
   overviewAbove: 18, overviewBelow: 4,      // tiles above / below the main path in a section overview
 } as const;
 
@@ -37,3 +40,29 @@ export const ABILITY_FX = {
   boxS: 0.15, trailS: 0.15, trailEvery: 3, blinkS: 0.15, blinkR: 12, chainS: 0.15,
   boxAlpha: 0.35, zoneAlpha: 0.15, trailAlpha: 0.45, rainLines: 6, rainLen: 10, rainSpeed: 4, markLift: 26,       // the mark sits above the DPS readout
 } as const;
+
+/** 07 §4.1 top-left HUD layout and §4.2–4.6 timings (seconds). */
+export const TOP_HUD = {
+  plate: [4, 4, 196, 48], plateBottom: [4, 280, 128, 76],
+  heart: [8, 9], heartSize: 10, hpFrame: [20, 8, 160, 12], hpText: [184, 10],
+  rushX: [8, 58, 108], rushY: 22, rushW: 48, rushH: 6,
+  flaskIcon: [8, 30], flaskStep: 12, flaskIconSize: [10, 12], flaskBar: [8, 46, 46, 4],
+  coin: [62, 34], gold: [72, 34], key: [104, 33], keyText: [113, 34],
+  lagDelayS: 0.4, lagSpeed: 0.6, healFlashS: 0.25, lowFrac: 0.25, lowHz: 2, rush3Hz: 4, flaskFullHz: 2, drinkHz: 8,
+  refusedS: 0.15, chargeFlashS: 0.15, goldFlashS: 0.15,
+} as const;
+
+/** 07 §6.1 item card layout (px) and fade (s). */
+export const CARD = {
+  minW: 160, maxW: 260, pad: 4, icon: [4, 4], name: [24, 4], row2: [24, 13], row3: [4, 24], rowStep: 11, lift: 6, margin: 8,
+  bottomPad: 7 + 4, fadeS: 0.08, classIcon: 8, blurbLines: 2, standLift: 20,
+} as const;
+
+/** 07 §7.6 pause panel with tabs (px). */
+export const PAUSE_UI = {
+  panel: [140, 70, 360, 220], tabY: 6, tabW: 72, tabH: 14, tabGap: 4, titleY: 26, infoY: 46, itemsY: 66, itemStep: 14, cursorDx: 8,
+  rowsY: 28, rowStep: 26, classY: 140, controlsY: 30, controlsStep: 14, colX: [16, 100, 186, 270], hintY: 204, pad: 12,
+} as const;
+
+/** M4.1 Task 2 start screen (px). */
+export const TITLE_UI = { titleY: 96, buttonsY: 170, buttonW: 140, buttonH: 22, buttonStep: 30, cursorDx: 12, hintY: 320 } as const;
