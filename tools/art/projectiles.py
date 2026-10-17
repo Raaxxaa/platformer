@@ -9,7 +9,7 @@ from . import palette as P
 from . import raster as R
 
 ATLAS = 'projectiles'
-ALLOWED = ['ink', 'white', 'gray', 'en_red', 'en_slate', 'en_bone']
+ALLOWED = ['ink', 'white', 'gray', 'en_red', 'en_slate', 'en_bone', 'w_wood', 'w_steel', 'w_gold', 'w_magic', 'fx_bolt']
 
 
 def _L(w, h):
@@ -94,6 +94,49 @@ def rock_shatter(frame):
     return _done(L, outline=frame < 2)
 
 
+def player_arrow(w, charged=False, bolt=False):
+    """Player arrow / crossbow bolt (02 §10.4), w × 4, facing right."""
+    L = _L(w, 4)
+    shaft = _part(L, 'shaft', 'w_wood')
+    head = _part(L, 'head', 'w_gold' if charged else 'w_steel')
+    fl = _part(L, 'fletch', 'w_steel' if bolt else 'w_gold', -1)
+    R.fill_rect(L, 2, 1, w - 5, 1, shaft)
+    R.fill_rect(L, w - 3, 1, 2, 2, head)
+    R.fill_rect(L, 1, 1, 2 if not bolt else 3, 2, fl)
+    if charged:
+        glow = _part(L, 'glow', 'fx_bolt', 1)
+        R.fill_rect(L, 4, 2, w - 8, 1, glow)
+    return _done(L)
+
+
+def magic_ball(size, frame, ramp):
+    """Staff bolt / orb: a round magic ball with a bright core, pulsing over its frames."""
+    L = _L(size, size)
+    outer = _part(L, 'outer', ramp)
+    core = _part(L, 'core', 'white')
+    c = size / 2
+    r = c - 1.2 - (frame % 2) * 0.6
+    R.ellipse(L, c, c, r, r, outer)
+    R.ellipse(L, c - 0.5 + frame * 0.5, c - 0.5, r * 0.4, r * 0.4, core)
+    return _done(L)
+
+
+def hammer_spin(frame):
+    """The thrown Storm Hammer, 16 × 16, a quarter turn per frame."""
+    L = _L(16, 16)
+    hd = _part(L, 'head', 'w_gold')
+    hn = _part(L, 'handle', 'w_wood')
+    bolt = _part(L, 'bolt', 'fx_bolt', 1)
+    a = frame * math.pi / 4
+    ux, uy = math.cos(a), math.sin(a)
+    px, py = -uy, ux
+    R.line(L, (8 - ux * 6, 8 - uy * 6), (8 + ux * 2, 8 + uy * 2), hn)
+    pts = [(8 + ux * d + px * s, 8 + uy * d + py * s) for d, s in ((1.5, -4.5), (6, -4.5), (6, 4.5), (1.5, 4.5))]
+    R.fill_polygon(L, pts, hd)
+    R.line(L, (8 + ux * 3.5 + px * -3, 8 + uy * 3.5 + py * -3), (8 + ux * 3.5 + px * 3, 8 + uy * 3.5 + py * 3), bolt)
+    return _done(L)
+
+
 def build_frames():
     fr = {'enemy_arrow_00': arrow()}
     for i in range(2):
@@ -102,7 +145,20 @@ def build_frames():
     fr['falling_rock_00'] = falling_rock()
     for i in range(4):
         fr[f'falling_rock_shatter_{i:02d}'] = rock_shatter(i)
-    anims = [A.anim('enemy_arrow', ATLAS, 1, 'once'), A.anim('brute_wave', ATLAS, 2, 'loop', 12),
+    fr['arrow_00'] = player_arrow(12)
+    fr['arrow_charged_00'] = player_arrow(16, charged=True)
+    fr['bolt_00'] = player_arrow(14, bolt=True)
+    fr['pin_bolt_00'] = player_arrow(14, charged=True, bolt=True)
+    fr['staff_bolt_00'] = magic_ball(8, 0, 'w_magic')
+    for i in range(2):
+        fr[f'orb_{i:02d}'] = magic_ball(14, i, 'w_magic')
+    for i in range(4):
+        fr[f'hammer_spin_{i:02d}'] = hammer_spin(i)
+    anims = [A.anim('arrow', ATLAS, 1, 'once'), A.anim('arrow_charged', ATLAS, 1, 'once'),
+             A.anim('bolt', ATLAS, 1, 'once'), A.anim('pin_bolt', ATLAS, 1, 'once'),
+             A.anim('staff_bolt', ATLAS, 1, 'once'), A.anim('orb', ATLAS, 2, 'loop', 10),
+             A.anim('hammer_spin', ATLAS, 4, 'loop', 20)]
+    anims += [A.anim('enemy_arrow', ATLAS, 1, 'once'), A.anim('brute_wave', ATLAS, 2, 'loop', 12),
              A.anim('shockwave', ATLAS, 2, 'loop', 12), A.anim('falling_rock', ATLAS, 1, 'once'),
              A.anim('falling_rock_shatter', ATLAS, 4, 'once', 20)]
     return fr, anims

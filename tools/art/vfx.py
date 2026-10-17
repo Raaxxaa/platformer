@@ -216,6 +216,28 @@ def sparks(size, frame, frames, cols):
     return star_burst(size, frame, frames, 6, cols[0], cols[1], cols[2] if len(cols) > 2 else None)
 
 
+def dive_bolt(frame):
+    """Storm Hammer dive: a 32 × 160 lightning bolt from the sky (zigzag, fx_bolt with a white core)."""
+    w, h = 32, 160
+    a = np.full((h, w), -1, np.int16)
+    g = np.random.default_rng(31 + frame)
+    xs = [16.0]
+    for _ in range(h // 10):
+        xs.append(float(np.clip(xs[-1] + g.uniform(-6, 6), 6, 26)))
+    width = [3, 2.5, 2, 1][frame]
+    X, Y = _grid(w, h)
+    for i in range(len(xs) - 1):
+        y0, y1 = i * 10, (i + 1) * 10
+        m = (Y >= y0) & (Y < y1)
+        cx = xs[i] + (xs[i + 1] - xs[i]) * (Y - y0) / 10
+        d = np.abs(X - cx)
+        a[m & (d < width + 1.5)] = np.where(a[m & (d < width + 1.5)] < 0, _c('fx_bolt', 1), a[m & (d < width + 1.5)])
+        a[m & (d < width)] = _c('fx_bolt', 3)
+        if frame < 3:
+            a[m & (d < max(0.6, width - 1.5))] = WHITE
+    return _img(a)
+
+
 def build_frames():
     fr = {}
     for i in range(3):
@@ -263,7 +285,9 @@ def build_frames():
         else:
             a[1, 4] = a[4, 1] = -1
         fr[f'curse_wisps_{i:02d}'] = _img(a)
-    anims = [A.anim('hit_spark', ATLAS, 3, 'once', 30), A.anim('hit_heavy', ATLAS, 4, 'once', 30),
+    for i in range(4):
+        fr[f'hammer_dive_bolt_{i:02d}'] = dive_bolt(i)
+    anims = [A.anim('hammer_dive_bolt', ATLAS, 4, 'once', 30), A.anim('hit_spark', ATLAS, 3, 'once', 30), A.anim('hit_heavy', ATLAS, 4, 'once', 30),
              A.anim('crit_spark', ATLAS, 4, 'once', 30), A.anim('stun_stars', ATLAS, 4, 'loop', 10),
              A.anim('dust_land', ATLAS, 4, 'once', 20), A.anim('dust_jump', ATLAS, 4, 'once', 20),
              A.anim('muzzle', ATLAS, 2, 'once', 30), A.anim('debris', ATLAS, 4, 'once'),

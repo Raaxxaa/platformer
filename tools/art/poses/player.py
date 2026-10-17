@@ -154,3 +154,69 @@ GROUND_SHOCK = {'atk_war_maul_2': 56}     # smash: the smear also shows the shoc
 # Weapon angles over the body's dive frames (windup, fall, land), 2 frames each.
 DIVE_WEAPON = {'dive_windup': (180, 153), 'dive_fall': (0, 0), 'dive_land': (27, 27)}
 POSES.update(ATTACKS)
+
+
+# ---------------------------------------------------------------- ART5 class weapons (08 §6.3)
+# 'weapon' None = the weapon layer is empty in that frame (Storm Hammer after the throw).
+# 'draw' = bow string pull 0..1.
+TENSE = dict(tilt=6, hipOffset=(0, 2), legF=(30, 40), legB=(-22, 18))       # charging: low and ready
+
+ATTACKS5 = {
+    # Katana: fast flat slashes; step 2 mirrors step 1; step 3 a rising cut; charged = dash-slash
+    'atk_katana_1': [_atk((-40, 30), -117, True, **WIDE), _atk((-70, 20), -90, True, **WIDE),
+                     _atk((90, 0), 90, **_lunge(3, 2)), _atk((80, 10), 117, **_lunge(3, 1)),
+                     _atk((40, 30), 135, **WIDE)],
+    'atk_katana_2': [_atk((150, 30), 153, **WIDE), _atk((160, 20), 135, **WIDE),
+                     _atk((80, 0), 90, **_lunge(3, 2)), _atk((60, 10), 90, **_lunge(3, 1)),
+                     _atk((40, 30), 67, **WIDE)],
+    'atk_katana_3': [_atk((-60, 20), -90, True, **WIDE), _atk((-30, 20), -90, True, tilt=6, **WIDE),
+                     _atk((130, 10), 135, tilt=10, **_lunge(2)), _atk((150, 10), 153, **_lunge(2)),
+                     _atk((150, 20), 153, **WIDE)],
+    'charge_katana': [_atk((-80, 30), -117, True, **TENSE), _atk((-84, 34), -117, True, **dict(TENSE, tilt=8))],
+    'atk_katana_charged': [_atk((-80, 30), -117, True, **TENSE), _atk((-90, 20), -90, True, **TENSE),
+                           _atk((90, 0), 90, tilt=18, **_lunge(12, 2)), _atk((90, 0), 90, tilt=16, **_lunge(12, 1)),
+                           _atk((60, 20), 117, **WIDE)],
+    # Iron Fists: quick jabs, step 4 a big rising uppercut
+    'atk_iron_fists_1': [_atk((30, 90), 90, **WIDE), _atk((20, 110), 90, tilt=-4, **WIDE),
+                         _atk((90, 0), 90, **_lunge(3)), _atk((70, 30), 90, **WIDE), _atk((30, 80), 90, **WIDE)],
+    'atk_iron_fists_2': [_atk((20, 110), 90, **WIDE), _atk((10, 120), 90, tilt=-4, **WIDE),
+                         _atk((92, 0), 90, tilt=6, **_lunge(4)), _atk((70, 30), 90, **WIDE),
+                         _atk((30, 80), 90, **WIDE)],
+    'atk_iron_fists_3': [_atk((30, 90), 90, **WIDE), _atk((10, 120), 90, tilt=-6, **WIDE),
+                         _atk((96, 0), 90, tilt=10, **_lunge(5)), _atk((70, 30), 90, **WIDE),
+                         _atk((30, 80), 90, **WIDE)],
+    'atk_iron_fists_4': [_atk((10, 60), 180, **TENSE), _atk((0, 80), 180, **dict(TENSE, tilt=10, hipOffset=(0, 4))),
+                         _atk((160, 10), 180, tilt=-6, **_lunge(2)), _atk((170, 0), 180, tilt=-4, **WIDE),
+                         _atk((40, 60), 180, **WIDE)],
+    # Bow (projectile steps: frame 2 is the release)
+    'atk_bow_1': [_atk((80, 10), 90, draw=0.3, **WIDE), _atk((88, 4), 90, draw=1, **WIDE),
+                  _atk((88, 4), 90, draw=0, **WIDE), _atk((80, 10), 90, draw=0, **WIDE),
+                  _atk((50, 30), 117, draw=0, **WIDE)],
+    'charge_bow': [_atk((88, 4), 90, draw=1, **dict(TENSE, tilt=-4)), _atk((88, 4), 90, draw=1, **dict(TENSE, tilt=-6))],
+    'atk_bow_charged': [_atk((88, 4), 90, draw=1, **TENSE), _atk((88, 4), 90, draw=1, **dict(TENSE, tilt=-4)),
+                        _atk((88, 4), 90, draw=0, tilt=-8, **WIDE), _atk((80, 10), 90, draw=0, **WIDE),
+                        _atk((50, 30), 117, draw=0, **WIDE)],
+    'atk_crossbow_1': [_atk((70, 20), 90, **WIDE), _atk((86, 4), 90, **WIDE), _atk((86, 4), 90, tilt=-8, **WIDE),
+                       _atk((80, 10), 90, tilt=-4, **WIDE), _atk((50, 30), 117, **WIDE)],
+    # Staff
+    'atk_staff_1': [_atk((120, 20), 153, **WIDE), _atk((140, 10), 153, **WIDE), _atk((90, 0), 90, **_lunge(2)),
+                    _atk((80, 10), 117, **WIDE), _atk((40, 30), 153, **WIDE)],
+    'charge_staff': [_atk((150, 10), 180, **TENSE), _atk((156, 6), 180, **dict(TENSE, tilt=4))],
+    'atk_staff_charged': [_atk((150, 10), 180, **TENSE), _atk((160, 6), 180, **TENSE), _atk((96, 0), 90, **_lunge(3)),
+                          _atk((80, 10), 117, **WIDE), _atk((40, 30), 153, **WIDE)],
+    # Storm Hammer
+    'atk_storm_hammer_1': [_atk((170, 30), -153, True, **WIDE), _atk((-170, 40), -135, True, tilt=-6, **WIDE),
+                           _atk((60, 0), 90, **_lunge(4, 3)), _atk((70, 10), 117, **_lunge(4, 2)),
+                           _atk((60, 20), 135, **WIDE)],
+    'atk_storm_hammer_2': [_atk((-40, 10), -117, True, **WIDE), _atk((-80, 10), -90, True, tilt=-4, **WIDE),
+                           _atk((120, 20), 135, tilt=16, **_lunge(0)), _atk((140, 20), 153, tilt=10, **_lunge(0)),
+                           _atk((150, 20), 153, **WIDE)],
+    'atk_storm_hammer_throw': [_atk((-170, 30), -153, True, **WIDE), _atk((-160, 20), -135, True, tilt=-8, **WIDE),
+                               _atk((110, 0), None, tilt=10, **_lunge(3)), _atk((90, 10), None, **_lunge(2)),
+                               _atk((40, 30), None, **WIDE)],
+}
+SMEAR.update({'atk_katana_1': (270, 90), 'atk_katana_2': (-117, 90), 'atk_katana_3': (-63, 135),
+              'atk_katana_charged': (135, 45), 'atk_iron_fists_1': (63, 117), 'atk_iron_fists_2': (63, 117),
+              'atk_iron_fists_3': (63, 117), 'atk_iron_fists_4': (63, 180),
+              'atk_storm_hammer_1': (225, 90), 'atk_storm_hammer_2': (-90, 135)})
+POSES.update(ATTACKS5)
