@@ -66,10 +66,10 @@ export class AbilityHud {
     this.flashes[i] = { color, until: now + s * 1000 };
   }
 
-  private toast(text: string, color: number, now: number): void {
+  toast(text: string, color: number, now: number, seconds: number = L.toastS): void {
     const t = this.scene.add.bitmapText(0, 0, FONTS.small, text).setOrigin(1, 1).setRightAlign().setTint(color).setScrollFactor(0).setDepth(DEPTH.hud + 2)
       .setMaxWidth(L.toastMaxW);
-    this.toasts.push({ text: t, born: now, until: now + L.toastS * 1000 });
+    this.toasts.push({ text: t, born: now, until: now + seconds * 1000 });
     while (this.toasts.length > L.toastMax) this.toasts.shift()!.text.destroy();
   }
 

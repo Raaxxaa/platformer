@@ -63,3 +63,24 @@ export const CONTROLS_LIST: readonly [string, string][] = [
   ['Attack 1', 'J'], ['Attack 2', 'K'], ['Ability 1', 'U'], ['Ability 2', 'I'], ['Heal', 'Q'], ['Interact', 'E'],
   ['Restart (hold)', 'R'], ['Pause', 'Esc / P'],
 ];
+
+/** 07 §9.3 Lucky Block line 2 (values are 05's). */
+export const LUCKY_LINE: Record<import('./loot.ts').LuckyId, string> = {
+  swift: '+25% move speed this stage', golden_touch: 'Double gold from enemies this stage', firestarter: 'All your hits burn this stage',
+  second_wind: 'Revive once with half HP this stage', overdrive: "Rush can't drop below level 2 this stage", bloodrush: 'Kills fill the flask double this stage',
+  jackpot: 'A rare weapon drops!',
+  heavy: '−20% move speed for 45 s', glass_bones: 'Take double damage for 45 s', leaky_pockets: 'Drop gold when hit for 45 s',
+  ambush: 'Enemies all around you!', jammed: 'Dash cooldown doubled for 45 s', dry_flask: "Can't drink the flask for 45 s",
+  butterfingers: 'Weapon 2 locked for 45 s',
+};
+/** 07 §9.3 curse lines. */
+export const CURSE_LINE: Record<import('./loot.ts').CurseId, string> = {
+  one_hit: 'You die in one hit until 10 kills', no_heal: "Can't drink the flask until 10 kills",
+  heavy_feet: 'No double jump until 10 kills', hunted: 'Enemies are faster until 10 kills',
+};
+/** 07 §4.7, §6.8, §6.10 loot HUD timings (s). */
+export const LOOT_HUD = {
+  debuffBlinkS: 5, blinkHz: 4,
+  bannerS: { lucky: 1.6, curse: 2.0, lifted: 1.2 },
+  toastS: { keysFull: 2.0, lockpick: 2.0, purchase: 1.5 },
+} as const;

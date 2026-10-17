@@ -9,37 +9,66 @@ import { ticks } from '../../core/tuning.ts';
 import { FONTS, YARD_FRAMES, itemGlow, itemIcon } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
 import { YARD_UI } from '../../data/stageUi.ts';
-import { CLASS_COLOR, UI_COLOR } from '../../data/uiText.ts';
+import { CLASS_COLOR, GRADE_COLOR, UI_COLOR } from '../../data/uiText.ts';
+import { ABILITY_INFO } from '../../data/abilities.ts';
+import { ITEM_FX } from '../../data/stageUi.ts';
+import { TICK_RATE } from '../../core/tuning.ts';
 import type { ClassId } from '../../core/abilities/types.ts';
 import { checklistLines } from '../../ui/hud/checklist.ts';
 
 const titleCase = (s: string) => s[0].toUpperCase() + s.slice(1);
 
-/** Weapon and ability items on the ground: icon over its glow, on a stand if it is an endless one. */
+/** Items on the ground: icon over its glow (tinted by grade or class), a bob, the A/S beam, the badge (07 §5.6), a
+ *  loot stand under stand and armory items; keys are their own sprite. */
+interface ItemObjs { stand?: Phaser.GameObjects.Image; beam?: Phaser.GameObjects.Image; glow?: Phaser.GameObjects.Image; icon: Phaser.GameObjects.Image;
+  badge?: Phaser.GameObjects.Graphics; badgeText?: Phaser.GameObjects.BitmapText }
 export class ItemViews {
-  private views = new Map<GroundItem, Phaser.GameObjects.Image[]>();
+  private views = new Map<GroundItem, ItemObjs>();
   private scene: Phaser.Scene;
   constructor(scene: Phaser.Scene) { this.scene = scene; }
 
-  update(items: readonly GroundItem[]): void {
+  private make(it: GroundItem): ItemObjs | null {
+    const sc = this.scene;
+    if (it.key) return { icon: sc.add.image(0, 0, 'items', ITEM_FX.keyFrame).setOrigin(0.5, 1).setDepth(DEPTH.items) };
+    const kind = it.weapon ? 'weapon' : 'ability';
+    const id = it.weapon?.weaponId ?? it.ability?.id;
+    if (!id) return null;
+    const o: ItemObjs = { icon: sc.add.image(0, 0, 'ui', itemIcon(kind, id)).setDepth(DEPTH.items + 1) };
+    if (it.endless || it.stand) o.stand = sc.add.image(0, 0, 'objects', YARD_FRAMES.stand).setOrigin(0.5, 1).setDepth(DEPTH.items - 1);
+    const grade = it.weapon?.grade;
+    if (grade === 'A' || grade === 'S') o.beam = sc.add.image(0, 0, 'items', ITEM_FX.beamFrame).setOrigin(0.5, 1).setDepth(DEPTH.items - 1).setTint(GRADE_COLOR[grade]);
+    o.glow = sc.add.image(0, 0, 'items', itemGlow(kind, id)).setDepth(DEPTH.items).setTint(this.colorOf(it));
+    o.badge = sc.add.graphics().setDepth(DEPTH.items + 2);
+    o.badgeText = sc.add.bitmapText(0, 0, FONTS.smallPlain, it.weapon ? it.weapon.grade : String(it.ability!.level)).setOrigin(0.5, 0).setTint(UI_COLOR.ink).setDepth(DEPTH.items + 3);
+    return o;
+  }
+
+  private colorOf(it: GroundItem): number {
+    if (it.weapon) return GRADE_COLOR[it.weapon.grade];
+    const cls = it.ability ? ABILITY_INFO[it.ability.id]?.cls : null;
+    return cls ? CLASS_COLOR[cls] : CLASS_COLOR.neutral;
+  }
+
+  update(items: readonly GroundItem[], tick = 0): void {
     const live = new Set(items);
-    for (const [it, imgs] of this.views) if (!live.has(it)) { for (const i of imgs) i.destroy(); this.views.delete(it); }
+    const kill = (o: ItemObjs) => { for (const x of Object.values(o)) (x as Phaser.GameObjects.GameObject | undefined)?.destroy(); };
+    for (const [it, o] of this.views) if (!live.has(it)) { kill(o); this.views.delete(it); }
+    const t = tick / TICK_RATE;
     for (const it of items) {
-      let imgs = this.views.get(it);
-      const kind = it.weapon ? 'weapon' : 'ability';
-      const id = it.weapon?.weaponId ?? it.ability?.id;
-      if (!id) continue;
-      if (!imgs) {
-        imgs = [];
-        if (it.endless) imgs.push(this.scene.add.image(0, 0, 'objects', YARD_FRAMES.stand).setOrigin(0.5, 1).setDepth(DEPTH.items - 1));
-        imgs.push(this.scene.add.image(0, 0, 'items', itemGlow(kind, id)).setDepth(DEPTH.items));
-        imgs.push(this.scene.add.image(0, 0, 'ui', itemIcon(kind, id)).setDepth(DEPTH.items));
-        this.views.set(it, imgs);
-      }
-      const stand = it.endless ? imgs[0] : null;
-      const cy = it.y - (stand ? stand.height + YARD_UI.iconLift : 0) - 8;
-      stand?.setPosition(it.x, it.y);
-      for (const img of imgs) if (img !== stand) img.setPosition(it.x, cy);
+      let o = this.views.get(it);
+      if (!o) { const m = this.make(it); if (!m) continue; o = m; this.views.set(it, o); }
+      if (it.key) { o.icon.setPosition(it.x, it.y); continue; }
+      const bob = it.resting ? Math.round(Math.sin(t * Math.PI * 2 * ITEM_FX.bobHz) * ITEM_FX.bobPx) : 0;
+      const cy = it.y - (o.stand ? o.stand.height + YARD_UI.iconLift : 0) - 8 + bob;
+      o.stand?.setPosition(it.x, it.y);
+      o.beam?.setPosition(it.x, it.y - (o.stand ? o.stand.height : 0));
+      o.glow?.setPosition(it.x, cy).setAlpha(ITEM_FX.glowMin + (1 - ITEM_FX.glowMin) * (0.5 + 0.5 * Math.sin(t * Math.PI * 2 * ITEM_FX.glowHz)));
+      o.icon.setPosition(it.x, cy);
+      // Badge: 9 x 9 in the grade or class color, 2 px above the icon.
+      const by = cy - 8 - ITEM_FX.badgeGap - ITEM_FX.badge, bx = Math.round(it.x - ITEM_FX.badge / 2);
+      o.badge?.clear().fillStyle(UI_COLOR.ink, 1).fillRect(bx - 1, by - 1, ITEM_FX.badge + 2, ITEM_FX.badge + 2)
+        .fillStyle(this.colorOf(it), 1).fillRect(bx, by, ITEM_FX.badge, ITEM_FX.badge);
+      o.badgeText?.setPosition(it.x + 0.5, by + 1);
     }
   }
 }

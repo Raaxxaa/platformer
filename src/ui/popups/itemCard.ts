@@ -72,7 +72,7 @@ export class ItemCardPopup {
       widest = Math.max(widest, x);
       y += C.rowStep;
     }
-    this.text(C.row3[0], y, v.bottom, UI_COLOR.highlight);
+    this.text(C.row3[0], y, v.bottom, v.bottomTone === 'bad' ? UI_COLOR.bad : UI_COLOR.highlight);
     this.w = Math.min(C.maxW, Math.max(C.minW, widest + 8));
     this.h = y + C.bottomPad;
     badge.setX(this.w - C.pad);

@@ -6,7 +6,7 @@ export const ATLASES = [
   'player_swordsman', 'player_swordsman_trim', 'player_tank', 'player_tank_trim', 'player_archer', 'player_archer_trim',
   'player_wizard', 'player_wizard_trim', 'weapon_greatsword', 'weapon_war_maul', 'weapon_katana', 'weapon_iron_fists',
   'weapon_storm_hammer', 'weapon_bow', 'weapon_crossbow', 'weapon_staff',
-  'enemies_plains', 'enemies_extra', 'boss_great_boar', 'projectiles', 'vfx', 'objects', 'items',
+  'enemies_plains', 'enemies_extra', 'boss_great_boar', 'projectiles', 'vfx', 'objects', 'items', 'npcs',
 ] as const;
 export type AtlasKey = (typeof ATLASES)[number];
 

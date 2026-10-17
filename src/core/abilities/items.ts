@@ -101,7 +101,7 @@ function takeInto(w: GameWorld, it: GroundItem, slot: 0 | 1): void {
   onBought(w, it);
   closeChoices(w);
   w.refreshClassState();                                       // 03 §4.4: the same tick
-  w.events.push({ t: 'itemTaken', itemId: it.id, slot });
+  w.events.push({ t: 'itemTaken', itemId: it.id, slot, kind: it.weapon ? 'weapon' : 'ability' });
 }
 
 /** 03 §7.1 / 05 §5.7: pick up an item (or open the swap choice). */

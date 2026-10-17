@@ -30,6 +30,8 @@ import { ItemViews } from '../view/yardView.ts';
 import { AbilityView } from '../view/abilityView.ts';
 import { AbilityHud } from '../../ui/hud/abilityHud.ts';
 import { TopHud } from '../../ui/hud/topHud.ts';
+import { LootHud } from '../../ui/hud/lootHud.ts';
+import { LootView } from '../view/lootView.ts';
 import { ItemCardPopup } from '../../ui/popups/itemCard.ts';
 import { itemCard } from '../../ui/model/itemCard.ts';
 import { interactTarget, type GroundItem } from '../../core/abilities/items.ts';
@@ -74,6 +76,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected markersGfx!: Phaser.GameObjects.Graphics;
   protected itemViews!: ItemViews;
   protected abilityView!: AbilityView;
+  protected lootView!: LootView;
+  protected lootHud!: LootHud;
   protected abilityHud!: AbilityHud;
   protected topHud!: TopHud;
   protected card!: ItemCardPopup;
@@ -121,6 +125,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.markersGfx = this.add.graphics().setDepth(DEPTH.markers);
     this.itemViews = new ItemViews(this);
     this.abilityView = new AbilityView(this);
+    this.lootView = new LootView(this);
     this.sfx = new SfxPlayer(this);
     // Browsers start audio only after a key press or click (08 §15, 07).
     // Bottom center, under the hint line: the bottom left holds the slots, the top center the boss bar (07 §4.1).
@@ -136,6 +141,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
     this.abilityHud = new AbilityHud(this);
     this.topHud = new TopHud(this);
+    this.lootHud = new LootHud(this);
     this.card = new ItemCardPopup(this);
     this.debug = debugEnabled();
     if (this.debug) installCombatDebugApi(this);
@@ -313,7 +319,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.boxes.clear();
     // A restart rewinds the tick: drop effects of the old run.
     if (w.tick < this.lastRenderTick) {
-      this.vfx.reset(); this.abilityView.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
+      this.vfx.reset(); this.abilityView.reset(); this.lootView.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
       this.sfx.play([{ id: 'restart' }], w.tick, { camCenterX: cam.x, playerX: w.body.x });
     }
     this.lastRenderTick = w.tick;
@@ -354,10 +360,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     else this.playerView.update(w, this.playerEv);
     this.vfx.pool.update(w.tick);
     drawMarkers(this.markersGfx.clear(), w);
-    this.itemViews.update(w.groundItems);
+    this.itemViews.update(w.groundItems, w.tick);
     this.abilityView.update(w);
     this.abilityHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
     this.topHud.update(topHudView(w), this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
+    this.lootView.update(w, this.frameEvents);
+    this.lootHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview, (t, c, s) => this.abilityHud.toast(t, c, this.time.now, s));
     // The item card over the interact target, or the item an open swap choice is about (07 §6.1–6.3).
     const choiceId = w.weaponSwapChoice?.itemId ?? (w.abilities.swapChoice ? Number(w.abilities.swapChoice.itemId) : null);
     const tgt = choiceId !== null ? w.groundItems.find((i) => i.id === choiceId) ?? null : interactTarget(w);

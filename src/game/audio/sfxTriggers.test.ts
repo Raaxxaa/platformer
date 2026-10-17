@@ -58,3 +58,22 @@ describe('sound triggers (08 §13.3)', () => {
     expect(t).toEqual(expect.arrayContaining(['hammer_throw', 'hammer_return', 'hammer_catch']));
   });
 });
+
+describe('loot and element sounds (M5)', () => {
+  const ids = (evs: WorldEvent[]) => { const w = arenaWorld(); return new SfxWatch().collect(w, evs.map((e) => ({ tick: 0, e }))).map((r) => r.id); };
+  it('maps loot events to sounds', () => {
+    expect(ids([{ t: 'chestOpened', kind: 'key', objectId: 1 }])).toEqual(['chest_open', 'item_pop']);
+    expect(ids([{ t: 'chestOpened', kind: 'cursed', objectId: 1 }])).toEqual(['cursed_open', 'item_pop']);
+    expect(ids([{ t: 'chestLocked' }])).toEqual(['chest_locked']);
+    expect(ids([{ t: 'keyTaken' }, { t: 'keysFull' }])).toEqual(['key_pickup', 'keys_full']);
+    expect(ids([{ t: 'goldChanged', tenths: 50, reason: 'coin' }])).toEqual(['coin']);
+    expect(ids([{ t: 'luckyBroken', objectId: 1 }, { t: 'luckyResult', id: 'swift' }])).toEqual(['lucky_hit', 'lucky_buff']);
+    expect(ids([{ t: 'luckyResult', id: 'heavy' }])).toEqual(['lucky_debuff']);
+    expect(ids([{ t: 'luckyResult', id: 'jackpot' }])).toEqual(['jackpot']);
+    expect(ids([{ t: 'curseLifted' }, { t: 'cantAfford' }])).toEqual(['curse_lifted', 'cant_afford']);
+    expect(ids([{ t: 'purchase', what: 'katana', price: 5 }, { t: 'purchase', what: 'upgrade:blink', price: 5 }])).toEqual(['purchase', 'upgrade']);
+  });
+  it('an element hit adds its element sound', () => {
+    expect(ids([{ t: 'hit', target: 99, amount: 5, crit: false, heavy: false, element: 'ice' }])).toEqual(['hit_light', 'ice_hit']);
+  });
+});

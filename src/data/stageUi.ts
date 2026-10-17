@@ -65,3 +65,17 @@ export const PAUSE_UI = {
 
 /** M4.1 Task 2 start screen (px). */
 export const TITLE_UI = { titleY: 96, buttonsY: 170, buttonW: 140, buttonH: 22, buttonStep: 30, cursorDx: 12, hintY: 320 } as const;
+
+/** 07 §4.1 / §4.7 / §6.8 loot HUD layout (px, s). */
+export const LOOT_HUD_UI = {
+  lockpick: [122, 33], effectX: 8, effectStep: 14, effectY: 54, effectBox: 12, effectLabelY: 68,
+  bannerY: [80, 98], bannerInS: 0.1, bannerOutS: 0.3, bannerDrop: 6,
+} as const;
+
+/** M5 loot effects placement (px, Hz). */
+export const LOOT_FX = {
+  chestFxLift: 8, coinBlinkHz: 8, tagGap: 3, burnDy: 2, statusInset: 3, freezePad: 4, freezeAlpha: 0.85, shards: 3, shardStep: 5, promptObjH: 18, promptGap: 4,
+} as const;
+
+/** 07 §5.6 ground item look (px, Hz). */
+export const ITEM_FX = { keyFrame: 'key_00', beamFrame: 'beam_00', bobHz: 0.8, bobPx: 1, glowHz: 1.2, glowMin: 0.6, badge: 9, badgeGap: 2 } as const;

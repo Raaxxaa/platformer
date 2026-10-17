@@ -6,6 +6,7 @@ import { TICK_RATE } from '../../core/tuning.ts';
 import { ANIM } from '../../data/art.ts';
 import { SFX } from '../../data/sfx.ts';
 import { WEAPONS } from '../../data/weapons.ts';
+import { LUCKY } from '../../data/loot.ts';
 import type { TickEvent } from '../view/vfx.ts';
 import type { SfxRequest } from './sfxRules.ts';
 
@@ -27,6 +28,7 @@ export class SfxWatch {
   private aware = new Map<number, boolean>();
   private phase = new Map<number, string>();
   private stagger = new Map<number, boolean>();
+  private frozen = new Map<number, boolean>();
   private intro = new Map<number, boolean>();
   private swingKey = '';
   private rush = 0;
@@ -39,7 +41,7 @@ export class SfxWatch {
   private charge: 'none' | 'charging' | 'full' = 'none';
 
   reset(): void {
-    this.aware.clear(); this.phase.clear(); this.stagger.clear(); this.intro.clear();
+    this.aware.clear(); this.phase.clear(); this.frozen.clear(); this.stagger.clear(); this.intro.clear();
     this.swingKey = ''; this.rush = 0; this.sipped = false; this.charges = -1; this.runFrame = -1; this.projectiles.clear();
   }
 
@@ -76,6 +78,7 @@ export class SfxWatch {
           const stop = (en?.hitStopTicks ?? 0) / TICK_RATE;
           const id = e.crit ? 'hit_crit' : e.heavy || stop >= SFX_TRIGGER.hitHeavyStop ? 'hit_heavy' : stop >= SFX_TRIGGER.hitLightStop ? 'hit_medium' : 'hit_light';
           out.push({ id });
+          if (e.element && e.element !== 'lightning' && !e.dot) out.push({ id: `${e.element}_hit` });
           break;
         }
         case 'kill': {
@@ -103,6 +106,17 @@ export class SfxWatch {
         case 'abilityNotReady': out.push({ id: 'ab_not_ready' }); break;
         case 'classChanged': out.push({ id: 'class_change' }); break;
         case 'classDiscovered': out.push({ id: 'class_discovered' }); break;
+        case 'chestOpened': out.push({ id: e.kind === 'cursed' ? 'cursed_open' : 'chest_open' }, { id: 'item_pop' }); break;
+        case 'chestLocked': out.push({ id: 'chest_locked' }); break;
+        case 'keyTaken': out.push({ id: 'key_pickup' }); break;
+        case 'keysFull': out.push({ id: 'keys_full' }); break;
+        case 'goldChanged': if (e.reason === 'coin') out.push({ id: 'coin' }); break;
+        case 'itemTaken': out.push({ id: e.kind === 'ability' ? 'pickup_ability' : 'pickup_weapon' }); break;
+        case 'luckyBroken': out.push({ id: 'lucky_hit' }); break;
+        case 'luckyResult': out.push({ id: e.id === 'jackpot' ? 'jackpot' : LUCKY.find((l) => l.id === e.id)?.kind === 'buff' ? 'lucky_buff' : 'lucky_debuff' }); break;
+        case 'curseLifted': out.push({ id: 'curse_lifted' }); break;
+        case 'purchase': out.push({ id: e.what.startsWith('upgrade:') ? 'upgrade' : 'purchase' }); break;
+        case 'cantAfford': out.push({ id: 'cant_afford' }); break;
         case 'stationDone': out.push({ id: 'ui_confirm' }); break;                   // 06 §12.4
         default: if ((e as { t: string }).t === 'wallBroken') out.push({ id: 'wall_break' }); break;
       }
@@ -125,6 +139,14 @@ export class SfxWatch {
         if (st && !this.stagger.get(en.id)) out.push({ id: 'boss_break' });
         this.stagger.set(en.id, st);
       }
+    }
+    // Freeze starts and ends (shatter) on enemies (02 §6.3).
+    for (const en of w.enemies) {
+      const fz = !en.dead && !!en.status?.frozen;
+      const was = this.frozen.get(en.id) ?? false;
+      if (fz && !was) out.push({ id: 'freeze', x: en.x });
+      if (!fz && was) out.push({ id: 'shatter', x: en.x });
+      this.frozen.set(en.id, fz);
     }
     // Enemy projectiles: spawn sound (rocks whistle as they fall).
     const live = new Set<number>();

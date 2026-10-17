@@ -7,6 +7,8 @@ import type { GameWorld } from '../../core/sim/gameWorld.ts';
 import { ABILITY_INFO } from '../../data/abilities.ts';
 import { CLASS_NAME, WEAPON_CLASSES } from '../../data/classes.ts';
 import { ABILITY_BLURB, WEAPON_BLURB, WEAPON_NAME } from '../../data/uiText.ts';
+import { itemName } from '../../core/loot/roll.ts';
+import { ELEMENT_WORD, PERKS } from '../../data/loot.ts';
 import { cardDelta, weaponDmg, type ClassColorKeyLike } from './hudModel.ts';
 
 export interface CardAfter { name: string; color: ClassColorKeyLike; bond: string | null }
@@ -18,6 +20,8 @@ export interface ItemCardView {
   row2: string; blurb: string;
   dmg: { value: number; matched: boolean } | null; tags: ClassId[]; litTags: ClassId[];
   options: CardOption[]; bottom: string;
+  /** `bad` for `Owned` (07 §6.1). */
+  bottomTone?: 'bad';
 }
 
 const GLYPH = { weapon: ['[J]', '[K]'], ability: ['[U]', '[I]'], interact: '[E]' } as const;
@@ -31,6 +35,16 @@ function afterOf(w: GameWorld, abilities: (AbilityId | null)[]): CardAfter | nul
 const afterText = (a: CardAfter | null) => (a ? `→ ${a.name}` : '(no change)');
 
 export function itemCard(w: GameWorld, it: GroundItem): ItemCardView {
+  const v = baseCard(w, it);
+  // Shop and merchant items (07 §6.1, §6.4): `[E] Buy` + price, `Owned` for a carried ability.
+  if (it.price !== undefined) {
+    if (it.ability && w.abilities.slots.some((s) => s?.id === it.ability!.id)) return { ...v, bottom: 'Owned', bottomTone: 'bad' };
+    return { ...v, bottom: `${GLYPH.interact} Buy ${it.price}` };
+  }
+  return v;
+}
+
+function baseCard(w: GameWorld, it: GroundItem): ItemCardView {
   const choiceOpen = (w.weaponSwapChoice?.itemId === it.id) || (w.abilities.swapChoice?.itemId === String(it.id));
   const swapBottom = `${GLYPH.interact} ${choiceOpen ? 'Cancel' : 'Swap'}`;
   if (it.weapon) {
@@ -44,8 +58,8 @@ export function itemCard(w: GameWorld, it: GroundItem): ItemCardView {
       return { text: `${GLYPH.weapon[i]} ${WEAPON_NAME(s!.weaponId)} ${s!.grade}  DMG ${sd}`, delta: cardDelta(dmg, sd) };
     }) : [];
     return {
-      kind: 'weapon', id: wi.weaponId, name: WEAPON_NAME(wi.weaponId), badge: wi.grade, grade: wi.grade, cls: null,
-      row2: [WEAPON_NAME(wi.weaponId), wi.element, wi.perk].filter(Boolean).join(' · '), blurb: WEAPON_BLURB[wi.weaponId as WeaponId] ?? '',
+      kind: 'weapon', id: wi.weaponId, name: itemName(wi), badge: wi.grade, grade: wi.grade, cls: null,
+      row2: [WEAPON_NAME(wi.weaponId), wi.element && ELEMENT_WORD[wi.element], wi.perk && PERKS.find((p) => p.id === wi.perk)?.name].filter(Boolean).join(' · '), blurb: WEAPON_BLURB[wi.weaponId as WeaponId] ?? '',
       dmg: { value: dmg, matched }, tags, litTags: tags.filter((c) => carried.includes(c)),
       options, bottom: full ? swapBottom : `${GLYPH.interact} Take`,
     };

@@ -18,7 +18,7 @@ import { enemyRect } from '../enemies/enemy.ts';
 import { overlaps } from '../combat/hitGroups.ts';
 import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
-import type { FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
+import type { ElementId, FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
 import { addFlaskFill, cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
 import { CAMERA, COMBAT, FLASK, RESTART, RUSH } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
@@ -74,7 +74,7 @@ export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
 
 export type WorldEvent =
   | { t: 'move'; e: MoveEvent }
-  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean; slot?: 0 | 1; step?: number; ability?: string; chainFrom?: number; dot?: boolean }
+  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean; slot?: 0 | 1; step?: number; ability?: string; chainFrom?: number; dot?: boolean; element?: ElementId }
   | { t: 'shake'; level: 'small' | 'medium' }
   | { t: 'enemyTelegraph'; enemyId: number; attackId: string; duration: number }
   | { t: 'kill'; enemyId: number; tier: 'regular' | 'elite' }
@@ -95,7 +95,7 @@ export type WorldEvent =
   | { t: 'abilityFizzle'; slot: 0 | 1 }
   | { t: 'abilityNotReady'; slot: 0 | 1 }
   | { t: 'lockpickUsed' }
-  | { t: 'itemTaken'; itemId: number; slot: 0 | 1 }
+  | { t: 'itemTaken'; itemId: number; slot: 0 | 1; kind?: 'weapon' | 'ability' }
   | { t: 'sparringHit' }
   | { t: 'openClassPick'; cls: ClassId }
   | { t: 'stationDone'; id: number }
@@ -109,7 +109,8 @@ export type WorldEvent =
   | { t: 'luckyResult'; id: LuckyId }
   | { t: 'luckyBroken'; objectId: number }
   | { t: 'purchase'; what: string; price: number }
-  | { t: 'cantAfford' };
+  | { t: 'cantAfford' }
+  | { t: 'chestLocked' };
 
 export interface GameWorldOptions {
   grid: TileGrid;

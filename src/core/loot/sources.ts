@@ -71,7 +71,7 @@ export function openChest(w: GameWorld, c: Chest): boolean {
   if (c.opened) return false;
   if (c.kind === 'key') {
     if (!tryLockpick(w)) {
-      if (w.econ.keys < 1) return false;
+      if (w.econ.keys < 1) { w.events.push({ t: 'chestLocked' }); return false; }
       w.econ.keys -= 1;
     }
   }

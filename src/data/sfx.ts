@@ -57,6 +57,9 @@ export const SFX: Record<string, SfxDef> = {
   hammer_throw: { vol: 0.55, variants: 0 }, hammer_return: { vol: 0.5, variants: 0 }, hammer_catch: { vol: 0.5, variants: 0 },
   shot_bow: { vol: 0.5, variants: 2 }, shot_crossbow: { vol: 0.5, variants: 2 }, shot_staff: { vol: 0.5, variants: 2 }, shot_orb: { vol: 0.55, variants: 2 },
   zap: { vol: 0.45, variants: 2, ...W },
+  // ART6: element hits and statuses.
+  fire_hit: hit(2), ice_hit: hit(2), poison_hit: hit(2), wind_hit: hit(2),
+  freeze: { vol: 0.55, variants: 2, ...W }, shatter: { vol: 0.6, variants: 2, ...W },
   ui_move: ui, ui_confirm: ui, ui_back: ui, ui_error: ui, ui_open: ui, ui_close: ui, ui_toggle: ui,
 };
 
