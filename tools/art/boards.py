@@ -286,7 +286,92 @@ def ui_mock(path):
     out.resize((1280, 1520), Image.NEAREST).save(path)
 
 
+CLASS_KITS = {'swordsman': (('greatsword', 'katana'), ('blade_dash', 'whirlwind')),
+              'tank': (('war_maul', 'iron_fists'), ('shockwave', 'shoulder_charge')),
+              'archer': (('bow', 'crossbow'), ('arrow_rain', 'hunters_mark')),
+              'wizard': (('storm_hammer', 'staff'), ('thunder_strike', 'blink'))}
+SHOT = {'bow': 'arrow_00', 'crossbow': 'bolt_00', 'staff': 'staff_bolt_00'}
+
+
+def classes_board(path):
+    """ART5 Task 9: one row per class: its outfit with its 2 starting weapons mid-attack, then its 2 M4 abilities
+    mid-effect next to a training dummy."""
+    from . import projectiles as PR
+    from . import vfx as VX
+    from . import village as VL
+    vfx, _ = VX.build_frames()
+    proj, _ = PR.build_frames()
+    dummy = VL.dummy_frames()['training_dummy_idle_00']
+    root = os.path.join(os.path.dirname(__file__), '..', '..', 'public', 'assets', 'bg')
+    bg = Image.new('RGBA', (640, 360))
+    for i in range(3):
+        bg.alpha_composite(Image.open(os.path.join(root, f'bg_plains_{i}.png')).convert('RGBA'))
+    RH, gy = 120, 108
+    out = Image.new('RGBA', (640, RH * 4), (0, 0, 0, 255))
+    for r, (cls, (weapons, abilities)) in enumerate(CLASS_KITS.items()):
+        row = bg.crop((0, 360 - RH - 20, 640, 360 - 20)).copy()
+        row.alpha_composite(Image.new('RGBA', (640, RH - gy), (0x3a, 0x2a, 0x22, 255)), (0, gy))
+        col = P.CLASS_COLORS[cls]
+
+        def body(pose, px):
+            row.alpha_composite(player(cls, pose), (px - 24, gy - 46))
+
+        def fx(name, cx, bottom):
+            im = vfx[name]
+            row.alpha_composite(im, (int(cx - im.width / 2), int(bottom - im.height)))
+
+        # the 2 starting weapons, mid-attack (frame 2 of step 1)
+        for k, wid in enumerate(weapons):
+            px = 70 + k * 120
+            key = WP.KEYS[wid][0]
+            fr = WP.build_frames(wid)
+            pose = POSES[key][2]
+            if f'{key}_smear' in fr:
+                row.alpha_composite(fr[f'{key}_smear'], (px - 80, gy - 72))
+            body(pose, px)
+            row.alpha_composite(fr[f'{key}_02'], (px - 80, gy - 72))
+            if wid in SHOT:
+                row.alpha_composite(proj[SHOT[wid]], (px + 34, gy - 26))
+        # the 2 abilities, mid-effect, each next to a dummy
+        for k, ab in enumerate(abilities):
+            px, dx = 320 + k * 160, 320 + k * 160 + 64
+            row.alpha_composite(dummy, (dx - 24, gy - 46))
+            if ab == 'blade_dash':
+                fx('blade_dash_00', px - 10, gy - 16)
+                body(POSES['dash'][1], px + 30)
+            elif ab == 'whirlwind':
+                body(POSES['spin'][1], px + 30)
+                fx('whirlwind_01', px + 30, gy - 4)
+            elif ab == 'shockwave':
+                body(POSES['cast_slam'][2], px + 10)
+                fx('ab_shockwave_64_02', px + 10, gy)
+            elif ab == 'shoulder_charge':
+                fx('shoulder_lines_01', px, gy - 14)
+                body(POSES['shoulder'][0], px + 30)
+            elif ab == 'arrow_rain':
+                body(POSES['cast_up'][1], px)
+                for j, (ax, ay) in enumerate(((-14, -60), (-4, -80), (6, -50), (14, -72), (-8, -36))):
+                    row.alpha_composite(vfx['arrow_rain_00'], (dx + ax, gy + ay))
+            elif ab == 'hunters_mark':
+                body(POSES['idle'][0], px)
+                fx('mark_01', dx, gy - 46)
+            elif ab == 'thunder_strike':
+                body(POSES['cast_up'][1], px)
+                fx('thunder_01', dx, gy)
+            elif ab == 'blink':
+                body(POSES['idle'][0], px + 20)
+                fx('blink_puff_01', px - 20, gy)
+                fx('blink_puff_00', px + 20, gy)
+        text(row, cls.capitalize(), 6, 6, color=col)
+        text(row, ' / '.join(w.replace('_', ' ').title() for w in weapons), 6, 18, 'rb_small', P.UI_COLORS['text'])
+        text(row, ' / '.join(a.replace('_', ' ').title() for a in abilities), 320, 6, 'rb_small',
+             P.UI_COLORS['text'])
+        out.alpha_composite(row, (0, r * RH))
+    out.resize((1280, RH * 8), Image.NEAREST).convert('RGB').save(path)
+
+
 def build(preview):
     moves_board(os.path.join(preview, 'player_moves_board.png'))
     loot_board(os.path.join(preview, 'style_board_loot.png'))
     ui_mock(os.path.join(preview, 'ui_mock.png'))
+    classes_board(os.path.join(preview, 'style_board_classes.png'))
