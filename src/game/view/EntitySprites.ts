@@ -70,7 +70,8 @@ export class PlayerSprite {
     return {
       state: b.state, stateTicks: b.stateTicks, vx: b.vx, vy: b.vy, facing: b.facing, landSpeed: b.landSpeed,
       dead: w.health.dead,
-      attack: cur && inst ? { weaponId: inst.weaponId, step: cur.step, phase: cur.phase, phaseTicks: cur.phaseTicks, lens: cur.lens } : null,
+      attack: cur && inst ? { weaponId: inst.weaponId, step: cur.step, phase: cur.phase, phaseTicks: cur.phaseTicks, lens: cur.lens, kind: cur.kind } : null,
+      charging: w.combat.charge ? w.combat.slots[w.combat.charge.slot]?.weaponId ?? null : null,
       diveWeapon: w.combat.slots[diveSlot]?.weaponId ?? null,
       drinkTicks: w.drinking ? w.drinking.t : null,
       ticksSinceDoubleJump: w.tick - ev.lastDoubleJumpTick,
@@ -234,8 +235,8 @@ export class ProjectileSprites {
   }
 
   /** Returns the projectiles seen for the first time, and the ones that just went (for impact effects). */
-  update(list: EnemyProjectile[], worldTick: number): { spawned: EnemyProjectile[]; gone: { id: number; x: number; y: number; def: string }[] } {
-    const live = new Set<number>(), spawned: EnemyProjectile[] = [], gone: { id: number; x: number; y: number; def: string }[] = [];
+  update<P extends Pick<EnemyProjectile, 'id' | 'x' | 'y' | 'vx' | 'vy'> & { def: { id: string } }>(list: P[], worldTick: number): { spawned: P[]; gone: { id: number; x: number; y: number; def: string }[] } {
+    const live = new Set<number>(), spawned: P[] = [], gone: { id: number; x: number; y: number; def: string }[] = [];
     const step = (ANIM.PROJ_ANGLE_STEP * Math.PI) / 180;
     for (const p of list) {
       const def = this.bank.projectile(p.def.id);

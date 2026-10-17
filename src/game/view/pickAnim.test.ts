@@ -54,6 +54,22 @@ describe('player anim choice (08 §5.2, §6.1)', () => {
     // Greatsword step 1 frames 0 and 1 draw the weapon behind the body.
     expect(pick({ attack: { weaponId: 'greatsword', step: 0, phase: 'startup', phaseTicks: 1, lens } }).weapon!.behind).toBe(true);
   });
+  it('ART5 weapons: steps, charged attacks, the hammer throw, charge poses; ranged weapons have no smear', () => {
+    const lens = { startup: 12, active: 4, recovery: 12 };
+    const k = pick({ attack: { weaponId: 'iron_fists', step: 3, phase: 'active', phaseTicks: 1, lens } });
+    expect(k.key).toBe('atk_iron_fists_4');
+    expect(k.weapon!.smear).toBe('atk_iron_fists_4_smear');
+    const bow = pick({ attack: { weaponId: 'bow', step: 0, phase: 'active', phaseTicks: 1, lens } });
+    expect(bow.key).toBe('atk_bow_1');
+    expect(bow.weapon!.smear).toBeNull();
+    expect(bow.frame).toBe(1);                                    // no active segment: hold the last startup frame
+    expect(pick({ attack: { weaponId: 'staff', step: 0, phase: 'startup', phaseTicks: 1, lens, kind: 'charged' } }).key).toBe('atk_staff_charged');
+    expect(pick({ attack: { weaponId: 'storm_hammer', step: 0, phase: 'startup', phaseTicks: 1, lens, kind: 'throw' } }).key).toBe('atk_storm_hammer_throw');
+    expect(pick({ attack: { weaponId: 'storm_hammer', step: 0, phase: 'recovery', phaseTicks: 1, lens, kind: 'throw' } }).weapon!.smear).toBeNull();   // the throw has no smear frame
+    const ch = pick({ charging: 'katana' }, 0.2);
+    expect(ch.key).toBe('charge_katana');
+    expect(ch.weapon!.frame).toMatch(/^charge_katana_0[01]$/);
+  });
   it('dives draw the weapon dive layer', () => {
     const p = pick({ state: 'diveFall', stateTicks: 1 });
     expect(p.key).toBe('dive_fall');

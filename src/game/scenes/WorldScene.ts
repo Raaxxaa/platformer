@@ -14,12 +14,12 @@ import { ClassPickModel, type Kit } from '../../ui/popups/classPickModel.ts';
 import { ClassPickView } from '../../ui/popups/classPick.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { specToInput, type InputSpec } from '../../core/sim/playerSim.ts';
-import { ENEMY } from '../../core/tuning.ts';
+import { ENEMY, TICK_RATE } from '../../core/tuning.ts';
 import { formatTime } from '../../core/time.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
 import { drawTerrain, Parallax } from '../view/levelView.ts';
-import type { AnimDef } from '../view/animClock.ts';
+import { timeFrame, type AnimDef } from '../view/animClock.ts';
 import { AnimBank } from '../view/animBank.ts';
 import { EnemySprite, PlayerSprite, ProjectileSprites, type PlayerViewEvents } from '../view/EntitySprites.ts';
 import { SfxPlayer } from '../audio/sfx.ts';
@@ -68,6 +68,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected enemyViews = new Map<EnemyState, EnemySprite>();
   protected bank!: AnimBank;
   protected projViews!: ProjectileSprites;
+  protected playerProjViews!: ProjectileSprites;
+  protected hammerSprite!: Phaser.GameObjects.Sprite;
   protected vfx!: VfxDirector;
   protected markersGfx!: Phaser.GameObjects.Graphics;
   protected itemViews!: ItemViews;
@@ -113,6 +115,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.boxes = this.add.graphics().setDepth(DEPTH.enemies);
     this.playerView = new PlayerSprite(this, this.bank);
     this.projViews = new ProjectileSprites(this, this.bank);
+    this.playerProjViews = new ProjectileSprites(this, this.bank);
+    this.hammerSprite = this.add.sprite(0, 0, 'projectiles').setDepth(DEPTH.playerProjectiles).setVisible(false);
     this.vfx = new VfxDirector(new VfxPool(this, this.bank));
     this.markersGfx = this.add.graphics().setDepth(DEPTH.markers);
     this.itemViews = new ItemViews(this);
@@ -329,7 +333,11 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     }
 
     // Player projectiles, blasts and the thrown Storm Hammer: grey boxes until ART5 (rotated boxes are drawn as their swept box).
-    for (const p of w.playerProjectiles) g.fillStyle(DRAW.playerShot, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
+    // Player projectiles with ART5 art (arrows, bolts, orbs); a grey box for any without.
+    this.playerProjViews.update(this.boxesMode ? [] : w.playerProjectiles, w.tick);
+    for (const p of w.playerProjectiles) {
+      if (this.boxesMode || !this.playerProjViews.hasArt(p.def.id)) g.fillStyle(DRAW.playerShot, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
+    }
     for (const id of w.blasts) { const bl = w.hitGroups.find((x) => x.id === id); if (bl) g.fillStyle(DRAW.blast, DRAW.blastAlpha).fillRect(bl.rect.x, bl.rect.y, bl.rect.w, bl.rect.h); }
 
     const b = w.body;
@@ -367,7 +375,11 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       g.fillStyle(DRAW.attackBox, DRAW.attackAlpha).fillRect(h.rect.x, h.rect.y, h.rect.w, h.rect.h);
     }
     // The thrown Storm Hammer, over its own hitbox (grey box until ART5).
-    if (w.hammer) g.fillStyle(DRAW.hammer, 1).fillRect(w.hammer.x - 8, w.hammer.y - 8, 16, 16);
+    // The thrown Storm Hammer spins (ART5 `hammer_spin`).
+    const spin = this.bank.projectile('hammer_spin');
+    this.hammerSprite.setVisible(!!w.hammer && !!spin && !this.boxesMode);
+    if (w.hammer && spin && !this.boxesMode) this.hammerSprite.setTexture(spin.atlas, spin.frames[timeFrame(spin, w.tick / TICK_RATE)]).setPosition(w.hammer.x, w.hammer.y);
+    else if (w.hammer) g.fillStyle(DRAW.hammer, 1).fillRect(w.hammer.x - 8, w.hammer.y - 8, 16, 16);
 
     this.drawMarks();
     this.drawHud();

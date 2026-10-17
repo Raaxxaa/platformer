@@ -19,8 +19,9 @@ function frames(atlas: string): Set<string> {
 }
 
 describe('anim keys used by the view exist in the art', () => {
-  it('every atlas file exists', () => {
+  it('every atlas file exists, and every weapon with art is loaded', () => {
     for (const a of ATLASES) expect(existsSync(`public/assets/atlases/${a}.png`), a).toBe(true);
+    for (const id of Object.keys(WEAPON_ART)) expect(ATLASES as readonly string[], id).toContain(`weapon_${id}`);
   });
   it('player anims, with trim frames for every body frame', () => {
     const trim = frames('player_swordsman_trim');
@@ -31,14 +32,18 @@ describe('anim keys used by the view exist in the art', () => {
     }
   });
   it('weapon steps: body anim + weapon frames + smear; dives', () => {
-    for (const [id, { steps }] of Object.entries(WEAPON_ART)) {
+    for (const [id, art] of Object.entries(WEAPON_ART)) {
       const wf = frames(`weapon_${id}`);
-      for (let s = 0; s < steps; s++) {
-        const d = find('player_swordsman', weaponStepKey(id, s));
-        expect(d, weaponStepKey(id, s)).toBeDefined();
-        for (const f of d!.frames) expect(wf.has(f), f).toBe(true);
-        expect(wf.has(`${weaponStepKey(id, s)}_smear`)).toBe(true);
+      const keys = [...Array.from({ length: art.steps }, (_, s) => weaponStepKey(id, s)),
+        ...(art.charged ? [`atk_${id}_charged`] : []), ...(art.throw ? [`atk_${id}_throw`] : []), ...(art.charge ? [`charge_${id}`] : [])];
+      for (const outfit of ['swordsman', 'tank', 'archer', 'wizard']) {
+        for (const k of keys) {
+          const d = find(`player_${outfit}`, k);
+          expect(d, `${outfit} ${k}`).toBeDefined();
+          for (const f of d!.frames) expect(wf.has(f), f).toBe(true);
+        }
       }
+      if (art.smear) for (let s = 0; s < art.steps; s++) expect(wf.has(`${weaponStepKey(id, s)}_smear`), id).toBe(true);
       for (const p of DIVE_PARTS) expect(find(`weapon_${id}`, weaponDiveKey(id, p)), weaponDiveKey(id, p)).toBeDefined();
     }
   });
