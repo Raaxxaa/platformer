@@ -6022,6 +6022,41 @@
   "fps": 24
  },
  {
+  "key": "buff_aura",
+  "atlas": "vfx",
+  "frames": [
+   "buff_aura_00",
+   "buff_aura_01",
+   "buff_aura_02",
+   "buff_aura_03",
+   "buff_aura_04",
+   "buff_aura_05"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "burn_flame",
+  "atlas": "vfx",
+  "frames": [
+   "burn_flame_00",
+   "burn_flame_01",
+   "burn_flame_02"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "chain_spark",
+  "atlas": "vfx",
+  "frames": [
+   "chain_spark_00",
+   "chain_spark_01"
+  ],
+  "mode": "loop",
+  "fps": 20
+ },
+ {
   "key": "charge_full",
   "atlas": "vfx",
   "frames": [
@@ -6039,6 +6074,41 @@
    "charge_glow_00"
   ],
   "mode": "once"
+ },
+ {
+  "key": "chest_open",
+  "atlas": "vfx",
+  "frames": [
+   "chest_open_00",
+   "chest_open_01",
+   "chest_open_02",
+   "chest_open_03"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "chest_open_cursed",
+  "atlas": "vfx",
+  "frames": [
+   "chest_open_cursed_00",
+   "chest_open_cursed_01",
+   "chest_open_cursed_02",
+   "chest_open_cursed_03"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "chill_frost",
+  "atlas": "vfx",
+  "frames": [
+   "chill_frost_00",
+   "chill_frost_01",
+   "chill_frost_02"
+  ],
+  "mode": "loop",
+  "fps": 8
  },
  {
   "key": "crit_spark",
@@ -6083,6 +6153,20 @@
    "debris_03"
   ],
   "mode": "once"
+ },
+ {
+  "key": "debuff_aura",
+  "atlas": "vfx",
+  "frames": [
+   "debuff_aura_00",
+   "debuff_aura_01",
+   "debuff_aura_02",
+   "debuff_aura_03",
+   "debuff_aura_04",
+   "debuff_aura_05"
+  ],
+  "mode": "once",
+  "fps": 20
  },
  {
   "key": "dive_bounce",
@@ -6218,6 +6302,14 @@
   "mode": "once"
  },
  {
+  "key": "freeze_block",
+  "atlas": "vfx",
+  "frames": [
+   "freeze_block_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "guard_spark",
   "atlas": "vfx",
   "frames": [
@@ -6249,6 +6341,17 @@
   "mode": "once"
  },
  {
+  "key": "hit_fire",
+  "atlas": "vfx",
+  "frames": [
+   "hit_fire_00",
+   "hit_fire_01",
+   "hit_fire_02"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
   "key": "hit_heavy",
   "atlas": "vfx",
   "frames": [
@@ -6256,6 +6359,39 @@
    "hit_heavy_01",
    "hit_heavy_02",
    "hit_heavy_03"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "hit_ice",
+  "atlas": "vfx",
+  "frames": [
+   "hit_ice_00",
+   "hit_ice_01",
+   "hit_ice_02"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "hit_lightning",
+  "atlas": "vfx",
+  "frames": [
+   "hit_lightning_00",
+   "hit_lightning_01",
+   "hit_lightning_02"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "hit_poison",
+  "atlas": "vfx",
+  "frames": [
+   "hit_poison_00",
+   "hit_poison_01",
+   "hit_poison_02"
   ],
   "mode": "once",
   "fps": 30
@@ -6272,6 +6408,17 @@
   "fps": 30
  },
  {
+  "key": "hit_wind",
+  "atlas": "vfx",
+  "frames": [
+   "hit_wind_00",
+   "hit_wind_01",
+   "hit_wind_02"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
   "key": "link",
   "atlas": "vfx",
   "frames": [
@@ -6279,6 +6426,20 @@
    "link_01",
    "link_02",
    "link_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "lucky_break",
+  "atlas": "vfx",
+  "frames": [
+   "lucky_break_00",
+   "lucky_break_01",
+   "lucky_break_02",
+   "lucky_break_03",
+   "lucky_break_04",
+   "lucky_break_05"
   ],
   "mode": "once",
   "fps": 24
@@ -6318,6 +6479,17 @@
   "fps": 30
  },
  {
+  "key": "poison_bubble",
+  "atlas": "vfx",
+  "frames": [
+   "poison_bubble_00",
+   "poison_bubble_01",
+   "poison_bubble_02"
+  ],
+  "mode": "once",
+  "fps": 8
+ },
+ {
   "key": "ring_djump",
   "atlas": "vfx",
   "frames": [
@@ -6342,6 +6514,22 @@
   "fps": 24
  },
  {
+  "key": "shatter_shards",
+  "atlas": "vfx",
+  "frames": [
+   "shatter_shards_00",
+   "shatter_shards_01",
+   "shatter_shards_02",
+   "shatter_shards_03",
+   "shatter_shards_04",
+   "shatter_shards_05",
+   "shatter_shards_06",
+   "shatter_shards_07"
+  ],
+  "mode": "once",
+  "fps": 1
+ },
+ {
   "key": "shoulder_lines",
   "atlas": "vfx",
   "frames": [
@@ -6350,6 +6538,80 @@
    "shoulder_lines_02"
   ],
   "mode": "loop",
+  "fps": 24
+ },
+ {
+  "key": "sig_ground_wave",
+  "atlas": "vfx",
+  "frames": [
+   "sig_ground_wave_00",
+   "sig_ground_wave_01",
+   "sig_ground_wave_02",
+   "sig_ground_wave_03"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "sig_phantom_edge",
+  "atlas": "vfx",
+  "frames": [
+   "sig_phantom_edge_00",
+   "sig_phantom_edge_01",
+   "sig_phantom_edge_02",
+   "sig_phantom_edge_03",
+   "sig_phantom_edge_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "sig_quake",
+  "atlas": "vfx",
+  "frames": [
+   "sig_quake_00",
+   "sig_quake_01",
+   "sig_quake_02",
+   "sig_quake_03"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "sig_singularity",
+  "atlas": "vfx",
+  "frames": [
+   "sig_singularity_00",
+   "sig_singularity_01",
+   "sig_singularity_02",
+   "sig_singularity_03"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "sig_tempest",
+  "atlas": "vfx",
+  "frames": [
+   "sig_tempest_00",
+   "sig_tempest_01",
+   "sig_tempest_02",
+   "sig_tempest_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "sig_thunderclap",
+  "atlas": "vfx",
+  "frames": [
+   "sig_thunderclap_00",
+   "sig_thunderclap_01",
+   "sig_thunderclap_02",
+   "sig_thunderclap_03",
+   "sig_thunderclap_04"
+  ],
+  "mode": "once",
   "fps": 24
  },
  {
@@ -6423,6 +6685,18 @@
    "whirlwind_03"
   ],
   "mode": "loop",
+  "fps": 24
+ },
+ {
+  "key": "wind_gust",
+  "atlas": "vfx",
+  "frames": [
+   "wind_gust_00",
+   "wind_gust_01",
+   "wind_gust_02",
+   "wind_gust_03"
+  ],
+  "mode": "once",
   "fps": 24
  },
  {

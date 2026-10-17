@@ -117,5 +117,11 @@
 | 1:21.3 | `wall_break` | Wall broken: rubble crash | 0.6 |
 | 1:22.2 | `class_change` | Class change: soft chord | 0.5 |
 | 1:23.2 | `class_discovered` | New class discovered: fanfare | 0.5 |
+| 1:24.3 | `fire_hit` | Fire hit: crackle | 0.5 |
+| 1:24.9 | `ice_hit` | Ice hit: glass tick | 0.5 |
+| 1:25.3 | `freeze` | Freeze: ice crackle | 0.5 |
+| 1:26.0 | `shatter` | Shatter: glass break + pings | 0.8 |
+| 1:26.8 | `poison_hit` | Poison hit: bubbly blips | 0.5 |
+| 1:27.4 | `wind_hit` | Wind hit: airy whoosh | 0.5 |
 
-Total length: 1:24.3.
+Total length: 1:28.0.
