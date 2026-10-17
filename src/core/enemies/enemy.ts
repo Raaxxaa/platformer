@@ -74,6 +74,8 @@ export interface EnemyState {
   status: EnemyStatus;
   /** The weapon whose hit or effect killed it (null: an ability or nothing), for Greedy and Wind (05 §4.4, 02 §6.6). */
   killedBy?: import('../combat/types.ts').WeaponInstance | null;
+  /** 04 §2.9 elite item roll, made at stage load. */
+  drop?: 'key' | 'ability' | null;
 }
 
 /** Stage-scaled attack damage A (a float; 02 §3.3 rounds it). */

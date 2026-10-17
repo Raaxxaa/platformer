@@ -1,5 +1,6 @@
 // Weapon and ability items on the ground, interacting, pickup and the swap choices (03 §7.1, 05 §5.7, 06 §11, 07 §6.2–6.3).
 // Interactables (statues, boards) share the same targeting; their owners give the action.
+import { onItemTaken } from '../loot/sources.ts';
 import { resetLeech } from '../loot/perks.ts';
 import type { InputState } from '../input.ts';
 import { emptyButton } from '../input.ts';
@@ -27,6 +28,9 @@ export interface GroundItem {
   fullShown?: boolean;
   /** Key-chest pair (05 §5.2): taking one item removes the other. */
   chestGroup?: number;
+  /** A free loot stand's item (05 §5.1); the chest it came from. */
+  stand?: boolean;
+  fromChest?: number;
   /** A shop or merchant item: its price (05 §11); taking it pays. */
   price?: number;
 }
@@ -47,7 +51,7 @@ const objRect = (o: Interactable): Rect => {
 };
 
 /** Drops an item at a point (05 §5.7): inside a solid it moves straight up to the first free row (06 §11.2), then falls. */
-export function dropItem(w: GameWorld, x: number, y: number, item: Pick<GroundItem, 'weapon' | 'ability' | 'endless' | 'label' | 'key' | 'chestGroup' | 'price'>): GroundItem {
+export function dropItem(w: GameWorld, x: number, y: number, item: Pick<GroundItem, 'weapon' | 'ability' | 'endless' | 'label' | 'key' | 'chestGroup' | 'price' | 'stand' | 'fromChest'>): GroundItem {
   let yy = y;
   while (yy > ITEM.box && w.grid.isSolidPx(Math.floor(x), yy - 1)) yy -= 1;
   const it: GroundItem = { id: w.newId(), x, y: yy, vy: 0, resting: false, ...item };
@@ -90,6 +94,7 @@ function takeInto(w: GameWorld, it: GroundItem, slot: 0 | 1): void {
     if (old) { resetLeech(old); dropItem(w, b.x, b.y, { weapon: old }); }
   }
   if (!it.endless) w.groundItems = w.groundItems.filter((x) => x !== it);
+  onItemTaken(w, it);
   closeChoices(w);
   w.refreshClassState();                                       // 03 §4.4: the same tick
   w.events.push({ t: 'itemTaken', itemId: it.id, slot });

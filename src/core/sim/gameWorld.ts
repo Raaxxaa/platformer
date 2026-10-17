@@ -1,5 +1,6 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
+import { setupLoot, type Chest } from '../loot/sources.ts';
 import { newEconomy, stepCoins, type Coin, type EconomyState } from '../economy/gold.ts';
 import { stepKeys } from '../economy/keys.ts';
 import { stepSignatures } from '../combat/signatures.ts';
@@ -63,7 +64,7 @@ import { stepRockfall, type RockMarker } from '../enemies/greatBoar.ts';
 export type Stage = 1 | 2 | 3 | 4;
 
 /** Loot objects that are only grey markers until M4. */
-const MARKER_TYPES = new Set(['lucky_block', 'loot_stand', 'key', 'key_chest', 'cursed_chest', 'timed_chest', 'merchant_spot']);
+const MARKER_TYPES = new Set(['lucky_block', 'merchant_spot']);
 
 /** 'stage' while playing, 'dead' for the 1 s after death, then 'deathScreen' (06 §6.1). */
 export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
@@ -98,7 +99,10 @@ export type WorldEvent =
   | { t: 'leftTraining' }
   | { t: 'goldChanged'; tenths: number; reason: string }
   | { t: 'keysFull' }
-  | { t: 'keyTaken' };
+  | { t: 'keyTaken' }
+  | { t: 'chestOpened'; kind: 'key' | 'cursed' | 'timed'; objectId: number }
+  | { t: 'curseApplied'; id: string }
+  | { t: 'curseLifted' };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -166,6 +170,7 @@ export class GameWorld {
   tick = 0;
   econ: EconomyState = newEconomy();
   coins: Coin[] = [];
+  chests: Chest[] = [];
   /** Shown gold (05 §9.1). */
   get gold(): number { return Math.floor(this.econ.goldTenths / 10); }
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
@@ -310,7 +315,9 @@ export class GameWorld {
     this.weaponSwapChoice = null;
     this.respawns = [];
     this.training = null;
+    this.interactables = [];
     if (this.level?.kind === 'training') setupTraining(this);
+    if (this.level) setupLoot(this);
     fillAbilities(this);
   }
 

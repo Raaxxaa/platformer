@@ -17,13 +17,15 @@ describe('GameWorld.fromLevel (M3 Task 4)', () => {
     expect(w.enemies[0].facing).toBe(-1);
     expect(w.waveSpawns.map((s) => [s.enemy, s.wave, s.arena])).toEqual([['bandit', 1, 'a1']]);
   });
-  it('doors are bodies and loot objects are markers', () => {
+  it('doors are bodies; keys and chests are real loot, the rest still markers', () => {
     const w = GameWorld.fromLevel(d, { seedText: 'ABC' });
     const doors = w.bodies.list.filter((b) => b.id.startsWith('arena_door'));
     expect(doors.map((b) => b.active)).toEqual([false, false]);
     expect(w.bodies.get('td1')?.active).toBe(true);
     expect(w.grid.kindAt(10, 6)).toBe('solid');             // the timed door blocks
-    expect(w.markers.map((m) => m.type).sort()).toEqual(['key', 'lucky_block', 'timed_chest']);
+    expect(w.markers.map((m) => m.type).sort()).toEqual(['lucky_block']);
+    expect(w.groundItems.filter((i) => i.key).length).toBe(1);
+    expect(w.chests.map((c) => c.kind)).toEqual(['timed']);
   });
   it('the run seed is fnv1a32 of the seed text, and the same seed gives the same stream values', () => {
     const a = GameWorld.fromLevel(d, { seedText: 'ABC' }), b = GameWorld.fromLevel(d, { seedText: 'ABC' });
