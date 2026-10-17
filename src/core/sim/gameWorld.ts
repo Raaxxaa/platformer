@@ -22,6 +22,7 @@ import type { AbilityId, AbilityRuntime, BondId, ClassState, HybridId } from '..
 import { clearAbilityEffects, fillAbilities, onCastCancelMove, onCastHurt, stepAbilities } from '../abilities/abilitySystem.ts';
 import { stepAbilityEntities, type AbilityEntity } from '../abilities/entities.ts';
 import '../abilities/list/index.ts';
+import { onHurtCloseChoice, stepGroundItems, stepInteract, type GroundItem, type Interactable } from '../abilities/items.ts';
 import { vampireTenths } from '../abilities/list/vampire.ts';
 import { hammerOutIn, removeHammer, stepHammer, type HammerState } from '../combat/stormHammer.ts';
 import { clearPlayerProjectiles, clearSpentGroups, stepPlayerProjectiles, type PlayerProjectile } from '../combat/playerProjectiles.ts';
@@ -82,7 +83,8 @@ export type WorldEvent =
   | { t: 'abilityLinked'; slot: 0 | 1 }
   | { t: 'abilityFizzle'; slot: 0 | 1 }
   | { t: 'abilityNotReady'; slot: 0 | 1 }
-  | { t: 'lockpickUsed' };
+  | { t: 'lockpickUsed' }
+  | { t: 'itemTaken'; itemId: number; slot: 0 | 1 };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -99,6 +101,8 @@ export interface GameWorldOptions {
   enemies?: EnemySpawn[];
   /** Solid bodies at stage load (doors etc.); copied fresh on every restart. */
   bodies?: SolidBody[];
+  /** Items on the ground at stage start (M4 armory stands). */
+  items?: GroundItem[];
   /** Weapons and abilities at stage start and on restart (default: the M2 loadout). */
   loadout?: Loadout;
 }
@@ -117,6 +121,10 @@ export class GameWorld {
   abilities!: AbilityRuntime;
   /** Live ability entities (zones, bolts, marks...): each ticks itself; death and stage start clear them (03 §7.9). */
   abilityEntities: AbilityEntity[] = [];
+  /** Weapon and ability items on the ground, and placed interactables (05 §5.7, 06 §11). */
+  groundItems: GroundItem[] = [];
+  interactables: Interactable[] = [];
+  weaponSwapChoice: { itemId: number } | null = null;
   classState!: ClassState;
   /** Bonds and hybrids seen this session (06 saves them in M7). */
   readonly discoveredClasses = new Set<BondId | HybridId>();
@@ -275,6 +283,8 @@ export class GameWorld {
     this.phase = 'stage';
     this.deathTick = 0;
     this.abilityEntities = [];
+    this.groundItems = (this.opts.items ?? []).map((i) => ({ ...i, weapon: i.weapon && { ...i.weapon }, ability: i.ability && { ...i.ability } }));
+    this.weaponSwapChoice = null;
     fillAbilities(this);
   }
 
@@ -388,6 +398,7 @@ export class GameWorld {
   /** Unblocked damage to the player resets the hit streak (02 §5.2 step 10). */
   onPlayerDamaged(): void {
     this.hitStreak = 0;
+    onHurtCloseChoice(this);
   }
 
   /** Hurt pipeline hook: hitstun cancels the attack, charge and drink (02 §5.2 step 7). */
@@ -528,7 +539,7 @@ export class GameWorld {
     if (this.handleRestart(rawInput)) return;
     if (this.phase === 'deathScreen' || this.run.phase === 'stageClear') return;   // frozen; clocks stopped
     // A dead player takes no input; the world keeps running around them.
-    const input = this.health.dead ? emptyInput() : rawInput;
+    let input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
     clearSpentGroups(this);
     stepClocks(this.run);
@@ -541,6 +552,7 @@ export class GameWorld {
     // 3. Player actions.
     // A slot whose Storm Hammer is out cannot dive (02 §11).
     this.ctx.slotUsable = [this.combat.slots[0] !== null && !hammerOutIn(this, 0), this.combat.slots[1] !== null && !hammerOutIn(this, 1)];
+    input = stepInteract(this, input);
     stepPlayerCombat(this, input);
     tryStartDrink(this, input);
     stepDrink(this);
@@ -573,6 +585,7 @@ export class GameWorld {
     stepHammer(this);
     stepProjectiles(this);
     stepAbilityEntities(this);
+    stepGroundItems(this);
     // 7. Hit resolution: player hits first (ties go to the player), then enemy hits.
     resolvePlayerHits(this);
     resolveEnemyHits(this);

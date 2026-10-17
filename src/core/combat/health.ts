@@ -52,7 +52,7 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   // 5. Damage.
   const dealt = enemyHitDamage(src.damageA, 1, null);
   h.hp -= dealt;
-  w.onPlayerDamaged();                                       // the hit streak resets (02 §1)
+  w.onPlayerDamaged();                                       // the hit streak resets (02 §1); a swap choice closes
   // 6. Death.
   if (h.hp <= 0 && !secondWind()) {
     h.hp = 0;
