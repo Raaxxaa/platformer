@@ -4,7 +4,7 @@ import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { roundHalfUp } from '../math.ts';
 import { onBossKilled } from '../enemies/boss.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { COMBAT, ENEMY } from '../tuning.ts';
+import { COMBAT, ENEMY, RUSH, ticks } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
 import { applyEnemyKnockback, applyLaunch, applyPull, controlOrPoise, damagePoise, isCommitted } from './enemyReactions.ts';
 import { afterHit, guaranteedCrit, hitBonus, kbDir, onLanding, targetMult } from './hitMods.ts';
@@ -13,7 +13,8 @@ import { hurtPlayer } from './health.ts';
 import { refundDash } from '../player/dash.ts';
 import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
 import { maxStop, meleeHitStopTicks } from './hitStop.ts';
-import { rushGoldMult, rushLevel } from './rush.ts';
+import { addRush, rushGoldMult, rushLevel } from './rush.ts';
+import { TRAINING } from '../../data/enemies.ts';
 
 /** The player hurtbox as a rect. */
 export function playerRect(w: GameWorld): Rect {
@@ -131,6 +132,12 @@ export function resolveEnemyHits(w: GameWorld): void {
 /** Step 9: on-kill effects in order of death (02 §3.5). */
 export function processDeaths(w: GameWorld): void {
   for (const e of w.pendingDeaths) {
+    if (e.def.tier === 'target') {
+      // Straw target (04 §2.12): Rush only (a regular kill), no gold or flask; back in 3.0 s.
+      addRush(w, RUSH.KILL_REGULAR);
+      w.respawns.push({ spawn: { enemy: e.def.id, x: e.spawn.x, y: e.spawn.y, facing: e.spawn.facing }, at: w.tick + ticks(TRAINING.strawRespawnS) });
+      continue;
+    }
     const tier = e.def.elite ? 'elite' : 'regular';
     w.onPlayerKill(e, tier);
     // SPEC-GAP: M2 credits gold instantly; coins in M5
@@ -139,6 +146,6 @@ export function processDeaths(w: GameWorld): void {
     if (e.boss) onBossKilled(w, e);
   }
   // Blademaster (03 §5.2): kills reset the dash; several kills on one tick = one call.
-  if (w.pendingDeaths.length && w.classState.bond === 'blademaster') refundDash(w.body);
+  if (w.pendingDeaths.some((e) => e.def.tier !== 'target') && w.classState.bond === 'blademaster') refundDash(w.body);
   w.pendingDeaths = [];
 }

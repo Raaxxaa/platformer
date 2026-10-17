@@ -36,7 +36,7 @@ import { activateEnemies, spawnEnemy, type EnemyState } from '../enemies/enemy.t
 import { stepEnemyAttack, syncEnemyGroups } from '../enemies/attack.ts';
 import { separateEnemies, stepEnemyBody } from '../enemies/body.ts';
 import { becomeAware, stepAwareness } from '../enemies/awareness.ts';
-import { stepAi } from '../enemies/ai.ts';
+import { stepAi, stepSparring } from '../enemies/ai.ts';
 import { attackHooks } from '../enemies/special.ts';
 import { removeProjectile, stepProjectiles, type EnemyProjectile } from '../enemies/projectiles.ts';
 import { stepEnemyReactions } from '../combat/enemyReactions.ts';
@@ -84,7 +84,8 @@ export type WorldEvent =
   | { t: 'abilityFizzle'; slot: 0 | 1 }
   | { t: 'abilityNotReady'; slot: 0 | 1 }
   | { t: 'lockpickUsed' }
-  | { t: 'itemTaken'; itemId: number; slot: 0 | 1 };
+  | { t: 'itemTaken'; itemId: number; slot: 0 | 1 }
+  | { t: 'sparringHit' };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -124,6 +125,8 @@ export class GameWorld {
   /** Weapon and ability items on the ground, and placed interactables (05 §5.7, 06 §11). */
   groundItems: GroundItem[] = [];
   interactables: Interactable[] = [];
+  /** Straw targets waiting to come back (04 §2.12). */
+  respawns: { spawn: EnemySpawn; at: number }[] = [];
   weaponSwapChoice: { itemId: number } | null = null;
   classState!: ClassState;
   /** Bonds and hybrids seen this session (06 saves them in M7). */
@@ -285,6 +288,7 @@ export class GameWorld {
     this.abilityEntities = [];
     this.groundItems = (this.opts.items ?? []).map((i) => ({ ...i, weapon: i.weapon && { ...i.weapon }, ability: i.ability && { ...i.ability } }));
     this.weaponSwapChoice = null;
+    this.respawns = [];
     fillAbilities(this);
   }
 
@@ -525,7 +529,11 @@ export class GameWorld {
     if (e.control) {
       if (!e.knockback && e.grounded) e.vx = 0;
     } else if (!e.knockback) {
-      if (e.ai.attack) stepEnemyAttack(this, e, attackHooks(e));
+      const sparring = e.def.id === 'sparring_dummy';
+      if (e.ai.attack) {
+        stepEnemyAttack(this, e, attackHooks(e));
+        if (sparring && !e.ai.attack) stepSparring(this, e);   // the next swing starts as the last ends (every 2.0 s)
+      } else if (sparring) stepSparring(this, e);
       else stepAi(this, e);
     }
     stepAwareness(this, e);
@@ -586,6 +594,8 @@ export class GameWorld {
     stepProjectiles(this);
     stepAbilityEntities(this);
     stepGroundItems(this);
+    for (const r of this.respawns.filter((x) => x.at <= this.tick)) this.spawnExtra(r.spawn);
+    this.respawns = this.respawns.filter((x) => x.at > this.tick);
     // 7. Hit resolution: player hits first (ties go to the player), then enemy hits.
     resolvePlayerHits(this);
     resolveEnemyHits(this);

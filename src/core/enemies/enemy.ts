@@ -79,12 +79,12 @@ export function enemyDamageA(w: GameWorld, base: number): number {
 export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
   const def = ENEMIES[s.enemy];
   if (!def) throw new Error(`unknown enemy ${s.enemy}`);
-  const scale = def.tier === 'dummy' ? 1 : def.tier === 'boss' ? STAGE_SCALING[w.stage].bossHp : STAGE_SCALING[w.stage].mobHp;
+  const scale = def.tier === 'dummy' || def.tier === 'target' ? 1 : def.tier === 'boss' ? STAGE_SCALING[w.stage].bossHp : STAGE_SCALING[w.stage].mobHp;
   const maxHp = roundHalfUp(def.hp * scale);
   return {
     id: w.newId(), def, x: s.x, y: s.y, remX: 0, remY: 0, vx: 0, vy: 0, facing: s.facing,
     hp: maxHp, maxHp, poise: def.poiseMax, poiseImmuneTicks: 0, noPoiseHitTicks: 0,
-    aware: false, noticeT: 0,
+    aware: def.id === 'sparring_dummy', noticeT: 0,     // the sparring dummy is always aware (04 §2.11)
     ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false },
     hitStopTicks: 0, frozenAtTickStart: false, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,

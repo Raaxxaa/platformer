@@ -1,6 +1,7 @@
 // Enemy AI state machine: idle/patrol, alert, engage, attack, return (04 §2.5–2.6).
 import { overlaps } from '../combat/hitGroups.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
+import { TRAINING } from '../../data/enemies.ts';
 import { ENEMY, VIEW_H, VIEW_W } from '../tuning.ts';
 import { startEnemyAttack } from './attack.ts';
 import { lineOfSight, playerDY } from './awareness.ts';
@@ -8,7 +9,7 @@ import { supportAhead } from './body.ts';
 import { enemyCenter, type EnemyState } from './enemy.ts';
 import type { EnemyAttackDef } from './types.ts';
 
-function facePlayer(w: GameWorld, e: EnemyState): void {
+export function facePlayer(w: GameWorld, e: EnemyState): void {
   if (Math.abs(w.body.x - e.x) >= 2) e.facing = w.body.x > e.x ? 1 : -1;
 }
 
@@ -111,7 +112,7 @@ function stepReturn(w: GameWorld, e: EnemyState): void {
 
 /** One enemy-time tick of AI (not called while attacking, controlled or knocked back). */
 export function stepAi(w: GameWorld, e: EnemyState): void {
-  if (e.def.tier === 'dummy') return;
+  if (e.def.tier === 'dummy' || e.def.tier === 'target') return;
   e.ai.t += 1;
   switch (e.ai.state) {
     case 'idle': case 'patrol':
@@ -136,3 +137,11 @@ export function stepAi(w: GameWorld, e: EnemyState): void {
   }
 }
 
+
+/** 04 §2.11 Sparring Dummy: never moves; while the player's center is within 64 px it swings (facing them at each Tele). */
+export function stepSparring(w: GameWorld, e: EnemyState): void {
+  const b = w.body;
+  if (Math.abs(b.x - e.x) > TRAINING.sparringReach) return;
+  facePlayer(w, e);
+  startEnemyAttack(w, e, e.def.attacks[0]);
+}

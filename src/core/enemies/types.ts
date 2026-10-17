@@ -7,12 +7,12 @@ export type EnemyId =
   | 'bog_zombie' | 'giant_spider' | 'wisp' | 'swamp_witch' | 'treant'
   | 'soldier' | 'crossbowman' | 'war_hound' | 'battle_mage' | 'knight'
   | 'royal_guard' | 'gargoyle' | 'castle_mage' | 'living_armor' | 'royal_executioner'
-  | 'spiderling' | 'training_dummy'
+  | 'spiderling' | 'training_dummy' | 'sparring_dummy' | 'straw_target'
   | 'great_boar' | 'stone_colossus' | 'spider_queen' | 'black_knight' | 'enemy_king' | 'dragon';
 export type EnemyProjectileId = 'enemy_arrow' | 'bomb' | 'brute_wave' | 'hex_bolt' | 'potion' | 'enemy_bolt' | 'fireball'
   | 'arcane_bolt' | 'shockwave' | 'falling_rock' | 'venom_glob' | 'dark_wave' | 'royal_orb' | 'falling_sword' | 'fire_rain';
 export type SizeClass = 'small' | 'medium' | 'large' | 'boss';
-export type Tier = 'regular' | 'elite' | 'boss' | 'summon' | 'dummy';
+export type Tier = 'regular' | 'elite' | 'boss' | 'summon' | 'dummy' | 'target';   // target: the straw target (04 §2.12)
 export type PlayerStatusId = 'burning' | 'poisoned' | 'chilled' | 'rooted';
 export type { Box };
 export interface EnemyHit {

@@ -50,8 +50,11 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   // 2–4. Riposte, parry, block: hooks.
   if (src.kind === 'enemyHit' && (ripostes() || parries() || blocks())) return 0;
   // 5. Damage.
-  const dealt = enemyHitDamage(src.damageA, 1, null);
+  // A practice hit (Sparring Dummy, 04 §2.11) deals 0 but runs the rest of the pipeline.
+  const practice = src.kind === 'enemyHit' && src.damageA === 0;
+  const dealt = practice ? 0 : enemyHitDamage(src.damageA, 1, null);
   h.hp -= dealt;
+  if (practice) w.events.push({ t: 'sparringHit' });
   w.onPlayerDamaged();                                       // the hit streak resets (02 §1); a swap choice closes
   // 6. Death.
   if (h.hp <= 0 && !secondWind()) {
