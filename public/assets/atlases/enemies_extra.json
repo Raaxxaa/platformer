@@ -1,11 +1,291 @@
 {
  "frames": {
-  "training_dummy_hit_00": {
+  "sparring_dummy_atk_practice_swing_00": {
+   "frame": {
+    "h": 48,
+    "w": 96,
+    "x": 2,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 96
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 96,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "sparring_dummy_atk_practice_swing_01": {
+   "frame": {
+    "h": 48,
+    "w": 96,
+    "x": 100,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 96
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 96,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "sparring_dummy_atk_practice_swing_02": {
+   "frame": {
+    "h": 48,
+    "w": 96,
+    "x": 198,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 96
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 96,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "sparring_dummy_hit_00": {
    "frame": {
     "h": 48,
     "w": 48,
     "x": 2,
-    "y": 2
+    "y": 52
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 48
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 48,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "sparring_dummy_hit_01": {
+   "frame": {
+    "h": 48,
+    "w": 48,
+    "x": 52,
+    "y": 52
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 48
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 48,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "sparring_dummy_hit_02": {
+   "frame": {
+    "h": 48,
+    "w": 48,
+    "x": 102,
+    "y": 52
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 48
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 48,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "sparring_dummy_idle_00": {
+   "frame": {
+    "h": 48,
+    "w": 48,
+    "x": 152,
+    "y": 52
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 48
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 48,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "sparring_dummy_tele_00": {
+   "frame": {
+    "h": 48,
+    "w": 48,
+    "x": 202,
+    "y": 52
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 48
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 48,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "sparring_dummy_tele_01": {
+   "frame": {
+    "h": 48,
+    "w": 48,
+    "x": 252,
+    "y": 52
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 48,
+    "w": 48
+   },
+   "spriteSourceSize": {
+    "h": 48,
+    "w": 48,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "straw_target_death_00": {
+   "frame": {
+    "h": 32,
+    "w": 32,
+    "x": 2,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "straw_target_death_01": {
+   "frame": {
+    "h": 32,
+    "w": 32,
+    "x": 36,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "straw_target_death_02": {
+   "frame": {
+    "h": 32,
+    "w": 32,
+    "x": 70,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "straw_target_death_03": {
+   "frame": {
+    "h": 32,
+    "w": 32,
+    "x": 104,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "straw_target_idle_00": {
+   "frame": {
+    "h": 32,
+    "w": 32,
+    "x": 138,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "training_dummy_hit_00": {
+   "frame": {
+    "h": 48,
+    "w": 48,
+    "x": 302,
+    "y": 52
    },
    "rotated": false,
    "sourceSize": {
@@ -24,8 +304,8 @@
    "frame": {
     "h": 48,
     "w": 48,
-    "x": 52,
-    "y": 2
+    "x": 352,
+    "y": 52
    },
    "rotated": false,
    "sourceSize": {
@@ -44,8 +324,8 @@
    "frame": {
     "h": 48,
     "w": 48,
-    "x": 102,
-    "y": 2
+    "x": 402,
+    "y": 52
    },
    "rotated": false,
    "sourceSize": {
@@ -64,8 +344,8 @@
    "frame": {
     "h": 48,
     "w": 48,
-    "x": 152,
-    "y": 2
+    "x": 452,
+    "y": 52
    },
    "rotated": false,
    "sourceSize": {
@@ -87,8 +367,8 @@
   "image": "enemies_extra.png",
   "scale": "1",
   "size": {
-   "h": 52,
-   "w": 202
+   "h": 136,
+   "w": 502
   },
   "version": "1"
  }

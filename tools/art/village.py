@@ -487,6 +487,147 @@ def dummy(frame):
     return c
 
 
+# ART5 Task 7 — Training Yard pieces (04 §2.11–2.12)
+SPARRING_BOX = (24, -16, 40, 28)            # atk_practice_swing reach box (dx, dy, w, h) from the anchor
+
+
+def sparring_dummy(kind, frame):
+    """A padded sparring dummy on a post with a wooden practice sword. 48 × 48 (anchor (24, 46)),
+    attack frames 96 × 48 (anchor (48, 46))."""
+    W = 96 if kind == 'atk' else 48
+    ox = 24 if kind == 'atk' else 0
+    f = Fig(W, 48)
+    post = f.part('post', 'vl_wood', 1)
+    pad = f.part('pad', 'vl_plaster', 1)
+    rope = f.part('rope', 'vl_wood')
+    base = f.part('base', 'gray', 1)
+    sword = f.part('sword', 'w_wood')
+    tilt = {'idle': 0, 'hit': [-12, -6, -2][frame] if kind == 'hit' else 0,
+            'tele': [-4, -8][frame] if kind == 'tele' else 0, 'atk': [6, 10, 4][frame] if kind == 'atk' else 0}[kind]
+    a = math.radians(tilt)
+
+    def rot(x, y):
+        dx, dy = x - 24, y - 44
+        return (ox + 24 + dx * math.cos(a) - dy * math.sin(a), 44 + dx * math.sin(a) + dy * math.cos(a))
+
+    def ip(v):
+        return tuple(int(round(t)) for t in v)
+    f.rect(ox + 17, 41, 14, 4, base)
+    R.capsule(f.L, (ox + 24, 42), ip(rot(24, 20)), 3, post)
+    R.ellipse(f.L, *rot(24, 30), 7, 8, pad)
+    R.ellipse(f.L, *rot(24, 18), 4.5, 4.5, pad)
+    R.line(f.L, ip(rot(18, 30)), ip(rot(30, 30)), rope)
+    # the sword arm: a short peg from the shoulder, and the practice sword at its end
+    sw = {'idle': 120, 'hit': 120, 'tele': [150, 175][frame] if kind == 'tele' else 0,
+          'atk': [110, 80, 60][frame] if kind == 'atk' else 0}[kind]
+    hand = rot(32, 26)
+    R.capsule(f.L, ip(rot(28, 26)), ip(hand), 2, post)
+    sa = math.radians(sw + tilt)
+    ln = 28 if kind == 'atk' else 16
+    tip = (hand[0] + ln * math.sin(sa), hand[1] - ln * math.cos(sa) * -1)
+    tip = (hand[0] + ln * math.sin(sa), hand[1] + ln * math.cos(sa))
+    R.capsule(f.L, ip(hand), ip(tip), 1.5 if kind != 'atk' else 2, sword)
+    c = f.done()
+    if kind == 'hit':
+        for (x, y) in ((34, 18), (37, 24), (35, 30))[:frame + 1]:
+            c.a[y, x] = P.sid(P.RAMPS['vl_plaster'][2])
+    return c
+
+
+def straw_target(frame):
+    """A small straw target on a stake, 32 × 32, anchor (16, 30). Frames 1–4: the straw bursts."""
+    f = Fig(32, 32)
+    stake = f.part('stake', 'vl_wood', 1)
+    straw = f.part('straw', 'w_gold', 1)
+    ring_ = f.part('ring', 'fx_heal')
+    f.rect(15, 18, 3, 12, stake)
+    if frame == 0:
+        R.ellipse(f.L, 16, 14, 7, 9, straw)
+        R.ellipse(f.L, 16, 14, 3.5, 4.5, ring_)
+        R.ellipse(f.L, 16, 14, 1.5, 1.5, straw)
+        return f.done()
+    g = np.random.default_rng(40 + frame)
+    for k in range(9):
+        th = 2 * math.pi * k / 9 + g.uniform(-0.3, 0.3)
+        d = 2 + frame * 3.0
+        x, y = 16 + d * math.cos(th), 14 + d * math.sin(th) * 0.9 + frame * frame * 0.5
+        if 2 <= x <= 29 and 2 <= y <= 27:
+            R.line(f.L, (int(x), int(y)), (int(x + math.cos(th) * 2), int(y + math.sin(th) * 2)), straw)
+    return f.done(outline=frame < 3)
+
+
+def station_sign():
+    """A wooden sign on a post, 24 × 32 (the code writes the station text above it)."""
+    f = Fig(24, 32)
+    post = f.part('post', 'vl_wood', 1)
+    board = f.part('board', 'vl_wood')
+    nail = f.part('nail', 'gray')
+    f.rect(11, 14, 3, 18, post)
+    f.rect(2, 3, 20, 13, board)
+    f.rect(4, 7, 16, 1, post)
+    f.rect(4, 10, 12, 1, post)
+    for x in (4, 19):
+        f.rect(x, 4, 1, 1, nail)
+    return f.done()
+
+
+def station_flag(green):
+    """A small pennant on a pole, 8 × 24: grey until the station is done, then green."""
+    f = Fig(8, 24)
+    pole = f.part('pole', 'vl_wood', 1)
+    flag = f.part('flag', 'fx_poison' if green else 'gray')
+    f.rect(1, 1, 2, 23, pole)
+    R.fill_polygon(f.L, [(3, 2), (7.5, 4.5), (3, 8)], flag)
+    return f.done()
+
+
+def training_gate():
+    """A wooden arch with a straw-dummy emblem, 32 × 64, for the Home Village's left edge."""
+    f = Fig(32, 64)
+    post = f.part('post', 'vl_wood', 1)
+    beam = f.part('beam', 'vl_wood')
+    emb = f.part('emblem', 'w_gold', 1)
+    f.rect(2, 14, 5, 50, post)
+    f.rect(25, 14, 5, 50, post)
+    f.rect(0, 8, 32, 6, beam)
+    f.rect(1, 4, 30, 4, post)
+    R.ellipse(f.L, 16, 22, 5, 5, beam)
+    R.ellipse(f.L, 16, 21, 2, 2, emb)
+    R.fill_rect(f.L, 15, 23, 3, 4, emb)
+    R.fill_rect(f.L, 13, 24, 7, 1, emb)
+    R.line(f.L, (16, 14), (16, 17), beam)
+    return f.done()
+
+
+def yard_object_frames():
+    fr = {'station_sign_00': station_sign(), 'station_flag_grey_00': station_flag(False),
+          'station_flag_green_00': station_flag(True), 'training_gate_00': training_gate()}
+    return {k: _img(v) for k, v in fr.items()}
+
+
+def yard_enemy_frames():
+    fr = {'sparring_dummy_idle_00': sparring_dummy('idle', 0)}
+    for i in range(2):
+        fr[f'sparring_dummy_tele_{i:02d}'] = sparring_dummy('tele', i)
+    for i in range(3):
+        fr[f'sparring_dummy_atk_practice_swing_{i:02d}'] = sparring_dummy('atk', i)
+        fr[f'sparring_dummy_hit_{i:02d}'] = sparring_dummy('hit', i)
+    fr['straw_target_idle_00'] = straw_target(0)
+    for i in range(4):
+        fr[f'straw_target_death_{i:02d}'] = straw_target(i + 1)
+    return {k: _img(v) for k, v in fr.items()}
+
+
+# Built but left out of anims.json (SPEC-GAPS-art #8): the enemy view treats any enemy with an `idle` anim as a full
+# enemy (walk/stagger/death), which the sparring dummy and straw target don't have.
+YARD_ENEMY_ANIMS = [A.anim('sparring_dummy_idle', 'enemies_extra', 1, 'once'),
+                    A.anim('sparring_dummy_tele', 'enemies_extra', 2, 'once', 8),
+                    A.anim('sparring_dummy_atk_practice_swing', 'enemies_extra', 3, 'once', 20),
+                    A.anim('sparring_dummy_hit', 'enemies_extra', 3, 'once', 20),
+                    A.anim('straw_target_idle', 'enemies_extra', 1, 'once'),
+                    A.anim('straw_target_death', 'enemies_extra', 4, 'once', 20)]
+
+
 def prop_frames():
     fr = {'shop_item_00': shop_item(), 'shop_flask_00': flask(), 'shop_key_00': key_board(),
           'shop_reroll_00': reroll(), 'unlocks_board_00': unlocks_board(), 'seed_board_00': seed_board(),
@@ -498,14 +639,18 @@ def prop_frames():
         fr[f'shop_refill_idle_{i:02d}'] = cauldron(i)
     for k in ('swordsman', 'tank', 'archer', 'wizard'):
         fr[f'class_statue_{k}_00'] = statue(k)
-    return {k: _img(v) for k, v in fr.items()}
+    out = {k: _img(v) for k, v in fr.items()}
+    out.update(yard_object_frames())
+    return out
 
 
 def dummy_frames():
     fr = {'training_dummy_idle_00': dummy(0)}
     for i in range(3):
         fr[f'training_dummy_hit_{i:02d}'] = dummy(i + 1)
-    return {k: _img(v) for k, v in fr.items()}
+    out = {k: _img(v) for k, v in fr.items()}
+    out.update(yard_enemy_frames())
+    return out
 
 
 # 08 §7.3: the dummy has only `idle` (1) and `hit` (3).
@@ -518,7 +663,7 @@ def anims():
            A.anim('shop_refill_idle', ATLAS, 4, 'loop', 6)]
     for k in ('shop_item', 'shop_flask', 'shop_key', 'shop_reroll', 'unlocks_board', 'seed_board', 'loot_stand',
               'mirror_spot', 'class_statue_swordsman', 'class_statue_tank', 'class_statue_archer',
-              'class_statue_wizard', 'cottage_a', 'cottage_b', 'well', 'market_roof', 'inn'):
+              'class_statue_wizard', 'station_sign', 'station_flag_grey', 'station_flag_green', 'training_gate', 'cottage_a', 'cottage_b', 'well', 'market_roof', 'inn'):
         out.append(A.anim(k, ATLAS, 1, 'once'))
     return out
 
@@ -540,6 +685,6 @@ def build(assets, preview):
     sheet({k: v for k, v in fr.items() if k != 'market_roof_00'}, os.path.join(preview, 'objects_sheet.png'), scale=3)
     dummy = dummy_frames()
     for n, img in dummy.items():
-        P.check_palette_lock(img, P.allowed(['ink', 'vl_wood', 'gray', 'w_gold']), 'enemies_extra', n)
+        P.check_palette_lock(img, P.allowed(['ink', 'vl_wood', 'vl_plaster', 'gray', 'w_gold', 'w_wood', 'fx_heal']), 'enemies_extra', n)
     A.pack_atlas('enemies_extra', dummy, os.path.join(assets, 'atlases'))
     return anims()

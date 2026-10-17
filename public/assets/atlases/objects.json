@@ -680,6 +680,66 @@
    },
    "trimmed": false
   },
+  "station_flag_green_00": {
+   "frame": {
+    "h": 24,
+    "w": 8,
+    "x": 2,
+    "y": 796
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 24,
+    "w": 8
+   },
+   "spriteSourceSize": {
+    "h": 24,
+    "w": 8,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "station_flag_grey_00": {
+   "frame": {
+    "h": 24,
+    "w": 8,
+    "x": 12,
+    "y": 796
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 24,
+    "w": 8
+   },
+   "spriteSourceSize": {
+    "h": 24,
+    "w": 8,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "station_sign_00": {
+   "frame": {
+    "h": 32,
+    "w": 24,
+    "x": 28,
+    "y": 652
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "timed_door_bottom_00": {
    "frame": {
     "h": 16,
@@ -780,6 +840,26 @@
    },
    "trimmed": false
   },
+  "training_gate_00": {
+   "frame": {
+    "h": 64,
+    "w": 32,
+    "x": 70,
+    "y": 418
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 64,
+    "w": 32
+   },
+   "spriteSourceSize": {
+    "h": 64,
+    "w": 32,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "unlocks_board_00": {
    "frame": {
     "h": 32,
@@ -827,7 +907,7 @@
   "image": "objects.png",
   "scale": "1",
   "size": {
-   "h": 796,
+   "h": 822,
    "w": 500
   },
   "version": "1"

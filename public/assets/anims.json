@@ -1300,6 +1300,38 @@
   "mode": "once"
  },
  {
+  "key": "station_flag_green",
+  "atlas": "objects",
+  "frames": [
+   "station_flag_green_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "station_flag_grey",
+  "atlas": "objects",
+  "frames": [
+   "station_flag_grey_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "station_sign",
+  "atlas": "objects",
+  "frames": [
+   "station_sign_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "training_gate",
+  "atlas": "objects",
+  "frames": [
+   "training_gate_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "unlocks_board",
   "atlas": "objects",
   "frames": [
