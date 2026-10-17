@@ -34,7 +34,10 @@ EXPECTED.update({f'hud_flask_{k}': (10, 12) for k in ('full', 'empty', 'blocked'
 EXPECTED.update({'hud_coin': (8, 8), 'hud_key': (7, 10), 'hud_lockpick': (8, 10), 'hud_link': (8, 7),
                  'hud_lock': (8, 8), 'hud_dragon_arrow': (12, 12)})
 EXPECTED.update({f'prompt_ps_{k}': (7, 7) for k in ('cross', 'circle', 'square', 'triangle')})
-TINT = [k for k in EXPECTED if k.startswith(('class_', 'prompt_ps_'))]
+EXPECTED.update({'hud_heart': (10, 10), 'hud_plate_9': (24, 24), 'panel_9': (24, 24), 'panel_9_edge': (24, 24),
+                 'tab_on_9': (16, 12), 'tab_off_9': (16, 12), 'button_9': (16, 16), 'button_9_sel': (16, 16),
+                 'cursor': (7, 7)})
+TINT = [k for k in EXPECTED if k.startswith(('class_', 'prompt_ps_'))] + ['panel_9_edge']
 
 
 class UiTest(unittest.TestCase):
@@ -42,8 +45,8 @@ class UiTest(unittest.TestCase):
     def setUpClass(cls):
         cls.fr = U.build_frames()
 
-    def test_all_94_frames(self):
-        self.assertEqual(len(EXPECTED), 94)
+    def test_all_103_frames(self):
+        self.assertEqual(len(EXPECTED), 103)
         self.assertEqual(set(self.fr), set(EXPECTED))
         for k, size in EXPECTED.items():
             self.assertEqual(self.fr[k].size, size, k)
@@ -53,6 +56,17 @@ class UiTest(unittest.TestCase):
         white = {(255, 255, 255)}
         for k, img in self.fr.items():
             P.check_palette_lock(img, white if k in TINT else P.allowed_ui(), 'ui', k)
+
+    def test_nine_slices_tile_cleanly(self):
+        # stretch each 9-slice by repeating its edge and middle cells; every middle column/row must be identical
+        for k, c in U.NINE.items():
+            a = np.array(self.fr[k])
+            h, w = a.shape[:2]
+            mid_cols = a[:, c:w - c]
+            self.assertTrue((mid_cols == mid_cols[:, :1]).all(), f'{k}: top/bottom edges seam')
+            mid_rows = a[c:h - c]
+            self.assertTrue((mid_rows == mid_rows[:1]).all(), f'{k}: left/right edges seam')
+            self.assertTrue((a[c:h - c, c:w - c] == a[c, c]).all(), f'{k}: middle cell is not flat')
 
     def test_icons_distinct(self):
         for group in (WEAPONS, ABILITIES):

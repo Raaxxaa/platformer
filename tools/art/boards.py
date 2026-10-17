@@ -179,6 +179,114 @@ def loot_board(path):
     scene.resize((1280, 720), Image.NEAREST).convert('RGB').save(path)
 
 
+def stretch9(img, c, w, h):
+    """Draw a 9-slice frame at w × h: corners as is, edges and middle repeated."""
+    a = np.array(img)
+    fh, fw = a.shape[:2]
+    xs = [x if x < c else (fw - (w - x) if x >= w - c else c) for x in range(w)]
+    ys = [y if y < c else (fh - (h - y) if y >= h - c else c) for y in range(h)]
+    return Image.fromarray(a[np.ix_(ys, xs)], 'RGBA')
+
+
+def _alpha(img, f):
+    a = np.array(img).astype(np.float32)
+    a[:, :, 3] *= f
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
+def _tint(img, col):
+    a = np.array(img)
+    m = a[:, :, 3] > 0
+    a[m, :3] = col
+    return Image.fromarray(a, 'RGBA')
+
+
+def ui_mock(path):
+    """ART5 Task 8: the HUD over the Plains (07 §4.1), an item card with two slot choices (§6.1), and the pause
+    menu on its LOADOUT tab (§7.x), drawn with the new plates and popup skin. Saved at 2×."""
+    fr = U.build_frames()
+    Uc = P.UI_COLORS
+    scr = Image.new('RGBA', (640, 360))
+    for i in range(3):
+        scr.alpha_composite(Image.open(os.path.join(os.path.dirname(__file__), '..', '..', 'public', 'assets', 'bg',
+                                                    f'bg_plains_{i}.png')).convert('RGBA'))
+    # HUD plates and heart + HP
+    scr.alpha_composite(_alpha(stretch9(fr['hud_plate_9'], 8, 196, 48), 0.75), (4, 4))
+    scr.alpha_composite(_alpha(stretch9(fr['hud_plate_9'], 8, 128, 76), 0.75), (4, 280))
+    scr.alpha_composite(fr['hud_heart'], (8, 9))
+    bar = Image.new('RGBA', (160, 12), Uc['ink'] + (255,))
+    bar.paste(Image.new('RGBA', (int(158 * 0.87), 10), Uc['hp'] + (255,)), (1, 1))
+    scr.alpha_composite(bar, (20, 8))
+    text(scr, '87/100', 184, 10, color=Uc['text'])
+    for i, f in enumerate((1.0, 0.5, 0.0)):
+        seg = Image.new('RGBA', (48, 6), Uc['ink'] + (255,))
+        if f:
+            seg.paste(Image.new('RGBA', (int(46 * f), 4), Uc[f'rush{i + 1}'] + (255,)), (1, 1))
+        scr.alpha_composite(seg, (8 + 50 * i, 22))
+    for i in range(3):
+        scr.alpha_composite(fr['hud_flask_full' if i < 2 else 'hud_flask_empty'], (8 + 12 * i, 30))
+    scr.alpha_composite(fr['hud_coin'], (62, 34))
+    text(scr, '128', 72, 34, color=Uc['text'])
+    scr.alpha_composite(fr['hud_key'], (104, 33))
+    text(scr, '1', 113, 34, color=Uc['text'])
+    text(scr, 'Swordsman', 8, 285, color=Uc['class_swordsman'])
+    for x, k in ((8, 'icon_weapon_katana'), (36, 'icon_weapon_greatsword'), (72, 'icon_ability_blade_dash'),
+                 (100, 'icon_ability_whirlwind')):
+        scr.alpha_composite(stretch9(fr['button_9'], 4, 24, 24), (x, 320))
+        scr.alpha_composite(fr[k], (x + 4, 324))
+    text(scr, '1:52.47', 632, 8, font='rb_large', color=Uc['text'], right=True)
+    # item card: a weapon with both slots full
+    cw, ch = 200, 70
+    cx, cy = 300, 170
+    scr.alpha_composite(stretch9(fr['panel_9'], 8, cw, ch), (cx, cy))
+    scr.alpha_composite(_tint(stretch9(fr['panel_9_edge'], 8, cw, ch), Uc['grade_A']), (cx, cy))
+    scr.alpha_composite(fr['icon_weapon_storm_hammer'], (cx + 8, cy + 8))
+    text(scr, 'Storm Hammer', cx + 28, cy + 8, color=Uc['grade_A'])
+    text(scr, 'A', cx + cw - 10, cy + 8, color=Uc['grade_A'], right=True)
+    text(scr, 'Hammer - Lightning', cx + 28, cy + 18, color=Uc['textDim'])
+    scr.alpha_composite(stretch9(fr['button_9_sel'], 4, cw - 16, 12), (cx + 8, cy + 30))
+    scr.alpha_composite(fr['cursor'], (cx + 2, cy + 33))
+    text(scr, '[J] Katana C  DMG 125  +75', cx + 12, cy + 32, color=Uc['text'])
+    scr.alpha_composite(stretch9(fr['button_9'], 4, cw - 16, 12), (cx + 8, cy + 43))
+    text(scr, '[K] Greatsword B  DMG 150  +50', cx + 12, cy + 45, color=Uc['text'])
+    text(scr, '[E] Swap', cx + 8, cy + 58, color=Uc['highlight'])
+    # pause menu, LOADOUT tab, as a second screen
+    pz = Image.new('RGBA', (640, 360))
+    pz.alpha_composite(scr)
+    pz.alpha_composite(Image.new('RGBA', (640, 360), (0, 0, 0, 140)))
+    pz.alpha_composite(stretch9(fr['panel_9'], 8, 360, 220), (140, 70))
+    for i, (name, on) in enumerate((('MENU', False), ('LOADOUT', True), ('CONTROLS', False))):
+        x = 152 + i * 72
+        pz.alpha_composite(stretch9(fr['tab_on_9' if on else 'tab_off_9'], 4, 66, 14), (x, 58))
+        text(pz, name, x + 6, 61, color=Uc['text'] if on else Uc['textDim'])
+    rows = [('icon_weapon_katana', 'Katana', 'C', Uc['grade_C']),
+            ('icon_weapon_greatsword', 'Greatsword', 'B', Uc['grade_B']),
+            ('icon_ability_blade_dash', 'Blade Dash', 'Lv 2', Uc['class_swordsman']),
+            ('icon_ability_whirlwind', 'Whirlwind', 'Lv 1', Uc['class_swordsman'])]
+    for i, (ic, name, badge, col) in enumerate(rows):
+        y = 86 + i * 28
+        pz.alpha_composite(stretch9(fr['button_9_sel' if i == 0 else 'button_9'], 4, 328, 24), (156, y))
+        pz.alpha_composite(fr[ic], (160, y + 4))
+        text(pz, name, 182, y + 4, color=col)
+        text(pz, badge, 478, y + 4, color=col, right=True)
+    pz.alpha_composite(fr['cursor'], (148, 94))
+    text(pz, 'Swordsman', 160, 210, color=Uc['class_swordsman'])
+    text(pz, 'Add a 2nd Swordsman ability for its bond', 160, 222, color=Uc['textDim'])
+    # 9-slice frames themselves, 4× in a strip
+    strip = Image.new('RGBA', (640, 40), Uc['panel'] + (255,))
+    x = 8
+    for k in ('hud_heart', 'hud_plate_9', 'panel_9', 'panel_9_edge', 'tab_on_9', 'tab_off_9', 'button_9',
+              'button_9_sel', 'cursor'):
+        strip.alpha_composite(fr[k], (x, 8))
+        x += fr[k].width + 10
+    out = Image.new('RGBA', (640, 760), Uc['ink'] + (255,))
+    out.alpha_composite(scr, (0, 0))
+    out.alpha_composite(pz, (0, 360))
+    out.alpha_composite(strip, (0, 720))
+    out.resize((1280, 1520), Image.NEAREST).save(path)
+
+
 def build(preview):
     moves_board(os.path.join(preview, 'player_moves_board.png'))
     loot_board(os.path.join(preview, 'style_board_loot.png'))
+    ui_mock(os.path.join(preview, 'ui_mock.png'))
