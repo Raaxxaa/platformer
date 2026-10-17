@@ -17,6 +17,11 @@ import { STAGE_UI } from '../../data/stageUi.ts';
 import { HUD_COLOR, UI_COLOR } from '../../data/uiText.ts';
 import { WorldScene } from './WorldScene.ts';
 import { PauseView } from '../../ui/popups/pause.ts';
+import { applyLucky } from '../../core/loot/lucky.ts';
+import type { LuckyId } from '../../data/loot.ts';
+import { dropItem } from '../../core/abilities/items.ts';
+import { newWeapon } from '../../core/abilities/runtime.ts';
+import type { ElementId, Grade, WeaponId } from '../../core/combat/types.ts';
 import { parseKit } from '../../ui/popups/classPickModel.ts';
 import { CLASS_IDS } from '../../data/classes.ts';
 
@@ -154,6 +159,28 @@ export class StageScene extends WorldScene {
       const top = Math.max(0, Math.min(...ys) - STAGE_UI.overviewAbove * 16), bottom = Math.min(this.world.grid.heightPx, Math.max(...ys) + STAGE_UI.overviewBelow * 16);
       this.overview = n > 0 && s ? { x: s.x, y: top, w: s.w, h: Math.max(bottom - top, (s.w * 9) / 16) } : null;
     };
+    // M5 loot helpers: a forced Lucky Block result at the player, a forced merchant, a dropped weapon, the loot state.
+    api.forceLucky = (id: LuckyId) => {
+      const n = this.world.events.length;
+      applyLucky(this.world, id, this.world.body.x, this.world.body.y - 24);
+      // Outside a tick: hand its events to the next render (the core clears them at the next tick's start).
+      this.frameEvents.push(...this.world.events.slice(n).map((e) => ({ tick: this.world.tick, e })));
+    };
+    api.enemyStatus = () => this.world.enemies.filter((e) => !e.dead && e.status).map((e) => ({ id: e.id, frozen: !!e.status!.frozen, chill: !!e.status!.chill, burn: !!e.status!.burn }));
+    api.setKeys = (n: number) => { this.world.econ.keys = n; };
+    api.setGold = (n: number) => { this.world.econ.goldTenths = n * 10; };
+    api.forceMerchant = () => this.world.rollStageLoot(true);
+    api.dropWeapon = (weaponId: WeaponId, grade: Grade, element: ElementId | null = null, perk: string | null = null, price?: number) => {
+      const it = dropItem(this.world, this.world.body.x + 24, this.world.body.y - 4, { weapon: { ...newWeapon(weaponId), grade, element, perk: perk as never } });
+      if (price !== undefined) it.price = price;
+      return it.id;
+    };
+    api.loot = () => structuredClone({
+      econ: this.world.econ, gold: this.world.gold,
+      chests: this.world.chests, lucky: this.world.luckyBlocks, coins: this.world.coins.length,
+      merchant: this.world.merchant,
+      items: this.world.groundItems.map((i) => ({ id: i.id, x: i.x, y: i.y, key: !!i.key, price: i.price, weapon: i.weapon ?? null, ability: i.ability?.id ?? null })),
+    });
     api.arenas = () => [...this.world.arenas.values()].map((a) => ({ id: a.id, kind: a.kind, rect: a.rect }));
   }
 

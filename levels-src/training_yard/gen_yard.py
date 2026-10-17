@@ -222,6 +222,17 @@ def s17(x0):
     return x0 + 32
 
 
+# ================================================================ Loot corner (M5): practice only, gone when you leave
+def loot_corner(x0):
+    ground(x0, x0 + 24, G)
+    rect('hint', x0, G - 8, 8, 8, text='Hit Lucky Blocks with a weapon')
+    point('lucky_block', x0 + 5, G - 4)
+    rect('hint', x0 + 10, G - 8, 8, 8, text='Keys open key chests: pick 1 of 2 items')
+    point('key', x0 + 12, G - 1)
+    point('key_chest', x0 + 19, G - 1)
+    return x0 + 24
+
+
 # ================================================================ The end: board, armory, exit
 ARMORY = [
     ('swordsman', ['greatsword', 'katana'], ['blade_dash', 'whirlwind']),
@@ -259,8 +270,9 @@ def main():
     x = s8(x + 1)
     for s in (s9, s10, s11, s12, s13, s14, s15, s16, s17):
         x = s(x + 1)
+    x = loot_corner(x + 1)
     x = end(x + 1)
-    W = x + 1                                     # SPEC-GAP: 06 §12.4 says about 300 tiles wide; all 17 stations need 489
+    W = x + 1                                     # SPEC-GAP: 06 §12.4 says about 300 tiles wide; all 17 stations and the loot corner need 514
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, 'yard.txt'), 'w') as f:
         f.write('\n'.join(''.join(r[:W]) for r in grid) + '\n')

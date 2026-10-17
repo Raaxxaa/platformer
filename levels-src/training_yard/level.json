@@ -3,7 +3,7 @@
  "kind": "training",
  "stage": 0,
  "biome": "plains",
- "width": 489,
+ "width": 514,
  "height": 40,
  "chunks": [
   {
@@ -861,8 +861,46 @@
    }
   },
   {
+   "type": "hint",
+   "x": 422,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Hit Lucky Blocks with a weapon"
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 427,
+   "y": 30,
+   "props": {}
+  },
+  {
+   "type": "hint",
+   "x": 432,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Keys open key chests: pick 1 of 2 items"
+   }
+  },
+  {
+   "type": "key",
+   "x": 434,
+   "y": 33,
+   "props": {}
+  },
+  {
+   "type": "key_chest",
+   "x": 441,
+   "y": 33,
+   "props": {}
+  },
+  {
    "type": "armory_label",
-   "x": 431,
+   "x": 456,
    "y": 30,
    "props": {
     "cls": "swordsman"
@@ -870,7 +908,7 @@
   },
   {
    "type": "item_stand",
-   "x": 430,
+   "x": 455,
    "y": 33,
    "props": {
     "weapon": "greatsword",
@@ -879,7 +917,7 @@
   },
   {
    "type": "item_stand",
-   "x": 432,
+   "x": 457,
    "y": 33,
    "props": {
     "weapon": "katana",
@@ -888,7 +926,7 @@
   },
   {
    "type": "item_stand",
-   "x": 434,
+   "x": 459,
    "y": 33,
    "props": {
     "ability": "blade_dash",
@@ -897,7 +935,7 @@
   },
   {
    "type": "item_stand",
-   "x": 436,
+   "x": 461,
    "y": 33,
    "props": {
     "ability": "whirlwind",
@@ -906,7 +944,7 @@
   },
   {
    "type": "armory_label",
-   "x": 442,
+   "x": 467,
    "y": 30,
    "props": {
     "cls": "tank"
@@ -914,7 +952,7 @@
   },
   {
    "type": "item_stand",
-   "x": 441,
+   "x": 466,
    "y": 33,
    "props": {
     "weapon": "war_maul",
@@ -923,7 +961,7 @@
   },
   {
    "type": "item_stand",
-   "x": 443,
+   "x": 468,
    "y": 33,
    "props": {
     "weapon": "iron_fists",
@@ -932,7 +970,7 @@
   },
   {
    "type": "item_stand",
-   "x": 445,
+   "x": 470,
    "y": 33,
    "props": {
     "ability": "shockwave",
@@ -941,7 +979,7 @@
   },
   {
    "type": "item_stand",
-   "x": 447,
+   "x": 472,
    "y": 33,
    "props": {
     "ability": "shoulder_charge",
@@ -950,7 +988,7 @@
   },
   {
    "type": "armory_label",
-   "x": 453,
+   "x": 478,
    "y": 30,
    "props": {
     "cls": "archer"
@@ -958,7 +996,7 @@
   },
   {
    "type": "item_stand",
-   "x": 452,
+   "x": 477,
    "y": 33,
    "props": {
     "weapon": "bow",
@@ -967,7 +1005,7 @@
   },
   {
    "type": "item_stand",
-   "x": 454,
+   "x": 479,
    "y": 33,
    "props": {
     "weapon": "crossbow",
@@ -976,7 +1014,7 @@
   },
   {
    "type": "item_stand",
-   "x": 456,
+   "x": 481,
    "y": 33,
    "props": {
     "ability": "arrow_rain",
@@ -985,7 +1023,7 @@
   },
   {
    "type": "item_stand",
-   "x": 458,
+   "x": 483,
    "y": 33,
    "props": {
     "ability": "hunters_mark",
@@ -994,7 +1032,7 @@
   },
   {
    "type": "armory_label",
-   "x": 464,
+   "x": 489,
    "y": 30,
    "props": {
     "cls": "wizard"
@@ -1002,7 +1040,7 @@
   },
   {
    "type": "item_stand",
-   "x": 463,
+   "x": 488,
    "y": 33,
    "props": {
     "weapon": "storm_hammer",
@@ -1011,7 +1049,7 @@
   },
   {
    "type": "item_stand",
-   "x": 465,
+   "x": 490,
    "y": 33,
    "props": {
     "weapon": "staff",
@@ -1020,7 +1058,7 @@
   },
   {
    "type": "item_stand",
-   "x": 467,
+   "x": 492,
    "y": 33,
    "props": {
     "ability": "thunder_strike",
@@ -1029,7 +1067,7 @@
   },
   {
    "type": "item_stand",
-   "x": 469,
+   "x": 494,
    "y": 33,
    "props": {
     "ability": "blink",
@@ -1038,7 +1076,7 @@
   },
   {
    "type": "item_stand",
-   "x": 474,
+   "x": 499,
    "y": 33,
    "props": {
     "ability": "vampire",
@@ -1047,7 +1085,7 @@
   },
   {
    "type": "exit",
-   "x": 488,
+   "x": 513,
    "y": 28,
    "w": 1,
    "h": 6,

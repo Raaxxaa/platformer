@@ -125,3 +125,33 @@ describe('determinism with every M4 ability and weapon (M4 Task 16)', () => {
     for (const id of weapons) expect(used, id).toContain(id);
   });
 });
+
+describe('loot determinism (M5 Task 10)', () => {
+  it('the same seed and inputs give the same items, gold and effects in two runs', async () => {
+    const plainsJson = (await import('../../../public/levels/plains.json')).default;
+    const { loadLevel } = await import('../level/loadLevel.ts');
+    const { GameWorld: GW } = await import('./gameWorld.ts');
+    const { kitLoadout } = await import('../abilities/runtime.ts');
+    const { stepSpec } = await import('../testkit/combatWorld.ts');
+    const { openChest } = await import('../loot/sources.ts');
+    const { breakLucky } = await import('../loot/lucky.ts');
+    const plains = loadLevel(plainsJson);
+    const run = () => {
+      const w = GW.fromLevel(plains, { seedText: 'SAME' });
+      w.setLoadout(kitLoadout('archer', 'bow'));
+      w.rollStageLoot(true);
+      const log: string[] = [];
+      for (let t = 0; t < 1200; t++) {
+        stepSpec(w, { moveX: 1, attack1: t % 40 === 0, jump: t % 90 < 10 }, 1);
+        if (t === 300) { w.econ.keys = 3; for (const c of w.chests) openChest(w, c); }
+        if (t === 400) for (const b of w.luckyBlocks) if (!b.broken) breakLucky(w, b);
+      }
+      log.push(JSON.stringify(w.groundItems.map((i) => [i.x, i.y, i.weapon, i.ability?.id, i.price])));
+      log.push(JSON.stringify(w.econ), JSON.stringify(w.merchant), JSON.stringify(w.enemies.map((e) => [e.def.id, e.drop])));
+      return log;
+    };
+    const a = run(), b = run();
+    expect(a).toEqual(b);
+    expect(a[0].length).toBeGreaterThan(100);
+  });
+});
