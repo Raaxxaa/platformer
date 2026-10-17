@@ -5834,6 +5834,102 @@
   "mode": "once"
  },
  {
+  "key": "ab_shockwave_56",
+  "atlas": "vfx",
+  "frames": [
+   "ab_shockwave_56_00",
+   "ab_shockwave_56_01",
+   "ab_shockwave_56_02",
+   "ab_shockwave_56_03",
+   "ab_shockwave_56_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "ab_shockwave_64",
+  "atlas": "vfx",
+  "frames": [
+   "ab_shockwave_64_00",
+   "ab_shockwave_64_01",
+   "ab_shockwave_64_02",
+   "ab_shockwave_64_03",
+   "ab_shockwave_64_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "ab_shockwave_72",
+  "atlas": "vfx",
+  "frames": [
+   "ab_shockwave_72_00",
+   "ab_shockwave_72_01",
+   "ab_shockwave_72_02",
+   "ab_shockwave_72_03",
+   "ab_shockwave_72_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "ab_shockwave_84",
+  "atlas": "vfx",
+  "frames": [
+   "ab_shockwave_84_00",
+   "ab_shockwave_84_01",
+   "ab_shockwave_84_02",
+   "ab_shockwave_84_03",
+   "ab_shockwave_84_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "ab_shockwave_96",
+  "atlas": "vfx",
+  "frames": [
+   "ab_shockwave_96_00",
+   "ab_shockwave_96_01",
+   "ab_shockwave_96_02",
+   "ab_shockwave_96_03",
+   "ab_shockwave_96_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "arrow_rain",
+  "atlas": "vfx",
+  "frames": [
+   "arrow_rain_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "blade_dash",
+  "atlas": "vfx",
+  "frames": [
+   "blade_dash_00",
+   "blade_dash_01",
+   "blade_dash_02"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "blink_puff",
+  "atlas": "vfx",
+  "frames": [
+   "blink_puff_00",
+   "blink_puff_01",
+   "blink_puff_02",
+   "blink_puff_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
   "key": "charge_full",
   "atlas": "vfx",
   "frames": [
@@ -6084,6 +6180,42 @@
   "fps": 30
  },
  {
+  "key": "link",
+  "atlas": "vfx",
+  "frames": [
+   "link_00",
+   "link_01",
+   "link_02",
+   "link_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "mark",
+  "atlas": "vfx",
+  "frames": [
+   "mark_00",
+   "mark_01",
+   "mark_02",
+   "mark_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "mark_linked",
+  "atlas": "vfx",
+  "frames": [
+   "mark_linked_00",
+   "mark_linked_01",
+   "mark_linked_02",
+   "mark_linked_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
   "key": "muzzle",
   "atlas": "vfx",
   "frames": [
@@ -6115,6 +6247,17 @@
    "rush_up_03"
   ],
   "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "shoulder_lines",
+  "atlas": "vfx",
+  "frames": [
+   "shoulder_lines_00",
+   "shoulder_lines_01",
+   "shoulder_lines_02"
+  ],
+  "mode": "loop",
   "fps": 24
  },
  {
@@ -6153,6 +6296,42 @@
   ],
   "mode": "loop",
   "fps": 10
+ },
+ {
+  "key": "thunder",
+  "atlas": "vfx",
+  "frames": [
+   "thunder_00",
+   "thunder_01",
+   "thunder_02",
+   "thunder_03"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "wall_rubble",
+  "atlas": "vfx",
+  "frames": [
+   "wall_rubble_00",
+   "wall_rubble_01",
+   "wall_rubble_02",
+   "wall_rubble_03"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "whirlwind",
+  "atlas": "vfx",
+  "frames": [
+   "whirlwind_00",
+   "whirlwind_01",
+   "whirlwind_02",
+   "whirlwind_03"
+  ],
+  "mode": "loop",
+  "fps": 24
  },
  {
   "key": "dive_bow_fall",
