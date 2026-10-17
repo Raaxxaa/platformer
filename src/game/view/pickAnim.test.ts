@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import animsJson from '../../../public/assets/anims.json';
 import type { AnimDef } from './animClock.ts';
-import { pickEnemyAnim, pickPlayerAnim, type EnemyAnimState, type PlayerAnimState } from './pickAnim.ts';
+import { yardDummyFrame, pickEnemyAnim, pickPlayerAnim, type EnemyAnimState, type PlayerAnimState } from './pickAnim.ts';
 
 const defs = animsJson as AnimDef[];
 const player = (k: string) => defs.find((d) => d.atlas === 'player_swordsman' && d.key === k) ?? defs.find((d) => d.atlas.startsWith('weapon_') && d.key === k);
@@ -70,6 +70,12 @@ describe('player anim choice (08 §5.2, §6.1)', () => {
     expect(ch.key).toBe('charge_katana');
     expect(ch.weapon!.frame).toMatch(/^charge_katana_0[01]$/);
   });
+  it('ability poses: cast_slam / cast_up by cast phase; Blade Dash uses the dash pose', () => {
+    expect(pick({ cast: { id: 'shockwave', phase: 'startup', t: 0, len: 24 } })).toMatchObject({ key: 'cast_slam', frame: 0 });
+    expect(pick({ cast: { id: 'thunder_strike', phase: 'recovery', t: 3, len: 24 } })).toMatchObject({ key: 'cast_up', frame: 2 });
+    expect(pick({ cast: { id: 'blink', phase: 'startup', t: 0, len: 1 } }).key).toBe('idle');   // no pose: movement as usual
+    expect(pick({ state: 'forced', stateTicks: 1, forcedOwner: 'ability:blade_dash' }).key).toBe('dash');
+  });
   it('dives draw the weapon dive layer', () => {
     const p = pick({ state: 'diveFall', stateTicks: 1 });
     expect(p.key).toBe('dive_fall');
@@ -84,5 +90,20 @@ describe('enemy anim choice (08 §7)', () => {
     expect(pickEnemyAnim({ ...e, vx: 50 }, wolf, 0, 2.5).frame).toBe(2);
     expect(pickEnemyAnim({ ...e, control: { type: 'stagger' } }, wolf, 0, 0).key).toBe('stagger');
     expect(pickEnemyAnim({ ...e, attack: { id: 'snap', phase: 'tele', t: 0, len: 40 } }, wolf, 0, 0).key).toBe('atk_snap');
+  });
+});
+
+describe('Training Yard targets (ART5)', () => {
+  const base = { dead: false, deathElapsed: 0, sinceHit: 999, attack: null };
+  it('sparring dummy: idle, telegraph, swing by Act progress, hit', () => {
+    expect(yardDummyFrame('sparring_dummy', base)).toBe('sparring_dummy_idle_00');
+    expect(yardDummyFrame('sparring_dummy', { ...base, attack: { phase: 'tele', t: 0, len: 72 } })).toBe('sparring_dummy_tele_00');
+    expect(yardDummyFrame('sparring_dummy', { ...base, attack: { phase: 'act', t: 11, len: 12 } })).toBe('sparring_dummy_atk_practice_swing_02');
+    expect(yardDummyFrame('sparring_dummy', { ...base, sinceHit: 0 })).toBe('sparring_dummy_hit_00');
+  });
+  it('straw target: idle, then its 4-frame break', () => {
+    expect(yardDummyFrame('straw_target', base)).toBe('straw_target_idle_00');
+    expect(yardDummyFrame('straw_target', { ...base, dead: true, deathElapsed: 0 })).toBe('straw_target_death_00');
+    expect(yardDummyFrame('straw_target', { ...base, dead: true, deathElapsed: 999 })).toBe('straw_target_death_03');
   });
 });

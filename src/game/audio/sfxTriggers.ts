@@ -20,6 +20,9 @@ const SIZE: Record<string, 's' | 'm' | 'l'> = { small: 's', medium: 'm', large: 
 const sizeOf = (e: EnemyState) => SIZE[e.def.size] ?? 'm';
 
 /** The state the triggers compare against (per scene, reset with the world). */
+/** Player projectile → its firing sound. */
+const SHOT_SFX: Record<string, string> = { arrow: 'shot_bow', arrow_charged: 'shot_bow', bolt: 'shot_crossbow', staff_bolt: 'shot_staff', orb: 'shot_orb' };
+
 export class SfxWatch {
   private aware = new Map<number, boolean>();
   private phase = new Map<number, string>();
@@ -31,6 +34,9 @@ export class SfxWatch {
   private charges = -1;
   private runFrame = -1;
   private projectiles = new Set<number>();
+  private shots = new Set<number>();
+  private hammer: 'none' | 'out' | 'back' = 'none';
+  private charge: 'none' | 'charging' | 'full' = 'none';
 
   reset(): void {
     this.aware.clear(); this.phase.clear(); this.stagger.clear(); this.intro.clear();
@@ -64,6 +70,7 @@ export class SfxWatch {
           break;
         }
         case 'hit': {
+          if (e.chainFrom !== undefined) { out.push({ id: 'zap', x: w.enemies.find((x) => x.id === e.target)?.x }); break; }
           if (e.target === 'player') { out.push({ id: 'player_hurt' }); break; }
           const en = w.enemies.find((x) => x.id === e.target);
           const stop = (en?.hitStopTicks ?? 0) / TICK_RATE;
@@ -90,8 +97,14 @@ export class SfxWatch {
         case 'timedDoorMissed': out.push({ id: 'timed_missed' }); break;
         case 'bossDefeated': out.push({ id: 'boss_defeated' }); break;
         case 'split': if (e.deltaTicks !== null) out.push({ id: e.deltaTicks <= 0 ? 'split_faster' : 'split_slower' }); break;
+        case 'abilityUsed': if (SFX[`ab_${e.id}`]) out.push({ id: `ab_${e.id}` }); break;
+        case 'abilityLinked': out.push({ id: 'ab_link' }); break;
+        case 'abilityFizzle': out.push({ id: 'ab_fizzle' }); break;
+        case 'abilityNotReady': out.push({ id: 'ab_not_ready' }); break;
+        case 'classChanged': out.push({ id: 'class_change' }); break;
+        case 'classDiscovered': out.push({ id: 'class_discovered' }); break;
         case 'stationDone': out.push({ id: 'ui_confirm' }); break;                   // 06 §12.4
-        default: break;
+        default: if ((e as { t: string }).t === 'wallBroken') out.push({ id: 'wall_break' }); break;
       }
     }
     // Enemies: becoming aware (voice), an Act starting (swing), boss intro and break.
@@ -122,6 +135,29 @@ export class SfxWatch {
       if (SFX[id]) out.push({ id, x: p.x });
     }
     this.projectiles = live;
+    // Player shots, the thrown hammer, charging (ART5 sounds).
+    const shotLive = new Set<number>();
+    for (const p of w.playerProjectiles) {
+      shotLive.add(p.id);
+      if (this.shots.has(p.id)) continue;
+      const id = SHOT_SFX[p.def.id];
+      if (id) out.push({ id });
+    }
+    this.shots = shotLive;
+    const h = w.hammer ? w.hammer.phase : 'none';
+    if (h !== this.hammer) {
+      if (h === 'out') out.push({ id: 'hammer_throw' });
+      else if (h === 'back') out.push({ id: 'hammer_return' });
+      else if (this.hammer !== 'none') out.push({ id: 'hammer_catch' });
+      this.hammer = h;
+    }
+    const ch = w.combat.charge;
+    const cs = !ch ? 'none' : ch.ticks >= ch.need ? 'full' : 'charging';
+    if (cs !== this.charge) {
+      if (cs === 'charging' && this.charge === 'none') out.push({ id: 'charge_loop' });
+      if (cs === 'full') out.push({ id: 'charge_full' });
+      this.charge = cs;
+    }
     // Player: a melee step's active phase starts (by weapon weight).
     const cur = w.combat.current;
     const key = cur && cur.phase === 'active' ? `${cur.attackInstance}` : '';

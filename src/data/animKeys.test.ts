@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ATLASES, BOSS_ANIMS, DIVE_PARTS, DUMMY_FRAMES, YARD_FRAMES, itemGlow, itemIcon, ENEMY_ANIMS, FONTS, OBJECT_FRAMES, PLAYER_ANIMS, PROJECTILE_ANIMS, VFX_ANIMS, WEAPON_ART, weaponDiveKey, weaponStepKey } from './animKeys.ts';
+import { ATLASES, BOSS_ANIMS, DIVE_PARTS, DUMMY_FRAMES, YARD_DUMMY_FRAMES, YARD_FRAMES, itemGlow, itemIcon, ENEMY_ANIMS, FONTS, OBJECT_FRAMES, PLAYER_ANIMS, PROJECTILE_ANIMS, VFX_ANIMS, WEAPON_ART, weaponDiveKey, weaponStepKey } from './animKeys.ts';
 
 interface Def { key: string; atlas: string; frames: string[] }
 import animsJson from '../../public/assets/anims.json';
@@ -59,6 +59,7 @@ describe('anim keys used by the view exist in the art', () => {
     for (const f of [D.arenaDoor.cap, D.arenaDoor.mid, D.arenaDoor.bottom, ...Object.values(D.timedDoor.cap), D.timedDoor.mid, D.timedDoor.bottom, ...D.guideArrow]) expect(o.has(f), f).toBe(true);
     const x = frames('enemies_extra');
     for (const f of [...DUMMY_FRAMES.idle, ...DUMMY_FRAMES.hit]) expect(x.has(f), f).toBe(true);
+    for (const set of Object.values(YARD_DUMMY_FRAMES)) for (const f of Object.values(set).flat()) expect(x.has(f), f).toBe(true);
   });
   it('Training Yard frames: statues, stands, board, item icons and glows', () => {
     const o = frames('objects'), items = frames('items');
@@ -66,6 +67,7 @@ describe('anim keys used by the view exist in the art', () => {
     for (const c of CLASS_IDS) expect(o.has(YARD_FRAMES.statue(c)), c).toBe(true);
     expect(o.has(YARD_FRAMES.stand)).toBe(true);
     expect(o.has(YARD_FRAMES.board)).toBe(true);
+    for (const f of [YARD_FRAMES.sign, YARD_FRAMES.flagTodo, YARD_FRAMES.flagDone]) expect(o.has(f), f).toBe(true);
     for (const id of Object.keys(WEAPONS)) { expect(ui.has(itemIcon('weapon', id)), id).toBe(true); expect(items.has(itemGlow('weapon', id)), id).toBe(true); }
     for (const id of Object.keys(ABILITIES)) { expect(ui.has(itemIcon('ability', id)), id).toBe(true); expect(items.has(itemGlow('ability', id)), id).toBe(true); }
   });

@@ -53,6 +53,22 @@ export const BOSS_ANIMS: Record<string, readonly string[]> = {
 /** The Training Dummy has frames but no anims.json entry (ART4): `<name>_NN` in `enemies_extra`. */
 export const DUMMY_FRAMES = { idle: ['training_dummy_idle_00'], hit: ['training_dummy_hit_00', 'training_dummy_hit_01', 'training_dummy_hit_02'] } as const;
 
+/** ART5 Training Yard targets: frames `<id>_<anim>_NN` in `enemies_extra` (no full enemy anim set). */
+export const YARD_DUMMY_FRAMES = {
+  sparring_dummy: {
+    idle: ['sparring_dummy_idle_00'], tele: ['sparring_dummy_tele_00', 'sparring_dummy_tele_01'],
+    swing: ['sparring_dummy_atk_practice_swing_00', 'sparring_dummy_atk_practice_swing_01', 'sparring_dummy_atk_practice_swing_02'],
+    hit: ['sparring_dummy_hit_00', 'sparring_dummy_hit_01', 'sparring_dummy_hit_02'],
+  },
+  straw_target: {
+    idle: ['straw_target_idle_00'], death: ['straw_target_death_00', 'straw_target_death_01', 'straw_target_death_02', 'straw_target_death_03'],
+  },
+} as const;
+
+/** 08 §6.2 ability poses that have art (ART5): cast abilities by id, and ability moves by their ForcedMove owner. */
+export const CAST_POSE: Record<string, string> = { shockwave: 'cast_slam', arrow_rain: 'cast_up', thunder_strike: 'cast_up' };
+export const MOVE_POSE: Record<string, string> = { blade_dash: 'dash' };
+
 /** Enemy projectile anims in `projectiles`. */
 export const PROJECTILE_ANIMS = ['enemy_arrow', 'brute_wave', 'shockwave', 'falling_rock', 'falling_rock_shatter'] as const;
 
@@ -82,6 +98,7 @@ export const YARD_FRAMES = {
   statue: (cls: string) => `class_statue_${cls}_00`,
   stand: 'loot_stand_00',
   board: 'unlocks_board_00',
+  sign: 'station_sign_00', flagTodo: 'station_flag_grey_00', flagDone: 'station_flag_green_00',
 } as const;
 /** An item's icon (in `ui`) and the glow behind it on the ground (in `items`). */
 export const itemIcon = (kind: 'weapon' | 'ability', id: string) => `icon_${kind}_${id}`;

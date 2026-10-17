@@ -16,8 +16,7 @@ export const STAGE_UI = {
 
 /** Training Yard view (06 §12.4): check flags, the board panel, the pit fade. */
 export const YARD_UI = {
-  flagPole: 22, flagW: 10, flagH: 7,             // px
-  flagTodo: 0x8a8a8a, flagDone: 0x6be36b, pole: 0x5a4632,
+  signDx: 10,                                    // px from the hint zone's left edge
   boardRange: 40,                                // px from the board's x: the checklist panel shows
   panelPad: 6, panelLine: 10,
   iconLift: 4,                                   // px between a stand's top and the item icon
@@ -38,7 +37,7 @@ export const SLOT_LAYOUT = {
 /** Grey-box ability visuals (M4 Task 15): how long each trace stays, in seconds; alphas. */
 export const ABILITY_FX = {
   boxS: 0.15, trailS: 0.15, trailEvery: 3, blinkS: 0.15, blinkR: 12, chainS: 0.15,
-  boxAlpha: 0.35, zoneAlpha: 0.15, trailAlpha: 0.45, rainLines: 6, rainLen: 10, rainSpeed: 4, markLift: 26,       // the mark sits above the DPS readout
+  boxAlpha: 0.35, zoneAlpha: 0.15, trailAlpha: 0.45, rainLines: 6, rainLen: 10, rainSpeed: 4, markLift: 26, markLinkedAbove: 1.3,       // the mark sits above the DPS readout
 } as const;
 
 /** 07 §4.1 top-left HUD layout and §4.2–4.6 timings (seconds). */

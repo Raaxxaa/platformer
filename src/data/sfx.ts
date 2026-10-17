@@ -48,6 +48,15 @@ export const SFX: Record<string, SfxDef> = {
   pickup_weapon: { vol: 0.5, variants: 2 }, pickup_ability: { vol: 0.5, variants: 2 }, blueprint: { vol: 0.5, variants: 2 },
   purchase: { vol: 0.6, variants: 0 }, cant_afford: { vol: 0.6, variants: 0 }, upgrade: { vol: 0.6, variants: 0 }, sell: { vol: 0.6, variants: 0 }, reroll: { vol: 0.6, variants: 0 },
   split_faster: { vol: 0.6, variants: 0 }, split_slower: { vol: 0.6, variants: 0 }, pb: { vol: 0.6, variants: 0 }, sleep: { vol: 0.6, variants: 0 }, restart: { vol: 0.6, variants: 0 },
+  // ART5 Task 6: class, ability and weapon sounds (08 §13.3).
+  ab_blade_dash: { vol: 0.6, variants: 0 }, ab_whirlwind: { vol: 0.6, variants: 0 }, ab_shockwave: { vol: 0.6, variants: 0 },
+  ab_shoulder_charge: { vol: 0.6, variants: 0 }, ab_arrow_rain: { vol: 0.6, variants: 0 }, ab_hunters_mark: { vol: 0.6, variants: 0 },
+  ab_thunder_strike: { vol: 0.6, variants: 0 }, ab_blink: { vol: 0.6, variants: 0 },
+  ab_link: { vol: 0.6, variants: 0 }, ab_fizzle: { vol: 0.6, variants: 0 }, ab_not_ready: { vol: 0.5, variants: 0 },
+  class_change: { vol: 0.5, variants: 0 }, class_discovered: { vol: 0.6, variants: 0 }, wall_break: { vol: 0.7, variants: 0, ...W },
+  hammer_throw: { vol: 0.55, variants: 0 }, hammer_return: { vol: 0.5, variants: 0 }, hammer_catch: { vol: 0.5, variants: 0 },
+  shot_bow: { vol: 0.5, variants: 2 }, shot_crossbow: { vol: 0.5, variants: 2 }, shot_staff: { vol: 0.5, variants: 2 }, shot_orb: { vol: 0.55, variants: 2 },
+  zap: { vol: 0.45, variants: 2, ...W },
   ui_move: ui, ui_confirm: ui, ui_back: ui, ui_error: ui, ui_open: ui, ui_close: ui, ui_toggle: ui,
 };
 

@@ -45,8 +45,7 @@ export class ItemViews {
 }
 
 export class YardView {
-  private flags: { station: number; x: number; y: number }[] = [];
-  private flagGfx: Phaser.GameObjects.Graphics;
+  private flags: { station: number; img: Phaser.GameObjects.Image }[] = [];
   private boards: { x: number; y: number }[] = [];
   private panelBg: Phaser.GameObjects.Graphics;
   private panelText: Phaser.GameObjects.BitmapText;
@@ -58,7 +57,13 @@ export class YardView {
   constructor(scene: Phaser.Scene, level: LevelData) {
     this.scene = scene;
     for (const o of level.objects) {
-      if (o.type === 'station_flag') this.flags.push({ station: Number(o.props.station), x: o.x, y: o.y });
+      if (o.type === 'station_flag') {
+        this.flags.push({ station: Number(o.props.station), img: scene.add.image(o.x, o.y, 'objects', YARD_FRAMES.flagTodo).setOrigin(0.5, 1).setDepth(DEPTH.items - 1) });
+      }
+      // A sign post at the start of each station's hint zone (ART5 `station_sign`).
+      if (o.type === 'hint' && o.props.station !== undefined) {
+        scene.add.image(o.x + YARD_UI.signDx, o.y + o.h, 'objects', YARD_FRAMES.sign).setOrigin(0.5, 1).setDepth(DEPTH.items - 2);
+      }
       if (o.type === 'checklist_board') {
         this.boards.push({ x: o.x, y: o.y });
         scene.add.image(o.x, o.y, 'objects', YARD_FRAMES.board).setOrigin(0.5, 1).setDepth(DEPTH.items - 2);
@@ -68,7 +73,6 @@ export class YardView {
         scene.add.bitmapText(o.x, o.y, FONTS.small, titleCase(cls)).setOrigin(0, 1).setTint(CLASS_COLOR[cls] ?? UI_COLOR.text).setDepth(DEPTH.items);
       }
     }
-    this.flagGfx = scene.add.graphics().setDepth(DEPTH.items - 1);
     const { width, height } = scene.scale;
     this.panelBg = scene.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud);
     this.panelText = scene.add.bitmapText(0, 0, FONTS.small, '').setScrollFactor(0).setDepth(DEPTH.hud + 1);
@@ -82,11 +86,7 @@ export class YardView {
       if (o.kind !== 'class_statue' || this.statues.has(o.id)) continue;
       this.statues.set(o.id, this.scene.add.image(o.x, o.y, 'objects', YARD_FRAMES.statue(o.label)).setOrigin(0.5, 1).setDepth(DEPTH.items - 2));
     }
-    const g = this.flagGfx.clear();
-    for (const f of this.flags) {
-      g.fillStyle(U.pole, 1).fillRect(f.x - 1, f.y - U.flagPole, 2, U.flagPole);
-      g.fillStyle(w.trainingDone.has(f.station) ? U.flagDone : U.flagTodo, 1).fillRect(f.x + 1, f.y - U.flagPole, U.flagW, U.flagH);
-    }
+    for (const f of this.flags) f.img.setFrame(w.trainingDone.has(f.station) ? YARD_FRAMES.flagDone : YARD_FRAMES.flagTodo);
     // The checklist panel while the player stands at the board.
     const near = this.boards.some((b) => Math.abs(w.body.x - b.x) < U.boardRange && Math.abs(w.body.y - b.y) < U.boardRange);
     this.panelText.setVisible(near);

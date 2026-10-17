@@ -5,12 +5,13 @@ import { enemyRect } from '../../core/enemies/enemy.ts';
 import type { EnemyProjectile } from '../../core/enemies/projectiles.ts';
 import type { GameWorld } from '../../core/sim/gameWorld.ts';
 import { COMBAT, ENEMY, TICK_RATE } from '../../core/tuning.ts';
-import { DUMMY_FRAMES } from '../../data/animKeys.ts';
+import { DUMMY_FRAMES, YARD_DUMMY_FRAMES } from '../../data/animKeys.ts';
 import { ANCHOR, ANIM, DEPTH, OVERLAY, TRIM_TINT, VFX, WEAPON_FRAME } from '../../data/art.ts';
 import { AnimClock, runFps, timeFrame, walkFps } from './animClock.ts';
 import type { AnimBank } from './animBank.ts';
 import { trimTints } from './trims.ts';
-import { pickEnemyAnim, pickPlayerAnim, type Lookup, type PlayerAnimState } from './pickAnim.ts';
+import { castRt } from '../../core/abilities/abilitySystem.ts';
+import { yardDummyFrame, pickEnemyAnim, pickPlayerAnim, type Lookup, type PlayerAnimState } from './pickAnim.ts';
 
 /** The outfit before a kit is picked (08 §6: outfit = starting class). */
 export const DEFAULT_OUTFIT = 'swordsman';
@@ -71,6 +72,8 @@ export class PlayerSprite {
       state: b.state, stateTicks: b.stateTicks, vx: b.vx, vy: b.vy, facing: b.facing, landSpeed: b.landSpeed,
       dead: w.health.dead,
       attack: cur && inst ? { weaponId: inst.weaponId, step: cur.step, phase: cur.phase, phaseTicks: cur.phaseTicks, lens: cur.lens, kind: cur.kind } : null,
+      cast: (() => { const c = castRt(w); return c ? { id: c.id, phase: c.phase, t: c.t, len: c.phase === 'startup' ? c.S : c.R } : null; })(),
+      forcedOwner: b.forced?.owner ?? null,
       charging: w.combat.charge ? w.combat.slots[w.combat.charge.slot]?.weaponId ?? null : null,
       diveWeapon: w.combat.slots[diveSlot]?.weaponId ?? null,
       drinkTicks: w.drinking ? w.drinking.t : null,
@@ -127,6 +130,8 @@ export class EnemySprite {
   private readonly get: Lookup;
   private readonly bank: AnimBank;
   private readonly dummy: boolean;
+  /** A Training Yard target with ART5 frames only (sparring dummy, straw target). */
+  private readonly yard: keyof typeof YARD_DUMMY_FRAMES | null;
   readonly hasArt: boolean;
   readonly e: EnemyState;
   /** True once the death anim has finished (the scene bursts it into particles once). */
@@ -137,9 +142,10 @@ export class EnemySprite {
     this.get = bank.enemy(e.def.id, !!e.boss);
     this.dummy = e.def.id === 'training_dummy';
     const idle = this.get('idle');
-    this.hasArt = !!idle || this.dummy;
-    const atlas = this.dummy ? 'enemies_extra' : idle?.atlas ?? 'enemies_plains';
-    const frame = this.dummy ? DUMMY_FRAMES.idle[0] : idle?.frames[0];
+    this.yard = e.def.id in YARD_DUMMY_FRAMES ? (e.def.id as keyof typeof YARD_DUMMY_FRAMES) : null;
+    this.hasArt = !!idle || this.dummy || !!this.yard;
+    const atlas = this.dummy || this.yard ? 'enemies_extra' : idle?.atlas ?? 'enemies_plains';
+    const frame = this.dummy ? DUMMY_FRAMES.idle[0] : this.yard ? YARD_DUMMY_FRAMES[this.yard].idle[0] : idle?.frames[0];
     const depth = e.boss ? DEPTH.boss : DEPTH.enemies;
     this.sprite = scene.add.sprite(0, 0, atlas, frame).setDepth(depth).setVisible(this.hasArt);
     this.overlay = scene.add.sprite(0, 0, atlas, frame).setDepth(depth + 0.5).setTintMode(Phaser.TintModes.FILL).setVisible(false);
@@ -158,6 +164,18 @@ export class EnemySprite {
     if (!this.hasArt || this.gone) return;
     if (this.dummy) {
       feet(this.sprite.setFrame(this.dummyFrame(worldTick))).setPosition(e.x, e.y);
+      this.updateOverlay(worldTick, 1);
+      return;
+    }
+    if (this.yard) {
+      if (e.dead && e.deathTicks <= 0) { this.gone = true; this.hide(); return; }
+      const a = e.ai.attack;
+      const f = yardDummyFrame(this.yard, {
+        dead: e.dead, deathElapsed: ENEMY.DEATH_ANIM_TICKS - e.deathTicks, sinceHit: worldTick - e.lastPlayerHitTick,
+        attack: a ? { phase: a.phase, t: a.t, len: a.len } : null,
+      });
+      for (const s of [this.sprite, this.overlay]) feet(s.setFrame(f)).setPosition(e.x, e.y).setFlipX(e.facing < 0);
+      this.sprite.setVisible(true);
       this.updateOverlay(worldTick, 1);
       return;
     }

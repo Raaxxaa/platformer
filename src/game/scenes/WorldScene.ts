@@ -369,9 +369,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.soundNote.setVisible(this.sfx.locked && !this.overview);
     if (this.debug) g.lineStyle(1, COLOR.hurtbox, 1).strokeRect(left + 0.5, top + 0.5, b.w - 1, b.h - 1);
 
-    // Active attack hitboxes: the player's always (M2), the enemies' with ?debug=1.
+    // Active attack hitboxes: the player's always (M2), the enemies' with ?debug=1. Ability boxes now have
+    // ART5 effects, so they show only in ?boxes=1.
     for (const h of w.hitGroups) {
-      if (!h.active || (h.owner !== 'player' && !this.debug)) continue;
+      if (!h.active || (h.owner !== 'player' && !this.debug) || (h.ability && !this.boxesMode)) continue;
       g.fillStyle(DRAW.attackBox, DRAW.attackAlpha).fillRect(h.rect.x, h.rect.y, h.rect.w, h.rect.h);
     }
     // The thrown Storm Hammer, over its own hitbox (grey box until ART5).

@@ -2,7 +2,7 @@
 import type { MoveStateId } from '../../core/player/body.ts';
 import { BOSS, MOVE, TICK_RATE } from '../../core/tuning.ts';
 import { ANIM } from '../../data/art.ts';
-import { weaponChargeKey, weaponChargedKey, weaponDiveKey, weaponStepKey, weaponThrowKey, WEAPON_ART } from '../../data/animKeys.ts';
+import { weaponChargeKey, weaponChargedKey, weaponDiveKey, weaponStepKey, weaponThrowKey, WEAPON_ART, YARD_DUMMY_FRAMES, CAST_POSE, MOVE_POSE } from '../../data/animKeys.ts';
 import { phaseFrame, timeFrame, type AnimDef } from './animClock.ts';
 
 export type Lookup = (key: string) => AnimDef | undefined;
@@ -12,6 +12,9 @@ export interface PlayerAnimState {
   dead: boolean;
   /** The current weapon step (phaseTicks counts from 1, like core). */
   attack: { weaponId: string; step: number; phase: 'startup' | 'active' | 'recovery'; phaseTicks: number; lens: Record<'startup' | 'active' | 'recovery', number>; kind?: 'combo' | 'charged' | 'throw' } | null;
+  /** A running ability cast (03 §7.6) and the ForcedMove owner tag, for ability poses (08 §6.2). */
+  cast?: { id: string; phase: 'startup' | 'recovery'; t: number; len: number } | null;
+  forcedOwner?: string | null;
   /** The weapon being charged (02 §9.4), for its `charge_<id>` pose. */
   charging?: string | null;
   /** Weapon whose dive layer draws during dive states. */
@@ -92,6 +95,10 @@ export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, r
       return { key, frame, weapon: { atlas: `weapon_${s.charging}`, frame: def.frames[frame], behind: !!def.weaponBehind?.includes(frame), smear: null } };
     }
   }
+  const pose = s.cast ? CAST_POSE[s.cast.id] : undefined;
+  if (s.cast && pose && get(pose)) return { key: pose, frame: phaseFrame(get(pose)!, s.cast.phase, s.cast.t, s.cast.len), weapon: null };
+  const mp = s.state === 'forced' && s.forcedOwner?.startsWith('ability:') ? MOVE_POSE[s.forcedOwner.slice('ability:'.length)] : undefined;
+  if (mp && get(mp)) return { key: mp, frame: timeFrame(get(mp)!, sec(s.stateTicks)), weapon: null };
   if (s.drinkTicks !== null) {
     const t = sec(s.drinkTicks), e = ANIM.DRINK_FRAME_ENDS;
     return { key: 'drink', frame: t < e[0] ? 0 : t < e[1] ? 1 : t < e[2] ? 2 : 3, weapon: null };
@@ -147,4 +154,27 @@ export function pickEnemyAnim(e: EnemyAnimState, get: Lookup, t: number, runPhas
   if (a && has(`atk_${a.id}`)) return { key: `atk_${a.id}`, frame: phaseFrame(get(`atk_${a.id}`)!, a.phase, a.t, a.len, e.vy), alpha: 1 };
   if (Math.abs(e.vx) > 0.5 && has('walk')) return { key: 'walk', frame: Math.floor(runPhase) % get('walk')!.frames.length, alpha: 1 };
   return { key: 'idle', frame: timeFrame(get('idle')!, t), alpha: 1 };
+}
+
+/** What a Training Yard target's view needs (ART5 frames, no full anim set). Ticks are world ticks. */
+export interface YardDummyState {
+  dead: boolean; deathElapsed: number; sinceHit: number;
+  attack: { phase: string; t: number; len: number } | null;
+}
+const YARD_FPS = { hit: 20, tele: 8, death: 10 } as const;
+
+export function yardDummyFrame(id: keyof typeof YARD_DUMMY_FRAMES, s: YardDummyState): string {
+  const at = (frames: readonly string[], ticks: number, fps: number, loop = false) => {
+    const i = Math.floor((ticks / TICK_RATE) * fps);
+    return frames[loop ? i % frames.length : Math.min(frames.length - 1, i)];
+  };
+  if (id === 'straw_target') {
+    const F = YARD_DUMMY_FRAMES.straw_target;
+    return s.dead ? at(F.death, s.deathElapsed, YARD_FPS.death) : F.idle[0];
+  }
+  const F = YARD_DUMMY_FRAMES.sparring_dummy;
+  if (s.sinceHit < (F.hit.length / YARD_FPS.hit) * TICK_RATE) return at(F.hit, s.sinceHit, YARD_FPS.hit);
+  if (s.attack?.phase === 'tele') return at(F.tele, s.attack.t, YARD_FPS.tele, true);
+  if (s.attack?.phase === 'act') return F.swing[Math.min(F.swing.length - 1, Math.floor((s.attack.t / Math.max(1, s.attack.len)) * F.swing.length))];
+  return F.idle[0];
 }
