@@ -1,4 +1,5 @@
 // 02 §2.1 steps 7a, 7b and 9: hit resolution and deaths.
+import { critChance } from '../loot/perks.ts';
 import { enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { roundHalfUp } from '../math.ts';
@@ -44,7 +45,9 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const inst = g.slot !== undefined ? w.combat.slots[g.slot] : null;
   const matched = isWeapon && g.slot !== undefined && w.classState.weaponMatched[g.slot];
   if (w.noteLanding(g)) onLanding(w, g, e);                 // hit streak first: Blademaster's 3rd landing crits itself
-  const crit = guaranteedCrit(w, g, e);
+  // 02 §3.2: a guaranteed crit, else roll the `combat` stream when critChance > 0 (Keen).
+  const chance = isWeapon && g.slot !== undefined ? critChance(w, g.slot) : 0;
+  const crit = guaranteedCrit(w, g, e) || (chance > 0 && w.rng.combat.next() < chance);
   // Shatter (02 §6.3): any direct hit on a Frozen enemy, as a target multiplier; it ends the freeze.
   const tMult = targetMult(w, g, e) * shatterMult(w, e, true);
   const { damage, procBase } = playerHitDamage({

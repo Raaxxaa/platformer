@@ -86,6 +86,21 @@ export const WEAPON_SPECIAL = {
   },
 } as const;
 
+/** 02 §13 S-grade signatures for the built weapons (damage is the base; the S grade ×2.0 and match apply). */
+const sig = (damage: number, kb: [number, number], poise: number, extra: Partial<HitSpec> = {}): HitSpec =>
+  ({ damage, kb, poise, hitStop: 0.05, kind: 'shot', ...extra });
+export const SIGNATURE = {
+  groundWave: { dx: 32, w: 16, h: 20, speed: 360, range: 192, hit: sig(16, [160, -80], 20) },
+  phantomEdge: { chargeTime: 0.25, delayS: 0.30, hit: sig(24, [60, -100], 30) },        // kb as the dash-slash
+  quake: { w: 16, h: 16, speed: 300, range: 128, hit: sig(16, [0, 0], 0, { control: { type: 'knockdown', duration: 0.6 } }) },
+  thunderclap: { box: { dx: 0, dy: -16, w: 96, h: 48 } as Box, hit: sig(16, [0, -300], 0, { control: { type: 'launch', duration: 0 } }) },
+  tripleShot: { angles: [-6, 6], sideDamage: 16 },
+  // SPEC-GAP: 02 §13 gives the Impaler blast only its damage; kb and poise follow the bolt's.
+  impaler: { pierce: 3, blast: { w: 64, h: 64 }, hit: sig(24, [280, -40], 30) },
+  tempest: { everyS: 0.10, size: 24, lifeS: 1.0, hit: sig(5, [0, 0], 0, { hitStop: 0, rehit: 0.25, multiHit: true }) },
+  singularity: { radius: 64, pull: 150, blast: 112 },
+} as const;
+
 export interface DiveDef { descentBox: Box; impactBox: Box; impactTime: number; hit: HitSpec }
 
 const DESCENT: Box = { dx: 0, dy: 2, w: 16, h: 12 };

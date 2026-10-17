@@ -1,5 +1,7 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
+import { stepSignatures } from '../combat/signatures.ts';
+import { dashCooldownMult, extraSpeed } from '../loot/perks.ts';
 import { cancelEnemyAttack } from '../enemies/attack.ts';
 import { enemyActs, stepStatuses } from '../combat/status.ts';
 import { createCamera, shake, snapCamera, stepCamera, type CameraState } from '../camera.ts';
@@ -590,7 +592,8 @@ export class GameWorld {
     if (this.tick - this.lastLandingTick > COMBAT.HIT_STREAK_TIMEOUT_TICKS) this.hitStreak = 0;
     stepBonds(this);
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
-    this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush)), ...hybridSpeed(this)];
+    this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush)), ...hybridSpeed(this), extraSpeed(this)];
+    this.mods.dashCooldownMult = dashCooldownMult(this);
     const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
     if (checkSpikes(this)) moveEvents.push('spikeHit');   // 01 §3 step 9
     for (const e of moveEvents) {
@@ -607,6 +610,7 @@ export class GameWorld {
     stepRockfall(this);
     activateEnemies(this);
     stepStatuses(this);
+    stepSignatures(this);
     for (const e of [...this.enemies].sort((a, b) => a.id - b.id)) this.stepEnemy(e);
     separateEnemies(this);
     syncEnemyGroups(this);

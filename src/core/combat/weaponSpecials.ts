@@ -11,6 +11,7 @@ import type { HitGroup } from './hitGroups.ts';
 import { firePlayerProjectile, spawnBlast, type FireOpts } from './playerProjectiles.ts';
 import type { CurrentAttack } from './playerCombat.ts';
 import { launchHammer } from './stormHammer.ts';
+import { signatureFire, signatureOnActive, signatureOnRecovery } from './signatures.ts';
 import type { AttackStep } from './types.ts';
 
 const S = WEAPON_SPECIAL;
@@ -56,7 +57,9 @@ export function onActiveStart(w: GameWorld, cur: CurrentAttack, st: AttackStep):
     for (const p of st.projectiles) {
       let opts: FireOpts = { ...base };
       for (const h of FIRE_HOOKS) opts = h(w, cur, inst.weaponId, opts, p.id);
-      firePlayerProjectile(w, cur.slot, cur.attackInstance, p.id, p.angle, opts);
+      const sg = signatureFire(w, cur, opts);
+      firePlayerProjectile(w, cur.slot, cur.attackInstance, p.id, p.angle, sg.opts);
+      for (const x of sg.extra) firePlayerProjectile(w, cur.slot, cur.attackInstance, p.id, p.angle + x.angle, x.opts);
     }
   }
   if (inst.weaponId === 'katana' && cur.kind === 'charged') {
@@ -83,6 +86,7 @@ export function onActiveStart(w: GameWorld, cur: CurrentAttack, st: AttackStep):
     b.grounded = false;
     if (b.state === 'ground' || b.state === 'crawl') setState(b, 'air', 0);
   }
+  signatureOnActive(w, cur);
 }
 
 /** The tick a step's recovery starts. */
@@ -93,6 +97,7 @@ export function onRecoveryStart(w: GameWorld, cur: CurrentAttack): void {
     b.vy = 0;
     b.vx = b.facing * MOVE.RUN_MAX;                  // after the move: vx = facing × base max run speed
   }
+  signatureOnRecovery(w, cur);
 }
 
 /** A cancel of the running step (nothing extra for now: groups go with the attack, the move with its own flags). */

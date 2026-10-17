@@ -25,6 +25,10 @@ export interface FireOpts {
   onHit?: HitGroup['onHit'];
   /** The combo step that fired it. */
   step?: number;
+  /** S-grade signatures: replace the hit (Triple Shot side arrows), the pierce count (Impaler), pull (Singularity). */
+  spec?: HitSpec;
+  pierce?: number;
+  singularity?: boolean;
   /** Called when the projectile ends without exploding (wall or range): x, y of its end. */
   onEnd?: (w: GameWorld, p: PlayerProjectile, x: number, y: number) => void;
 }
@@ -77,13 +81,13 @@ export function firePlayerProjectile(w: GameWorld, slot: 0 | 1, attackInstance: 
   };
   w.playerProjectiles.push(p);
   const g: HitGroup = {
-    id: pid, owner: 'player', kind: 'shot', rect: rectOf(p), spec: def.hit, active: true, lastHitTick: new Map(), hitCount: new Map(),
+    id: pid, owner: 'player', kind: 'shot', rect: rectOf(p), spec: opts.spec ?? def.hit, active: true, lastHitTick: new Map(), hitCount: new Map(),
     attackInstance, slot, dir: f, projectile: pid, bonus: p.bonus, traveled: 0, step: opts.step,
     contact: def.explodeOnEnemy ? (ww) => { explode(ww, p); removePlayerProjectile(ww, p); g.active = false; return true; } : undefined,
     onHit: (ww, gg, e, info) => {
       opts.onHit?.(ww, gg, e, info);
       p.hits += 1;
-      if (p.hits > def.pierce) { removePlayerProjectile(ww, p); gg.active = false; }
+      if (p.hits > (opts.pierce ?? def.pierce)) { removePlayerProjectile(ww, p); gg.active = false; }
     },
   };
   w.hitGroups.push(g);

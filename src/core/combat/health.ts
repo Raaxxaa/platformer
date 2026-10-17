@@ -1,4 +1,5 @@
 // Player HP and the hurt pipeline (02 §5.1–5.2).
+import { incomingMult } from '../loot/perks.ts';
 import { applyKnockback, setDead } from '../player/movement.ts';
 import { COMBAT } from '../tuning.ts';
 import { enemyHitDamage } from './damage.ts';
@@ -52,7 +53,7 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   // 5. Damage.
   // A practice hit (Sparring Dummy, 04 §2.11) deals 0 but runs the rest of the pipeline.
   const practice = src.kind === 'enemyHit' && src.damageA === 0;
-  const dealt = practice ? 0 : enemyHitDamage(src.damageA, 1, null);
+  const dealt = practice ? 0 : enemyHitDamage(src.damageA, incomingMult(w), null);
   h.hp -= dealt;
   if (practice) w.events.push({ t: 'sparringHit' });
   w.onPlayerDamaged();                                       // the hit streak resets (02 §1); a swap choice closes

@@ -1,4 +1,6 @@
 // The player's weapon attacks: combo, input buffer, cancels, move caps and facing (02 §9.1–9.3, §9.5–9.6).
+import { chargeTimeOf } from './signatures.ts';
+import { attackSpeedBonus } from '../loot/perks.ts';
 import type { InputState } from '../input.ts';
 import type { PlayerBody } from '../player/body.ts';
 import { detachFromWall } from '../player/wall.ts';
@@ -58,9 +60,9 @@ export function weaponIn(w: GameWorld, slot: Slot): WeaponDef | null {
   return inst ? WEAPONS[inst.weaponId] ?? null : null;
 }
 
-/** 02 §9.9: Rush multiplier × (1 + bonuses); M2 has no bonuses. */
-export function attackSpeed(w: GameWorld, weight: Weight): number {
-  return rushAttackSpeed(rushLevel(w.rush), weight);
+/** 02 §9.9: Rush multiplier × (1 + bonuses: Quick, 05 §4.4). */
+export function attackSpeed(w: GameWorld, weight: Weight, slot?: Slot): number {
+  return rushAttackSpeed(rushLevel(w.rush), weight) * (1 + (slot === undefined ? 0 : attackSpeedBonus(w, slot)));
 }
 
 export function stepDef(w: GameWorld, cur: CurrentAttack): AttackStep {
@@ -107,7 +109,7 @@ function startStep(w: GameWorld, slot: Slot, step: number, input: InputState, ki
   if (b.state === 'slide') b.endSlideRequested = true;                 // 01 §9.2: the press ends the slide
   if (b.state === 'wallSlide') { detachFromWall(b); faceAway = true; }  // 02 §9.3: detach, face away
   if (!faceAway && input.moveX !== 0) b.facing = input.moveX;
-  const atk = attackSpeed(w, weapon.weight);
+  const atk = attackSpeed(w, weapon.weight, slot);
   const instance = c.nextAttackInstance++;
   if (kind === 'combo') {
     step = keepComboOnSwap(w, slot, step, instance);              // Gladiator (03 §6.2)
@@ -209,7 +211,7 @@ function advance(w: GameWorld, input: InputState): void {
   const held = cur.slot === 0 ? input.attack1.held : input.attack2.held;
   if (weapon.hold === 'charge' && cur.kind === 'combo' && c.heldSinceStart && held && weapon.chargedStep && !c.queued && c.otherPending === null) {
     finishStep(w, cur, w.tick - 1);
-    c.charge = { slot: cur.slot, ticks: 0, need: phaseTicks(weapon.chargeTime ?? 0, attackSpeed(w, weapon.weight)) };
+    c.charge = { slot: cur.slot, ticks: 0, need: phaseTicks(chargeTimeOf(w, cur.slot, weapon), attackSpeed(w, weapon.weight, cur.slot)) };
     return;
   }
   const queued = c.queued || (held && weapon.hold === 'repeat'), other = c.otherPending;

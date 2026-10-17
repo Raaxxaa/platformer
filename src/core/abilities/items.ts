@@ -1,5 +1,6 @@
 // Weapon and ability items on the ground, interacting, pickup and the swap choices (03 §7.1, 05 §5.7, 06 §11, 07 §6.2–6.3).
 // Interactables (statues, boards) share the same targeting; their owners give the action.
+import { resetLeech } from '../loot/perks.ts';
 import type { InputState } from '../input.ts';
 import { emptyButton } from '../input.ts';
 import type { WeaponInstance } from '../combat/types.ts';
@@ -79,7 +80,7 @@ function takeInto(w: GameWorld, it: GroundItem, slot: 0 | 1): void {
     const old = w.combat.slots[slot];
     w.combat.slots[slot] = { ...it.weapon };
     w.combat.comboStep[slot] = 0;
-    if (old) dropItem(w, b.x, b.y, { weapon: old });
+    if (old) { resetLeech(old); dropItem(w, b.x, b.y, { weapon: old }); }
   }
   if (!it.endless) w.groundItems = w.groundItems.filter((x) => x !== it);
   closeChoices(w);
