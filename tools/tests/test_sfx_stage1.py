@@ -24,6 +24,9 @@ IDS = {
     'hammer_catch': 1, 'zap': 2, 'ab_blade_dash': 1, 'ab_whirlwind': 1, 'ab_shockwave': 1, 'ab_shoulder_charge': 1,
     'ab_arrow_rain': 1, 'ab_hunters_mark': 1, 'ab_thunder_strike': 1, 'ab_blink': 1, 'ab_link': 1, 'ab_fizzle': 1,
     'ab_not_ready': 1, 'wall_break': 1, 'class_change': 1, 'class_discovered': 1,
+    # ART6
+    'fire_hit': 2, 'ice_hit': 2, 'freeze': 2, 'shatter': 2, 'poison_hit': 2, 'wind_hit': 2, 'zap': 2,
+    'explosion_s': 2, 'explosion_l': 2,
 }
 
 

@@ -249,6 +249,22 @@ SFX.update({
 })
 
 
+# ART6 Task 4 — element sounds (08 §13.3)
+SFX.update({
+    'fire_hit': (2, [nz(0.15, hp=(800, 800), lp=(5000, 2000), rate=3500), nz(0.1, lp=(600, 300), level=0.5)],
+                 'Fire hit: crackle'),
+    'ice_hit': (2, [tone('sin', 2500, 2400, 0.08), tone('sin', 3750, 3700, 0.05, level=0.4)], 'Ice hit: glass tick'),
+    'freeze': (2, [nz(0.3, hp=(2500, 2500), rate=2500, level=0.7), tone('sin', 1800, 2600, 0.25, level=0.3)],
+               'Freeze: ice crackle'),
+    'shatter': (2, [nz(0.4, hp=(1800, 1800), lp=(9000, 4000))] +
+                [tone('sin', f, f, 0.18, level=0.4, delay=d) for f, d in ((2900, 0.03), (3500, 0.09), (4300, 0.16))],
+                'Shatter: glass break + pings'),
+    'poison_hit': (2, [tone('sin', f0, f0 * 1.6, 0.06, delay=d, level=0.7) for f0, d in ((300, 0), (420, 0.06), (350, 0.12))],
+                   'Poison hit: bubbly blips'),
+    'wind_hit': (2, [bp(0.22, 900, 2600, level=0.9)], 'Wind hit: airy whoosh'),
+})
+
+
 def files_for(sid):
     n = SFX[sid][0]
     return [f'{sid}.wav'] if n == 1 else [f'{sid}_{k}.wav' for k in range(1, n + 1)]

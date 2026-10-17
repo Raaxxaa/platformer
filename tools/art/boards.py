@@ -370,8 +370,112 @@ def classes_board(path):
     out.resize((1280, RH * 8), Image.NEAREST).convert('RGB').save(path)
 
 
+def _atlas_frame(atlas, name):
+    import json
+    root = os.path.join(os.path.dirname(__file__), '..', '..', 'public', 'assets', 'atlases')
+    d = json.load(open(os.path.join(root, f'{atlas}.json')))
+    f = d['frames'][name]['frame']
+    sheet = Image.open(os.path.join(root, d['meta']['image'])).convert('RGBA')
+    return sheet.crop((f['x'], f['y'], f['x'] + f['w'], f['y'] + f['h']))
+
+
+def _mul(img, col):
+    a = np.array(img).astype(np.float32)
+    for i in range(3):
+        a[:, :, i] *= col[i] / 255
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
+def _mix(img, col, f):
+    a = np.array(img).astype(np.float32)
+    m = a[:, :, 3] > 0
+    for i in range(3):
+        a[:, :, i][m] = a[:, :, i][m] * (1 - f) + col[i] * f
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
+def loot2_board(path):
+    """ART6 Task 5: a fight on the Plains: one enemy under each status, an S Greatsword's Ground Wave, Storm Hammer
+    Tempest clouds, a Lucky Block breaking and an open cursed chest."""
+    from . import vfx_elements as EL
+    fx = EL.frames()
+    root = os.path.join(os.path.dirname(__file__), '..', '..', 'public', 'assets', 'bg')
+    scr = Image.new('RGBA', (640, 360))
+    for i in range(3):
+        scr.alpha_composite(Image.open(os.path.join(root, f'bg_plains_{i}.png')).convert('RGBA'))
+    gy = 300
+    scr.alpha_composite(Image.new('RGBA', (640, 60), (0x3a, 0x2a, 0x22, 255)), (0, gy))
+    grass = Image.new('RGBA', (640, 3), (0x4e, 0x7a, 0x3a, 255))
+    scr.alpha_composite(grass, (0, gy))
+    FIRE, ICE, BOLT = (0xff, 0x7a, 0x2e), (0x8f, 0xdc, 0xff), (0xff, 0xe9, 0x4a)
+
+    def put(img, cx, bottom):
+        scr.alpha_composite(img, (int(cx - img.width / 2), int(bottom - img.height)))
+
+    def label(s, cx, y=gy + 10):
+        text(scr, s, int(cx - len(s) * 3), y, color=P.UI_COLORS['text'])
+    enemies = [('wolf', 'burning'), ('bandit', 'chilled'), ('bandit_brute', 'frozen'), ('wild_boar', 'poisoned'),
+               ('bandit_archer', 'shocked')]
+    xs = [250, 320, 400, 480, 560]
+    for (en, st), x in zip(enemies, xs):
+        im = _atlas_frame('enemies_plains', f'{en}_idle_00')
+        im = im.transpose(Image.FLIP_LEFT_RIGHT)
+        aw = im.width
+        if st == 'frozen':
+            im = _mix(im, ICE, 0.5)
+        put(im, x, gy + 2)
+        top = gy - 30 if en != 'bandit_brute' else gy - 44
+        if st == 'burning':
+            for (dx, dy, k) in ((-9, -10, 0), (8, -16, 1), (-3, -22, 2)):
+                put(fx[f'burn_flame_{k:02d}'], x + dx, gy + dy)
+        elif st == 'chilled':
+            for (dx, dy, k) in ((-9, -14, 1), (10, -24, 2), (-6, -30, 0), (8, -6, 1)):
+                put(fx[f'chill_frost_{k:02d}'], x + dx, gy + dy)
+        elif st == 'frozen':
+            blk = stretch9(fx['freeze_block_00'], EL.FREEZE_CORNER, 32, 48)
+            put(blk, x, gy + 2)
+        elif st == 'poisoned':
+            for (dx, dy, k) in ((-10, -12, 0), (10, -18, 1), (2, -24, 0)):
+                put(fx[f'poison_bubble_{k:02d}'], x + dx, gy + dy)
+        elif st == 'shocked':
+            # the code draws the chain line; here a stand-in zigzag from the boar to the archer + the end sparks
+            from PIL import ImageDraw
+            d = ImageDraw.Draw(scr)
+            pts = [(480, gy - 16), (500, gy - 24), (515, gy - 12), (532, gy - 22), (545, gy - 14), (560, gy - 18)]
+            d.line(pts, fill=(0x7a, 0xd8, 0xff, 255), width=2)
+            d.line(pts, fill=(0xff, 0xfb, 0xe0, 255), width=1)
+            put(fx['chain_spark_00'], 480, gy - 13)
+            put(fx['chain_spark_01'], 560, gy - 15)
+        label(st, x)
+    put(fx['hit_fire_01'], 250, gy - 26)
+    # the player with an S Fire Greatsword, its Ground Waves rolling forward
+    gs = WP.build_frames('greatsword')
+    pose = POSES['atk_greatsword_1'][2]
+    scr.alpha_composite(gs['atk_greatsword_1_smear'].copy() if False else _mul(gs['atk_greatsword_1_smear'], FIRE), (60 - 80, gy - 72))
+    scr.alpha_composite(player('swordsman', pose), (60 - 24, gy - 46))
+    scr.alpha_composite(gs['atk_greatsword_1_02'], (60 - 80, gy - 72))
+    for k, x in enumerate((112, 140, 168)):
+        put(_mul(fx[f'sig_ground_wave_{k:02d}'], FIRE), x, gy)
+    label('Ground Wave (fire)', 120, gy + 22)
+    # Tempest clouds (lightning Storm Hammer) over the fight
+    for k, (x, y) in enumerate(((300, 210), (360, 196), (430, 214))):
+        put(_mul(fx[f'sig_tempest_{k:02d}'], BOLT), x, y)
+    label('Tempest (lightning)', 365, 170)
+    # a Lucky Block breaking and an open cursed chest, up on the left
+    lb = _atlas_frame('items', 'lucky_block_idle_00')
+    put(lb, 60, 200)
+    put(fx['lucky_break_02'], 60, 196)
+    label('Lucky Block', 60, 206)
+    put(_atlas_frame('items', 'chest_cursed_open_00'), 160, 200)
+    put(fx['chest_open_cursed_02'], 160, 190)
+    put(fx['debuff_aura_02'], 200, 200)
+    label('cursed chest', 170, 206)
+    scr.resize((1280, 720), Image.NEAREST).convert('RGB').save(path)
+
+
 def build(preview):
     moves_board(os.path.join(preview, 'player_moves_board.png'))
     loot_board(os.path.join(preview, 'style_board_loot.png'))
     ui_mock(os.path.join(preview, 'ui_mock.png'))
     classes_board(os.path.join(preview, 'style_board_classes.png'))
+    loot2_board(os.path.join(preview, 'style_board_loot2.png'))

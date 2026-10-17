@@ -618,8 +618,7 @@ def yard_enemy_frames():
     return {k: _img(v) for k, v in fr.items()}
 
 
-# Built but left out of anims.json (SPEC-GAPS-art #8): the enemy view treats any enemy with an `idle` anim as a full
-# enemy (walk/stagger/death), which the sparring dummy and straw target don't have.
+# The game draws the sparring dummy and straw target straight from these anims (SPEC-GAPS-art #8, resolved).
 YARD_ENEMY_ANIMS = [A.anim('sparring_dummy_idle', 'enemies_extra', 1, 'once'),
                     A.anim('sparring_dummy_tele', 'enemies_extra', 2, 'once', 8),
                     A.anim('sparring_dummy_atk_practice_swing', 'enemies_extra', 3, 'once', 20),
@@ -659,7 +658,7 @@ DUMMY_ANIMS = [A.anim('training_dummy_idle', 'enemies_extra', 1, 'once'),
 
 
 def anims():
-    out = list(DUMMY_ANIMS) + [A.anim('ability_altar_idle', ATLAS, 2, 'loop', 1), A.anim('gate_idle', ATLAS, 2, 'loop', 2),
+    out = list(DUMMY_ANIMS) + list(YARD_ENEMY_ANIMS) + [A.anim('ability_altar_idle', ATLAS, 2, 'loop', 1), A.anim('gate_idle', ATLAS, 2, 'loop', 2),
            A.anim('shop_refill_idle', ATLAS, 4, 'loop', 6)]
     for k in ('shop_item', 'shop_flask', 'shop_key', 'shop_reroll', 'unlocks_board', 'seed_board', 'loot_stand',
               'mirror_spot', 'class_statue_swordsman', 'class_statue_tank', 'class_statue_archer',

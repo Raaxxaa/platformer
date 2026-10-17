@@ -9,7 +9,7 @@ from . import palette as P
 from . import raster as R
 
 ATLAS = 'vfx'
-ALLOWED = ['white', 'trim', 'gray', 'fx_bolt', 'fx_fire', 'fx_ice', 'fx_heal', 'fx_dark', 'w_steel', 'w_gold', 'w_magic']
+ALLOWED = ['white', 'trim', 'gray', 'fx_bolt', 'fx_fire', 'fx_ice', 'fx_heal', 'fx_dark', 'w_steel', 'w_gold', 'w_magic', 'fx_poison', 'fx_wind']
 WHITE = P.sid((255, 255, 255))           # pure #ffffff (trim light): tints exactly in code
 GREY = P.sid((0xb0, 0xb0, 0xb0))
 
@@ -426,6 +426,9 @@ def build_frames():
              A.anim('blink_puff', ATLAS, 4, 'once', 24), A.anim('mark', ATLAS, 4, 'loop', 8),
              A.anim('mark_linked', ATLAS, 4, 'loop', 8), A.anim('link', ATLAS, 4, 'once', 24)]
     anims += [A.anim(f'ab_shockwave_{R_}', ATLAS, 5, 'once', 24) for R_ in SHOCK_R]
+    from . import vfx_elements as EL
+    fr.update(EL.frames())
+    anims += EL.anims()
     anims += [A.anim('hammer_dive_bolt', ATLAS, 4, 'once', 30), A.anim('hit_spark', ATLAS, 3, 'once', 30), A.anim('hit_heavy', ATLAS, 4, 'once', 30),
              A.anim('crit_spark', ATLAS, 4, 'once', 30), A.anim('stun_stars', ATLAS, 4, 'loop', 10),
              A.anim('dust_land', ATLAS, 4, 'once', 20), A.anim('dust_jump', ATLAS, 4, 'once', 20),
