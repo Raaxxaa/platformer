@@ -280,3 +280,12 @@ export const FLASK = {
   FILL_REGULAR: 50,
   FILL_ELITE: 150,
 } as const;
+
+/** 02 §6.2–6.6 element tables (index = level − 1) and timings (seconds). */
+export const ELEMENT = {
+  BURN: { pct: [0.10, 0.15, 0.20], durationS: 3.0, intervalS: 0.5, spread: [48, 48, 64] },
+  ICE: { scale: [0.75, 0.65, 0.55], stacks: [5, 4, 3], shatter: [2.0, 2.5, 3.0], chillS: 2.5, stackClearS: 3.0,
+    freezeS: { regular: 1.5, elite: 0.75 }, immuneS: 3.0 },
+  POISON: { pct: [0.03, 0.045, 0.06], max: [5, 6, 8], intervalS: 0.5, expireS: 4.0 },
+  WIND: { kb: [1.5, 1.8, 2.2], poise: [1.25, 1.5, 2.0] },
+} as const;

@@ -9,6 +9,7 @@ import { playerHitDamage } from './damage.ts';
 import { applyEnemyKnockback, applyLaunch, applyPull, controlOrPoise, damagePoise, isCommitted } from './enemyReactions.ts';
 import { afterHit, guaranteedCrit, hitBonus, kbDir, onLanding, targetMult } from './hitMods.ts';
 import { elementOf, lightningChain } from './elements.ts';
+import { applyElementHit, creditKillSource, shatterMult, spreadBurn, windMults } from './status.ts';
 import { hurtPlayer } from './health.ts';
 import { refundDash } from '../player/dash.ts';
 import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
@@ -44,8 +45,10 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const matched = isWeapon && g.slot !== undefined && w.classState.weaponMatched[g.slot];
   if (w.noteLanding(g)) onLanding(w, g, e);                 // hit streak first: Blademaster's 3rd landing crits itself
   const crit = guaranteedCrit(w, g, e);
+  // Shatter (02 §6.3): any direct hit on a Frozen enemy, as a target multiplier; it ends the freeze.
+  const tMult = targetMult(w, g, e) * shatterMult(w, e, true);
   const { damage, procBase } = playerHitDamage({
-    base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: targetMult(w, g, e),
+    base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: tMult,
   });
   e.hp -= damage;
   e.lastPlayerHitTick = w.tick;
@@ -57,7 +60,10 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   w.events.push({ t: 'hit', target: e.id, amount: damage, crit, heavy: !!spec.heavy, slot: g.slot, step: g.step, ability: g.ability });
   // Element on the direct hit (02 §6): Lightning chains to 2 others right away.
   const el = elementOf(w, g);
-  if (el?.id === 'lightning') lightningChain(w, e, el.level, procBase, (x) => targetMult(w, g, x), (x) => killEnemy(w, x));
+  const killer = isWeapon ? inst : null;
+  if (el?.id === 'lightning') lightningChain(w, e, el.level, procBase, (x) => targetMult(w, g, x), (x) => { killEnemy(w, x); creditKillSource(w, killer); });
+  else if (el && el.id !== 'wind' && !killed) applyElementHit(w, e, el, procBase, tMult, null, killer);
+  const wind = windMults(el);
   if (spec.heavy) w.shakeLevel('small');
   w.onPlayerLandedHit(g, e);
   // Hit-stop (02 §4.1): melee freezes both, a shot or a multi-hit group only the target.
@@ -66,18 +72,20 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   if (g.kind === 'melee' && !spec.multiHit && !g.noPlayerStop) w.body.hitStopTicks = maxStop(w.body.hitStopTicks, stop);
   if (killed) {
     killEnemy(w, e);
+    creditKillSource(w, killer);
     afterHit(w, g, e, { damage, killed });
     g.onHit?.(w, g, e, { damage, killed });
     return;
   }
   // Poise and stagger, then knockback (full if staggered; ignored if committed otherwise), then control.
   const committed = isCommitted(e);
-  const staggered = damagePoise(w, e, spec.poise, !!spec.heavy);
+  const staggered = damagePoise(w, e, spec.poise * wind.poise, !!spec.heavy);
   const dir = kbDir(w, g, e);
-  const frozen = e.control?.type === 'pin';
+  const frozen = e.control?.type === 'pin' || e.status.frozen !== null;    // Frozen takes no knockback (02 §6.3)
   const ctl = spec.control;
+  const kb: [number, number] = [spec.kb[0] * wind.kb, spec.kb[1] * wind.kb];
   if (ctl?.type === 'launch') applyLaunch(w, e, spec.kb, dir);
-  else if (!frozen && (staggered || !committed)) applyEnemyKnockback(e, spec.kb, dir);
+  else if (!frozen && (staggered || !committed)) applyEnemyKnockback(e, kb, dir);
   if (ctl?.type === 'knockdown' || ctl?.type === 'stun') controlOrPoise(w, e, ctl.type, ctl.duration);
   else if (ctl?.type === 'pull' && g.pullTo) applyPull(w, e, g.pullTo);
   // Instant awareness: resolved while unaware, flips right after (04 §2.4).
@@ -132,6 +140,7 @@ export function resolveEnemyHits(w: GameWorld): void {
 /** Step 9: on-kill effects in order of death (02 §3.5). */
 export function processDeaths(w: GameWorld): void {
   for (const e of w.pendingDeaths) {
+    spreadBurn(w, e);                                           // 02 §6.2: a burning enemy that dies (any cause) spreads it
     if (e.def.tier === 'target') {
       // Straw target (04 §2.12): Rush only (a regular kill), no gold or flask; back in 3.0 s.
       addRush(w, RUSH.KILL_REGULAR);

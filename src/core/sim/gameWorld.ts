@@ -1,5 +1,7 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
+import { cancelEnemyAttack } from '../enemies/attack.ts';
+import { enemyActs, stepStatuses } from '../combat/status.ts';
 import { createCamera, shake, snapCamera, stepCamera, type CameraState } from '../camera.ts';
 import { createHealth, type PlayerHealth } from '../combat/health.ts';
 import type { HitGroup } from '../combat/hitGroups.ts';
@@ -64,7 +66,7 @@ export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
 
 export type WorldEvent =
   | { t: 'move'; e: MoveEvent }
-  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean; slot?: 0 | 1; step?: number; ability?: string; chainFrom?: number }
+  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean; slot?: 0 | 1; step?: number; ability?: string; chainFrom?: number; dot?: boolean }
   | { t: 'shake'; level: 'small' | 'medium' }
   | { t: 'enemyTelegraph'; enemyId: number; attackId: string; duration: number }
   | { t: 'kill'; enemyId: number; tier: 'regular' | 'elite' }
@@ -528,6 +530,15 @@ export class GameWorld {
       return;
     }
     stepEnemyReactions(e);
+    // Frozen: no action (its attack is cancelled); Chilled: acts on a fraction of ticks (02 §6.3). Gravity always.
+    if (!enemyActs(e)) {
+      if (e.status.frozen && e.ai.attack) cancelEnemyAttack(this, e);
+      const vx = e.vx;
+      if (!e.knockback) e.vx = 0;
+      stepEnemyBody(this, e);
+      if (!e.status.frozen && !e.knockback) e.vx = vx;
+      return;
+    }
     if (e.boss && e.boss.introTicks > 0) {      // boss intro: takes damage, doesn't act (04 §9.2)
       e.boss.introTicks -= 1;
       if (!e.knockback) e.vx = 0;
@@ -595,6 +606,7 @@ export class GameWorld {
     // 5. Enemy AI and movement; hazard timers (06 §2.8: rock markers).
     stepRockfall(this);
     activateEnemies(this);
+    stepStatuses(this);
     for (const e of [...this.enemies].sort((a, b) => a.id - b.id)) this.stepEnemy(e);
     separateEnemies(this);
     syncEnemyGroups(this);

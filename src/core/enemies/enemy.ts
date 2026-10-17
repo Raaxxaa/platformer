@@ -1,4 +1,5 @@
 // Enemy runtime state, spawning with stage scaling, and activation (04 §2.2–2.3).
+import { newStatus, type EnemyStatus } from '../combat/status.ts';
 import { roundHalfUp } from '../math.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { ENEMY, STAGE_SCALING, VIEW_H, VIEW_W } from '../tuning.ts';
@@ -69,6 +70,8 @@ export interface EnemyState {
   outsideTicks: number;
   /** Bosses only (04 §9). */
   boss: BossState | null;
+  /** Element statuses (02 §6). */
+  status: EnemyStatus;
 }
 
 /** Stage-scaled attack damage A (a float; 02 §3.3 rounds it). */
@@ -88,7 +91,7 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
     ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false },
     hitStopTicks: 0, frozenAtTickStart: false, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,
-    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0, boss: null,
+    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0, boss: null, status: newStatus(),
   };
 }
 
