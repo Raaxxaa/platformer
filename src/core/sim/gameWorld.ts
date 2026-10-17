@@ -18,7 +18,7 @@ import { Bodies, type SolidBody } from '../physics/bodies.ts';
 import { checkSpikes } from '../hazards/spikes.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
 import { cloneLoadout, createAbilityRuntime, defaultLoadout, type Loadout } from '../abilities/runtime.ts';
-import type { AbilityId, AbilityRuntime, BondId, ClassState, HybridId } from '../abilities/types.ts';
+import type { AbilityId, AbilityRuntime, BondId, ClassId, ClassState, HybridId } from '../abilities/types.ts';
 import { clearAbilityEffects, fillAbilities, onCastCancelMove, onCastHurt, stepAbilities } from '../abilities/abilitySystem.ts';
 import { stepAbilityEntities, type AbilityEntity } from '../abilities/entities.ts';
 import '../abilities/list/index.ts';
@@ -85,7 +85,8 @@ export type WorldEvent =
   | { t: 'abilityNotReady'; slot: 0 | 1 }
   | { t: 'lockpickUsed' }
   | { t: 'itemTaken'; itemId: number; slot: 0 | 1 }
-  | { t: 'sparringHit' };
+  | { t: 'sparringHit' }
+  | { t: 'openClassPick'; cls: ClassId };
 
 export interface GameWorldOptions {
   grid: TileGrid;

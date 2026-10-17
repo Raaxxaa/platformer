@@ -151,3 +151,8 @@ export function stepInteract(w: GameWorld, input: InputState): InputState {
 export function onHurtCloseChoice(w: GameWorld): void {
   closeChoices(w);
 }
+
+/** A class statue (06 §12.3): interacting opens the class pick for its class (07 §6.7); the scene equips the kit. */
+export function classStatue(w: GameWorld, cls: import('./types.ts').ClassId, x: number, y: number): Interactable {
+  return { id: w.newId(), x, y, kind: 'class_statue', label: cls, use: (ww) => { ww.events.push({ t: 'openClassPick', cls }); } };
+}

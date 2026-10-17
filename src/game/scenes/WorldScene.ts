@@ -4,6 +4,12 @@ import { rushLevel } from '../../core/combat/rush.ts';
 import { enemyRect, type EnemyState } from '../../core/enemies/enemy.ts';
 import type { EnemyId } from '../../core/enemies/types.ts';
 import { FixedStepper } from '../../core/sim/fixedStep.ts';
+import { emptyInput, type InputState } from '../../core/input.ts';
+import { kitLoadout, newAbility, newWeapon } from '../../core/abilities/runtime.ts';
+import type { AbilityId, AbilityLevel, ClassId } from '../../core/abilities/types.ts';
+import type { WeaponId } from '../../core/combat/types.ts';
+import { ClassPickModel, type Kit } from '../../ui/popups/classPickModel.ts';
+import { ClassPickView } from '../../ui/popups/classPick.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { specToInput, type InputSpec } from '../../core/sim/playerSim.ts';
 import { ENEMY } from '../../core/tuning.ts';
@@ -63,6 +69,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   /** Sounds found by the per-tick checks, played on the next render. */
   private sfxQueue: SfxRequest[] = [];
   private soundNote!: Phaser.GameObjects.BitmapText;
+  /** The class pick panel while open; `pauseWorld` before a run (Stage 1), not for statues. */
+  protected classPick: { model: ClassPickModel; view: ClassPickView; pauseWorld: boolean } | null = null;
+  /** The kit picked this session (instant restart keeps it, 03 §3). */
+  protected pickedKit: Kit | null = null;
   /** `?boxes=1`: the old grey boxes instead of sprites (debugging). */
   protected boxesMode = false;
   /** Debug overview: the camera zooms out to show this world rect (screenshots of whole sections). */
@@ -105,7 +115,19 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     if (this.debug) installCombatDebugApi(this);
     this.createExtra();
     const api = window.__game as unknown as Record<string, unknown> | undefined;
-    if (api) { api.vfx = () => this.vfx.pool.counts(); api.sfxLog = () => [...this.sfx.log]; }
+    if (api) {
+      api.vfx = () => this.vfx.pool.counts();
+      api.sfxLog = () => [...this.sfx.log];
+      // M4 (plan "Global Constraints"): classes, abilities and weapons.
+      api.abilityRuntime = () => structuredClone({ ...this.world.abilities, cast: this.world.abilities.cast ? { slot: this.world.abilities.cast.slot, startTick: this.world.abilities.cast.startTick, linked: this.world.abilities.cast.linked } : null });
+      api.classState = () => structuredClone(this.world.classState);
+      api.setKit = (cls: ClassId, weapon: WeaponId) => this.equipKit({ cls, weapon });
+      api.giveAbility = (slot: 0 | 1, id: AbilityId, level: AbilityLevel = 1) => { this.world.abilities.slots[slot] = newAbility(id, level); this.world.refreshClassState(); };
+      api.giveWeapon = (slot: 0 | 1, id: WeaponId) => { this.world.combat.slots[slot] = newWeapon(id); this.world.refreshClassState(); };
+      api.spawnDummy = (x: number, y: number) => this.world.spawnExtra({ enemy: 'training_dummy', x, y, facing: -1 }).id;
+      api.classPickOpen = () => this.classPick !== null;
+      api.groundItems = () => this.world.groundItems.map((i) => ({ id: i.id, x: i.x, y: i.y, weapon: i.weapon?.weaponId, ability: i.ability?.id }));
+    }
     this.render();
   }
 
@@ -125,6 +147,29 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     }
   }
 
+  /** Opens the class pick for these classes (07 §6.7). */
+  openClassPick(classes: ClassId[], pauseWorld: boolean): void {
+    this.classPick?.view.destroy();
+    const model = new ClassPickModel(classes, this.pickedKit);
+    const view = new ClassPickView(this);
+    view.draw(model, this.pickedKit);
+    this.classPick = { model, view, pauseWorld };
+  }
+
+  /** Equips a starting kit at once (03 §3) and keeps it for restarts. */
+  equipKit(kit: Kit): void {
+    this.pickedKit = kit;
+    this.world.setLoadout(kitLoadout(kit.cls, kit.weapon));
+  }
+
+  private stepClassPick(input: InputState): void {
+    const cp = this.classPick!;
+    const r = cp.model.step(input);
+    if (r === 'confirm') this.equipKit(cp.model.kit);
+    if (r) { cp.view.destroy(); this.classPick = null; return; }
+    cp.view.draw(cp.model, this.pickedKit);
+  }
+
   /** One world tick, keeping its events for the next render. */
   protected stepWorld(input: Parameters<GameWorld['step']>[0]): void {
     const before = this.world.tick;
@@ -140,7 +185,14 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.devices.pollGamepad();
     if (!this.manual) {
       const n = this.stepper.advance(delta / 1000);
-      for (let i = 0; i < n; i++) this.stepWorld(this.devices.builder.build());
+      for (let i = 0; i < n; i++) {
+        const input = this.devices.builder.build();
+        if (this.classPick) {
+          this.stepClassPick(input);
+          if (this.classPick?.pauseWorld) continue;
+          this.stepWorld(emptyInput());                       // the world keeps running; the player gets neutral input
+        } else this.stepWorld(input);
+      }
     }
     this.render();
   }
@@ -169,6 +221,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     }
     this.lastRenderTick = w.tick;
     for (const { tick, e } of this.frameEvents) {
+      if (e.t === 'openClassPick') this.openClassPick([e.cls], false);
       if (e.t === 'move' && e.e === 'doubleJump') this.playerEv.lastDoubleJumpTick = tick;
       if (e.t === 'move' && e.e === 'wallJump') this.playerEv.lastWallJumpTick = tick;
     }

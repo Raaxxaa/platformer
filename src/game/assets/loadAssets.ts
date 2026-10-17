@@ -12,6 +12,7 @@ export function loadAssets(scene: Phaser.Scene): void {
   const l = scene.load;
   l.json('anims', 'assets/anims.json');
   for (const a of ATLASES) l.atlas(a, `assets/atlases/${a}.png`, `assets/atlases/${a}.json`);
+  l.atlas('ui', 'assets/ui/ui.png', 'assets/ui/ui.json');
   l.image(`tiles_${BIOME}`, `assets/tiles/tiles_${BIOME}.png`);
   l.spritesheet(TILE_SHEET, `assets/tiles/tiles_${BIOME}.png`, { frameWidth: TILESET.tile, frameHeight: TILESET.tile, margin: TILESET.margin, spacing: TILESET.spacing });
   for (let i = 0; i < 3; i++) l.image(`bg_${BIOME}_${i}`, `assets/bg/bg_${BIOME}_${i}.png`);

@@ -14,6 +14,8 @@ import { DEPTH } from '../../data/art.ts';
 import { DoorViews, drawGuideArrows } from '../view/levelView.ts';
 import { STAGE_UI } from '../../data/stageUi.ts';
 import { WorldScene } from './WorldScene.ts';
+import { parseKit } from '../../ui/popups/classPickModel.ts';
+import { CLASS_IDS } from '../../data/classes.ts';
 
 /** Hint text with the M1 key names (07 shows real button prompts later). */
 const HINT_TEXT: Record<HintAction, string> = {
@@ -98,6 +100,12 @@ export class StageScene extends WorldScene {
     this.clearText = this.add.bitmapText(width / 2, height / 2, FONTS.large, '').setCenterAlign()
       .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
     this.installStageDebug();
+    // Before the run, pick a class and weapon (M4 plan Task 13). `?kit=archer:bow` skips the panel; debug runs keep
+    // the M2 loadout unless a kit is given.
+    const q = new URLSearchParams(window.location.search);
+    const kit = parseKit(q.get('kit'));
+    if (kit) this.equipKit(kit);
+    else if (q.get('debug') !== '1' || q.get('picker') === '1') this.openClassPick([...CLASS_IDS], true);
   }
 
   private installStageDebug(): void {
