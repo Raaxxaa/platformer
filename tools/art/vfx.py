@@ -9,7 +9,7 @@ from . import palette as P
 from . import raster as R
 
 ATLAS = 'vfx'
-ALLOWED = ['white', 'trim', 'gray', 'fx_bolt', 'fx_fire', 'fx_ice', 'fx_heal', 'fx_dark', 'w_steel', 'w_gold']
+ALLOWED = ['white', 'trim', 'gray', 'fx_bolt', 'fx_fire', 'fx_ice', 'fx_heal', 'fx_dark', 'w_steel', 'w_gold', 'w_magic']
 WHITE = P.sid((255, 255, 255))           # pure #ffffff (trim light): tints exactly in code
 GREY = P.sid((0xb0, 0xb0, 0xb0))
 
@@ -216,14 +216,13 @@ def sparks(size, frame, frames, cols):
     return star_burst(size, frame, frames, 6, cols[0], cols[1], cols[2] if len(cols) > 2 else None)
 
 
-def dive_bolt(frame):
-    """Storm Hammer dive: a 32 × 160 lightning bolt from the sky (zigzag, fx_bolt with a white core)."""
-    w, h = 32, 160
+def dive_bolt(frame, w=32, h=160):
+    """A lightning bolt from the sky (zigzag, fx_bolt with a white core): hammer dive 32 × 160, Thunder Strike 24 × 160."""
     a = np.full((h, w), -1, np.int16)
     g = np.random.default_rng(31 + frame)
-    xs = [16.0]
+    xs = [w / 2]
     for _ in range(h // 10):
-        xs.append(float(np.clip(xs[-1] + g.uniform(-6, 6), 6, 26)))
+        xs.append(float(np.clip(xs[-1] + g.uniform(-w / 5, w / 5), 6, w - 6)))
     width = [3, 2.5, 2, 1][frame]
     X, Y = _grid(w, h)
     for i in range(len(xs) - 1):
@@ -236,6 +235,125 @@ def dive_bolt(frame):
         if frame < 3:
             a[m & (d < max(0.6, width - 1.5))] = WHITE
     return _img(a)
+
+
+# ART5 Task 5 — ability effects (08 §11 "Abilities")
+SHOCK_R = (56, 64, 72, 84, 96)
+
+
+def slash_line(frame):
+    """Blade Dash: a 96 × 6 slash line that thins and breaks up."""
+    w, h = 96, 6
+    xs, ys = _grid(w, h)
+    a = np.full((h, w), -1)
+    half = [1.4, 1.0, 0.7][frame] * (0.3 + 0.7 * np.sin(np.pi * xs / w))
+    m = np.abs(ys - h / 2) < half
+    a[m] = GREY
+    a[m & (np.abs(ys - h / 2) < half * 0.5) & (xs > w * 0.35)] = WHITE
+    if frame == 2:
+        a[(xs.astype(int) // 4) % 3 == 0] = -1
+    return _img(a)
+
+
+def spin_smear(frame):
+    """Whirlwind: a 48 × 32 flat spinning smear around the body (two arcs, rotating)."""
+    w, h = 48, 32
+    xs, ys = _grid(w, h)
+    nx, ny = (xs - w / 2) / (w / 2 - 1), (ys - h / 2) / (h / 2 - 3)
+    d = np.sqrt(nx ** 2 + ny ** 2)
+    ang = (np.arctan2(ny, nx) - frame * np.pi / 2) % (2 * np.pi)
+    a = np.full((h, w), -1)
+    arc = (d < 1) & (d > 0.78) & ((ang % np.pi) < np.pi * 0.62)
+    a[arc] = GREY
+    a[arc & (d > 0.9) & ((ang % np.pi) > np.pi * 0.25)] = WHITE
+    return _img(a)
+
+
+def ground_shock(R, frame):
+    """Shockwave: a 2R × 44 ground shock, an expanding dust arc riding the floor with flying chips."""
+    w, h = 2 * R, 44
+    xs, ys = _grid(w, h)
+    t = (frame + 1) / 5
+    rx, ry = R * (0.3 + 0.7 * t), 40 * (0.3 + 0.7 * t) * (1 - 0.3 * t)
+    d = np.sqrt(((xs - R) / rx) ** 2 + ((ys - h) / ry) ** 2)
+    a = np.full((h, w), -1)
+    band = (d < 1) & (d > 1 - 5 / ry)
+    a[band] = _c('gray', 3)
+    a[band & (d > 1 - 2 / ry)] = WHITE
+    if frame == 4:
+        a[(xs.astype(int) + ys.astype(int)) % 2 == 0] = -1
+    g = np.random.default_rng(R)
+    for k in range(6):
+        cx = R + (k - 2.5) / 2.5 * rx * 0.9
+        cy = h - 4 - g.uniform(4, 14) * t
+        a[(np.abs(xs - cx) < 1) & (np.abs(ys - cy) < 1)] = _c('gray', 2)
+    return _img(a)
+
+
+def speed_lines(frame):
+    """Shoulder Charge: 32 × 16 speed lines trailing behind the player."""
+    w, h = 32, 16
+    a = np.full((h, w), -1)
+    g = np.random.default_rng(5 + frame)
+    for y in (2, 5, 8, 11, 14):
+        x0 = int(g.uniform(0, 12))
+        ln = int(g.uniform(10, 20))
+        a[y, x0:min(w, x0 + ln)] = WHITE if y in (5, 11) else GREY
+    return _img(a)
+
+
+def rubble(frame):
+    """Wall broken: 16 × 16 rubble chunks flying out and falling."""
+    w = h = 16
+    xs, ys = _grid(w, h)
+    a = np.full((h, w), -1)
+    for k in range(5):
+        th = -math.pi / 2 + (k - 2) * 0.55
+        dist = 2 + frame * 2.4
+        cx, cy = 8 + dist * math.cos(th) * 1.2, 8 + dist * math.sin(th) + frame * frame * 0.6
+        r = 2.0 - frame * 0.3
+        m = (np.abs(xs - cx) < r) & (np.abs(ys - cy) < r)
+        a[m] = _c('gray', 2)
+        a[m & (xs < cx) & (ys < cy)] = _c('gray', 3)
+    return _img(a)
+
+
+def rain_arrow():
+    """Arrow Rain: one 4 × 12 arrow falling (head down)."""
+    a = np.full((12, 4), -1)
+    a[0:3, 0] = a[0:3, 3] = _c('w_gold', 2)
+    a[0:10, 1:3] = _c('w_steel', 1)
+    a[2:9, 1] = _c('w_steel', 2)
+    a[9:12, 1:3] = _c('w_steel', 3)
+    a[11, 1:3] = WHITE
+    return _img(a)
+
+
+def blink_puff(frame):
+    """Blink: a 24 × 32 puff of arcane sparkles (both ends of the jump)."""
+    return puffs(24, 32, frame, 4, 77, [_c('w_magic', 2), _c('w_magic', 1), WHITE], n=6, rise=0.25)
+
+
+def reticle(frame, ramp):
+    """Hunter's Mark: a 16 × 16 reticle above the head, closing in and pulsing."""
+    w = h = 16
+    xs, ys = _grid(w, h)
+    d = np.sqrt((xs - 8) ** 2 + (ys - 8) ** 2)
+    r = 6.5 - (frame % 2) * 0.7
+    a = np.full((h, w), -1)
+    ring_ = (d < r + 0.5) & (d > r - 0.7)
+    gap = (np.abs(xs - 8) < 1.6) | (np.abs(ys - 8) < 1.6)
+    a[ring_ & ~gap] = _c(ramp, 2)
+    for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0)):
+        tick = (np.abs((xs - 8) * dx + (ys - 8) * dy - (r - 0.5)) < 1.6) & (np.abs((xs - 8) * dy - (ys - 8) * dx) < 0.6)
+        a[tick] = _c(ramp, 3)
+    a[(np.abs(xs - 8) < 0.6) & (np.abs(ys - 8) < 0.6)] = WHITE
+    return _img(a)
+
+
+def link_ring(frame):
+    """Link: a 32 × 32 w_gold ring that expands and breaks up."""
+    return ring(32, 32, frame, 4, _c('w_gold', 2), thick=1.5)
 
 
 def build_frames():
@@ -287,7 +405,28 @@ def build_frames():
         fr[f'curse_wisps_{i:02d}'] = _img(a)
     for i in range(4):
         fr[f'hammer_dive_bolt_{i:02d}'] = dive_bolt(i)
-    anims = [A.anim('hammer_dive_bolt', ATLAS, 4, 'once', 30), A.anim('hit_spark', ATLAS, 3, 'once', 30), A.anim('hit_heavy', ATLAS, 4, 'once', 30),
+    for i in range(3):
+        fr[f'blade_dash_{i:02d}'] = slash_line(i)
+        fr[f'shoulder_lines_{i:02d}'] = speed_lines(i)
+    for i in range(4):
+        fr[f'whirlwind_{i:02d}'] = spin_smear(i)
+        fr[f'thunder_{i:02d}'] = dive_bolt(i, 24, 160)
+        fr[f'blink_puff_{i:02d}'] = blink_puff(i)
+        fr[f'mark_{i:02d}'] = reticle(i, 'fx_fire')
+        fr[f'mark_linked_{i:02d}'] = reticle(i, 'w_gold')
+        fr[f'link_{i:02d}'] = link_ring(i)
+        fr[f'wall_rubble_{i:02d}'] = rubble(i)
+    for R_ in SHOCK_R:
+        for i in range(5):
+            fr[f'ab_shockwave_{R_}_{i:02d}'] = ground_shock(R_, i)
+    fr['arrow_rain_00'] = rain_arrow()
+    anims = [A.anim('blade_dash', ATLAS, 3, 'once', 24), A.anim('whirlwind', ATLAS, 4, 'loop', 24),
+             A.anim('shoulder_lines', ATLAS, 3, 'loop', 24), A.anim('wall_rubble', ATLAS, 4, 'once', 20),
+             A.anim('arrow_rain', ATLAS, 1, 'once'), A.anim('thunder', ATLAS, 4, 'once', 30),
+             A.anim('blink_puff', ATLAS, 4, 'once', 24), A.anim('mark', ATLAS, 4, 'loop', 8),
+             A.anim('mark_linked', ATLAS, 4, 'loop', 8), A.anim('link', ATLAS, 4, 'once', 24)]
+    anims += [A.anim(f'ab_shockwave_{R_}', ATLAS, 5, 'once', 24) for R_ in SHOCK_R]
+    anims += [A.anim('hammer_dive_bolt', ATLAS, 4, 'once', 30), A.anim('hit_spark', ATLAS, 3, 'once', 30), A.anim('hit_heavy', ATLAS, 4, 'once', 30),
              A.anim('crit_spark', ATLAS, 4, 'once', 30), A.anim('stun_stars', ATLAS, 4, 'loop', 10),
              A.anim('dust_land', ATLAS, 4, 'once', 20), A.anim('dust_jump', ATLAS, 4, 'once', 20),
              A.anim('muzzle', ATLAS, 2, 'once', 30), A.anim('debris', ATLAS, 4, 'once'),

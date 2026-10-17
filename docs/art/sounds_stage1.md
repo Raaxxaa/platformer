@@ -95,5 +95,27 @@
 | 1:06.3 | `ui_open` | Popup opens | 0.5 |
 | 1:06.8 | `ui_close` | Popup closes | 0.5 |
 | 1:07.2 | `ui_toggle` | Menu: toggle | 0.5 |
+| 1:07.6 | `shot_bow` | Bow shot: twang | 0.5 |
+| 1:08.2 | `shot_crossbow` | Crossbow shot: heavy twang + click | 0.5 |
+| 1:08.7 | `shot_staff` | Staff bolt: magic zip + crackle | 0.5 |
+| 1:09.3 | `shot_orb` | Orb shot: deep swell | 0.5 |
+| 1:10.1 | `hammer_throw` | Hammer throw: whoosh + hum | 0.6 |
+| 1:10.8 | `hammer_return` | Hammer returning (loops): hum + crackle | 0.6 |
+| 1:11.7 | `hammer_catch` | Hammer catch: clank + zap | 0.6 |
+| 1:12.3 | `zap` | Lightning chain: buzz | 0.5 |
+| 1:12.8 | `ab_blade_dash` | Blade Dash: shing | 0.6 |
+| 1:13.5 | `ab_whirlwind` | Whirlwind (loops): spin whoosh | 0.6 |
+| 1:14.4 | `ab_shockwave` | Shockwave: boom | 0.6 |
+| 1:15.3 | `ab_shoulder_charge` | Shoulder Charge: rush + thud | 0.6 |
+| 1:16.1 | `ab_arrow_rain` | Arrow Rain: volley | 0.6 |
+| 1:16.9 | `ab_hunters_mark` | Hunter's Mark: lock-on beep | 0.6 |
+| 1:17.5 | `ab_thunder_strike` | Thunder Strike: crack | 0.6 |
+| 1:18.6 | `ab_blink` | Blink: warp | 0.6 |
+| 1:19.2 | `ab_link` | Link: chord chime | 0.6 |
+| 1:20.2 | `ab_fizzle` | Fizzle: pfft | 0.6 |
+| 1:20.8 | `ab_not_ready` | Not ready: soft error blip | 0.6 |
+| 1:21.3 | `wall_break` | Wall broken: rubble crash | 0.6 |
+| 1:22.2 | `class_change` | Class change: soft chord | 0.5 |
+| 1:23.2 | `class_discovered` | New class discovered: fanfare | 0.5 |
 
-Total length: 1:07.6.
+Total length: 1:24.3.

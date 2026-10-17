@@ -205,6 +205,50 @@ SFX.update({
 })
 
 
+# ART5 Task 6 — class weapons, abilities and classes (08 §13.3)
+SFX.update({
+    'shot_bow': (2, [tone('tri', 400, 200, 0.14), nz(0.05, hp=(2500, 2500), level=0.3)], 'Bow shot: twang'),
+    'shot_crossbow': (2, [tone('tri', 340, 160, 0.18, level=1.0), tone('sq', 1800, 1500, 0.03, duty=0.2, level=0.5,
+                                                                      lp=(4000, 3000))],
+                      'Crossbow shot: heavy twang + click'),
+    'shot_staff': (2, [tone('sin', 900, 600, 0.16), nz(0.12, hp=(3000, 3000), level=0.35, rate=4000)],
+                   'Staff bolt: magic zip + crackle'),
+    'shot_orb': (2, [L('sin', 300, 150, 0.08, 0.12, 0.2, vib=(0.5, 9))], 'Orb shot: deep swell'),
+    'hammer_throw': (1, swing(1400, 500, 0.2) + [tone('sin', 220, 220, 0.3, level=0.5, vib=(0.3, 12))],
+                     'Hammer throw: whoosh + hum'),
+    'hammer_return': (1, [L('sin', 220, 220, 0.02, 0.4, 0.06, vib=(0.4, 14)),
+                          nz(0.48, hp=(2500, 2500), level=0.3, rate=3000)], 'Hammer returning (loops): hum + crackle'),
+    'hammer_catch': (1, [tone('sq', 900, 820, 0.12, duty=0.3, lp=(3000, 1200)), tone('sin', 1350, 1300, 0.2, level=0.4),
+                         nz(0.12, hp=(2000, 2000), level=0.35, rate=5000, delay=0.03)], 'Hammer catch: clank + zap'),
+    'zap': (2, [nz(0.12, hp=(1500, 1500), rate=6000), tone('sq', 2000, 1900, 0.12, duty=0.5, level=0.4)],
+            'Lightning chain: buzz'),
+    'ab_blade_dash': (1, [bp(0.18, 4000, 1500), tone('sin', 2600, 2400, 0.3, level=0.4, delay=0.04)], 'Blade Dash: shing'),
+    'ab_whirlwind': (1, [L('nz', None, None, 0.05, 0.3, 0.1, lp=(1800, 1800), hp=(500, 500), vib=(0, 0)),
+                         L('sin', 160, 160, 0.05, 0.3, 0.1, level=0.3, vib=(1.0, 6))],
+                     'Whirlwind (loops): spin whoosh'),
+    'ab_shockwave': (1, [tone('sin', 80, 35, 0.5), nz(0.4, lp=(900, 200), level=0.7)], 'Shockwave: boom'),
+    'ab_shoulder_charge': (1, [bp(0.3, 800, 2000), tone('sin', 110, 60, 0.18, level=0.8, delay=0.22),
+                               nz(0.12, lp=(700, 300), level=0.6, delay=0.22)], 'Shoulder Charge: rush + thud'),
+    'ab_arrow_rain': (1, [tone('tri', 420, 210, 0.1, delay=k * 0.07, level=0.7) for k in range(4)] +
+                      [nz(0.3, hp=(3000, 3000), level=0.25, delay=0.1)], 'Arrow Rain: volley'),
+    'ab_hunters_mark': (1, [note(1760, 0.06, 'sq', 0.0, 0.6, 0.25), note(2349, 0.12, 'sq', 0.08, 0.6, 0.25)],
+                        'Hunter\'s Mark: lock-on beep'),
+    'ab_thunder_strike': (1, [nz(0.08, hp=(2000, 2000), level=1.0), nz(0.7, lp=(1500, 150), level=0.8, delay=0.03),
+                              tone('sin', 70, 40, 0.6, level=0.7, delay=0.03)], 'Thunder Strike: crack'),
+    'ab_blink': (1, [tone('sin', 1200, 300, 0.2, vib=(0.5, 30))], 'Blink: warp'),
+    'ab_link': (1, [note(f, 0.5, 'sin', k * 0.04, 0.6) for k, f in enumerate((C5, E5, G5, C6))], 'Link: chord chime'),
+    'ab_fizzle': (1, [nz(0.15, lp=(1200, 400), level=0.8), tone('sin', 300, 120, 0.12, level=0.3)], 'Fizzle: pfft'),
+    'ab_not_ready': (1, [tone('sq', 220, 200, 0.08, duty=0.5, lp=(1500, 1000))], 'Not ready: soft error blip'),
+    'wall_break': (1, [nz(0.5, lp=(2500, 300)), tone('sin', 90, 45, 0.35, level=0.7),
+                       nz(0.06, hp=(1500, 1500), level=0.5, delay=0.12), nz(0.06, hp=(1500, 1500), level=0.4, delay=0.25)],
+                   'Wall broken: rubble crash'),
+    'class_change': (1, [note(f, 0.6, 'sin', 0.0, 0.5) for f in (C4, E4, G4)] + [note(C5, 0.6, 'tri', 0.0, 0.4)],
+                     'Class change: soft chord'),
+    'class_discovered': (1, arp([C5, E5, G5, C6], 0.09, last=0.45) + [note(G5, 0.45, 'sin', 0.27, 0.4)],
+                         'New class discovered: fanfare'),
+})
+
+
 def files_for(sid):
     n = SFX[sid][0]
     return [f'{sid}.wav'] if n == 1 else [f'{sid}_{k}.wav' for k in range(1, n + 1)]
