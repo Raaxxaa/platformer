@@ -64,7 +64,7 @@ export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
 
 export type WorldEvent =
   | { t: 'move'; e: MoveEvent }
-  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean; slot?: 0 | 1; step?: number; ability?: string }
+  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean; slot?: 0 | 1; step?: number; ability?: string; chainFrom?: number }
   | { t: 'shake'; level: 'small' | 'medium' }
   | { t: 'enemyTelegraph'; enemyId: number; attackId: string; duration: number }
   | { t: 'kill'; enemyId: number; tier: 'regular' | 'elite' }

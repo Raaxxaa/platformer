@@ -25,6 +25,8 @@ import type { SfxRequest } from '../audio/sfxRules.ts';
 import { SfxWatch } from '../audio/sfxTriggers.ts';
 import { drawMarkers, VfxDirector, VfxPool, type TickEvent } from '../view/vfx.ts';
 import { ItemViews } from '../view/yardView.ts';
+import { AbilityView } from '../view/abilityView.ts';
+import { AbilityHud } from '../../ui/hud/abilityHud.ts';
 import { loadAssets } from '../assets/loadAssets.ts';
 import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../debug.ts';
 import { COLOR, STATE_COLOR } from '../greybox.ts';
@@ -62,6 +64,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected vfx!: VfxDirector;
   protected markersGfx!: Phaser.GameObjects.Graphics;
   protected itemViews!: ItemViews;
+  protected abilityView!: AbilityView;
+  protected abilityHud!: AbilityHud;
   /** Events of every tick since the last render (core clears `world.events` each tick). */
   protected frameEvents: TickEvent[] = [];
   private playerEv: PlayerViewEvents = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
@@ -102,10 +106,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.vfx = new VfxDirector(new VfxPool(this, this.bank));
     this.markersGfx = this.add.graphics().setDepth(DEPTH.markers);
     this.itemViews = new ItemViews(this);
+    this.abilityView = new AbilityView(this);
     this.sfx = new SfxPlayer(this);
     // Browsers start audio only after a key press or click (08 §15, 07).
-    this.soundNote = this.add.bitmapText(4, this.scale.height - 4, FONTS.small, 'Click or press any key for sound')
-      .setOrigin(0, 1).setScrollFactor(0).setDepth(DEPTH.hud).setAlpha(0.8);
+    // Top center: the bottom left holds the weapon and ability slots (07 §4.1).
+    this.soundNote = this.add.bitmapText(this.scale.width / 2, 4, FONTS.small, 'Click or press any key for sound')
+      .setOrigin(0.5, 0).setScrollFactor(0).setDepth(DEPTH.hud).setAlpha(0.8);
     this.gfx = this.add.graphics().setDepth(DEPTH.projectiles);
     this.hud = this.add.bitmapText(4, 4, FONTS.small, '')
       .setScrollFactor(0).setDepth(DEPTH.hud);
@@ -114,6 +120,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.overlay.fillStyle(DRAW.overlay, DRAW.overlayAlpha).fillRect(0, 0, width, height);
     this.overlayText = this.add.bitmapText(width / 2, height / 2, FONTS.large, 'You died — press R')
       .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
+    this.abilityHud = new AbilityHud(this);
     this.debug = debugEnabled();
     if (this.debug) installCombatDebugApi(this);
     this.createExtra();
@@ -175,12 +182,13 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   /** One world tick, keeping its events for the next render. */
   protected stepWorld(input: Parameters<GameWorld['step']>[0]): void {
-    const before = this.world.tick;
+    const before = this.world.tick, feet = { x: this.world.body.x, y: this.world.body.y };
     this.world.step(input);
     if (this.world.tick < before) { this.sfxWatch.reset(); this.sfxQueue = []; }
     const evs = this.world.events.map((e) => ({ tick: this.world.tick, e }));
     this.frameEvents.push(...evs);
     this.sfxQueue.push(...this.sfxWatch.collect(this.world, evs));
+    this.abilityView?.onTick(this.world, this.world.events, feet);
     if (this.vfx) this.vfx.update(this.world, evs, { atlas: `player_${OUTFIT}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
   }
 
@@ -219,7 +227,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.boxes.clear();
     // A restart rewinds the tick: drop effects of the old run.
     if (w.tick < this.lastRenderTick) {
-      this.vfx.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
+      this.vfx.reset(); this.abilityView.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
       this.sfx.play([{ id: 'restart' }], w.tick, { camCenterX: cam.x, playerX: w.body.x });
     }
     this.lastRenderTick = w.tick;
@@ -258,6 +266,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.vfx.pool.update(w.tick);
     drawMarkers(this.markersGfx.clear(), w);
     this.itemViews.update(w.groundItems);
+    this.abilityView.update(w);
+    this.abilityHud.update(w, this.frameEvents.map((f) => f.e), this.time.now);
     const reqs = [...this.sfxQueue, ...this.sfxWatch.footsteps(this.playerView.anim)];
     this.sfxQueue = [];
     this.sfx.play(reqs, w.tick, { camCenterX: cam.x + this.scale.width / 2, playerX: b.x });

@@ -1,12 +1,18 @@
 // UI text and colors from 07 (§3.3 class colors, §9.1 style lines, §9.2 blurbs).
 import type { AbilityId, ClassId, HybridId } from '../core/abilities/types.ts';
-import type { WeaponId } from '../core/combat/types.ts';
+import type { Grade, WeaponId } from '../core/combat/types.ts';
 
 export const CLASS_COLOR: Record<ClassId | 'neutral', number> = { swordsman: 0xff5a5a, tank: 0xff9a3c, archer: 0xa8d846, wizard: 0x42d9ff, neutral: 0x9d98b0 };
 export const HYBRID_COLOR: Record<HybridId, number> = {
   thief: 0xc0a8ff, gladiator: 0xff7f50, spellblade: 0xff6ad5, warden: 0xd8b060, thunderlord: 0xffe24a, arcane_archer: 0x6af0c8,
 };
-export const UI_COLOR = { text: 0xffffff, textDim: 0x9d98b0, panel: 0x14121c, panelBorder: 0x3a3650, good: 0x6be36b, bad: 0xff5a5a, highlight: 0xffd84a } as const;
+/** 07 §3.1 palette. */
+export const UI_COLOR = {
+  ink: 0x0d0b14, panel: 0x1b1826, panelBorder: 0x4a4560, text: 0xf2efe6, textDim: 0x9d98b0, textOff: 0x5c5870, slotEmpty: 0x3a3648,
+  good: 0x5ce06a, bad: 0xff4a4a, highlight: 0xffd34a,
+} as const;
+/** 07 §3.2 grade colors. */
+export const GRADE_COLOR: Record<Grade, number> = { F: 0x9b9ba6, C: 0x5ad16a, B: 0x4a9dff, A: 0xb264ff, S: 0xffc93c };
 
 export const CLASS_STYLE: Record<ClassId, string> = {
   swordsman: 'Blades, fast combos, precise', tank: 'Heavy hitter. Slow, huge hits, tanky', archer: 'Ranged and mobile', wizard: 'Storm magic, Thor-style',

@@ -53,7 +53,7 @@ export function lightningChain(w: GameWorld, target: EnemyState, level: 1 | 2 | 
     e.hp -= dmg;
     e.damagedTicks = 0;
     e.everDamaged = true;
-    w.events.push({ t: 'hit', target: e.id, amount: dmg, crit: false, heavy: false });
+    w.events.push({ t: 'hit', target: e.id, amount: dmg, crit: false, heavy: false, chainFrom: target.id });
     if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
     else if (e.hp <= 0) onKill(e);
   }

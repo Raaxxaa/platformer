@@ -68,3 +68,18 @@ test('the Training Yard loads with statues, signs, flags, stands and the checkli
   await page.screenshot({ path: 'test-results/yard-end.png' });
   expect(errors).toEqual([]);
 });
+
+test('HUD: weapon and ability slots, class name; Thunder Strike on a dummy shows columns and the DPS readout', async ({ page }) => {
+  const errors = await boot(page, '&start=training&kit=wizard:storm_hammer');
+  await page.evaluate(() => {
+    const g = (window as any).__game;
+    g.setManual(true);
+    g.toStation(9);
+    g.step(30, {});
+    g.step(1, { attack1: true }); g.step(40, {});
+    g.step(1, { ability1: true }); g.step(34, {});                 // 0.15 s startup, then 2 bolts 12 ticks apart
+  });
+  await nextFrames(page);
+  await page.screenshot({ path: 'test-results/hud-wizard.png' });
+  expect(errors).toEqual([]);
+});

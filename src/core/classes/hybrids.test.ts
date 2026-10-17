@@ -113,6 +113,7 @@ describe('Arcane Archer (03 §6.6)', () => {
     const w = setup(['arrow_rain', 'thunder_strike'], ['bow', 'staff'], [{ id: 'training_dummy', x: 300 }, { id: 'training_dummy', x: 340 }]);
     const ev = [...run(w, { attack1: true }, 1), ...run(w, {}, 60)];
     expect(hitsOn(ev, w.enemies[1].id).length).toBe(1);        // the chain
+    expect(hitsOn(ev, w.enemies[1].id)[0]).toMatchObject({ chainFrom: w.enemies[0].id });   // the view draws the chain line
     const o = setup(['arrow_rain', 'thunder_strike'], ['staff', null]);
     run(o, { attack1: true }, 1);
     run(o, { attack1: true }, 42 + 62);

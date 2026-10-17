@@ -25,8 +25,13 @@ export function hammerOutIn(w: GameWorld, slot: 0 | 1): boolean {
 /** 02 §11 recharge: in hand, and ≥ 2.0 s since launch with a Wizard ability carried (checked every tick), else 5.0 s. */
 export function throwReady(w: GameWorld, slot: 0 | 1): boolean {
   if (w.combat.slots[slot]?.weaponId !== 'storm_hammer' || hammerOutIn(w, slot)) return false;
+  return throwProgress(w, slot) >= 1;
+}
+
+/** The recharge so far, 0–1 (07 §4.8's bar: elapsed / needed). */
+export function throwProgress(w: GameWorld, slot: 0 | 1): number {
   const need = ticks(w.classState.carriedClasses.includes('wizard') ? H.rechargeWizardS : H.rechargeS);
-  return w.tick - w.hammerLaunchTick[slot] >= need;
+  return Math.min(1, (w.tick - w.hammerLaunchTick[slot]) / need);
 }
 
 function addGroup(w: GameWorld, h: HammerState): void {
