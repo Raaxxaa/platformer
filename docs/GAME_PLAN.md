@@ -5,6 +5,7 @@
 
 ### What changed in v9 (from playtesting with friends)
 - **Training Yard tutorial:** next to the Home Village, 17 stations teach every move, combat basic and speed technique on dummies. You can't die there → 9.3
+- **Clearer HUD and menus:** a bigger health bar with a heart, dark plates behind the HUD, framed popups, and a pause menu with a `LOADOUT` tab that explains your weapons, abilities and class bonus. Built in M4
 - **Gentler Stage 1 start:** the first fights come one small group at a time (max 2 enemies, never two groups on screen together). Same enemies, more space → 7.5, `docs/levels/plains.md`
 
 ### What changed in v8

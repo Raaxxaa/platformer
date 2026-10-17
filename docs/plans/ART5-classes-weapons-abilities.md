@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** All the art and sound M4 uses (`docs/plans/M4-classes-abilities-weapons-basics.md`):
+**Goal:** All the art and sound M4 uses, plus the popup skin and HUD plates, (`docs/plans/M4-classes-abilities-weapons-basics.md`):
 - the 6 new starting weapons: Katana, Iron Fists, Bow, Crossbow, Storm Hammer, Staff;
 - the player projectiles they fire;
 - the ability poses and effects of the 8 M4 abilities;
@@ -98,7 +98,18 @@ For the tutorial level (`docs/levels/training-yard.md`, 04 §2.11–2.12):
 - [ ] **Tests:** sizes, palette lock, reach rule. As with the training dummy, leave these anims out of `anims.json` if the game can't play them yet, and log it.
 - [ ] **Look, commit.**
 
-### Task 8: Class board and hand-off
+### Task 8: HUD plates and popup skin
+
+New `ui` atlas frames (07 §3.4, now 103 frames): `hud_heart` 10 × 10, `hud_plate_9`, `panel_9`, `panel_9_edge` (tint), `tab_on_9`, `tab_off_9`, `button_9`, `button_9_sel`, `cursor`. Look:
+- **Panels:** dark slate fill (07 `panel` color) with a carved wood-and-iron border, small rivets in the corners; readable text area in the middle (the middle cell is plain).
+- **HUD plate:** the same look but lighter weight and thinner border, drawn at alpha 0.75.
+- **Tabs and buttons:** small wooden plaques; the selected or active one is brighter with a `highlight` gold edge. The cursor is a small gold arrow.
+- **Heart:** a red pixel heart with a white shine.
+
+- [ ] **Tests:** all 103 `ui` frames with 07's sizes (08 §12.8 check 3), 9-slice frames tile cleanly (corners unchanged, edges repeat without seams), tint frames #ffffff only.
+- [ ] **Mock** `tools/out/preview/ui_mock.png` at 2×: the full HUD over the Plains (using 07 §4.1 positions), an item card with two slot choices, and the pause menu on its `LOADOUT` tab. **Look**, show the user, **commit**.
+
+### Task 9: Class board and hand-off
 
 - [ ] **Board** `tools/out/preview/style_board_classes.png`: 4 rows, one per class, each in its outfit with its 2 starting weapons mid-attack and its 2 M4 abilities mid-effect next to a training dummy. Class trim colors from 08 §3.4.
 - [ ] **Run** `npm run assets`, all `tools/tests`, `npm run test:e2e`. Two builds identical.

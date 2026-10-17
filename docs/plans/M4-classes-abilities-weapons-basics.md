@@ -336,15 +336,28 @@ Design: `docs/levels/training-yard.md`. Rules: `docs/spec/06-run-levels-save.md`
 - [ ] **View:** signs drawn as hint text with key names (M1 key names), check flags (grey → green with `ui_confirm`), the checklist board. Use ART4/ART5 art where it exists (`guide_arrow`, training dummy, fonts); the sparring dummy and straw target get art in ART5.
 - [ ] **Commit.**
 
-### Task 15: HUD and ability visuals
+### Task 15: The full HUD, popups and ability visuals
 
-**Files:** `src/ui/hud/abilityHud.ts`, `src/game/view/abilityView.ts`.
+**Files:** `src/ui/hud/` (one file per HUD part), `src/ui/popups/` (`itemCard.ts`, `swapChoice.ts`, `classPick.ts`, `pause.ts`), `src/game/view/abilityView.ts`, tests for the pure parts (`src/ui/model/`).
 
-- [ ] **HUD** (positions from 07 §4.1; simple shapes and text are fine, real art comes later):
-  - weapon slots with class icons lit when matched (07 §4.8), plus the Storm Hammer recharge bar;
-  - ability slots (07 §4.9): class-colored frame, cooldown shade and seconds, charges, level pips, the link glow and bar, flashes on `abilityUsed`, `abilityNotReady`, `abilityFizzle` with the `No target` / `Blocked` label;
-  - the class name and bond or hybrid line (07 §4.10), using the class colors from 07 §3.3; a toast on `classDiscovered`.
-- [ ] **Ability visuals**, grey-box style in class colors: dash trails, the Whirlwind box, the Shockwave box flash, the Arrow Rain zone with falling lines, Thunder Strike columns, a mark icon over marked enemies, a Blink flash at both ends, Lightning chain lines.
+This is the **real HUD** from 07 §4, not a debug one. Playtesters asked for a clear health bar and visible slots, flask and gold. Use the `ui` atlas and `rb_*` fonts from ART4/ART5; anything not yet drawn uses 07 §1.1's placeholder rectangles.
+
+- [ ] **Tests first** (pure `HudModel`, 07 §4.15): 07 checklist 1 (HP fill 50/100 → 79 px, 100/100 → 158 px), the Rush segment widths, the flask fill width, the cooldown shade height and seconds, the link bar width, `displayName` lines.
+- [ ] **HUD** (positions exactly 07 §4.1):
+  - the two **HUD plates** behind the top-left and bottom-left groups;
+  - **heart + big HP bar** (160 × 12) with the lag, heal flash and low-HP pulse (07 §4.2), and the HP text;
+  - **Rush** 3 segments (§4.4), **flask** charge icons and fill bar (§4.5), **gold** and **keys** (§4.6; keys show 0 until M5), status icons (§4.3);
+  - **weapon slots** with grade frame, icon, class icons lit when matched, Storm Hammer recharge bar (§4.8);
+  - **ability slots**: class-colored frame, icon, cooldown shade and seconds, charges, level pips, the link glow and bar, flashes on `abilityUsed`, `abilityNotReady`, `abilityFizzle` with `No target` / `Blocked` (§4.9);
+  - **class name** and the bond or hybrid line, toast on `classDiscovered` (§4.10);
+  - the run timer block (§4.11; keep M3's split popup working).
+- [ ] **Popups** with the popup skin (`panel_9`, buttons, cursor; 07 §3.4):
+  - **item card** for ground items and stands (07 §6.1): shows what you'd get, `→ <class after>`, and the `[U]`/`[I]` slot choice. This is **how the player chooses abilities**: walk to an ability, read the card, press the slot to replace;
+  - weapon and ability **swap choices** (07 §6.2–6.3);
+  - **class pick** (07 §6.7);
+  - **pause with tabs** `MENU`, `LOADOUT`, `CONTROLS` (07 §7.6), with the bond and hybrid blurbs (07 §9.2).
+- [ ] **Ability visuals:** ART5's effects where they exist, otherwise grey boxes in class colors: dash trails, the Whirlwind spin, the Shockwave flash, the Arrow Rain zone with falling arrows, Thunder Strike columns, the mark over marked enemies, a Blink puff at both ends, Lightning chain lines.
+- [ ] **E2E screenshots** of the HUD over the Plains and over the village background, the item card with both slots full, and the `LOADOUT` tab. **Read them.**
 - [ ] **Commit.**
 
 ### Task 16: E2E, review, hand-off

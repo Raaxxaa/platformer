@@ -132,6 +132,10 @@ All colors are tokens in `src/ui/model/theme.ts`. 08's UI palette must use these
 | `hud_flask_full`, `hud_flask_empty`, `hud_flask_blocked` (overlay) | 10 × 12 | 3 |
 | `hud_coin` 8 × 8, `hud_key` 7 × 10, `hud_lockpick` 8 × 10, `hud_link` 8 × 7, `hud_lock` 8 × 8, `hud_dragon_arrow` 12 × 12 (points right) | — | 6 |
 | `prompt_ps_cross`, `_circle`, `_square`, `_triangle` (tint) | 7 × 7 | 4 |
+| `hud_heart` 10 × 10, `hud_plate_9` 24 × 24 (9-slice, 8 px corners) | — | 2 |
+| Popup skin: `panel_9` 24 × 24 (9-slice, 8 px corners: dark fill, carved border), `panel_9_edge` 24 × 24 (tint: #ffffff border only, drawn over `panel_9` in the grade or class color), `tab_on_9` / `tab_off_9` 16 × 12 (9-slice, 4 px corners), `button_9` / `button_9_sel` 16 × 16 (9-slice, 4 px corners), `cursor` 7 × 7 (points right) | — | 7 |
+
+All popups, cards and menus (§6, §7) draw their panel with `panel_9` (plus `panel_9_edge` tinted where a colored border is specified) instead of a flat `panel` rectangle, and their selectable items with `button_9` / `button_9_sel` and the `cursor`. Sizes and positions don't change.
 
 ---
 
@@ -142,16 +146,18 @@ Every layout box (for text: the cap box) stays inside x 8–632, y 8–352; only
 
 | Element | Position | Size | Notes |
 |---|---|---|---|
-| HP bar frame | (8, 8) | 128 × 10 | 1 px `ink` border; fill area 126 × 8 at (9, 9) |
-| HP text | (140, 9) | — | `87/100` |
-| Rush segments 1, 2, 3 | (8, 20), (52, 20), (96, 20) | 40 × 6 each | Fill area 38 × 4 at +1, +1 |
-| Player status icons | (140 + slot offset, 19) | 8 × 8 | §4.3 |
+| HUD plates | top (4, 4) 196 × 48 · bottom (4, 280) 128 × 76 | 9-slice | `hud_plate_9` at alpha 0.75 behind the top-left and bottom-left groups, so they read on any background (after playtesting) |
+| Heart icon | (8, 9) | 10 × 10 | `hud_heart` |
+| HP bar frame | (20, 8) | 160 × 12 | 1 px `ink` border; fill area 158 × 10 at (21, 9). Made bigger after playtesting so HP is easy to see |
+| HP text | (184, 10) | — | `87/100` |
+| Rush segments 1, 2, 3 | (8, 22), (58, 22), (108, 22) | 48 × 6 each | Fill area 46 × 4 at +1, +1 |
+| Player status icons | (184 + slot offset, 22) | 8 × 8 | §4.3 |
 | Flask charge icons | (8 + 12i, 30), i < maxCharges | 10 × 12 | |
-| Flask fill bar | (8, 44) | 46 × 4 | Fill area 44 × 2 at (9, 45) |
-| Coin icon / gold text | (62, 32) / (72, 32) | 8 × 8 | 08's coin trail ends at the coin center (66, 36) |
-| Key icon / key count | (104, 31) / (113, 32) | 7 × 10 | |
-| Lockpick icon | (122, 31) | 8 × 10 | Only when `lockpickReady` |
-| Effect boxes | (8 + 14i, 52) | 12 × 12 | Sub-label centered under each box at y 66 |
+| Flask fill bar | (8, 46) | 46 × 4 | Fill area 44 × 2 at (9, 47) |
+| Coin icon / gold text | (62, 34) / (72, 34) | 8 × 8 | 08's coin trail ends at the coin center (66, 38) |
+| Key icon / key count | (104, 33) / (113, 34) | 7 × 10 | |
+| Lockpick icon | (122, 33) | 8 × 10 | Only when `lockpickReady` |
+| Effect boxes | (8 + 14i, 54) | 12 × 12 | Sub-label centered under each box at y 68 |
 | Class name | (8, 285) | — | Line 2 at (8, 296) |
 | Slot prompts | centered at box x + 12, y 307 | 11 high | §8.4 |
 | Link bar | (box x, 318) | 24 × 2 | §4.9 |
@@ -169,19 +175,19 @@ Every layout box (for text: the cap box) stays inside x 8–632, y 8–352; only
 | Restart ring | center (320, 156) | 18 × 18 | §4.13 |
 
 ### 4.2 HP bar
-- Fill width = `hp <= 0 ? 0 : max(1, round(126 × hp / maxHp))`. The bar width never changes with max HP.
+- Fill width = `hp <= 0 ? 0 : max(1, round(158 × hp / maxHp))`. The bar width never changes with max HP.
 - Color `hp`. While `hp ≤ 25%` of max, the fill and the HP text pulse between `hp` and `hpLow` at 2 Hz.
 - **Lag:** after a drop, the lost part stays drawn in `text`. 0.40 s after the last drop it shrinks toward the fill at 60% of the bar width per second. A heal sets the lag to the new HP at once and draws the healed part in `good` for 0.25 s.
 - HP text `hp/maxHp`; color `bad` while ≤ 25%.
 - While a `one_hit` curse is active the frame is `curse` instead of `ink` and pulses at 2 Hz.
 
 ### 4.3 Player statuses (02 §5.4)
-Fixed order: burning, poisoned, chilled, rooted. Only active ones are drawn, packed left from x 140. Each takes a 10 px slot, except poisoned, which takes 16 px: its icon, then the stack count digit at icon x + 9, y 19.
+Fixed order: burning, poisoned, chilled, rooted. Only active ones are drawn, packed left from x 184. Each takes a 10 px slot, except poisoned, which takes 16 px: its icon, then the stack count digit at icon x + 9, y 22.
 
 ### 4.4 Rush meter (02 §8)
-- Segment k (k = 0, 1, 2) fill width = `floor(38 × clamp(value − 100k, 0, 100) / 100)`, color `rush1/2/3`. A full segment gets a 1 px `text` line on the top row of its fill.
+- Segment k (k = 0, 1, 2) fill width = `floor(46 × clamp(value − 100k, 0, 100) / 100)`, color `rush1/2/3`. A full segment gets a 1 px `text` line on the top row of its fill.
 - **Level 3** (value 300): all three fills blink between their color and `text` at 4 Hz.
-- While Overdrive's floor (200) is active, a 1 × 6 px `text` tick is drawn at x 96 (the start of segment 3).
+- While Overdrive's floor (200) is active, a 1 × 6 px `text` tick is drawn at x 108 (the start of segment 3).
 - Hidden in villages and the Home Village (02: frozen at 0 there).
 
 ### 4.5 Flask (02 §7)
@@ -541,6 +547,9 @@ Three tabs switched with left/right (names at y 24: `BEST RUNS`, `CLASSES`, `UNL
 - `Restart run`/`Retry`: 06's restart at once. A quit item needs a second confirm within 2.0 s: the first confirm changes its text to `Quit? Confirm again` in `bad`; otherwise it reverts.
 - Pause button or Back: resume (input swallow applies).
 - If the active gamepad disconnected (which also pauses), `Controller disconnected` in `bad` shows under the title.
+- **Tabs** (added so players can read their build): the panel grows to 360 × 220 at (140, 70) with 3 tabs at its top (`tab_on_9` / `tab_off_9`), switched with left/right: `MENU` (the items above), `LOADOUT`, `CONTROLS`. It opens on `MENU`.
+  - **`LOADOUT`:** one row per weapon slot and ability slot: icon, name, grade or `Lv n`, and the item card's row 2–3 text (§6.1), with matched class icons lit. Under them the class block: `displayName` in its color and one line explaining it: no class `Carry a class ability to get a class`; one class `Add a 2nd <class> ability for <bondName>`; Connection `<bondName>: <bond blurb>` plus `Use both abilities within 3 s for +50%`; hybrid `<hybrid name>: <perk blurb>` (blurbs §9.2).
+  - **`CONTROLS`:** a read-only list of every action and its current binding (§8), 2 columns.
 
 ### 7.7 Settings
 Labels at x 160, values right-aligned at x 480, rows 16 px apart from y 56. Left/right change values; every change applies and is saved at once (06 §15.1 stores `SettingsData`, §8.5).
@@ -695,6 +704,21 @@ Swordsman `Blades, fast combos, precise` · Tank `Heavy hitter. Slow, huge hits,
 | | | Wand | Shots home in a little |
 | | | Spell Tome | Ring of spinning runes |
 
+**Bonds and hybrids** (pause `LOADOUT` tab; numbers are 03's):
+
+| Bond / hybrid | Blurb |
+|---|---|
+| Blademaster | Every 3rd hit crits. Kills reset your dash |
+| Iron Will | +30% max HP. No knockback while attacking |
+| Eagle Eye | Long shots always crit. Fall slowly while aiming |
+| Storm Caller | Abilities recharge 25% faster. Stronger elements |
+| Thief | Faster and sneakier. Sneak hits crit. Open 1 chest free per stage |
+| Gladiator | Switching weapons keeps your combo and hits harder |
+| Spellblade | Melee hits shorten ability cooldowns |
+| Warden | Melee hits power up your next shot, and shots power up your next melee hit |
+| Thunderlord | Heavy hits call lightning |
+| Arcane Archer | Arrows carry lightning. Charged shots explode |
+
 ### 9.3 Lucky Block and curse lines (values are 05's; update the text if 05 changes)
 
 | id | Line 2 | id | Line 2 |
@@ -720,7 +744,7 @@ Curses: `one_hit` `You die in one hit until 10 kills` · `no_heal` `Can't drink 
 
 Unit tests (Vitest) on `src/ui/model/` and `src/core/` unless marked e2e.
 
-1. HP fill width: 50/100 → 63 px; 1/208 → 1 px; 0/100 → 0 px; 100/100 → 126 px.
+1. HP fill width: 50/100 → 79 px; 1/208 → 1 px; 0/100 → 0 px; 100/100 → 158 px.
 2. Rush fills: value 150 → [38, 19, 0]; 299 → [38, 38, 37]; 300 → [38, 38, 38] with the level-3 blink on.
 3. Flask fill: 500 tenths → 22 px; 999 → 43 px; 1000 → 44 px.
 4. Ability shade: `rechargeLeft` 480 of `cooldownTicks` 960 → 8 px; with `rechargeRate` 1.25 the label is `4`.
