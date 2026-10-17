@@ -257,6 +257,66 @@
   "mode": "speed"
  },
  {
+  "key": "sparring_dummy_atk_practice_swing",
+  "atlas": "enemies_extra",
+  "frames": [
+   "sparring_dummy_atk_practice_swing_00",
+   "sparring_dummy_atk_practice_swing_01",
+   "sparring_dummy_atk_practice_swing_02"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "sparring_dummy_hit",
+  "atlas": "enemies_extra",
+  "frames": [
+   "sparring_dummy_hit_00",
+   "sparring_dummy_hit_01",
+   "sparring_dummy_hit_02"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "sparring_dummy_idle",
+  "atlas": "enemies_extra",
+  "frames": [
+   "sparring_dummy_idle_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "sparring_dummy_tele",
+  "atlas": "enemies_extra",
+  "frames": [
+   "sparring_dummy_tele_00",
+   "sparring_dummy_tele_01"
+  ],
+  "mode": "once",
+  "fps": 8
+ },
+ {
+  "key": "straw_target_death",
+  "atlas": "enemies_extra",
+  "frames": [
+   "straw_target_death_00",
+   "straw_target_death_01",
+   "straw_target_death_02",
+   "straw_target_death_03"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "straw_target_idle",
+  "atlas": "enemies_extra",
+  "frames": [
+   "straw_target_idle_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "training_dummy_hit",
   "atlas": "enemies_extra",
   "frames": [

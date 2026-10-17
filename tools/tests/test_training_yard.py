@@ -42,10 +42,10 @@ class TrainingYardTest(unittest.TestCase):
             self.assertEqual(fr[k].size, size, k)
             P.check_palette_lock(fr[k], P.allowed(V.ALLOWED), 'objects', k)
 
-    def test_yard_enemies_left_out_of_anims_json(self):
+    def test_yard_enemies_in_anims_json(self):
         keys = {a['key'] for a in V.anims()}
         for a in V.YARD_ENEMY_ANIMS:
-            self.assertNotIn(a['key'], keys)
+            self.assertIn(a['key'], keys)
         self.assertIn('training_dummy_idle', keys)
 
 
