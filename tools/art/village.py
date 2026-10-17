@@ -508,14 +508,13 @@ def dummy_frames():
     return {k: _img(v) for k, v in fr.items()}
 
 
-# 08 §7.3: the dummy has only `idle` (1) and `hit` (3). Held out of anims.json for now: the game's enemy view
-# expects every enemy with `<id>_idle` to also have stagger/death and errors on the dummy (docs/art/SPEC-GAPS-art.md #3).
+# 08 §7.3: the dummy has only `idle` (1) and `hit` (3).
 DUMMY_ANIMS = [A.anim('training_dummy_idle', 'enemies_extra', 1, 'once'),
                A.anim('training_dummy_hit', 'enemies_extra', 3, 'once', 20)]
 
 
 def anims():
-    out = [A.anim('ability_altar_idle', ATLAS, 2, 'loop', 1), A.anim('gate_idle', ATLAS, 2, 'loop', 2),
+    out = list(DUMMY_ANIMS) + [A.anim('ability_altar_idle', ATLAS, 2, 'loop', 1), A.anim('gate_idle', ATLAS, 2, 'loop', 2),
            A.anim('shop_refill_idle', ATLAS, 4, 'loop', 6)]
     for k in ('shop_item', 'shop_flask', 'shop_key', 'shop_reroll', 'unlocks_board', 'seed_board', 'loot_stand',
               'mirror_spot', 'class_statue_swordsman', 'class_statue_tank', 'class_statue_archer',
