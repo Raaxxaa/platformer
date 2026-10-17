@@ -38,7 +38,7 @@ export function topHudView(w: import('../../core/sim/gameWorld.ts').GameWorld): 
     hp: Math.max(0, w.health.hp), maxHp: w.health.maxHp,
     rush: w.rush.value, rushVisible: true,
     flask: { charges: w.flask.charges, maxCharges: w.flask.maxCharges, fillTenths: w.flask.fillTenths, blocked: false, drinking: !!w.drinking && !w.drinking.sipped },
-    gold: w.gold, keys: 0,
+    gold: w.gold, keys: w.econ.keys,
   };
 }
 /** A class or hybrid color key (07 §3.3); 'none' = No Class. */

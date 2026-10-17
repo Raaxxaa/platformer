@@ -55,7 +55,7 @@ describe('death and restart (06 §6, checklist 39)', () => {
   });
   it('a restart mid-fight leaves no hit groups or projectiles and resets HP, Rush, flask and gold', () => {
     const w = arenaWorld({ enemies: [{ enemy: 'bandit', x: 230, y: 320, facing: -1 }, { enemy: 'bandit_archer', x: 500, y: 320, facing: -1 }] });
-    w.health.hp = 40; w.rush.value = 250; w.flask.charges = 0; w.flask.fillTenths = 300; w.gold = 33;
+    w.health.hp = 40; w.rush.value = 250; w.flask.charges = 0; w.flask.fillTenths = 300; w.econ.goldTenths = 330;
     stepSpec(w, { attack1: true }, 30);
     w.restart();
     expect(w.hitGroups).toEqual([]);

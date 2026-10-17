@@ -1,5 +1,7 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
+import { newEconomy, stepCoins, type Coin, type EconomyState } from '../economy/gold.ts';
+import { stepKeys } from '../economy/keys.ts';
 import { stepSignatures } from '../combat/signatures.ts';
 import { dashCooldownMult, extraSpeed } from '../loot/perks.ts';
 import { cancelEnemyAttack } from '../enemies/attack.ts';
@@ -93,7 +95,10 @@ export type WorldEvent =
   | { t: 'sparringHit' }
   | { t: 'openClassPick'; cls: ClassId }
   | { t: 'stationDone'; id: number }
-  | { t: 'leftTraining' };
+  | { t: 'leftTraining' }
+  | { t: 'goldChanged'; tenths: number; reason: string }
+  | { t: 'keysFull' }
+  | { t: 'keyTaken' };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -159,7 +164,10 @@ export class GameWorld {
   drinkBufferTicks = 0;
   camera!: CameraState;
   tick = 0;
-  gold = 0;
+  econ: EconomyState = newEconomy();
+  coins: Coin[] = [];
+  /** Shown gold (05 §9.1). */
+  get gold(): number { return Math.floor(this.econ.goldTenths / 10); }
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
   bodies!: Bodies;
   run!: RunState;
@@ -268,7 +276,8 @@ export class GameWorld {
     this.instanceBonus = new Map();
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
-    this.gold = 0;
+    this.econ = newEconomy();
+    this.coins = [];
     this.rng = {
       enemyAI: new Rng(deriveSeed(this.runSeed, 'enemyAI', this.stage)),
       combat: new Rng(deriveSeed(this.runSeed, 'combat', this.stage)),
@@ -620,6 +629,8 @@ export class GameWorld {
     stepProjectiles(this);
     stepAbilityEntities(this);
     stepGroundItems(this);
+    stepKeys(this);
+    stepCoins(this);
     for (const r of this.respawns.filter((x) => x.at <= this.tick)) this.spawnExtra(r.spawn);
     this.respawns = this.respawns.filter((x) => x.at > this.tick);
     // 7. Hit resolution: player hits first (ties go to the player), then enemy hits.

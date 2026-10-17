@@ -78,7 +78,8 @@ function endFreeze(e: EnemyState): void {
 }
 
 /** Wind (02 §6.6): kills by a wind weapon refund the dash. Greedy gold etc. read the killing weapon elsewhere. */
-export function creditKillSource(w: GameWorld, weapon: WeaponInstance | null): void {
+export function creditKillSource(w: GameWorld, weapon: WeaponInstance | null, e?: EnemyState): void {
+  if (e) e.killedBy = weapon;
   if (weapon?.element === 'wind') refundDash(w.body);
 }
 
@@ -94,7 +95,7 @@ function dot(w: GameWorld, e: EnemyState, amount: number, src: WeaponInstance | 
   e.everDamaged = true;
   w.events.push({ t: 'hit', target: e.id, amount: dmg, crit: false, heavy: false, dot: true });
   if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
-  else if (e.hp <= 0 && !e.dead) { killEnemy(w, e); creditKillSource(w, src); }
+  else if (e.hp <= 0 && !e.dead) { killEnemy(w, e); creditKillSource(w, src, e); }
 }
 
 /** Burn spread on death (02 §6.2): every living enemy within the radius gets a fresh full Burn. */

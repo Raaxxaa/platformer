@@ -1,8 +1,8 @@
 // 02 §2.1 steps 7a, 7b and 9: hit resolution and deaths.
+import { addGoldTenths, killGoldTenths } from '../economy/gold.ts';
 import { critChance } from '../loot/perks.ts';
 import { enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
-import { roundHalfUp } from '../math.ts';
 import { onBossKilled } from '../enemies/boss.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, ENEMY, RUSH, ticks } from '../tuning.ts';
@@ -15,7 +15,7 @@ import { hurtPlayer } from './health.ts';
 import { refundDash } from '../player/dash.ts';
 import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
 import { maxStop, meleeHitStopTicks } from './hitStop.ts';
-import { addRush, rushGoldMult, rushLevel } from './rush.ts';
+import { addRush, rushLevel } from './rush.ts';
 import { TRAINING } from '../../data/enemies.ts';
 
 /** The player hurtbox as a rect. */
@@ -64,7 +64,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   // Element on the direct hit (02 §6): Lightning chains to 2 others right away.
   const el = elementOf(w, g);
   const killer = isWeapon ? inst : null;
-  if (el?.id === 'lightning') lightningChain(w, e, el.level, procBase, (x) => targetMult(w, g, x), (x) => { killEnemy(w, x); creditKillSource(w, killer); });
+  if (el?.id === 'lightning') lightningChain(w, e, el.level, procBase, (x) => targetMult(w, g, x), (x) => { killEnemy(w, x); creditKillSource(w, killer, x); });
   else if (el && el.id !== 'wind' && !killed) applyElementHit(w, e, el, procBase, tMult, null, killer);
   const wind = windMults(el);
   if (spec.heavy) w.shakeLevel('small');
@@ -75,7 +75,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   if (g.kind === 'melee' && !spec.multiHit && !g.noPlayerStop) w.body.hitStopTicks = maxStop(w.body.hitStopTicks, stop);
   if (killed) {
     killEnemy(w, e);
-    creditKillSource(w, killer);
+    creditKillSource(w, killer, e);
     afterHit(w, g, e, { damage, killed });
     g.onHit?.(w, g, e, { damage, killed });
     return;
@@ -152,8 +152,11 @@ export function processDeaths(w: GameWorld): void {
     }
     const tier = e.def.elite ? 'elite' : 'regular';
     w.onPlayerKill(e, tier);
-    // SPEC-GAP: M2 credits gold instantly; coins in M5
-    w.gold += roundHalfUp(e.def.gold * rushGoldMult(rushLevel(w.rush)));
+    // 05 §9.3: kill gold at once, in tenths (Golden Touch, Greedy on the killing weapon).
+    addGoldTenths(w, killGoldTenths({
+      gold: e.def.gold, rushLevel: rushLevel(w.rush), goldenTouch: w.econ.buffs.includes('golden_touch'), prospector: 0,
+      greedy: e.killedBy?.perk === 'greedy',
+    }), 'kill');
     w.events.push({ t: 'kill', enemyId: e.id, tier });
     if (e.boss) onBossKilled(w, e);
   }
