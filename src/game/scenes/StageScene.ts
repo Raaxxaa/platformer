@@ -14,7 +14,9 @@ import { DEPTH } from '../../data/art.ts';
 import { DoorViews, drawGuideArrows } from '../view/levelView.ts';
 import { YardView } from '../view/yardView.ts';
 import { STAGE_UI } from '../../data/stageUi.ts';
+import { HUD_COLOR, UI_COLOR } from '../../data/uiText.ts';
 import { WorldScene } from './WorldScene.ts';
+import { PauseView } from '../../ui/popups/pause.ts';
 import { parseKit } from '../../ui/popups/classPickModel.ts';
 import { CLASS_IDS } from '../../data/classes.ts';
 
@@ -52,6 +54,9 @@ export class StageScene extends WorldScene {
   private splitUntil = -1;
   private bossBarGfx!: Phaser.GameObjects.Graphics;
   private bossText!: Phaser.GameObjects.BitmapText;
+  private bossTitle!: Phaser.GameObjects.BitmapText;
+  private segmentText!: Phaser.GameObjects.BitmapText;
+  private infoText!: Phaser.GameObjects.BitmapText;
   private clearOverlay!: Phaser.GameObjects.Graphics;
   private clearText!: Phaser.GameObjects.BitmapText;
   private yard: YardView | null = null;
@@ -60,12 +65,18 @@ export class StageScene extends WorldScene {
     super('Stage');
   }
 
+  /** The level the start screen chose (else the URL decides). */
+  private chosen: string | null = null;
+  init(data?: { level?: string }): void {
+    this.chosen = data?.level ?? null;
+  }
+
   preload(): void {
     super.preload();
     const q = new URLSearchParams(window.location.search);
     // `?start=training` opens the Training Yard (06 §12.4: until the Home Village gate exists); other levels need ?debug=1.
     const start = q.get('start');
-    this.levelId = start === 'training' ? 'training_yard' : (q.get('debug') === '1' && start) || 'plains';
+    this.levelId = this.chosen ?? (start === 'training' ? 'training_yard' : (q.get('debug') === '1' && start) || 'plains');
     this.load.json(`level_${this.levelId}`, `levels/${this.levelId}.json`);
   }
 
@@ -95,10 +106,13 @@ export class StageScene extends WorldScene {
     this.doorViews = new DoorViews(this);
     drawGuideArrows(this, this.level.objects);
     this.hintText = this.add.bitmapText(width / 2, height - U.hintBottom, FONTS.small, '').setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.timerText = this.add.bitmapText(width - 4, 4, FONTS.large, '').setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.splitText = this.add.bitmapText(width - 4, 24, FONTS.small, '').setTint(0xffd84a).setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.timerText = this.add.bitmapText(U.timer[0], U.timer[1], FONTS.large, '').setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.segmentText = this.add.bitmapText(U.segment[0], U.segment[1], FONTS.small, '').setTint(UI_COLOR.textDim).setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.infoText = this.add.bitmapText(U.info[0], U.info[1], FONTS.small, '').setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.splitText = this.add.bitmapText(U.alert[0], U.alert[1], FONTS.small, '').setTint(UI_COLOR.highlight).setOrigin(0.5, 0).setScrollFactor(0).setDepth(DEPTH.hud);
     this.bossBarGfx = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud);
-    this.bossText = this.add.bitmapText(width / 2, U.bossBarY - 2, FONTS.small, '').setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.bossText = this.add.bitmapText(U.bossName[0], U.bossName[1], FONTS.small, '').setScrollFactor(0).setDepth(DEPTH.hud);
+    this.bossTitle = this.add.bitmapText(U.bossTitleRight, U.bossName[1], FONTS.small, '').setOrigin(1, 0).setTint(UI_COLOR.textDim).setScrollFactor(0).setDepth(DEPTH.hud);
     this.clearOverlay = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 5);
     this.clearOverlay.fillStyle(0x000000, 0.6).fillRect(0, 0, width, height);
     this.clearText = this.add.bitmapText(width / 2, height / 2, FONTS.large, '').setCenterAlign()
@@ -111,7 +125,7 @@ export class StageScene extends WorldScene {
     const kit = parseKit(q.get('kit'));
     if (kit) this.equipKit(kit);
     // In the Training Yard the class statues at the start do the picking (06 §12.4).
-    else if (this.level.kind !== 'training' && (q.get('debug') !== '1' || q.get('picker') === '1')) this.openClassPick([...CLASS_IDS], true);
+    else if (this.level.kind !== 'training' && (q.get('debug') !== '1' || q.get('picker') === '1' || this.chosen)) this.openClassPick([...CLASS_IDS], true);
   }
 
   private installStageDebug(): void {
@@ -143,6 +157,17 @@ export class StageScene extends WorldScene {
     api.arenas = () => [...this.world.arenas.values()].map((a) => ({ id: a.id, kind: a.kind, rect: a.rect }));
   }
 
+  protected pausePlace(): 'run' | 'training' { return this.level.kind === 'training' ? 'training' : 'run'; }
+  protected pauseInfo(): string {
+    if (this.level.kind === 'training') return 'Training Yard';
+    return PauseView.info(this.level.stage, this.world.run.runTicks, null);
+  }
+  /** Quitting, or leaving the Training Yard: back to the start screen (M4.1 Task 2). */
+  protected onPauseQuit(): void { this.toTitle(); }
+  private toTitle(): void {
+    if (this.scene.get('Title')) this.scene.start('Title');
+  }
+
   protected hudLines(): string[] {
     return super.hudLines().filter((l) => !l.startsWith('Time'));
   }
@@ -168,20 +193,35 @@ export class StageScene extends WorldScene {
     // Hint, timer, split popup, boss bar, stage clear.
     const sign = w.training?.sign ?? (w.activeHint ? HINT_TEXT[w.activeHint] : '');
     this.hintText.setText(!this.overview ? sign : '');
-    this.timerText.setVisible(!this.overview && !this.yard);
     this.yard?.update(w);
-    this.timerText.setText(formatTime(w.run.runTicks));
+    if (this.frameEvents.some(({ e }) => e.t === 'leftTraining') && !new URLSearchParams(window.location.search).get('start')) { this.toTitle(); return; }
+    const timerOn = !this.overview && !this.yard;
+    this.timerText.setVisible(timerOn).setText(formatTime(w.run.runTicks));
+    this.segmentText.setVisible(timerOn).setText(`STAGE ${this.level.stage}  ${formatTime(w.run.stageTicks ?? w.run.runTicks)}`);
+    // Info line: a pending timed door within 640 px (07 §4.11).
+    let info = '', infoBad = false;
+    for (const d of w.timedDoors) {
+      const b = w.bodies.list.find((x) => x.id === d.id);
+      if (!b || w.run.timedDoors[d.id] !== 'pending' || Math.abs(b.x - w.body.x) > U.doorInfoRange) continue;
+      const left = Math.max(0, timedDoorTimeLeft(w, d.id));
+      info = `DOOR ${formatTime(Math.round(left * TICK_RATE))}`; infoBad = left < U.doorInfoBadS;
+      break;
+    }
+    this.infoText.setVisible(timerOn).setText(info).setTint(infoBad ? UI_COLOR.bad : UI_COLOR.text);
     for (const { e } of this.frameEvents) if (e.t === 'split') { this.splitUntil = w.tick + U.splitSeconds * TICK_RATE; this.splitText.setText(`Split ${e.index}  ${formatTime(e.runTicks)}`); }
     this.splitText.setVisible(w.tick < this.splitUntil);
     const bar = w.bossBar;
     const bg = this.bossBarGfx.clear();
-    if (bar) {
-      const x0 = (this.scale.width - U.bossBarW) / 2;
-      bg.fillStyle(0x0d0b14, 0.8).fillRect(x0 - 1, U.bossBarY - 1, U.bossBarW + 2, U.bossBarH + 2);
-      bg.fillStyle(0xe04040, 1).fillRect(x0, U.bossBarY, Math.round((U.bossBarW * bar.hp) / bar.maxHp), U.bossBarH);
-      for (const m of bar.marks) bg.fillStyle(0xffffff, 1).fillRect(x0 + Math.round(U.bossBarW * m), U.bossBarY, 1, U.bossBarH);
-      this.bossText.setText(`${bar.name} — ${bar.title}`);
-    } else this.bossText.setText('');
+    if (bar && !this.overview) {
+      const [hx, hy, hw, hh] = U.bossHp;
+      bg.fillStyle(UI_COLOR.ink, 1).fillRect(hx, hy, hw, hh);
+      bg.fillStyle(HUD_COLOR.hp, 1).fillRect(hx + 1, hy + 1, bar.hp <= 0 ? 0 : Math.max(1, Math.round(((hw - 2) * bar.hp) / bar.maxHp)), hh - 2);
+      for (const m of bar.marks) bg.fillStyle(UI_COLOR.ink, 1).fillRect(hx + 1 + Math.round((hw - 2) * m), hy + 1, 1, hh - 2);
+      const [px, py, pw, ph] = U.bossPoise;
+      bg.fillStyle(UI_COLOR.ink, 1).fillRect(px, py, pw, ph);
+      this.bossText.setText(bar.name);
+      this.bossTitle.setText(bar.title);
+    } else { this.bossText.setText(''); this.bossTitle.setText(''); }
     const clear = w.run.phase === 'stageClear';
     this.clearOverlay.setVisible(clear);
     this.clearText.setVisible(clear).setText(`Stage 1 clear — ${formatTime(w.run.runTicks)}\n\nPress R to run again`);

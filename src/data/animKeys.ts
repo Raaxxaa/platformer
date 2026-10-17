@@ -3,7 +3,8 @@
 
 /** Atlases loaded for a stage (08 §12.5). `trim` atlases hold `a/<frame>` and `b/<frame>`. */
 export const ATLASES = [
-  'player_swordsman', 'player_swordsman_trim', 'weapon_greatsword', 'weapon_war_maul',
+  'player_swordsman', 'player_swordsman_trim', 'player_tank', 'player_tank_trim', 'player_archer', 'player_archer_trim',
+  'player_wizard', 'player_wizard_trim', 'weapon_greatsword', 'weapon_war_maul',
   'enemies_plains', 'enemies_extra', 'boss_great_boar', 'projectiles', 'vfx', 'objects', 'items',
 ] as const;
 export type AtlasKey = (typeof ATLASES)[number];

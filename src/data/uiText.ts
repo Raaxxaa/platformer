@@ -42,3 +42,24 @@ export const TRAINING_STATION_NAMES = [
   'Run and jump', 'Double jump', 'Dash', 'Wall jump', 'Ledge grab', 'Slide and crawl', 'Drop through', 'Dive slam',
   'Combo', 'Two weapons', 'Dodge', 'Heal', 'Abilities', 'Rush', 'Dash-jump', 'Slide-jump', 'Dive bounce',
 ] as const;
+/** 07 §3.1 tokens added for the full HUD. */
+export const HUD_COLOR = {
+  hp: 0xe5404a, hpLow: 0xff7080, flask: 0xff8fa0, rush: [0xffd34a, 0xffa83a, 0xff5a3a], curse: 0xd0306a, dimAlpha: 0.55,
+} as const;
+
+/** 07 §9.2 bond and hybrid blurbs (pause LOADOUT tab). */
+export const BOND_BLURB: Record<string, string> = {
+  Blademaster: 'Every 3rd hit crits. Kills reset your dash', 'Iron Will': '+30% max HP. No knockback while attacking',
+  'Eagle Eye': 'Long shots always crit. Fall slowly while aiming', 'Storm Caller': 'Abilities recharge 25% faster. Stronger elements',
+};
+export const HYBRID_BLURB: Record<HybridId, string> = {
+  thief: 'Faster and sneakier. Sneak hits crit. Open 1 chest free per stage', gladiator: 'Switching weapons keeps your combo and hits harder',
+  spellblade: 'Melee hits shorten ability cooldowns', warden: 'Melee hits power up your next shot, and shots power up your next melee hit',
+  thunderlord: 'Heavy hits call lightning', arcane_archer: 'Arrows carry lightning. Charged shots explode',
+};
+/** 07 §8.1 actions and their default keys, for the read-only CONTROLS tab. */
+export const CONTROLS_LIST: readonly [string, string][] = [
+  ['Left', 'A / ←'], ['Right', 'D / →'], ['Up', 'W / ↑'], ['Down', 'S / ↓'], ['Jump', 'Space'], ['Dash', 'Shift'],
+  ['Attack 1', 'J'], ['Attack 2', 'K'], ['Ability 1', 'U'], ['Ability 2', 'I'], ['Heal', 'Q'], ['Interact', 'E'],
+  ['Restart (hold)', 'R'], ['Pause', 'Esc / P'],
+];

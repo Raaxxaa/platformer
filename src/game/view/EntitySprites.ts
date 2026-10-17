@@ -9,11 +9,11 @@ import { DUMMY_FRAMES } from '../../data/animKeys.ts';
 import { ANCHOR, ANIM, DEPTH, OVERLAY, TRIM_TINT, VFX, WEAPON_FRAME } from '../../data/art.ts';
 import { AnimClock, runFps, timeFrame, walkFps } from './animClock.ts';
 import type { AnimBank } from './animBank.ts';
+import { trimTints } from './trims.ts';
 import { pickEnemyAnim, pickPlayerAnim, type Lookup, type PlayerAnimState } from './pickAnim.ts';
 
-/** The player outfit while there are no classes yet. */
-// SPEC-GAP: no class or starting kit exists before M5, so the outfit is fixed to the Swordsman with Neutral trims.
-export const OUTFIT = 'swordsman';
+/** The outfit before a kit is picked (08 §6: outfit = starting class). */
+export const DEFAULT_OUTFIT = 'swordsman';
 
 /** Feet-anchored origin for a frame: (w/2, h − 2) (08 §4.1). */
 function feet(s: Phaser.GameObjects.Sprite): Phaser.GameObjects.Sprite {
@@ -31,14 +31,18 @@ export class PlayerSprite {
   private readonly smear: Phaser.GameObjects.Sprite;
   private readonly overlay: Phaser.GameObjects.Sprite;
   private readonly clock = new AnimClock();
-  private readonly get: Lookup;
+  private get: Lookup;
+  private readonly bank: AnimBank;
+  /** The outfit atlas suffix: the starting class (08 §6). */
+  outfit: string = DEFAULT_OUTFIT;
   /** The last frame drawn (afterimages copy it). */
   frameName = 'idle_00';
   /** The anim key and frame index drawn last (footstep sounds). */
   anim = { key: 'idle', frame: 0 };
   constructor(scene: Phaser.Scene, bank: AnimBank) {
-    this.get = bank.player(OUTFIT);
-    const body = `player_${OUTFIT}`, trim = `${body}_trim`;
+    this.bank = bank;
+    this.get = bank.player(this.outfit);
+    const body = `player_${this.outfit}`, trim = `${body}_trim`;
     this.body = scene.add.sprite(0, 0, body, 'idle_00');
     this.trims = ['a', 'b'].map((l) => scene.add.sprite(0, 0, trim, `${l}/idle_00`).setTint(TRIM_TINT.none));
     this.weapon = scene.add.sprite(0, 0, 'weapon_greatsword', 'atk_greatsword_1_00').setVisible(false);
@@ -46,6 +50,17 @@ export class PlayerSprite {
     this.overlay = scene.add.sprite(0, 0, body, 'idle_00').setTint(OVERLAY.hitFlash.color).setTintMode(Phaser.TintModes.FILL);
     for (const s of [this.body, ...this.trims, this.overlay]) feet(s).setDepth(DEPTH.player);
     for (const s of [this.weapon, this.smear]) s.setOrigin(WEAPON_FRAME.anchorX / WEAPON_FRAME.w, WEAPON_FRAME.anchorY / WEAPON_FRAME.h);
+  }
+
+  /** Swaps to another outfit (picking a kit, 08 §6). */
+  setOutfit(outfit: string): void {
+    if (outfit === this.outfit) return;
+    this.outfit = outfit;
+    this.get = this.bank.player(outfit);
+    const body = `player_${outfit}`;
+    this.body.setTexture(body, 'idle_00');
+    this.overlay.setTexture(body, 'idle_00');
+    for (const t of this.trims) t.setTexture(`${body}_trim`);
   }
 
   static animState(w: GameWorld, ev: PlayerViewEvents): PlayerAnimState {
@@ -77,7 +92,8 @@ export class PlayerSprite {
     const blink = w.health.iframeTicks > 0 && Math.floor(w.tick / COMBAT.IFRAME_BLINK_TICKS) % 2 === 0;
     const alpha = blink ? 0.4 : 1;
     this.body.setFrame(name).setPosition(b.x, b.y).setFlipX(flip).setAlpha(alpha);
-    this.trims.forEach((t, i) => t.setFrame(`${i === 0 ? 'a' : 'b'}/${name}`).setPosition(b.x, b.y).setFlipX(flip).setAlpha(alpha));
+    const tints = trimTints(w.classState);
+    this.trims.forEach((t, i) => t.setFrame(`${i === 0 ? 'a' : 'b'}/${name}`).setPosition(b.x, b.y).setFlipX(flip).setAlpha(alpha).setTint(tints[i]));
     // Weapon + smear (08 §4.2): behind the body on `weaponBehind` frames, else above trim B.
     const wl = p.weapon;
     this.weapon.setVisible(!!wl);

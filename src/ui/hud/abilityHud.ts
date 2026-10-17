@@ -8,6 +8,8 @@ import { BONDS, CLASS_NAME, HYBRID_NAME } from '../../data/classes.ts';
 import { SLOT_LAYOUT as L } from '../../data/stageUi.ts';
 import { CLASS_COLOR, GRADE_COLOR, HYBRID_COLOR, UI_COLOR } from '../../data/uiText.ts';
 import type { ClassId, HybridId } from '../../core/abilities/types.ts';
+import { box, SKIN } from '../skin.ts';
+import { TOP_HUD } from '../../data/stageUi.ts';
 import { abilitySlotViews, chargeBarW, classLine, cooldownShade, linkBarW, SLOT_HUD, weaponSlotViews, type ClassColorKey } from './abilityHudModel.ts';
 
 const PROMPTS = ['J', 'K', 'U', 'I'];                      // M1 key names (07 §8.4 glyphs later)
@@ -38,10 +40,13 @@ export class AbilityHud {
   private prevCharges: number[] = [0, 0];
   private prevHammerReady = [true, true];
   private toasts: Toast[] = [];
+  private plate: Phaser.GameObjects.Components.Visible[] = [];
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     const fixed = <T extends Phaser.GameObjects.Components.ScrollFactor & Phaser.GameObjects.Components.Depth>(o: T, d = 0) => o.setScrollFactor(0).setDepth(DEPTH.hud + d);
+    const [px, py, pw, ph] = TOP_HUD.plateBottom;
+    this.plate = box(scene, SKIN.plate, px, py, pw, ph, SKIN.corner.plate, { alpha: SKIN.plateAlpha }).map((o) => o.setDepth(DEPTH.hud - 1));
     this.g = fixed(scene.add.graphics());
     const xs = [...L.weaponX, ...L.abilityX];
     for (let i = 0; i < 4; i++) {
@@ -69,7 +74,7 @@ export class AbilityHud {
   }
 
   private all(): Phaser.GameObjects.Components.Visible[] {
-    return [this.g, ...this.icons, ...this.classIcons, ...this.prompts, ...this.digits, this.line1, this.line2, this.linkIcon, this.linkText,
+    return [...this.plate, this.g, ...this.icons, ...this.classIcons, ...this.prompts, ...this.digits, this.line1, this.line2, this.linkIcon, this.linkText,
       this.fizzle, ...this.toasts.map((t) => t.text)];
   }
 

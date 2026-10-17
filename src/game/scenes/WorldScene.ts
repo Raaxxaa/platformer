@@ -4,7 +4,9 @@ import { rushLevel } from '../../core/combat/rush.ts';
 import { enemyRect, type EnemyState } from '../../core/enemies/enemy.ts';
 import type { EnemyId } from '../../core/enemies/types.ts';
 import { FixedStepper } from '../../core/sim/fixedStep.ts';
-import { emptyInput, type InputState } from '../../core/input.ts';
+import { BUTTON_IDS, emptyButton, emptyInput, type InputState } from '../../core/input.ts';
+import { PauseModel, type PauseAction } from '../../ui/model/pauseModel.ts';
+import { PauseView } from '../../ui/popups/pause.ts';
 import { kitLoadout, newAbility, newWeapon } from '../../core/abilities/runtime.ts';
 import type { AbilityId, AbilityLevel, ClassId } from '../../core/abilities/types.ts';
 import type { WeaponId } from '../../core/combat/types.ts';
@@ -19,7 +21,7 @@ import { DEPTH } from '../../data/art.ts';
 import { drawTerrain, Parallax } from '../view/levelView.ts';
 import type { AnimDef } from '../view/animClock.ts';
 import { AnimBank } from '../view/animBank.ts';
-import { EnemySprite, OUTFIT, PlayerSprite, ProjectileSprites, type PlayerViewEvents } from '../view/EntitySprites.ts';
+import { EnemySprite, PlayerSprite, ProjectileSprites, type PlayerViewEvents } from '../view/EntitySprites.ts';
 import { SfxPlayer } from '../audio/sfx.ts';
 import type { SfxRequest } from '../audio/sfxRules.ts';
 import { SfxWatch } from '../audio/sfxTriggers.ts';
@@ -27,6 +29,11 @@ import { drawMarkers, VfxDirector, VfxPool, type TickEvent } from '../view/vfx.t
 import { ItemViews } from '../view/yardView.ts';
 import { AbilityView } from '../view/abilityView.ts';
 import { AbilityHud } from '../../ui/hud/abilityHud.ts';
+import { TopHud } from '../../ui/hud/topHud.ts';
+import { ItemCardPopup } from '../../ui/popups/itemCard.ts';
+import { itemCard } from '../../ui/model/itemCard.ts';
+import { interactTarget, type GroundItem } from '../../core/abilities/items.ts';
+import { topHudView } from '../../ui/model/hudModel.ts';
 import { loadAssets } from '../assets/loadAssets.ts';
 import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../debug.ts';
 import { COLOR, STATE_COLOR } from '../greybox.ts';
@@ -66,6 +73,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected itemViews!: ItemViews;
   protected abilityView!: AbilityView;
   protected abilityHud!: AbilityHud;
+  protected topHud!: TopHud;
+  protected card!: ItemCardPopup;
   /** Events of every tick since the last render (core clears `world.events` each tick). */
   protected frameEvents: TickEvent[] = [];
   private playerEv: PlayerViewEvents = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
@@ -96,6 +105,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   create(): void {
     this.world = this.makeWorld();
     this.devices = new Devices();
+    this.events.once('shutdown', () => { this.devices.destroy(); window.removeEventListener('keydown', this.onPauseKey); });
     this.bank = new AnimBank(this.cache.json.get('anims') as AnimDef[]);
     this.boxesMode = new URLSearchParams(window.location.search).get('boxes') === '1';
     this.parallax = new Parallax(this, this.world.grid.heightPx);
@@ -113,7 +123,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.soundNote = this.add.bitmapText(this.scale.width / 2, this.scale.height - 4, FONTS.small, 'Click or press any key for sound')
       .setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud).setAlpha(0.8);
     this.gfx = this.add.graphics().setDepth(DEPTH.projectiles);
-    this.hud = this.add.bitmapText(4, 4, FONTS.small, '')
+    this.hud = this.add.bitmapText(4, 60, FONTS.small, '')
       .setScrollFactor(0).setDepth(DEPTH.hud);
     const { width, height } = this.scale;
     this.overlay = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 5);
@@ -121,6 +131,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.overlayText = this.add.bitmapText(width / 2, height / 2, FONTS.large, 'You died — press R')
       .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
     this.abilityHud = new AbilityHud(this);
+    this.topHud = new TopHud(this);
+    this.card = new ItemCardPopup(this);
     this.debug = debugEnabled();
     if (this.debug) installCombatDebugApi(this);
     this.createExtra();
@@ -136,8 +148,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       api.giveWeapon = (slot: 0 | 1, id: WeaponId) => { this.world.combat.slots[slot] = newWeapon(id); this.world.refreshClassState(); };
       api.spawnDummy = (x: number, y: number) => this.world.spawnExtra({ enemy: 'training_dummy', x, y, facing: -1 }).id;
       api.classPickOpen = () => this.classPick !== null;
+      api.openPause = () => this.openPause();
+      api.pauseAction = (a: PauseAction) => this.pauseAction(a);
+      api.pauseState = () => (this.pause ? { tab: this.pause.model.tab, cursor: this.pause.model.cursor } : null);
       api.enemyAi = () => this.world.enemies.map((e) => ({ id: e.id, def: e.def.id, x: e.x, y: e.y, attack: e.ai.attack ? { phase: e.ai.attack.phase, t: e.ai.attack.t, len: e.ai.attack.len } : null }));
       api.interactables = () => this.world.interactables.map((o) => ({ id: o.id, kind: o.kind, label: o.label, x: o.x, y: o.y }));
+      api.cardOpen = () => { const t = interactTarget(this.world); return !!t && !('use' in t); };
       api.groundItems = () => this.world.groundItems.map((i) => ({ id: i.id, x: i.x, y: i.y, weapon: i.weapon?.weaponId, ability: i.ability?.id }));
     }
     this.render();
@@ -171,6 +187,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   /** Equips a starting kit at once (03 §3) and keeps it for restarts. */
   equipKit(kit: Kit): void {
     this.pickedKit = kit;
+    this.playerView?.setOutfit(kit.cls);
     this.world.setLoadout(kitLoadout(kit.cls, kit.weapon));
   }
 
@@ -191,15 +208,24 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.frameEvents.push(...evs);
     this.sfxQueue.push(...this.sfxWatch.collect(this.world, evs));
     this.abilityView?.onTick(this.world, this.world.events, feet);
-    if (this.vfx) this.vfx.update(this.world, evs, { atlas: `player_${OUTFIT}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
+    if (this.vfx) this.vfx.update(this.world, evs, { atlas: `player_${this.playerView.outfit}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
   }
 
   update(_time: number, delta: number): void {
     this.devices.pollGamepad();
+    if (this.pause) {
+      // Paused (07 §1.5): no world, no run timer; drain the input latches so nothing fires on resume.
+      this.devices.builder.build();
+      this.pause.model.tick(this.time.now);
+      this.pause.view.draw(this.pause.model, this.world, this.pauseInfo());
+      this.render();
+      return;
+    }
     if (!this.manual) {
       const n = this.stepper.advance(delta / 1000);
       for (let i = 0; i < n; i++) {
-        const input = this.devices.builder.build();
+        const input = this.swallowHeld(this.devices.builder.build());
+        if (input.pause.pressed && !this.classPick) { this.openPause(); break; }
         if (this.classPick) {
           this.stepClassPick(input);
           if (this.classPick?.pauseWorld) continue;
@@ -208,6 +234,60 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       }
     }
     this.render();
+  }
+
+  /** 07 §1.5 input swallow: buttons held when a menu closed count as not held until released. */
+  private swallow = new Set<(typeof BUTTON_IDS)[number]>();
+  private swallowHeld(input: InputState): InputState {
+    if (!this.swallow.size) return input;
+    const out = { ...input };
+    for (const b of [...this.swallow]) {
+      if (input[b].held) out[b] = emptyButton();
+      else this.swallow.delete(b);
+    }
+    return out;
+  }
+
+  /** Where the pause menu is opened (its item list). */
+  protected pausePlace(): 'run' | 'training' { return 'run'; }
+  protected pauseInfo(): string { return PauseView.info(1, this.world.run.runTicks, null); }
+  /** Pause results the scene acts on: restart and quit. */
+  protected onPauseQuit(): void {}
+
+  pause: { model: PauseModel; view: PauseView } | null = null;
+  private readonly onPauseKey = (e: KeyboardEvent) => {
+    if (!this.pause || e.repeat) return;
+    const map: Record<string, PauseAction> = {
+      ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
+      Enter: 'confirm', Space: 'confirm', KeyE: 'confirm', Escape: 'back', Backspace: 'back', KeyP: 'back',
+    };
+    const a = map[e.code];
+    if (!a) return;
+    e.preventDefault();
+    this.pauseAction(a);
+  };
+
+  pauseAction(a: PauseAction): void {
+    if (!this.pause) return;
+    const r = this.pause.model.input(a, this.time.now);
+    if (r === 'resume') this.closePause();
+    else if (r === 'restart') { this.closePause(); this.world.restart(); }
+    else if (r === 'quit') { this.closePause(); this.onPauseQuit(); }
+  }
+
+  openPause(): void {
+    if (this.pause) return;
+    this.pause = { model: new PauseModel(this.pausePlace()), view: new PauseView(this) };
+    window.addEventListener('keydown', this.onPauseKey);
+  }
+
+  closePause(): void {
+    if (!this.pause) return;
+    this.pause.view.destroy();
+    this.pause = null;
+    window.removeEventListener('keydown', this.onPauseKey);
+    const held = this.devices.builder.build();
+    for (const b of BUTTON_IDS) if (held[b].held) this.swallow.add(b);
   }
 
   protected render(): void {
@@ -269,6 +349,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.itemViews.update(w.groundItems);
     this.abilityView.update(w);
     this.abilityHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
+    this.topHud.update(topHudView(w), this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
+    // The item card over the interact target, or the item an open swap choice is about (07 §6.1–6.3).
+    const choiceId = w.weaponSwapChoice?.itemId ?? (w.abilities.swapChoice ? Number(w.abilities.swapChoice.itemId) : null);
+    const tgt = choiceId !== null ? w.groundItems.find((i) => i.id === choiceId) ?? null : interactTarget(w);
+    const item = tgt && !('use' in tgt) ? (tgt as GroundItem) : null;
+    this.card.update(item, item ? itemCard(w, item) : null, this.time.now, !this.overview && !w.health.dead);
     const reqs = [...this.sfxQueue, ...this.sfxWatch.footsteps(this.playerView.anim)];
     this.sfxQueue = [];
     this.sfx.play(reqs, w.tick, { camCenterX: cam.x + this.scale.width / 2, playerX: b.x });
@@ -378,6 +464,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   }
 
   private drawHud(): void {
-    this.hud.setText(this.hudLines());
+    // The M1 text readout, now only with ?hudtext=1 (07's HUD replaced it).
+    this.hud.setText(new URLSearchParams(window.location.search).get('hudtext') === '1' ? this.hudLines() : '');
   }
 }
