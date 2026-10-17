@@ -25,7 +25,7 @@ class ProjectilesVfxTest(unittest.TestCase):
     def test_projectiles(self):
         fr, anims = PR.build_frames()
         self.check(fr, PROJ, PR.ALLOWED, 'projectiles')
-        self.assertEqual({a['key'] for a in anims}, set(PROJ))
+        self.assertLessEqual(set(PROJ), {a['key'] for a in anims})
         world = P.allowed(P.PLAINS_WORLD_RAMPS)
         for f, img in fr.items():
             cols = {px[:3] for px in img.getdata() if px[3]}

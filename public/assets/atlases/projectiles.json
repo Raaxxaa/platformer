@@ -1,11 +1,71 @@
 {
  "frames": {
+  "arrow_00": {
+   "frame": {
+    "h": 4,
+    "w": 12,
+    "x": 2,
+    "y": 92
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 4,
+    "w": 12
+   },
+   "spriteSourceSize": {
+    "h": 4,
+    "w": 12,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "arrow_charged_00": {
+   "frame": {
+    "h": 4,
+    "w": 16,
+    "x": 2,
+    "y": 70
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 4,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 4,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "bolt_00": {
+   "frame": {
+    "h": 4,
+    "w": 14,
+    "x": 2,
+    "y": 86
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 4,
+    "w": 14
+   },
+   "spriteSourceSize": {
+    "h": 4,
+    "w": 14,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "brute_wave_00": {
    "frame": {
     "h": 12,
     "w": 16,
     "x": 2,
-    "y": 40
+    "y": 56
    },
    "rotated": false,
    "sourceSize": {
@@ -25,7 +85,7 @@
     "h": 12,
     "w": 16,
     "x": 20,
-    "y": 40
+    "y": 56
    },
    "rotated": false,
    "sourceSize": {
@@ -44,8 +104,8 @@
    "frame": {
     "h": 4,
     "w": 12,
-    "x": 2,
-    "y": 54
+    "x": 16,
+    "y": 92
    },
    "rotated": false,
    "sourceSize": {
@@ -160,7 +220,7 @@
    },
    "trimmed": false
   },
-  "shockwave_00": {
+  "hammer_spin_00": {
    "frame": {
     "h": 16,
     "w": 16,
@@ -180,7 +240,7 @@
    },
    "trimmed": false
   },
-  "shockwave_01": {
+  "hammer_spin_01": {
    "frame": {
     "h": 16,
     "w": 16,
@@ -199,6 +259,166 @@
     "y": 0
    },
    "trimmed": false
+  },
+  "hammer_spin_02": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 38,
+    "y": 22
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "hammer_spin_03": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 56,
+    "y": 22
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "orb_00": {
+   "frame": {
+    "h": 14,
+    "w": 14,
+    "x": 2,
+    "y": 40
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 14,
+    "w": 14
+   },
+   "spriteSourceSize": {
+    "h": 14,
+    "w": 14,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "orb_01": {
+   "frame": {
+    "h": 14,
+    "w": 14,
+    "x": 18,
+    "y": 40
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 14,
+    "w": 14
+   },
+   "spriteSourceSize": {
+    "h": 14,
+    "w": 14,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "pin_bolt_00": {
+   "frame": {
+    "h": 4,
+    "w": 14,
+    "x": 18,
+    "y": 86
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 4,
+    "w": 14
+   },
+   "spriteSourceSize": {
+    "h": 4,
+    "w": 14,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shockwave_00": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 74,
+    "y": 22
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "shockwave_01": {
+   "frame": {
+    "h": 16,
+    "w": 16,
+    "x": 92,
+    "y": 22
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 16,
+    "w": 16
+   },
+   "spriteSourceSize": {
+    "h": 16,
+    "w": 16,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "staff_bolt_00": {
+   "frame": {
+    "h": 8,
+    "w": 8,
+    "x": 2,
+    "y": 76
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 8,
+    "w": 8
+   },
+   "spriteSourceSize": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
   }
  },
  "meta": {
@@ -207,8 +427,8 @@
   "image": "projectiles.png",
   "scale": "1",
   "size": {
-   "h": 60,
-   "w": 102
+   "h": 98,
+   "w": 110
   },
   "version": "1"
  }

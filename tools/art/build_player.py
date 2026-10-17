@@ -16,7 +16,11 @@ MODES = {'idle': ('loop', 8), 'run': ('speed', None), 'skid': ('once', None), 'j
          'land': ('once', 20), 'dash': ('phase', None), 'wall_slide': ('loop', 8), 'ledge_climb': ('phase', None),
          'slide': ('once', None), 'crawl': ('loop', 8), 'dive_windup': ('phase', None), 'dive_fall': ('loop', 16),
          'dive_land': ('phase', None), 'hurt': ('once', 10), 'dead': ('once', 10), 'drink': ('phase', None),
-         'cart_ride': ('loop', 6)}
+         'cart_ride': ('loop', 6), 'cast_slam': ('phase', None), 'cast_up': ('phase', None), 'spin': ('loop', 20),
+         'shoulder': ('loop', 12)}
+# 08 §6.2 ability pose phases
+PHASE_SEGMENTS = {'cast_slam': [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'recovery', 'frames': [2, 3]}],
+                  'cast_up': [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'recovery', 'frames': [2]}]}
 
 
 def build(assets, preview):
@@ -32,10 +36,17 @@ def build(assets, preview):
         A.pack_atlas('player_' + o, body, atl)
         A.pack_atlas(f'player_{o}_trim', trim, atl)
         for key, poses in POSES.items():
+            if key.startswith('charge_'):
+                anims.append(A.anim(key, 'player_' + o, len(poses), 'loop', 8))
+                continue
             if key.startswith('atk_'):
-                # 08 §6.3: phase-driven [S0, S1, A, R0, R1]; weaponBehind lists the frames drawn behind the body
-                seg = [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'active', 'frames': [2]},
-                       {'phase': 'recovery', 'frames': [3, 4]}]
+                # 08 §6.3: phase-driven [S0, S1, A, R0, R1]; a projectile step: startup [0, 1], recovery [2, 3, 4]
+                from .weapons import RANGED
+                if key in RANGED:
+                    seg = [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'recovery', 'frames': [2, 3, 4]}]
+                else:
+                    seg = [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'active', 'frames': [2]},
+                           {'phase': 'recovery', 'frames': [3, 4]}]
                 d = A.anim(key, 'player_' + o, len(poses), 'phase', segments=seg)
                 behind = [i for i, p in enumerate(poses) if p.get('behind')]
                 if behind:
@@ -43,7 +54,7 @@ def build(assets, preview):
                 anims.append(d)
                 continue
             mode, fps = MODES[key]
-            seg = [{'phase': 'all', 'frames': list(range(len(poses)))}] if mode == 'phase' else None
+            seg = PHASE_SEGMENTS.get(key, [{'phase': 'all', 'frames': list(range(len(poses)))}]) if mode == 'phase' else None
             anims.append(A.anim(key, 'player_' + o, len(poses), mode, fps, segments=seg))
         col = P.CLASS_COLORS[o]
         rows = []

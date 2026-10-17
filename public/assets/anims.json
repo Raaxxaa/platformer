@@ -1324,6 +1324,93 @@
   "mode": "once"
  },
  {
+  "key": "atk_bow_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_bow_1_00",
+   "atk_bow_1_01",
+   "atk_bow_1_02",
+   "atk_bow_1_03",
+   "atk_bow_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_bow_charged",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_bow_charged_00",
+   "atk_bow_charged_01",
+   "atk_bow_charged_02",
+   "atk_bow_charged_03",
+   "atk_bow_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_crossbow_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_crossbow_1_00",
+   "atk_crossbow_1_01",
+   "atk_crossbow_1_02",
+   "atk_crossbow_1_03",
+   "atk_crossbow_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
   "key": "atk_greatsword_1",
   "atlas": "player_archer",
   "frames": [
@@ -1437,6 +1524,457 @@
   ]
  },
  {
+  "key": "atk_iron_fists_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_iron_fists_1_00",
+   "atk_iron_fists_1_01",
+   "atk_iron_fists_1_02",
+   "atk_iron_fists_1_03",
+   "atk_iron_fists_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_2",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_iron_fists_2_00",
+   "atk_iron_fists_2_01",
+   "atk_iron_fists_2_02",
+   "atk_iron_fists_2_03",
+   "atk_iron_fists_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_3",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_iron_fists_3_00",
+   "atk_iron_fists_3_01",
+   "atk_iron_fists_3_02",
+   "atk_iron_fists_3_03",
+   "atk_iron_fists_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_4",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_iron_fists_4_00",
+   "atk_iron_fists_4_01",
+   "atk_iron_fists_4_02",
+   "atk_iron_fists_4_03",
+   "atk_iron_fists_4_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_katana_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_katana_1_00",
+   "atk_katana_1_01",
+   "atk_katana_1_02",
+   "atk_katana_1_03",
+   "atk_katana_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_katana_2",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_katana_2_00",
+   "atk_katana_2_01",
+   "atk_katana_2_02",
+   "atk_katana_2_03",
+   "atk_katana_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_katana_3",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_katana_3_00",
+   "atk_katana_3_01",
+   "atk_katana_3_02",
+   "atk_katana_3_03",
+   "atk_katana_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_katana_charged",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_katana_charged_00",
+   "atk_katana_charged_01",
+   "atk_katana_charged_02",
+   "atk_katana_charged_03",
+   "atk_katana_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_staff_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_staff_1_00",
+   "atk_staff_1_01",
+   "atk_staff_1_02",
+   "atk_staff_1_03",
+   "atk_staff_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_staff_charged",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_staff_charged_00",
+   "atk_staff_charged_01",
+   "atk_staff_charged_02",
+   "atk_staff_charged_03",
+   "atk_staff_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_storm_hammer_1_00",
+   "atk_storm_hammer_1_01",
+   "atk_storm_hammer_1_02",
+   "atk_storm_hammer_1_03",
+   "atk_storm_hammer_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_2",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_storm_hammer_2_00",
+   "atk_storm_hammer_2_01",
+   "atk_storm_hammer_2_02",
+   "atk_storm_hammer_2_03",
+   "atk_storm_hammer_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_throw",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_storm_hammer_throw_00",
+   "atk_storm_hammer_throw_01",
+   "atk_storm_hammer_throw_02",
+   "atk_storm_hammer_throw_03",
+   "atk_storm_hammer_throw_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
   "key": "atk_war_maul_1",
   "atlas": "player_archer",
   "frames": [
@@ -1520,6 +2058,88 @@
   ],
   "mode": "loop",
   "fps": 6
+ },
+ {
+  "key": "cast_slam",
+  "atlas": "player_archer",
+  "frames": [
+   "cast_slam_00",
+   "cast_slam_01",
+   "cast_slam_02",
+   "cast_slam_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "cast_up",
+  "atlas": "player_archer",
+  "frames": [
+   "cast_up_00",
+   "cast_up_01",
+   "cast_up_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "charge_bow",
+  "atlas": "player_archer",
+  "frames": [
+   "charge_bow_00",
+   "charge_bow_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "charge_katana",
+  "atlas": "player_archer",
+  "frames": [
+   "charge_katana_00",
+   "charge_katana_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "charge_staff",
+  "atlas": "player_archer",
+  "frames": [
+   "charge_staff_00",
+   "charge_staff_01"
+  ],
+  "mode": "loop",
+  "fps": 8
  },
  {
   "key": "crawl",
@@ -1739,6 +2359,16 @@
   "mode": "speed"
  },
  {
+  "key": "shoulder",
+  "atlas": "player_archer",
+  "frames": [
+   "shoulder_00",
+   "shoulder_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
   "key": "skid",
   "atlas": "player_archer",
   "frames": [
@@ -1754,6 +2384,18 @@
    "slide_01"
   ],
   "mode": "once"
+ },
+ {
+  "key": "spin",
+  "atlas": "player_archer",
+  "frames": [
+   "spin_00",
+   "spin_01",
+   "spin_02",
+   "spin_03"
+  ],
+  "mode": "loop",
+  "fps": 20
  },
  {
   "key": "wall_jump",
@@ -1784,6 +2426,93 @@
   "mode": "once"
  },
  {
+  "key": "atk_bow_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_bow_1_00",
+   "atk_bow_1_01",
+   "atk_bow_1_02",
+   "atk_bow_1_03",
+   "atk_bow_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_bow_charged",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_bow_charged_00",
+   "atk_bow_charged_01",
+   "atk_bow_charged_02",
+   "atk_bow_charged_03",
+   "atk_bow_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_crossbow_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_crossbow_1_00",
+   "atk_crossbow_1_01",
+   "atk_crossbow_1_02",
+   "atk_crossbow_1_03",
+   "atk_crossbow_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
   "key": "atk_greatsword_1",
   "atlas": "player_swordsman",
   "frames": [
@@ -1897,6 +2626,457 @@
   ]
  },
  {
+  "key": "atk_iron_fists_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_iron_fists_1_00",
+   "atk_iron_fists_1_01",
+   "atk_iron_fists_1_02",
+   "atk_iron_fists_1_03",
+   "atk_iron_fists_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_2",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_iron_fists_2_00",
+   "atk_iron_fists_2_01",
+   "atk_iron_fists_2_02",
+   "atk_iron_fists_2_03",
+   "atk_iron_fists_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_3",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_iron_fists_3_00",
+   "atk_iron_fists_3_01",
+   "atk_iron_fists_3_02",
+   "atk_iron_fists_3_03",
+   "atk_iron_fists_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_4",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_iron_fists_4_00",
+   "atk_iron_fists_4_01",
+   "atk_iron_fists_4_02",
+   "atk_iron_fists_4_03",
+   "atk_iron_fists_4_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_katana_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_katana_1_00",
+   "atk_katana_1_01",
+   "atk_katana_1_02",
+   "atk_katana_1_03",
+   "atk_katana_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_katana_2",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_katana_2_00",
+   "atk_katana_2_01",
+   "atk_katana_2_02",
+   "atk_katana_2_03",
+   "atk_katana_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_katana_3",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_katana_3_00",
+   "atk_katana_3_01",
+   "atk_katana_3_02",
+   "atk_katana_3_03",
+   "atk_katana_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_katana_charged",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_katana_charged_00",
+   "atk_katana_charged_01",
+   "atk_katana_charged_02",
+   "atk_katana_charged_03",
+   "atk_katana_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_staff_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_staff_1_00",
+   "atk_staff_1_01",
+   "atk_staff_1_02",
+   "atk_staff_1_03",
+   "atk_staff_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_staff_charged",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_staff_charged_00",
+   "atk_staff_charged_01",
+   "atk_staff_charged_02",
+   "atk_staff_charged_03",
+   "atk_staff_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_storm_hammer_1_00",
+   "atk_storm_hammer_1_01",
+   "atk_storm_hammer_1_02",
+   "atk_storm_hammer_1_03",
+   "atk_storm_hammer_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_2",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_storm_hammer_2_00",
+   "atk_storm_hammer_2_01",
+   "atk_storm_hammer_2_02",
+   "atk_storm_hammer_2_03",
+   "atk_storm_hammer_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_throw",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_storm_hammer_throw_00",
+   "atk_storm_hammer_throw_01",
+   "atk_storm_hammer_throw_02",
+   "atk_storm_hammer_throw_03",
+   "atk_storm_hammer_throw_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
   "key": "atk_war_maul_1",
   "atlas": "player_swordsman",
   "frames": [
@@ -1980,6 +3160,88 @@
   ],
   "mode": "loop",
   "fps": 6
+ },
+ {
+  "key": "cast_slam",
+  "atlas": "player_swordsman",
+  "frames": [
+   "cast_slam_00",
+   "cast_slam_01",
+   "cast_slam_02",
+   "cast_slam_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "cast_up",
+  "atlas": "player_swordsman",
+  "frames": [
+   "cast_up_00",
+   "cast_up_01",
+   "cast_up_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "charge_bow",
+  "atlas": "player_swordsman",
+  "frames": [
+   "charge_bow_00",
+   "charge_bow_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "charge_katana",
+  "atlas": "player_swordsman",
+  "frames": [
+   "charge_katana_00",
+   "charge_katana_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "charge_staff",
+  "atlas": "player_swordsman",
+  "frames": [
+   "charge_staff_00",
+   "charge_staff_01"
+  ],
+  "mode": "loop",
+  "fps": 8
  },
  {
   "key": "crawl",
@@ -2199,6 +3461,16 @@
   "mode": "speed"
  },
  {
+  "key": "shoulder",
+  "atlas": "player_swordsman",
+  "frames": [
+   "shoulder_00",
+   "shoulder_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
   "key": "skid",
   "atlas": "player_swordsman",
   "frames": [
@@ -2214,6 +3486,18 @@
    "slide_01"
   ],
   "mode": "once"
+ },
+ {
+  "key": "spin",
+  "atlas": "player_swordsman",
+  "frames": [
+   "spin_00",
+   "spin_01",
+   "spin_02",
+   "spin_03"
+  ],
+  "mode": "loop",
+  "fps": 20
  },
  {
   "key": "wall_jump",
@@ -2244,6 +3528,93 @@
   "mode": "once"
  },
  {
+  "key": "atk_bow_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_bow_1_00",
+   "atk_bow_1_01",
+   "atk_bow_1_02",
+   "atk_bow_1_03",
+   "atk_bow_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_bow_charged",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_bow_charged_00",
+   "atk_bow_charged_01",
+   "atk_bow_charged_02",
+   "atk_bow_charged_03",
+   "atk_bow_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_crossbow_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_crossbow_1_00",
+   "atk_crossbow_1_01",
+   "atk_crossbow_1_02",
+   "atk_crossbow_1_03",
+   "atk_crossbow_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
   "key": "atk_greatsword_1",
   "atlas": "player_tank",
   "frames": [
@@ -2357,6 +3728,457 @@
   ]
  },
  {
+  "key": "atk_iron_fists_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_iron_fists_1_00",
+   "atk_iron_fists_1_01",
+   "atk_iron_fists_1_02",
+   "atk_iron_fists_1_03",
+   "atk_iron_fists_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_2",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_iron_fists_2_00",
+   "atk_iron_fists_2_01",
+   "atk_iron_fists_2_02",
+   "atk_iron_fists_2_03",
+   "atk_iron_fists_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_3",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_iron_fists_3_00",
+   "atk_iron_fists_3_01",
+   "atk_iron_fists_3_02",
+   "atk_iron_fists_3_03",
+   "atk_iron_fists_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_4",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_iron_fists_4_00",
+   "atk_iron_fists_4_01",
+   "atk_iron_fists_4_02",
+   "atk_iron_fists_4_03",
+   "atk_iron_fists_4_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_katana_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_katana_1_00",
+   "atk_katana_1_01",
+   "atk_katana_1_02",
+   "atk_katana_1_03",
+   "atk_katana_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_katana_2",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_katana_2_00",
+   "atk_katana_2_01",
+   "atk_katana_2_02",
+   "atk_katana_2_03",
+   "atk_katana_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_katana_3",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_katana_3_00",
+   "atk_katana_3_01",
+   "atk_katana_3_02",
+   "atk_katana_3_03",
+   "atk_katana_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_katana_charged",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_katana_charged_00",
+   "atk_katana_charged_01",
+   "atk_katana_charged_02",
+   "atk_katana_charged_03",
+   "atk_katana_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_staff_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_staff_1_00",
+   "atk_staff_1_01",
+   "atk_staff_1_02",
+   "atk_staff_1_03",
+   "atk_staff_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_staff_charged",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_staff_charged_00",
+   "atk_staff_charged_01",
+   "atk_staff_charged_02",
+   "atk_staff_charged_03",
+   "atk_staff_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_storm_hammer_1_00",
+   "atk_storm_hammer_1_01",
+   "atk_storm_hammer_1_02",
+   "atk_storm_hammer_1_03",
+   "atk_storm_hammer_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_2",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_storm_hammer_2_00",
+   "atk_storm_hammer_2_01",
+   "atk_storm_hammer_2_02",
+   "atk_storm_hammer_2_03",
+   "atk_storm_hammer_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_throw",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_storm_hammer_throw_00",
+   "atk_storm_hammer_throw_01",
+   "atk_storm_hammer_throw_02",
+   "atk_storm_hammer_throw_03",
+   "atk_storm_hammer_throw_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
   "key": "atk_war_maul_1",
   "atlas": "player_tank",
   "frames": [
@@ -2440,6 +4262,88 @@
   ],
   "mode": "loop",
   "fps": 6
+ },
+ {
+  "key": "cast_slam",
+  "atlas": "player_tank",
+  "frames": [
+   "cast_slam_00",
+   "cast_slam_01",
+   "cast_slam_02",
+   "cast_slam_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "cast_up",
+  "atlas": "player_tank",
+  "frames": [
+   "cast_up_00",
+   "cast_up_01",
+   "cast_up_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "charge_bow",
+  "atlas": "player_tank",
+  "frames": [
+   "charge_bow_00",
+   "charge_bow_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "charge_katana",
+  "atlas": "player_tank",
+  "frames": [
+   "charge_katana_00",
+   "charge_katana_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "charge_staff",
+  "atlas": "player_tank",
+  "frames": [
+   "charge_staff_00",
+   "charge_staff_01"
+  ],
+  "mode": "loop",
+  "fps": 8
  },
  {
   "key": "crawl",
@@ -2659,6 +4563,16 @@
   "mode": "speed"
  },
  {
+  "key": "shoulder",
+  "atlas": "player_tank",
+  "frames": [
+   "shoulder_00",
+   "shoulder_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
   "key": "skid",
   "atlas": "player_tank",
   "frames": [
@@ -2674,6 +4588,18 @@
    "slide_01"
   ],
   "mode": "once"
+ },
+ {
+  "key": "spin",
+  "atlas": "player_tank",
+  "frames": [
+   "spin_00",
+   "spin_01",
+   "spin_02",
+   "spin_03"
+  ],
+  "mode": "loop",
+  "fps": 20
  },
  {
   "key": "wall_jump",
@@ -2704,6 +4630,93 @@
   "mode": "once"
  },
  {
+  "key": "atk_bow_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_bow_1_00",
+   "atk_bow_1_01",
+   "atk_bow_1_02",
+   "atk_bow_1_03",
+   "atk_bow_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_bow_charged",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_bow_charged_00",
+   "atk_bow_charged_01",
+   "atk_bow_charged_02",
+   "atk_bow_charged_03",
+   "atk_bow_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_crossbow_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_crossbow_1_00",
+   "atk_crossbow_1_01",
+   "atk_crossbow_1_02",
+   "atk_crossbow_1_03",
+   "atk_crossbow_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
   "key": "atk_greatsword_1",
   "atlas": "player_wizard",
   "frames": [
@@ -2817,6 +4830,457 @@
   ]
  },
  {
+  "key": "atk_iron_fists_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_iron_fists_1_00",
+   "atk_iron_fists_1_01",
+   "atk_iron_fists_1_02",
+   "atk_iron_fists_1_03",
+   "atk_iron_fists_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_2",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_iron_fists_2_00",
+   "atk_iron_fists_2_01",
+   "atk_iron_fists_2_02",
+   "atk_iron_fists_2_03",
+   "atk_iron_fists_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_3",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_iron_fists_3_00",
+   "atk_iron_fists_3_01",
+   "atk_iron_fists_3_02",
+   "atk_iron_fists_3_03",
+   "atk_iron_fists_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_iron_fists_4",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_iron_fists_4_00",
+   "atk_iron_fists_4_01",
+   "atk_iron_fists_4_02",
+   "atk_iron_fists_4_03",
+   "atk_iron_fists_4_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_katana_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_katana_1_00",
+   "atk_katana_1_01",
+   "atk_katana_1_02",
+   "atk_katana_1_03",
+   "atk_katana_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_katana_2",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_katana_2_00",
+   "atk_katana_2_01",
+   "atk_katana_2_02",
+   "atk_katana_2_03",
+   "atk_katana_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_katana_3",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_katana_3_00",
+   "atk_katana_3_01",
+   "atk_katana_3_02",
+   "atk_katana_3_03",
+   "atk_katana_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_katana_charged",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_katana_charged_00",
+   "atk_katana_charged_01",
+   "atk_katana_charged_02",
+   "atk_katana_charged_03",
+   "atk_katana_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_staff_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_staff_1_00",
+   "atk_staff_1_01",
+   "atk_staff_1_02",
+   "atk_staff_1_03",
+   "atk_staff_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_staff_charged",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_staff_charged_00",
+   "atk_staff_charged_01",
+   "atk_staff_charged_02",
+   "atk_staff_charged_03",
+   "atk_staff_charged_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_storm_hammer_1_00",
+   "atk_storm_hammer_1_01",
+   "atk_storm_hammer_1_02",
+   "atk_storm_hammer_1_03",
+   "atk_storm_hammer_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_2",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_storm_hammer_2_00",
+   "atk_storm_hammer_2_01",
+   "atk_storm_hammer_2_02",
+   "atk_storm_hammer_2_03",
+   "atk_storm_hammer_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_storm_hammer_throw",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_storm_hammer_throw_00",
+   "atk_storm_hammer_throw_01",
+   "atk_storm_hammer_throw_02",
+   "atk_storm_hammer_throw_03",
+   "atk_storm_hammer_throw_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
   "key": "atk_war_maul_1",
   "atlas": "player_wizard",
   "frames": [
@@ -2900,6 +5364,88 @@
   ],
   "mode": "loop",
   "fps": 6
+ },
+ {
+  "key": "cast_slam",
+  "atlas": "player_wizard",
+  "frames": [
+   "cast_slam_00",
+   "cast_slam_01",
+   "cast_slam_02",
+   "cast_slam_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "cast_up",
+  "atlas": "player_wizard",
+  "frames": [
+   "cast_up_00",
+   "cast_up_01",
+   "cast_up_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "charge_bow",
+  "atlas": "player_wizard",
+  "frames": [
+   "charge_bow_00",
+   "charge_bow_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "charge_katana",
+  "atlas": "player_wizard",
+  "frames": [
+   "charge_katana_00",
+   "charge_katana_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "charge_staff",
+  "atlas": "player_wizard",
+  "frames": [
+   "charge_staff_00",
+   "charge_staff_01"
+  ],
+  "mode": "loop",
+  "fps": 8
  },
  {
   "key": "crawl",
@@ -3119,6 +5665,16 @@
   "mode": "speed"
  },
  {
+  "key": "shoulder",
+  "atlas": "player_wizard",
+  "frames": [
+   "shoulder_00",
+   "shoulder_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
   "key": "skid",
   "atlas": "player_wizard",
   "frames": [
@@ -3134,6 +5690,18 @@
    "slide_01"
   ],
   "mode": "once"
+ },
+ {
+  "key": "spin",
+  "atlas": "player_wizard",
+  "frames": [
+   "spin_00",
+   "spin_01",
+   "spin_02",
+   "spin_03"
+  ],
+  "mode": "loop",
+  "fps": 20
  },
  {
   "key": "wall_jump",
@@ -3154,6 +5722,30 @@
   ],
   "mode": "loop",
   "fps": 8
+ },
+ {
+  "key": "arrow",
+  "atlas": "projectiles",
+  "frames": [
+   "arrow_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "arrow_charged",
+  "atlas": "projectiles",
+  "frames": [
+   "arrow_charged_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "bolt",
+  "atlas": "projectiles",
+  "frames": [
+   "bolt_00"
+  ],
+  "mode": "once"
  },
  {
   "key": "brute_wave",
@@ -3194,6 +5786,36 @@
   "fps": 20
  },
  {
+  "key": "hammer_spin",
+  "atlas": "projectiles",
+  "frames": [
+   "hammer_spin_00",
+   "hammer_spin_01",
+   "hammer_spin_02",
+   "hammer_spin_03"
+  ],
+  "mode": "loop",
+  "fps": 20
+ },
+ {
+  "key": "orb",
+  "atlas": "projectiles",
+  "frames": [
+   "orb_00",
+   "orb_01"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
+  "key": "pin_bolt",
+  "atlas": "projectiles",
+  "frames": [
+   "pin_bolt_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "shockwave",
   "atlas": "projectiles",
   "frames": [
@@ -3202,6 +5824,14 @@
   ],
   "mode": "loop",
   "fps": 12
+ },
+ {
+  "key": "staff_bolt",
+  "atlas": "projectiles",
+  "frames": [
+   "staff_bolt_00"
+  ],
+  "mode": "once"
  },
  {
   "key": "charge_full",
@@ -3411,6 +6041,18 @@
   "fps": 30
  },
  {
+  "key": "hammer_dive_bolt",
+  "atlas": "vfx",
+  "frames": [
+   "hammer_dive_bolt_00",
+   "hammer_dive_bolt_01",
+   "hammer_dive_bolt_02",
+   "hammer_dive_bolt_03"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
   "key": "heal",
   "atlas": "vfx",
   "frames": [
@@ -3513,6 +6155,98 @@
   "fps": 10
  },
  {
+  "key": "dive_bow_fall",
+  "atlas": "weapon_bow",
+  "frames": [
+   "dive_bow_fall_00",
+   "dive_bow_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_bow_land",
+  "atlas": "weapon_bow",
+  "frames": [
+   "dive_bow_land_00",
+   "dive_bow_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_bow_windup",
+  "atlas": "weapon_bow",
+  "frames": [
+   "dive_bow_windup_00",
+   "dive_bow_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_crossbow_fall",
+  "atlas": "weapon_crossbow",
+  "frames": [
+   "dive_crossbow_fall_00",
+   "dive_crossbow_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_crossbow_land",
+  "atlas": "weapon_crossbow",
+  "frames": [
+   "dive_crossbow_land_00",
+   "dive_crossbow_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_crossbow_windup",
+  "atlas": "weapon_crossbow",
+  "frames": [
+   "dive_crossbow_windup_00",
+   "dive_crossbow_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
   "key": "dive_greatsword_fall",
   "atlas": "weapon_greatsword",
   "frames": [
@@ -3546,6 +6280,190 @@
   "frames": [
    "dive_greatsword_windup_00",
    "dive_greatsword_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_iron_fists_fall",
+  "atlas": "weapon_iron_fists",
+  "frames": [
+   "dive_iron_fists_fall_00",
+   "dive_iron_fists_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_iron_fists_land",
+  "atlas": "weapon_iron_fists",
+  "frames": [
+   "dive_iron_fists_land_00",
+   "dive_iron_fists_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_iron_fists_windup",
+  "atlas": "weapon_iron_fists",
+  "frames": [
+   "dive_iron_fists_windup_00",
+   "dive_iron_fists_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_katana_fall",
+  "atlas": "weapon_katana",
+  "frames": [
+   "dive_katana_fall_00",
+   "dive_katana_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_katana_land",
+  "atlas": "weapon_katana",
+  "frames": [
+   "dive_katana_land_00",
+   "dive_katana_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_katana_windup",
+  "atlas": "weapon_katana",
+  "frames": [
+   "dive_katana_windup_00",
+   "dive_katana_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_staff_fall",
+  "atlas": "weapon_staff",
+  "frames": [
+   "dive_staff_fall_00",
+   "dive_staff_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_staff_land",
+  "atlas": "weapon_staff",
+  "frames": [
+   "dive_staff_land_00",
+   "dive_staff_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_staff_windup",
+  "atlas": "weapon_staff",
+  "frames": [
+   "dive_staff_windup_00",
+   "dive_staff_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_storm_hammer_fall",
+  "atlas": "weapon_storm_hammer",
+  "frames": [
+   "dive_storm_hammer_fall_00",
+   "dive_storm_hammer_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_storm_hammer_land",
+  "atlas": "weapon_storm_hammer",
+  "frames": [
+   "dive_storm_hammer_land_00",
+   "dive_storm_hammer_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_storm_hammer_windup",
+  "atlas": "weapon_storm_hammer",
+  "frames": [
+   "dive_storm_hammer_windup_00",
+   "dive_storm_hammer_windup_01"
   ],
   "mode": "phase",
   "segments": [
