@@ -24,6 +24,7 @@ import { SfxPlayer } from '../audio/sfx.ts';
 import type { SfxRequest } from '../audio/sfxRules.ts';
 import { SfxWatch } from '../audio/sfxTriggers.ts';
 import { drawMarkers, VfxDirector, VfxPool, type TickEvent } from '../view/vfx.ts';
+import { ItemViews } from '../view/yardView.ts';
 import { loadAssets } from '../assets/loadAssets.ts';
 import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../debug.ts';
 import { COLOR, STATE_COLOR } from '../greybox.ts';
@@ -60,6 +61,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected projViews!: ProjectileSprites;
   protected vfx!: VfxDirector;
   protected markersGfx!: Phaser.GameObjects.Graphics;
+  protected itemViews!: ItemViews;
   /** Events of every tick since the last render (core clears `world.events` each tick). */
   protected frameEvents: TickEvent[] = [];
   private playerEv: PlayerViewEvents = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
@@ -99,6 +101,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.projViews = new ProjectileSprites(this, this.bank);
     this.vfx = new VfxDirector(new VfxPool(this, this.bank));
     this.markersGfx = this.add.graphics().setDepth(DEPTH.markers);
+    this.itemViews = new ItemViews(this);
     this.sfx = new SfxPlayer(this);
     // Browsers start audio only after a key press or click (08 §15, 07).
     this.soundNote = this.add.bitmapText(4, this.scale.height - 4, FONTS.small, 'Click or press any key for sound')
@@ -254,6 +257,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     else this.playerView.update(w, this.playerEv);
     this.vfx.pool.update(w.tick);
     drawMarkers(this.markersGfx.clear(), w);
+    this.itemViews.update(w.groundItems);
     const reqs = [...this.sfxQueue, ...this.sfxWatch.footsteps(this.playerView.anim)];
     this.sfxQueue = [];
     this.sfx.play(reqs, w.tick, { camCenterX: cam.x + this.scale.width / 2, playerX: b.x });

@@ -12,6 +12,7 @@ import { TICK_RATE } from '../../core/tuning.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
 import { DoorViews, drawGuideArrows } from '../view/levelView.ts';
+import { YardView } from '../view/yardView.ts';
 import { STAGE_UI } from '../../data/stageUi.ts';
 import { WorldScene } from './WorldScene.ts';
 import { parseKit } from '../../ui/popups/classPickModel.ts';
@@ -53,6 +54,7 @@ export class StageScene extends WorldScene {
   private bossText!: Phaser.GameObjects.BitmapText;
   private clearOverlay!: Phaser.GameObjects.Graphics;
   private clearText!: Phaser.GameObjects.BitmapText;
+  private yard: YardView | null = null;
 
   constructor() {
     super('Stage');
@@ -61,7 +63,9 @@ export class StageScene extends WorldScene {
   preload(): void {
     super.preload();
     const q = new URLSearchParams(window.location.search);
-    this.levelId = (q.get('debug') === '1' && q.get('start')) || 'plains';
+    // `?start=training` opens the Training Yard (06 §12.4: until the Home Village gate exists); other levels need ?debug=1.
+    const start = q.get('start');
+    this.levelId = start === 'training' ? 'training_yard' : (q.get('debug') === '1' && start) || 'plains';
     this.load.json(`level_${this.levelId}`, `levels/${this.levelId}.json`);
   }
 
@@ -99,13 +103,15 @@ export class StageScene extends WorldScene {
     this.clearOverlay.fillStyle(0x000000, 0.6).fillRect(0, 0, width, height);
     this.clearText = this.add.bitmapText(width / 2, height / 2, FONTS.large, '').setCenterAlign()
       .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
+    if (this.level.kind === 'training') this.yard = new YardView(this, this.level);
     this.installStageDebug();
     // Before the run, pick a class and weapon (M4 plan Task 13). `?kit=archer:bow` skips the panel; debug runs keep
     // the M2 loadout unless a kit is given.
     const q = new URLSearchParams(window.location.search);
     const kit = parseKit(q.get('kit'));
     if (kit) this.equipKit(kit);
-    else if (q.get('debug') !== '1' || q.get('picker') === '1') this.openClassPick([...CLASS_IDS], true);
+    // In the Training Yard the class statues at the start do the picking (06 §12.4).
+    else if (this.level.kind !== 'training' && (q.get('debug') !== '1' || q.get('picker') === '1')) this.openClassPick([...CLASS_IDS], true);
   }
 
   private installStageDebug(): void {
@@ -115,6 +121,16 @@ export class StageScene extends WorldScene {
     api.killAll = () => { for (const e of this.world.enemies) if (!e.dead && !e.dormant && e.spawnInTicks === 0) killEnemy(this.world, e); };
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.levelId = () => this.level.id;
+    api.levelObjects = (type: string) => this.level.objects.filter((o) => o.type === type).map((o) => ({ x: o.x, y: o.y, w: o.w, h: o.h, props: o.props }));
+    // Training Yard: progress, and a jump to a station's checkpoint.
+    api.training = () => {
+      const t = this.world.training;
+      return t ? { done: [...this.world.trainingDone].sort((a, b) => a - b), current: t.current, sign: t.sign, fade: t.fade } : null;
+    };
+    api.toStation = (id: number) => {
+      const s = this.world.training?.stations.find((x) => x.id === id);
+      if (s) this.world.teleportPlayer(s.checkpoint.x, s.checkpoint.y);
+    };
     // Zooms out to show section n whole (0 = back to normal), for screenshots.
     api.overview = (n: number) => {
       const s = this.level.objects.find((o) => o.type === 'section' && o.props.index === n);
@@ -149,8 +165,10 @@ export class StageScene extends WorldScene {
       g.fillStyle(U.markerColor, 1).fillRect(m.x - U.marker / 2, cy - U.marker / 2, U.marker, U.marker);
     }
     // Hint, timer, split popup, boss bar, stage clear.
-    this.hintText.setText(w.activeHint && !this.overview ? HINT_TEXT[w.activeHint] : '');
-    this.timerText.setVisible(!this.overview);
+    const sign = w.training?.sign ?? (w.activeHint ? HINT_TEXT[w.activeHint] : '');
+    this.hintText.setText(!this.overview ? sign : '');
+    this.timerText.setVisible(!this.overview && !this.yard);
+    this.yard?.update(w);
     this.timerText.setText(formatTime(w.run.runTicks));
     for (const { e } of this.frameEvents) if (e.t === 'split') { this.splitUntil = w.tick + U.splitSeconds * TICK_RATE; this.splitText.setText(`Split ${e.index}  ${formatTime(e.runTicks)}`); }
     this.splitText.setVisible(w.tick < this.splitUntil);

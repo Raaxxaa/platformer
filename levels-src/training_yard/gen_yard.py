@@ -207,7 +207,7 @@ def s15(x0):
 def s16(x0):
     ground(x0, x0 + 30, G)
     fill(x0 + 5, 0, x0 + 8, G - 2, '#')           # low wall: slide under it (a slide is ~6 tiles)
-    pit(x0 + 10, x0 + 16)                         # 7 wide: too far at run speed, easy at slide speed
+    pit(x0 + 11, x0 + 16)                         # the doc's 6-tile gap
     station(16, x0, x0 + 30, 'Jump out of a slide to keep its speed', 'slideJump', goal=(x0 + 17, G - 4, 4, 4))
     return x0 + 30
 

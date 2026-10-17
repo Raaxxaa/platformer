@@ -10,3 +10,12 @@ export const STAGE_UI = {
   bossBarW: 300, bossBarH: 4, bossBarY: 24,
   overviewAbove: 18, overviewBelow: 4,      // tiles above / below the main path in a section overview
 } as const;
+
+/** Training Yard view (06 §12.4): check flags, the board panel, the pit fade. */
+export const YARD_UI = {
+  flagPole: 22, flagW: 10, flagH: 7,             // px
+  flagTodo: 0x8a8a8a, flagDone: 0x6be36b, pole: 0x5a4632,
+  boardRange: 40,                                // px from the board's x: the checklist panel shows
+  panelPad: 6, panelLine: 10,
+  iconLift: 4,                                   // px between a stand's top and the item icon
+} as const;

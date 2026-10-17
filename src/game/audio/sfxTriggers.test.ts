@@ -30,4 +30,9 @@ describe('sound triggers (08 §13.3)', () => {
     const ids = run(w, watch, {}, 240);
     expect(ids.filter((s) => s === 'vo_wolf').length).toBe(1);
   });
+  it('a Training Yard station check plays ui_confirm', () => {
+    const w = arenaWorld(), watch = new SfxWatch();
+    const ids = watch.collect(w, [{ tick: 1, e: { t: 'stationDone', id: 1 } }]).map((r) => r.id);
+    expect(ids).toContain('ui_confirm');
+  });
 });

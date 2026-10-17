@@ -90,6 +90,7 @@ export class SfxWatch {
         case 'timedDoorMissed': out.push({ id: 'timed_missed' }); break;
         case 'bossDefeated': out.push({ id: 'boss_defeated' }); break;
         case 'split': if (e.deltaTicks !== null) out.push({ id: e.deltaTicks <= 0 ? 'split_faster' : 'split_slower' }); break;
+        case 'stationDone': out.push({ id: 'ui_confirm' }); break;                   // 06 §12.4
         default: break;
       }
     }

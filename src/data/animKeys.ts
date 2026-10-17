@@ -64,3 +64,13 @@ export const OBJECT_FRAMES = {
 
 /** Bitmap fonts (BMFont XML) in public/assets/fonts. */
 export const FONTS = { small: 'rb_small', smallPlain: 'rb_small_plain', large: 'rb_large' } as const;
+
+/** Training Yard objects (06 §12.3–12.4): statues and stands in `objects`; the checklist board reuses the village board. */
+export const YARD_FRAMES = {
+  statue: (cls: string) => `class_statue_${cls}_00`,
+  stand: 'loot_stand_00',
+  board: 'unlocks_board_00',
+} as const;
+/** An item's icon (in `ui`) and the glow behind it on the ground (in `items`). */
+export const itemIcon = (kind: 'weapon' | 'ability', id: string) => `icon_${kind}_${id}`;
+export const itemGlow = (kind: 'weapon' | 'ability', id: string) => `glow_${kind}_${id}`;

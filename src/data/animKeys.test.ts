@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { ATLASES, BOSS_ANIMS, DIVE_PARTS, DUMMY_FRAMES, ENEMY_ANIMS, FONTS, OBJECT_FRAMES, PLAYER_ANIMS, PROJECTILE_ANIMS, VFX_ANIMS, WEAPON_ART, weaponDiveKey, weaponStepKey } from './animKeys.ts';
+import { ATLASES, BOSS_ANIMS, DIVE_PARTS, DUMMY_FRAMES, YARD_FRAMES, itemGlow, itemIcon, ENEMY_ANIMS, FONTS, OBJECT_FRAMES, PLAYER_ANIMS, PROJECTILE_ANIMS, VFX_ANIMS, WEAPON_ART, weaponDiveKey, weaponStepKey } from './animKeys.ts';
 
 interface Def { key: string; atlas: string; frames: string[] }
 import animsJson from '../../public/assets/anims.json';
+import uiJson from '../../public/assets/ui/ui.json';
+import { CLASS_IDS } from './classes.ts';
+import { ABILITIES } from './abilities.ts';
+import { WEAPONS } from './weapons.ts';
 const anims = animsJson as Def[];
 const atlasJson = import.meta.glob('../../public/assets/atlases/*.json', { eager: true, import: 'default' }) as Record<string, any>;
 const files = new Set(Object.keys(import.meta.glob(['../../public/assets/atlases/*.png', '../../public/assets/fonts/*'])).map((k) => k.replace('../../', '')));
@@ -50,6 +54,15 @@ describe('anim keys used by the view exist in the art', () => {
     for (const f of [D.arenaDoor.cap, D.arenaDoor.mid, D.arenaDoor.bottom, ...Object.values(D.timedDoor.cap), D.timedDoor.mid, D.timedDoor.bottom, ...D.guideArrow]) expect(o.has(f), f).toBe(true);
     const x = frames('enemies_extra');
     for (const f of [...DUMMY_FRAMES.idle, ...DUMMY_FRAMES.hit]) expect(x.has(f), f).toBe(true);
+  });
+  it('Training Yard frames: statues, stands, board, item icons and glows', () => {
+    const o = frames('objects'), items = frames('items');
+    const ui = new Set(Object.keys((uiJson as { frames: Record<string, unknown> }).frames));
+    for (const c of CLASS_IDS) expect(o.has(YARD_FRAMES.statue(c)), c).toBe(true);
+    expect(o.has(YARD_FRAMES.stand)).toBe(true);
+    expect(o.has(YARD_FRAMES.board)).toBe(true);
+    for (const id of Object.keys(WEAPONS)) { expect(ui.has(itemIcon('weapon', id)), id).toBe(true); expect(items.has(itemGlow('weapon', id)), id).toBe(true); }
+    for (const id of Object.keys(ABILITIES)) { expect(ui.has(itemIcon('ability', id)), id).toBe(true); expect(items.has(itemGlow('ability', id)), id).toBe(true); }
   });
   it('fonts exist', () => {
     for (const f of Object.values(FONTS)) { expect(existsSync(`public/assets/fonts/${f}.xml`)).toBe(true); expect(existsSync(`public/assets/fonts/${f}.png`)).toBe(true); }

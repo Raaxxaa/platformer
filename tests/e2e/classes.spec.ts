@@ -48,3 +48,23 @@ test('Stage 1 with ?kit=wizard:staff boots and Thunder Strike hits a wolf', asyn
   await page.screenshot({ path: 'test-results/ability-thunder_strike-stage.png' });
   expect(errors).toEqual([]);
 });
+
+test('the Training Yard loads with statues, signs, flags, stands and the checklist board', async ({ page }) => {
+  const errors = await boot(page, '&start=training');
+  expect(await page.evaluate(() => (window as any).__game.levelId())).toBe('training_yard');
+  await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(30, {}); });
+  await nextFrames(page);
+  await page.screenshot({ path: 'test-results/yard-start.png' });
+  // Station 1: a sign; finish it and the flag turns green.
+  await page.evaluate(() => { const g = (window as any).__game; g.toStation(1); g.step(10, {}); });
+  expect((await page.evaluate(() => (window as any).__game.training())).sign).toContain('jump');
+  await page.evaluate(() => { const g = (window as any).__game; for (let i = 0; i < 600 && !g.training().done.includes(1); i++) g.step(1, { moveX: 1, jump: i % 24 < 14 }); g.step(20, {}); });
+  expect((await page.evaluate(() => (window as any).__game.training())).done).toContain(1);
+  await nextFrames(page);
+  await page.screenshot({ path: 'test-results/yard-station1.png' });
+  // The armory and the board at the end.
+  await page.evaluate(() => { const g = (window as any).__game; const b = g.levelObjects('checklist_board')[0]; g.teleport(b.x, b.y); g.step(20, {}); });
+  await nextFrames(page);
+  await page.screenshot({ path: 'test-results/yard-end.png' });
+  expect(errors).toEqual([]);
+});

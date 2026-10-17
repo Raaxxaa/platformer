@@ -30,3 +30,9 @@ export const WEAPON_BLURB: Record<WeaponId, string> = {
 };
 
 export const WEAPON_NAME = (id: WeaponId) => id.split('_').map((p) => p[0].toUpperCase() + p.slice(1)).join(' ');
+
+/** Training Yard station names, 1–17 (docs/levels/training-yard.md), for the checklist board. */
+export const TRAINING_STATION_NAMES = [
+  'Run and jump', 'Double jump', 'Dash', 'Wall jump', 'Ledge grab', 'Slide and crawl', 'Drop through', 'Dive slam',
+  'Combo', 'Two weapons', 'Dodge', 'Heal', 'Abilities', 'Rush', 'Dash-jump', 'Slide-jump', 'Dive bounce',
+] as const;
