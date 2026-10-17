@@ -22,6 +22,7 @@ import type { AbilityId, AbilityRuntime, BondId, ClassId, ClassState, HybridId }
 import { clearAbilityEffects, fillAbilities, onCastCancelMove, onCastHurt, stepAbilities } from '../abilities/abilitySystem.ts';
 import { stepAbilityEntities, type AbilityEntity } from '../abilities/entities.ts';
 import '../abilities/list/index.ts';
+import { refreshTrainingStands, setupTraining, stepTraining, type TrainingState } from '../run/training.ts';
 import { onHurtCloseChoice, stepGroundItems, stepInteract, type GroundItem, type Interactable } from '../abilities/items.ts';
 import { vampireTenths } from '../abilities/list/vampire.ts';
 import { hammerOutIn, removeHammer, stepHammer, type HammerState } from '../combat/stormHammer.ts';
@@ -63,7 +64,7 @@ export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
 
 export type WorldEvent =
   | { t: 'move'; e: MoveEvent }
-  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean }
+  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean; slot?: 0 | 1; step?: number; ability?: string }
   | { t: 'shake'; level: 'small' | 'medium' }
   | { t: 'enemyTelegraph'; enemyId: number; attackId: string; duration: number }
   | { t: 'kill'; enemyId: number; tier: 'regular' | 'elite' }
@@ -86,7 +87,9 @@ export type WorldEvent =
   | { t: 'lockpickUsed' }
   | { t: 'itemTaken'; itemId: number; slot: 0 | 1 }
   | { t: 'sparringHit' }
-  | { t: 'openClassPick'; cls: ClassId };
+  | { t: 'openClassPick'; cls: ClassId }
+  | { t: 'stationDone'; id: number }
+  | { t: 'leftTraining' };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -128,6 +131,9 @@ export class GameWorld {
   interactables: Interactable[] = [];
   /** Straw targets waiting to come back (04 §2.12). */
   respawns: { spawn: EnemySpawn; at: number }[] = [];
+  /** Training Yard state (null elsewhere) and the stations done this session (06 §12.4; saved in M7). */
+  training: TrainingState | null = null;
+  readonly trainingDone = new Set<number>();
   weaponSwapChoice: { itemId: number } | null = null;
   classState!: ClassState;
   /** Bonds and hybrids seen this session (06 saves them in M7). */
@@ -290,6 +296,8 @@ export class GameWorld {
     this.groundItems = (this.opts.items ?? []).map((i) => ({ ...i, weapon: i.weapon && { ...i.weapon }, ability: i.ability && { ...i.ability } }));
     this.weaponSwapChoice = null;
     this.respawns = [];
+    this.training = null;
+    if (this.level?.kind === 'training') setupTraining(this);
     fillAbilities(this);
   }
 
@@ -305,6 +313,7 @@ export class GameWorld {
     this.combat.current = null;
     this.abilities.slots = c.abilities;
     this.refreshClassState();
+    refreshTrainingStands(this);
   }
 
   /** 03 §4.4: recompute the class state after any slot change; emit classChanged / classDiscovered. */
@@ -551,7 +560,7 @@ export class GameWorld {
     let input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
     clearSpentGroups(this);
-    stepClocks(this.run);
+    if (this.level?.kind !== 'training') stepClocks(this.run);   // the Training Yard has no run timer (06 §12.4)
     this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
     for (const e of this.enemies) e.frozenAtTickStart = e.hitStopTicks > 0;
     // Wall-clock timers.
@@ -611,6 +620,7 @@ export class GameWorld {
     stepTimedDoors(this);
     stepZones(this);
     stepArenas(this);
+    stepTraining(this);
     stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());
     if (this.phase === 'dead' && this.tick - this.deathTick >= RESTART.DEATH_SIM_TICKS) this.phase = 'deathScreen';
   }

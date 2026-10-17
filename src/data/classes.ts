@@ -65,5 +65,8 @@ export const HYBRID = {
   ARCANE_BLAST_HIT: { kb: [140, -60] as [number, number], poise: 20, hitStop: 0.05 },
 } as const;
 
+/** The Training Yard's second ability per class (M4 list; station 13). */
+export const SECOND_ABILITY: Record<ClassId, AbilityId> = { swordsman: 'whirlwind', tank: 'shoulder_charge', archer: 'hunters_mark', wizard: 'blink' };
+
 /** Abilities that are playable in M4 (the rest have ids and classes only). */
 export const M4_ABILITIES: readonly AbilityId[] = ['blade_dash', 'whirlwind', 'shockwave', 'shoulder_charge', 'arrow_rain', 'hunters_mark', 'thunder_strike', 'blink', 'vampire'];

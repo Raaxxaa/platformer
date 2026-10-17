@@ -50,7 +50,7 @@ export function onActiveStart(w: GameWorld, cur: CurrentAttack, st: AttackStep):
   const b = w.body;
   if (cur.kind === 'throw') { launchHammer(w, cur); return; }
   if (st.projectiles) {
-    const base: FireOpts = {};                                 // the instance's own bonus is added at hit time
+    const base: FireOpts = { step: cur.kind === 'combo' ? cur.step : undefined };                                 // the instance's own bonus is added at hit time
     if (inst.weaponId === 'crossbow') base.onHit = (ww, g, e) => crossbowPin(ww, g, e);
     // Hooks run once per step (a Warden prime is used by every projectile of the step), then per projectile.
     for (const p of st.projectiles) {

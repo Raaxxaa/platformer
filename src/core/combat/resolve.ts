@@ -54,7 +54,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   e.hurtFlashTicks = ENEMY.HURT_FLASH_TICKS;
   const killed = e.def.tier !== 'dummy' && e.hp <= 0;
   if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
-  w.events.push({ t: 'hit', target: e.id, amount: damage, crit, heavy: !!spec.heavy });
+  w.events.push({ t: 'hit', target: e.id, amount: damage, crit, heavy: !!spec.heavy, slot: g.slot, step: g.step, ability: g.ability });
   // Element on the direct hit (02 §6): Lightning chains to 2 others right away.
   const el = elementOf(w, g);
   if (el?.id === 'lightning') lightningChain(w, e, el.level, procBase, (x) => targetMult(w, g, x), (x) => killEnemy(w, x));

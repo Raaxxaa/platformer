@@ -23,6 +23,8 @@ export interface FireOpts {
   /** Blast box multiplier (Arcane Archer orb ×1.5). */
   blastMult?: number;
   onHit?: HitGroup['onHit'];
+  /** The combo step that fired it. */
+  step?: number;
   /** Called when the projectile ends without exploding (wall or range): x, y of its end. */
   onEnd?: (w: GameWorld, p: PlayerProjectile, x: number, y: number) => void;
 }
@@ -76,7 +78,7 @@ export function firePlayerProjectile(w: GameWorld, slot: 0 | 1, attackInstance: 
   w.playerProjectiles.push(p);
   const g: HitGroup = {
     id: pid, owner: 'player', kind: 'shot', rect: rectOf(p), spec: def.hit, active: true, lastHitTick: new Map(), hitCount: new Map(),
-    attackInstance, slot, dir: f, projectile: pid, bonus: p.bonus, traveled: 0,
+    attackInstance, slot, dir: f, projectile: pid, bonus: p.bonus, traveled: 0, step: opts.step,
     contact: def.explodeOnEnemy ? (ww) => { explode(ww, p); removePlayerProjectile(ww, p); g.active = false; return true; } : undefined,
     onHit: (ww, gg, e, info) => {
       opts.onHit?.(ww, gg, e, info);

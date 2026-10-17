@@ -57,6 +57,7 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   if (practice) w.events.push({ t: 'sparringHit' });
   w.onPlayerDamaged();                                       // the hit streak resets (02 §1); a swap choice closes
   // 6. Death.
+  if (h.hp <= 0 && w.level?.kind === 'training') h.hp = 1;     // no death in the Training Yard (06 §12.4)
   if (h.hp <= 0 && !secondWind()) {
     h.hp = 0;
     h.dead = true;

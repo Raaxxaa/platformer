@@ -25,7 +25,7 @@ describe('player hits on enemies (02 §3–4)', () => {
     expect(w.enemies[0].hp).toBe(40);
     ev = stepSpec(w, {});
     const e = w.enemies[0];
-    expect(ev).toContainEqual({ t: 'hit', target: e.id, amount: 16, crit: false, heavy: false });
+    expect(ev).toContainEqual(expect.objectContaining({ t: 'hit', target: e.id, amount: 16, crit: false, heavy: false }));
     expect(e).toMatchObject({ hp: 24, poise: 5 });
     expect(e.vx).toBeCloseTo(108, 9);
     expect(e.vy).toBeCloseTo(-36, 9);

@@ -3,6 +3,8 @@ import { TILE_SIZE } from '../tuning.ts';
 import { COMBAT_ARENA, EARLY_SPACING, LEVEL_RULES, MAIN_PATH, MAIN_PATH_BY_LEVEL, MERCHANT_FLOOR, STAGE_OBJECT_COUNTS, type StageLevelId } from '../../data/levelRules.ts';
 import { kindAt, type LevelData, type LevelObject } from './loadLevel.ts';
 
+export const TRAINING_STATIONS = 17;
+
 /** Length of a polyline in tiles. */
 export function pathLengthTiles(o: LevelObject): number {
   const p = o.points ?? [];
@@ -55,6 +57,15 @@ export function validateLevel(d: LevelData): string[] {
 
   for (const o of d.objects) {
     if (!o.points && o.w > 0 && [o.x, o.y, o.w, o.h].some((v) => v % TILE_SIZE !== 0)) errs.push(`${o.type} #${o.id} is not tile-aligned`);
+  }
+  if (d.kind === 'training') {
+    // 06 §12.4: stations 1–17, each with a checkpoint and a sign (hint zone).
+    const ids = of('station').map((o) => Number(o.props.id)).sort((a, b) => a - b);
+    if (ids.join() !== Array.from({ length: TRAINING_STATIONS }, (_, i) => i + 1).join()) errs.push(`stations: expected 1–${TRAINING_STATIONS}, found ${ids.join(', ')}`);
+    for (const id of ids) {
+      if (!of('checkpoint').some((o) => Number(o.props.station) === id)) errs.push(`station ${id}: no checkpoint`);
+      if (!of('hint').some((o) => Number(o.props.station) === id)) errs.push(`station ${id}: no sign (hint zone)`);
+    }
   }
   if (d.kind !== 'stage') {
     if (of('player_start').length !== 1) errs.push(`player_start: expected 1, found ${of('player_start').length}`);

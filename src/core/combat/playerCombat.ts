@@ -95,7 +95,7 @@ function spawnStepGroup(w: GameWorld, cur: CurrentAttack): void {
   const b = w.body;
   w.hitGroups.push({
     id: w.newId(), owner: 'player', kind: 'melee', rect: boxToWorld(st.box, b.x, b.y, b.facing), spec: st.hit,
-    active: true, lastHitTick: new Map(), hitCount: new Map(), attackInstance: cur.attackInstance, slot: cur.slot, box: st.box,
+    active: true, lastHitTick: new Map(), hitCount: new Map(), attackInstance: cur.attackInstance, slot: cur.slot, box: st.box, step: cur.kind === 'combo' ? cur.step : undefined,
   });
 }
 

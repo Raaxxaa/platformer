@@ -19,6 +19,7 @@ export interface HitGroup {
   hitCount: Map<number, number>;
   attackInstance: number;
   slot?: 0 | 1;
+  step?: number;                     // the weapon combo step (0-based) that made it
   box?: Box;                         // attached melee groups: recomputed from the owner's feet every tick
   enemyHit?: EnemyHit;               // enemy-owned groups: the attack's hit data
   // Player groups beyond weapon swings:
