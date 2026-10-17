@@ -16,7 +16,11 @@ MODES = {'idle': ('loop', 8), 'run': ('speed', None), 'skid': ('once', None), 'j
          'land': ('once', 20), 'dash': ('phase', None), 'wall_slide': ('loop', 8), 'ledge_climb': ('phase', None),
          'slide': ('once', None), 'crawl': ('loop', 8), 'dive_windup': ('phase', None), 'dive_fall': ('loop', 16),
          'dive_land': ('phase', None), 'hurt': ('once', 10), 'dead': ('once', 10), 'drink': ('phase', None),
-         'cart_ride': ('loop', 6)}
+         'cart_ride': ('loop', 6), 'cast_slam': ('phase', None), 'cast_up': ('phase', None), 'spin': ('loop', 20),
+         'shoulder': ('loop', 12)}
+# 08 §6.2 ability pose phases
+PHASE_SEGMENTS = {'cast_slam': [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'recovery', 'frames': [2, 3]}],
+                  'cast_up': [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'recovery', 'frames': [2]}]}
 
 
 def build(assets, preview):
@@ -50,7 +54,7 @@ def build(assets, preview):
                 anims.append(d)
                 continue
             mode, fps = MODES[key]
-            seg = [{'phase': 'all', 'frames': list(range(len(poses)))}] if mode == 'phase' else None
+            seg = PHASE_SEGMENTS.get(key, [{'phase': 'all', 'frames': list(range(len(poses)))}]) if mode == 'phase' else None
             anims.append(A.anim(key, 'player_' + o, len(poses), mode, fps, segments=seg))
         col = P.CLASS_COLORS[o]
         rows = []

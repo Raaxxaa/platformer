@@ -2060,6 +2060,58 @@
   "fps": 6
  },
  {
+  "key": "cast_slam",
+  "atlas": "player_archer",
+  "frames": [
+   "cast_slam_00",
+   "cast_slam_01",
+   "cast_slam_02",
+   "cast_slam_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "cast_up",
+  "atlas": "player_archer",
+  "frames": [
+   "cast_up_00",
+   "cast_up_01",
+   "cast_up_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2
+    ]
+   }
+  ]
+ },
+ {
   "key": "charge_bow",
   "atlas": "player_archer",
   "frames": [
@@ -2307,6 +2359,16 @@
   "mode": "speed"
  },
  {
+  "key": "shoulder",
+  "atlas": "player_archer",
+  "frames": [
+   "shoulder_00",
+   "shoulder_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
   "key": "skid",
   "atlas": "player_archer",
   "frames": [
@@ -2322,6 +2384,18 @@
    "slide_01"
   ],
   "mode": "once"
+ },
+ {
+  "key": "spin",
+  "atlas": "player_archer",
+  "frames": [
+   "spin_00",
+   "spin_01",
+   "spin_02",
+   "spin_03"
+  ],
+  "mode": "loop",
+  "fps": 20
  },
  {
   "key": "wall_jump",
@@ -3088,6 +3162,58 @@
   "fps": 6
  },
  {
+  "key": "cast_slam",
+  "atlas": "player_swordsman",
+  "frames": [
+   "cast_slam_00",
+   "cast_slam_01",
+   "cast_slam_02",
+   "cast_slam_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "cast_up",
+  "atlas": "player_swordsman",
+  "frames": [
+   "cast_up_00",
+   "cast_up_01",
+   "cast_up_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2
+    ]
+   }
+  ]
+ },
+ {
   "key": "charge_bow",
   "atlas": "player_swordsman",
   "frames": [
@@ -3335,6 +3461,16 @@
   "mode": "speed"
  },
  {
+  "key": "shoulder",
+  "atlas": "player_swordsman",
+  "frames": [
+   "shoulder_00",
+   "shoulder_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
   "key": "skid",
   "atlas": "player_swordsman",
   "frames": [
@@ -3350,6 +3486,18 @@
    "slide_01"
   ],
   "mode": "once"
+ },
+ {
+  "key": "spin",
+  "atlas": "player_swordsman",
+  "frames": [
+   "spin_00",
+   "spin_01",
+   "spin_02",
+   "spin_03"
+  ],
+  "mode": "loop",
+  "fps": 20
  },
  {
   "key": "wall_jump",
@@ -4116,6 +4264,58 @@
   "fps": 6
  },
  {
+  "key": "cast_slam",
+  "atlas": "player_tank",
+  "frames": [
+   "cast_slam_00",
+   "cast_slam_01",
+   "cast_slam_02",
+   "cast_slam_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "cast_up",
+  "atlas": "player_tank",
+  "frames": [
+   "cast_up_00",
+   "cast_up_01",
+   "cast_up_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2
+    ]
+   }
+  ]
+ },
+ {
   "key": "charge_bow",
   "atlas": "player_tank",
   "frames": [
@@ -4363,6 +4563,16 @@
   "mode": "speed"
  },
  {
+  "key": "shoulder",
+  "atlas": "player_tank",
+  "frames": [
+   "shoulder_00",
+   "shoulder_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
   "key": "skid",
   "atlas": "player_tank",
   "frames": [
@@ -4378,6 +4588,18 @@
    "slide_01"
   ],
   "mode": "once"
+ },
+ {
+  "key": "spin",
+  "atlas": "player_tank",
+  "frames": [
+   "spin_00",
+   "spin_01",
+   "spin_02",
+   "spin_03"
+  ],
+  "mode": "loop",
+  "fps": 20
  },
  {
   "key": "wall_jump",
@@ -5144,6 +5366,58 @@
   "fps": 6
  },
  {
+  "key": "cast_slam",
+  "atlas": "player_wizard",
+  "frames": [
+   "cast_slam_00",
+   "cast_slam_01",
+   "cast_slam_02",
+   "cast_slam_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "cast_up",
+  "atlas": "player_wizard",
+  "frames": [
+   "cast_up_00",
+   "cast_up_01",
+   "cast_up_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     2
+    ]
+   }
+  ]
+ },
+ {
   "key": "charge_bow",
   "atlas": "player_wizard",
   "frames": [
@@ -5391,6 +5665,16 @@
   "mode": "speed"
  },
  {
+  "key": "shoulder",
+  "atlas": "player_wizard",
+  "frames": [
+   "shoulder_00",
+   "shoulder_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
   "key": "skid",
   "atlas": "player_wizard",
   "frames": [
@@ -5406,6 +5690,18 @@
    "slide_01"
   ],
   "mode": "once"
+ },
+ {
+  "key": "spin",
+  "atlas": "player_wizard",
+  "frames": [
+   "spin_00",
+   "spin_01",
+   "spin_02",
+   "spin_03"
+  ],
+  "mode": "loop",
+  "fps": 20
  },
  {
   "key": "wall_jump",

@@ -220,3 +220,21 @@ SMEAR.update({'atk_katana_1': (270, 90), 'atk_katana_2': (-117, 90), 'atk_katana
               'atk_iron_fists_3': (63, 117), 'atk_iron_fists_4': (63, 180),
               'atk_storm_hammer_1': (225, 90), 'atk_storm_hammer_2': (-90, 135)})
 POSES.update(ATTACKS5)
+
+# ART5 Task 4 — ability poses (08 §6.2). Blade Dash reuses `dash`.
+ABILITY_POSES = {
+    'cast_slam': [_p(ground=True, tilt=-6, armF=(160, 40), armB=(150, 30), legF=(20, 10), legB=(-16, 4)),
+                  _p(ground=True, tilt=-8, armF=(180, 10), armB=(170, 10), legF=(22, 12), legB=(-18, 4)),
+                  _p(ground=True, tilt=14, hipOffset=(1, 4), armF=(40, 20), armB=(30, 20), legF=(40, 50), legB=(-34, 30)),
+                  _p(ground=True, tilt=8, hipOffset=(0, 2), armF=(30, 30), armB=(20, 30), legF=(30, 30), legB=(-24, 16))],
+    'cast_up': [_p(ground=True, armF=(120, 30), armB=(100, 30), legF=(14, 6), legB=(-12, 4)),
+                _p(ground=True, tilt=-6, armF=(170, 10), armB=(150, 20), legF=(18, 6), legB=(-14, 4)),
+                _p(ground=True, tilt=-2, armF=(150, 30), armB=(120, 30), legF=(14, 6), legB=(-12, 4))],
+    'spin': [_p(ground=True, tilt=4, armF=(90, 0), armB=(-90, 0), legF=(24, 10), legB=(-20, 6)),
+             _p(ground=True, tilt=4, armF=(60, 0), armB=(-60, 0), legF=(20, 10), legB=(-24, 6)),
+             _p(ground=True, tilt=4, armF=(-90, 0), armB=(90, 0), legF=(16, 10), legB=(-22, 6)),
+             _p(ground=True, tilt=4, armF=(-60, 0), armB=(60, 0), legF=(22, 10), legB=(-18, 6))],
+    'shoulder': [_p(ground=True, tilt=22, lean=3, armF=(-20, 90), armB=(-40, 60), legF=(44, 40), legB=(-40, 12)),
+                 _p(ground=True, tilt=22, lean=3, armF=(-20, 90), armB=(-40, 60), legF=(30, 50), legB=(-46, 20))],
+}
+POSES.update(ABILITY_POSES)
