@@ -1,5 +1,6 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
+import { setupMerchant, type MerchantState } from '../loot/merchant.ts';
 import { stepLucky, type LuckyBlock } from '../loot/lucky.ts';
 import type { LuckyId } from '../../data/loot.ts';
 import { setupLoot, type Chest } from '../loot/sources.ts';
@@ -66,7 +67,7 @@ import { stepRockfall, type RockMarker } from '../enemies/greatBoar.ts';
 export type Stage = 1 | 2 | 3 | 4;
 
 /** Loot objects that are only grey markers until M4. */
-const MARKER_TYPES = new Set(['merchant_spot']);
+const MARKER_TYPES = new Set<string>([]);
 
 /** 'stage' while playing, 'dead' for the 1 s after death, then 'deathScreen' (06 §6.1). */
 export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
@@ -106,7 +107,9 @@ export type WorldEvent =
   | { t: 'curseApplied'; id: string }
   | { t: 'curseLifted' }
   | { t: 'luckyResult'; id: LuckyId }
-  | { t: 'luckyBroken'; objectId: number };
+  | { t: 'luckyBroken'; objectId: number }
+  | { t: 'purchase'; what: string; price: number }
+  | { t: 'cantAfford' };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -176,6 +179,7 @@ export class GameWorld {
   coins: Coin[] = [];
   chests: Chest[] = [];
   luckyBlocks: LuckyBlock[] = [];
+  merchant: MerchantState | null = null;
   /** Shown gold (05 §9.1). */
   get gold(): number { return Math.floor(this.econ.goldTenths / 10); }
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
@@ -322,7 +326,7 @@ export class GameWorld {
     this.training = null;
     this.interactables = [];
     if (this.level?.kind === 'training') setupTraining(this);
-    if (this.level) setupLoot(this);
+    if (this.level) this.rollStageLoot();
     fillAbilities(this);
   }
 
@@ -339,6 +343,16 @@ export class GameWorld {
     this.abilities.slots = c.abilities;
     this.refreshClassState();
     refreshTrainingStands(this);
+    // Before the run starts (the kit pick), stage-load loot rolls again with the abilities now carried (05 §5.1, §12).
+    if (this.tick === 0 && this.level && this.level.kind !== 'training') this.rollStageLoot();
+  }
+
+  /** Stage-load loot: stands, placed keys, chests, Lucky Blocks, elite drops, the merchant. */
+  rollStageLoot(forceMerchant = false): void {
+    this.groundItems = this.groundItems.filter((i) => !i.stand && !i.key && i.merchantSlot === undefined);
+    this.interactables = this.interactables.filter((i) => !i.kind.endsWith('_chest') && i.kind !== 'merchant_altar');
+    setupLoot(this);
+    setupMerchant(this, forceMerchant);
   }
 
   /** 03 §4.4: recompute the class state after any slot change; emit classChanged / classDiscovered. */

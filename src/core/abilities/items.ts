@@ -1,5 +1,6 @@
 // Weapon and ability items on the ground, interacting, pickup and the swap choices (03 §7.1, 05 §5.7, 06 §11, 07 §6.2–6.3).
 // Interactables (statues, boards) share the same targeting; their owners give the action.
+import { canBuy, onBought } from '../loot/merchant.ts';
 import { slot2Locked } from '../loot/lucky.ts';
 import { onItemTaken } from '../loot/sources.ts';
 import { resetLeech } from '../loot/perks.ts';
@@ -34,6 +35,7 @@ export interface GroundItem {
   fromChest?: number;
   /** A shop or merchant item: its price (05 §11); taking it pays. */
   price?: number;
+  merchantSlot?: number;
 }
 
 /** A placed interactable (statue, board...): 24 × 32 box with its bottom center on (x, y). */
@@ -52,7 +54,7 @@ const objRect = (o: Interactable): Rect => {
 };
 
 /** Drops an item at a point (05 §5.7): inside a solid it moves straight up to the first free row (06 §11.2), then falls. */
-export function dropItem(w: GameWorld, x: number, y: number, item: Pick<GroundItem, 'weapon' | 'ability' | 'endless' | 'label' | 'key' | 'chestGroup' | 'price' | 'stand' | 'fromChest'>): GroundItem {
+export function dropItem(w: GameWorld, x: number, y: number, item: Pick<GroundItem, 'weapon' | 'ability' | 'endless' | 'label' | 'key' | 'chestGroup' | 'price' | 'stand' | 'fromChest' | 'merchantSlot'>): GroundItem {
   let yy = y;
   while (yy > ITEM.box && w.grid.isSolidPx(Math.floor(x), yy - 1)) yy -= 1;
   const it: GroundItem = { id: w.newId(), x, y: yy, vy: 0, resting: false, ...item };
@@ -96,6 +98,7 @@ function takeInto(w: GameWorld, it: GroundItem, slot: 0 | 1): void {
   }
   if (!it.endless) w.groundItems = w.groundItems.filter((x) => x !== it);
   onItemTaken(w, it);
+  onBought(w, it);
   closeChoices(w);
   w.refreshClassState();                                       // 03 §4.4: the same tick
   w.events.push({ t: 'itemTaken', itemId: it.id, slot });
@@ -103,6 +106,7 @@ function takeInto(w: GameWorld, it: GroundItem, slot: 0 | 1): void {
 
 /** 03 §7.1 / 05 §5.7: pick up an item (or open the swap choice). */
 function pickUp(w: GameWorld, it: GroundItem): void {
+  if (!canBuy(w, it)) { w.events.push({ t: 'cantAfford' }); return; }          // 05 §10.2 (merchant)
   if (it.ability) {
     if (castRt(w) || abilityMoveRunning(w)) return;          // refused during a cast or an ability move
     const same = w.abilities.slots.findIndex((s) => s?.id === it.ability!.id);
