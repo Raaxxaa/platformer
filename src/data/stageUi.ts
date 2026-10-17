@@ -35,5 +35,5 @@ export const SLOT_LAYOUT = {
 /** Grey-box ability visuals (M4 Task 15): how long each trace stays, in seconds; alphas. */
 export const ABILITY_FX = {
   boxS: 0.15, trailS: 0.15, trailEvery: 3, blinkS: 0.15, blinkR: 12, chainS: 0.15,
-  boxAlpha: 0.35, zoneAlpha: 0.15, trailAlpha: 0.45, rainLines: 6, rainLen: 10, rainSpeed: 4, markLift: 14,
+  boxAlpha: 0.35, zoneAlpha: 0.15, trailAlpha: 0.45, rainLines: 6, rainLen: 10, rainSpeed: 4, markLift: 26,       // the mark sits above the DPS readout
 } as const;

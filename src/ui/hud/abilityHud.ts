@@ -62,14 +62,21 @@ export class AbilityHud {
   }
 
   private toast(text: string, color: number, now: number): void {
-    const t = this.scene.add.bitmapText(0, 0, FONTS.small, text).setOrigin(1, 1).setTint(color).setScrollFactor(0).setDepth(DEPTH.hud + 2)
+    const t = this.scene.add.bitmapText(0, 0, FONTS.small, text).setOrigin(1, 1).setRightAlign().setTint(color).setScrollFactor(0).setDepth(DEPTH.hud + 2)
       .setMaxWidth(L.toastMaxW);
     this.toasts.push({ text: t, born: now, until: now + L.toastS * 1000 });
     while (this.toasts.length > L.toastMax) this.toasts.shift()!.text.destroy();
   }
 
-  /** `now` in ms (real time). */
-  update(w: GameWorld, events: readonly WorldEvent[], now: number): void {
+  private all(): Phaser.GameObjects.Components.Visible[] {
+    return [this.g, ...this.icons, ...this.classIcons, ...this.prompts, ...this.digits, this.line1, this.line2, this.linkIcon, this.linkText,
+      this.fizzle, ...this.toasts.map((t) => t.text)];
+  }
+
+  /** `now` in ms (real time). `shown` false hides it all (the debug overview zooms the camera out). */
+  update(w: GameWorld, events: readonly WorldEvent[], now: number, shown = true): void {
+    for (const o of this.all()) o.setVisible(shown);
+    if (!shown) return;
     const weapons = weaponSlotViews(w), abilities = abilitySlotViews(w), cls = classLine(w);
     for (const e of events) {
       if (e.t === 'abilityUsed') this.flash(2 + e.slot, UI_COLOR.text, L.flashUsed, now);

@@ -109,9 +109,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.abilityView = new AbilityView(this);
     this.sfx = new SfxPlayer(this);
     // Browsers start audio only after a key press or click (08 §15, 07).
-    // Top center: the bottom left holds the weapon and ability slots (07 §4.1).
-    this.soundNote = this.add.bitmapText(this.scale.width / 2, 4, FONTS.small, 'Click or press any key for sound')
-      .setOrigin(0.5, 0).setScrollFactor(0).setDepth(DEPTH.hud).setAlpha(0.8);
+    // Bottom center, under the hint line: the bottom left holds the slots, the top center the boss bar (07 §4.1).
+    this.soundNote = this.add.bitmapText(this.scale.width / 2, this.scale.height - 4, FONTS.small, 'Click or press any key for sound')
+      .setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud).setAlpha(0.8);
     this.gfx = this.add.graphics().setDepth(DEPTH.projectiles);
     this.hud = this.add.bitmapText(4, 4, FONTS.small, '')
       .setScrollFactor(0).setDepth(DEPTH.hud);
@@ -132,10 +132,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       api.abilityRuntime = () => structuredClone({ ...this.world.abilities, cast: this.world.abilities.cast ? { slot: this.world.abilities.cast.slot, startTick: this.world.abilities.cast.startTick, linked: this.world.abilities.cast.linked } : null });
       api.classState = () => structuredClone(this.world.classState);
       api.setKit = (cls: ClassId, weapon: WeaponId) => this.equipKit({ cls, weapon });
-      api.giveAbility = (slot: 0 | 1, id: AbilityId, level: AbilityLevel = 1) => { this.world.abilities.slots[slot] = newAbility(id, level); this.world.refreshClassState(); };
+      api.giveAbility = (slot: 0 | 1, id: AbilityId | null, level: AbilityLevel = 1) => { this.world.abilities.slots[slot] = id ? newAbility(id, level) : null; this.world.refreshClassState(); };
       api.giveWeapon = (slot: 0 | 1, id: WeaponId) => { this.world.combat.slots[slot] = newWeapon(id); this.world.refreshClassState(); };
       api.spawnDummy = (x: number, y: number) => this.world.spawnExtra({ enemy: 'training_dummy', x, y, facing: -1 }).id;
       api.classPickOpen = () => this.classPick !== null;
+      api.enemyAi = () => this.world.enemies.map((e) => ({ id: e.id, def: e.def.id, x: e.x, y: e.y, attack: e.ai.attack ? { phase: e.ai.attack.phase, t: e.ai.attack.t, len: e.ai.attack.len } : null }));
+      api.interactables = () => this.world.interactables.map((o) => ({ id: o.id, kind: o.kind, label: o.label, x: o.x, y: o.y }));
       api.groundItems = () => this.world.groundItems.map((i) => ({ id: i.id, x: i.x, y: i.y, weapon: i.weapon?.weaponId, ability: i.ability?.id }));
     }
     this.render();
@@ -249,7 +251,6 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     // Player projectiles, blasts and the thrown Storm Hammer: grey boxes until ART5 (rotated boxes are drawn as their swept box).
     for (const p of w.playerProjectiles) g.fillStyle(DRAW.playerShot, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
     for (const id of w.blasts) { const bl = w.hitGroups.find((x) => x.id === id); if (bl) g.fillStyle(DRAW.blast, DRAW.blastAlpha).fillRect(bl.rect.x, bl.rect.y, bl.rect.w, bl.rect.h); }
-    if (w.hammer) g.fillStyle(DRAW.hammer, 1).fillRect(w.hammer.x - 8, w.hammer.y - 8, 16, 16);
 
     const b = w.body;
     const left = b.x - b.w / 2, top = b.y - b.h;
@@ -267,7 +268,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     drawMarkers(this.markersGfx.clear(), w);
     this.itemViews.update(w.groundItems);
     this.abilityView.update(w);
-    this.abilityHud.update(w, this.frameEvents.map((f) => f.e), this.time.now);
+    this.abilityHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
     const reqs = [...this.sfxQueue, ...this.sfxWatch.footsteps(this.playerView.anim)];
     this.sfxQueue = [];
     this.sfx.play(reqs, w.tick, { camCenterX: cam.x + this.scale.width / 2, playerX: b.x });
@@ -279,6 +280,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       if (!h.active || (h.owner !== 'player' && !this.debug)) continue;
       g.fillStyle(DRAW.attackBox, DRAW.attackAlpha).fillRect(h.rect.x, h.rect.y, h.rect.w, h.rect.h);
     }
+    // The thrown Storm Hammer, over its own hitbox (grey box until ART5).
+    if (w.hammer) g.fillStyle(DRAW.hammer, 1).fillRect(w.hammer.x - 8, w.hammer.y - 8, 16, 16);
 
     this.drawMarks();
     this.drawHud();

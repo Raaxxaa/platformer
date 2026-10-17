@@ -127,6 +127,7 @@ export class StageScene extends WorldScene {
       const t = this.world.training;
       return t ? { done: [...this.world.trainingDone].sort((a, b) => a - b), current: t.current, sign: t.sign, fade: t.fade } : null;
     };
+    api.stations = () => this.world.training?.stations.map((x) => ({ id: x.id, rect: x.rect, checkpoint: x.checkpoint })) ?? [];
     api.toStation = (id: number) => {
       const s = this.world.training?.stations.find((x) => x.id === id);
       if (s) this.world.teleportPlayer(s.checkpoint.x, s.checkpoint.y);
