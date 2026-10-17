@@ -17,7 +17,8 @@ VOL = {'vo_': 0.4, 'boss_': 0.8, 'enemy_swing': 0.45, 'enemy_death': 0.55, 'proj
        'explosion_': 0.75, 'lucky_': 0.7, 'jackpot': 0.7, 'chest_': 0.6, 'cursed_open': 0.6, 'curse_lifted': 0.6,
        'key_pickup': 0.5, 'keys_full': 0.5, 'coin': 0.5, 'item_pop': 0.5, 'pickup_': 0.5, 'blueprint': 0.5,
        'purchase': 0.6, 'cant_afford': 0.6, 'upgrade': 0.6, 'sell': 0.6, 'reroll': 0.6, 'split_': 0.6, 'pb': 0.6,
-       'sleep': 0.6, 'restart': 0.6, 'ui_': 0.5}
+       'sleep': 0.6, 'restart': 0.6, 'ui_': 0.5,
+       'shot_': 0.5, 'hammer_': 0.6, 'zap': 0.5, 'ab_': 0.6, 'wall_break': 0.6, 'class_': 0.5}
 
 
 def vol(sid):
