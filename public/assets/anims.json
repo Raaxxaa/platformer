@@ -949,6 +949,38 @@
   "mode": "speed"
  },
  {
+  "key": "beam",
+  "atlas": "items",
+  "frames": [
+   "beam_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "blueprint",
+  "atlas": "items",
+  "frames": [
+   "blueprint_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "chest_cursed_closed",
+  "atlas": "items",
+  "frames": [
+   "chest_cursed_closed_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "chest_cursed_open",
+  "atlas": "items",
+  "frames": [
+   "chest_cursed_open_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "chest_key_closed",
   "atlas": "items",
   "frames": [
@@ -961,6 +993,42 @@
   "atlas": "items",
   "frames": [
    "chest_key_open_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "chest_timed_closed",
+  "atlas": "items",
+  "frames": [
+   "chest_timed_closed_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "chest_timed_open",
+  "atlas": "items",
+  "frames": [
+   "chest_timed_open_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "coin_spin",
+  "atlas": "items",
+  "frames": [
+   "coin_spin_00",
+   "coin_spin_01",
+   "coin_spin_02",
+   "coin_spin_03"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "key",
+  "atlas": "items",
+  "frames": [
+   "key_00"
   ],
   "mode": "once"
  },
@@ -1229,6 +1297,358 @@
   "mode": "once"
  },
  {
+  "key": "apex",
+  "atlas": "player_archer",
+  "frames": [
+   "apex_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "atk_greatsword_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_greatsword_1_00",
+   "atk_greatsword_1_01",
+   "atk_greatsword_1_02",
+   "atk_greatsword_1_03",
+   "atk_greatsword_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_2",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_greatsword_2_00",
+   "atk_greatsword_2_01",
+   "atk_greatsword_2_02",
+   "atk_greatsword_2_03",
+   "atk_greatsword_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_3",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_greatsword_3_00",
+   "atk_greatsword_3_01",
+   "atk_greatsword_3_02",
+   "atk_greatsword_3_03",
+   "atk_greatsword_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_1",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_war_maul_1_00",
+   "atk_war_maul_1_01",
+   "atk_war_maul_1_02",
+   "atk_war_maul_1_03",
+   "atk_war_maul_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_2",
+  "atlas": "player_archer",
+  "frames": [
+   "atk_war_maul_2_00",
+   "atk_war_maul_2_01",
+   "atk_war_maul_2_02",
+   "atk_war_maul_2_03",
+   "atk_war_maul_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "cart_ride",
+  "atlas": "player_archer",
+  "frames": [
+   "cart_ride_00",
+   "cart_ride_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "crawl",
+  "atlas": "player_archer",
+  "frames": [
+   "crawl_00",
+   "crawl_01",
+   "crawl_02",
+   "crawl_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "dash",
+  "atlas": "player_archer",
+  "frames": [
+   "dash_00",
+   "dash_01",
+   "dash_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dead",
+  "atlas": "player_archer",
+  "frames": [
+   "dead_00",
+   "dead_01",
+   "dead_02",
+   "dead_03",
+   "dead_04",
+   "dead_05"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "dive_fall",
+  "atlas": "player_archer",
+  "frames": [
+   "dive_fall_00",
+   "dive_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_land",
+  "atlas": "player_archer",
+  "frames": [
+   "dive_land_00",
+   "dive_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_windup",
+  "atlas": "player_archer",
+  "frames": [
+   "dive_windup_00",
+   "dive_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "double_jump",
+  "atlas": "player_archer",
+  "frames": [
+   "double_jump_00",
+   "double_jump_01",
+   "double_jump_02",
+   "double_jump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "drink",
+  "atlas": "player_archer",
+  "frames": [
+   "drink_00",
+   "drink_01",
+   "drink_02",
+   "drink_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "fall",
+  "atlas": "player_archer",
+  "frames": [
+   "fall_00",
+   "fall_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "hurt",
+  "atlas": "player_archer",
+  "frames": [
+   "hurt_00",
+   "hurt_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
   "key": "idle",
   "atlas": "player_archer",
   "frames": [
@@ -1241,6 +1661,48 @@
   ],
   "mode": "loop",
   "fps": 8
+ },
+ {
+  "key": "jump",
+  "atlas": "player_archer",
+  "frames": [
+   "jump_00",
+   "jump_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "land",
+  "atlas": "player_archer",
+  "frames": [
+   "land_00",
+   "land_01"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "ledge_climb",
+  "atlas": "player_archer",
+  "frames": [
+   "ledge_climb_00",
+   "ledge_climb_01",
+   "ledge_climb_02",
+   "ledge_climb_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
  },
  {
   "key": "run",
@@ -1256,6 +1718,395 @@
    "run_07"
   ],
   "mode": "speed"
+ },
+ {
+  "key": "skid",
+  "atlas": "player_archer",
+  "frames": [
+   "skid_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "slide",
+  "atlas": "player_archer",
+  "frames": [
+   "slide_00",
+   "slide_01"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wall_jump",
+  "atlas": "player_archer",
+  "frames": [
+   "wall_jump_00",
+   "wall_jump_01"
+  ],
+  "mode": "once",
+  "fps": 16
+ },
+ {
+  "key": "wall_slide",
+  "atlas": "player_archer",
+  "frames": [
+   "wall_slide_00",
+   "wall_slide_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "apex",
+  "atlas": "player_swordsman",
+  "frames": [
+   "apex_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "atk_greatsword_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_greatsword_1_00",
+   "atk_greatsword_1_01",
+   "atk_greatsword_1_02",
+   "atk_greatsword_1_03",
+   "atk_greatsword_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_2",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_greatsword_2_00",
+   "atk_greatsword_2_01",
+   "atk_greatsword_2_02",
+   "atk_greatsword_2_03",
+   "atk_greatsword_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_3",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_greatsword_3_00",
+   "atk_greatsword_3_01",
+   "atk_greatsword_3_02",
+   "atk_greatsword_3_03",
+   "atk_greatsword_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_1",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_war_maul_1_00",
+   "atk_war_maul_1_01",
+   "atk_war_maul_1_02",
+   "atk_war_maul_1_03",
+   "atk_war_maul_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_2",
+  "atlas": "player_swordsman",
+  "frames": [
+   "atk_war_maul_2_00",
+   "atk_war_maul_2_01",
+   "atk_war_maul_2_02",
+   "atk_war_maul_2_03",
+   "atk_war_maul_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "cart_ride",
+  "atlas": "player_swordsman",
+  "frames": [
+   "cart_ride_00",
+   "cart_ride_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "crawl",
+  "atlas": "player_swordsman",
+  "frames": [
+   "crawl_00",
+   "crawl_01",
+   "crawl_02",
+   "crawl_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "dash",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dash_00",
+   "dash_01",
+   "dash_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dead",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dead_00",
+   "dead_01",
+   "dead_02",
+   "dead_03",
+   "dead_04",
+   "dead_05"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "dive_fall",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dive_fall_00",
+   "dive_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_land",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dive_land_00",
+   "dive_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_windup",
+  "atlas": "player_swordsman",
+  "frames": [
+   "dive_windup_00",
+   "dive_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "double_jump",
+  "atlas": "player_swordsman",
+  "frames": [
+   "double_jump_00",
+   "double_jump_01",
+   "double_jump_02",
+   "double_jump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "drink",
+  "atlas": "player_swordsman",
+  "frames": [
+   "drink_00",
+   "drink_01",
+   "drink_02",
+   "drink_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "fall",
+  "atlas": "player_swordsman",
+  "frames": [
+   "fall_00",
+   "fall_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "hurt",
+  "atlas": "player_swordsman",
+  "frames": [
+   "hurt_00",
+   "hurt_01"
+  ],
+  "mode": "once",
+  "fps": 10
  },
  {
   "key": "idle",
@@ -1272,6 +2123,48 @@
   "fps": 8
  },
  {
+  "key": "jump",
+  "atlas": "player_swordsman",
+  "frames": [
+   "jump_00",
+   "jump_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "land",
+  "atlas": "player_swordsman",
+  "frames": [
+   "land_00",
+   "land_01"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "ledge_climb",
+  "atlas": "player_swordsman",
+  "frames": [
+   "ledge_climb_00",
+   "ledge_climb_01",
+   "ledge_climb_02",
+   "ledge_climb_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
   "key": "run",
   "atlas": "player_swordsman",
   "frames": [
@@ -1287,6 +2180,395 @@
   "mode": "speed"
  },
  {
+  "key": "skid",
+  "atlas": "player_swordsman",
+  "frames": [
+   "skid_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "slide",
+  "atlas": "player_swordsman",
+  "frames": [
+   "slide_00",
+   "slide_01"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wall_jump",
+  "atlas": "player_swordsman",
+  "frames": [
+   "wall_jump_00",
+   "wall_jump_01"
+  ],
+  "mode": "once",
+  "fps": 16
+ },
+ {
+  "key": "wall_slide",
+  "atlas": "player_swordsman",
+  "frames": [
+   "wall_slide_00",
+   "wall_slide_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "apex",
+  "atlas": "player_tank",
+  "frames": [
+   "apex_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "atk_greatsword_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_greatsword_1_00",
+   "atk_greatsword_1_01",
+   "atk_greatsword_1_02",
+   "atk_greatsword_1_03",
+   "atk_greatsword_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_2",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_greatsword_2_00",
+   "atk_greatsword_2_01",
+   "atk_greatsword_2_02",
+   "atk_greatsword_2_03",
+   "atk_greatsword_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_3",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_greatsword_3_00",
+   "atk_greatsword_3_01",
+   "atk_greatsword_3_02",
+   "atk_greatsword_3_03",
+   "atk_greatsword_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_1",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_war_maul_1_00",
+   "atk_war_maul_1_01",
+   "atk_war_maul_1_02",
+   "atk_war_maul_1_03",
+   "atk_war_maul_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_2",
+  "atlas": "player_tank",
+  "frames": [
+   "atk_war_maul_2_00",
+   "atk_war_maul_2_01",
+   "atk_war_maul_2_02",
+   "atk_war_maul_2_03",
+   "atk_war_maul_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "cart_ride",
+  "atlas": "player_tank",
+  "frames": [
+   "cart_ride_00",
+   "cart_ride_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "crawl",
+  "atlas": "player_tank",
+  "frames": [
+   "crawl_00",
+   "crawl_01",
+   "crawl_02",
+   "crawl_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "dash",
+  "atlas": "player_tank",
+  "frames": [
+   "dash_00",
+   "dash_01",
+   "dash_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dead",
+  "atlas": "player_tank",
+  "frames": [
+   "dead_00",
+   "dead_01",
+   "dead_02",
+   "dead_03",
+   "dead_04",
+   "dead_05"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "dive_fall",
+  "atlas": "player_tank",
+  "frames": [
+   "dive_fall_00",
+   "dive_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_land",
+  "atlas": "player_tank",
+  "frames": [
+   "dive_land_00",
+   "dive_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_windup",
+  "atlas": "player_tank",
+  "frames": [
+   "dive_windup_00",
+   "dive_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "double_jump",
+  "atlas": "player_tank",
+  "frames": [
+   "double_jump_00",
+   "double_jump_01",
+   "double_jump_02",
+   "double_jump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "drink",
+  "atlas": "player_tank",
+  "frames": [
+   "drink_00",
+   "drink_01",
+   "drink_02",
+   "drink_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "fall",
+  "atlas": "player_tank",
+  "frames": [
+   "fall_00",
+   "fall_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "hurt",
+  "atlas": "player_tank",
+  "frames": [
+   "hurt_00",
+   "hurt_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
   "key": "idle",
   "atlas": "player_tank",
   "frames": [
@@ -1299,6 +2581,48 @@
   ],
   "mode": "loop",
   "fps": 8
+ },
+ {
+  "key": "jump",
+  "atlas": "player_tank",
+  "frames": [
+   "jump_00",
+   "jump_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "land",
+  "atlas": "player_tank",
+  "frames": [
+   "land_00",
+   "land_01"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "ledge_climb",
+  "atlas": "player_tank",
+  "frames": [
+   "ledge_climb_00",
+   "ledge_climb_01",
+   "ledge_climb_02",
+   "ledge_climb_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
  },
  {
   "key": "run",
@@ -1316,6 +2640,395 @@
   "mode": "speed"
  },
  {
+  "key": "skid",
+  "atlas": "player_tank",
+  "frames": [
+   "skid_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "slide",
+  "atlas": "player_tank",
+  "frames": [
+   "slide_00",
+   "slide_01"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wall_jump",
+  "atlas": "player_tank",
+  "frames": [
+   "wall_jump_00",
+   "wall_jump_01"
+  ],
+  "mode": "once",
+  "fps": 16
+ },
+ {
+  "key": "wall_slide",
+  "atlas": "player_tank",
+  "frames": [
+   "wall_slide_00",
+   "wall_slide_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "apex",
+  "atlas": "player_wizard",
+  "frames": [
+   "apex_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "atk_greatsword_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_greatsword_1_00",
+   "atk_greatsword_1_01",
+   "atk_greatsword_1_02",
+   "atk_greatsword_1_03",
+   "atk_greatsword_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_2",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_greatsword_2_00",
+   "atk_greatsword_2_01",
+   "atk_greatsword_2_02",
+   "atk_greatsword_2_03",
+   "atk_greatsword_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_greatsword_3",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_greatsword_3_00",
+   "atk_greatsword_3_01",
+   "atk_greatsword_3_02",
+   "atk_greatsword_3_03",
+   "atk_greatsword_3_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_1",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_war_maul_1_00",
+   "atk_war_maul_1_01",
+   "atk_war_maul_1_02",
+   "atk_war_maul_1_03",
+   "atk_war_maul_1_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   0,
+   1
+  ]
+ },
+ {
+  "key": "atk_war_maul_2",
+  "atlas": "player_wizard",
+  "frames": [
+   "atk_war_maul_2_00",
+   "atk_war_maul_2_01",
+   "atk_war_maul_2_02",
+   "atk_war_maul_2_03",
+   "atk_war_maul_2_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "startup",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "active",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "recovery",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ],
+  "weaponBehind": [
+   1
+  ]
+ },
+ {
+  "key": "cart_ride",
+  "atlas": "player_wizard",
+  "frames": [
+   "cart_ride_00",
+   "cart_ride_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "crawl",
+  "atlas": "player_wizard",
+  "frames": [
+   "crawl_00",
+   "crawl_01",
+   "crawl_02",
+   "crawl_03"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "dash",
+  "atlas": "player_wizard",
+  "frames": [
+   "dash_00",
+   "dash_01",
+   "dash_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dead",
+  "atlas": "player_wizard",
+  "frames": [
+   "dead_00",
+   "dead_01",
+   "dead_02",
+   "dead_03",
+   "dead_04",
+   "dead_05"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "dive_fall",
+  "atlas": "player_wizard",
+  "frames": [
+   "dive_fall_00",
+   "dive_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_land",
+  "atlas": "player_wizard",
+  "frames": [
+   "dive_land_00",
+   "dive_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_windup",
+  "atlas": "player_wizard",
+  "frames": [
+   "dive_windup_00",
+   "dive_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "double_jump",
+  "atlas": "player_wizard",
+  "frames": [
+   "double_jump_00",
+   "double_jump_01",
+   "double_jump_02",
+   "double_jump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "drink",
+  "atlas": "player_wizard",
+  "frames": [
+   "drink_00",
+   "drink_01",
+   "drink_02",
+   "drink_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "fall",
+  "atlas": "player_wizard",
+  "frames": [
+   "fall_00",
+   "fall_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "hurt",
+  "atlas": "player_wizard",
+  "frames": [
+   "hurt_00",
+   "hurt_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
   "key": "idle",
   "atlas": "player_wizard",
   "frames": [
@@ -1328,6 +3041,48 @@
   ],
   "mode": "loop",
   "fps": 8
+ },
+ {
+  "key": "jump",
+  "atlas": "player_wizard",
+  "frames": [
+   "jump_00",
+   "jump_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "land",
+  "atlas": "player_wizard",
+  "frames": [
+   "land_00",
+   "land_01"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "ledge_climb",
+  "atlas": "player_wizard",
+  "frames": [
+   "ledge_climb_00",
+   "ledge_climb_01",
+   "ledge_climb_02",
+   "ledge_climb_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
  },
  {
   "key": "run",
@@ -1343,6 +3098,43 @@
    "run_07"
   ],
   "mode": "speed"
+ },
+ {
+  "key": "skid",
+  "atlas": "player_wizard",
+  "frames": [
+   "skid_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "slide",
+  "atlas": "player_wizard",
+  "frames": [
+   "slide_00",
+   "slide_01"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wall_jump",
+  "atlas": "player_wizard",
+  "frames": [
+   "wall_jump_00",
+   "wall_jump_01"
+  ],
+  "mode": "once",
+  "fps": 16
+ },
+ {
+  "key": "wall_slide",
+  "atlas": "player_wizard",
+  "frames": [
+   "wall_slide_00",
+   "wall_slide_01"
+  ],
+  "mode": "loop",
+  "fps": 8
  },
  {
   "key": "brute_wave",
@@ -1393,6 +3185,25 @@
   "fps": 12
  },
  {
+  "key": "charge_full",
+  "atlas": "vfx",
+  "frames": [
+   "charge_full_00",
+   "charge_full_01",
+   "charge_full_02"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "charge_glow",
+  "atlas": "vfx",
+  "frames": [
+   "charge_glow_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "crit_spark",
   "atlas": "vfx",
   "frames": [
@@ -1405,6 +3216,27 @@
   "fps": 30
  },
  {
+  "key": "curse_wisps",
+  "atlas": "vfx",
+  "frames": [
+   "curse_wisps_00",
+   "curse_wisps_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "dash_refund",
+  "atlas": "vfx",
+  "frames": [
+   "dash_refund_00",
+   "dash_refund_01",
+   "dash_refund_02"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
   "key": "debris",
   "atlas": "vfx",
   "frames": [
@@ -1412,6 +3244,51 @@
    "debris_01",
    "debris_02",
    "debris_03"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "dive_bounce",
+  "atlas": "vfx",
+  "frames": [
+   "dive_bounce_00",
+   "dive_bounce_01",
+   "dive_bounce_02"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "dive_impact",
+  "atlas": "vfx",
+  "frames": [
+   "dive_impact_00",
+   "dive_impact_01",
+   "dive_impact_02",
+   "dive_impact_03",
+   "dive_impact_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "dive_impact_heavy",
+  "atlas": "vfx",
+  "frames": [
+   "dive_impact_heavy_00",
+   "dive_impact_heavy_01",
+   "dive_impact_heavy_02",
+   "dive_impact_heavy_03",
+   "dive_impact_heavy_04"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "dive_trail",
+  "atlas": "vfx",
+  "frames": [
+   "dive_trail_00"
   ],
   "mode": "once"
  },
@@ -1438,6 +3315,89 @@
   ],
   "mode": "once",
   "fps": 20
+ },
+ {
+  "key": "dust_slide",
+  "atlas": "vfx",
+  "frames": [
+   "dust_slide_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "dust_wall",
+  "atlas": "vfx",
+  "frames": [
+   "dust_wall_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "dust_walljump",
+  "atlas": "vfx",
+  "frames": [
+   "dust_walljump_00",
+   "dust_walljump_01",
+   "dust_walljump_02",
+   "dust_walljump_03"
+  ],
+  "mode": "once",
+  "fps": 20
+ },
+ {
+  "key": "explosion_l",
+  "atlas": "vfx",
+  "frames": [
+   "explosion_l_00",
+   "explosion_l_01",
+   "explosion_l_02",
+   "explosion_l_03",
+   "explosion_l_04",
+   "explosion_l_05"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "explosion_s",
+  "atlas": "vfx",
+  "frames": [
+   "explosion_s_00",
+   "explosion_s_01",
+   "explosion_s_02",
+   "explosion_s_03",
+   "explosion_s_04",
+   "explosion_s_05"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "flask_orb",
+  "atlas": "vfx",
+  "frames": [
+   "flask_orb_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "guard_spark",
+  "atlas": "vfx",
+  "frames": [
+   "guard_spark_00",
+   "guard_spark_01",
+   "guard_spark_02"
+  ],
+  "mode": "once",
+  "fps": 30
+ },
+ {
+  "key": "heal",
+  "atlas": "vfx",
+  "frames": [
+   "heal_00"
+  ],
+  "mode": "once"
  },
  {
   "key": "hit_heavy",
@@ -1473,6 +3433,55 @@
   "fps": 30
  },
  {
+  "key": "ring_djump",
+  "atlas": "vfx",
+  "frames": [
+   "ring_djump_00",
+   "ring_djump_01",
+   "ring_djump_02",
+   "ring_djump_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "rush_up",
+  "atlas": "vfx",
+  "frames": [
+   "rush_up_00",
+   "rush_up_01",
+   "rush_up_02",
+   "rush_up_03"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
+  "key": "spawn_in",
+  "atlas": "vfx",
+  "frames": [
+   "spawn_in_00",
+   "spawn_in_01",
+   "spawn_in_02",
+   "spawn_in_03",
+   "spawn_in_04",
+   "spawn_in_05"
+  ],
+  "mode": "once",
+  "fps": 12
+ },
+ {
+  "key": "spike_spark",
+  "atlas": "vfx",
+  "frames": [
+   "spike_spark_00",
+   "spike_spark_01",
+   "spike_spark_02"
+  ],
+  "mode": "once",
+  "fps": 24
+ },
+ {
   "key": "stun_stars",
   "atlas": "vfx",
   "frames": [
@@ -1483,5 +3492,97 @@
   ],
   "mode": "loop",
   "fps": 10
+ },
+ {
+  "key": "dive_greatsword_fall",
+  "atlas": "weapon_greatsword",
+  "frames": [
+   "dive_greatsword_fall_00",
+   "dive_greatsword_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_greatsword_land",
+  "atlas": "weapon_greatsword",
+  "frames": [
+   "dive_greatsword_land_00",
+   "dive_greatsword_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_greatsword_windup",
+  "atlas": "weapon_greatsword",
+  "frames": [
+   "dive_greatsword_windup_00",
+   "dive_greatsword_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_war_maul_fall",
+  "atlas": "weapon_war_maul",
+  "frames": [
+   "dive_war_maul_fall_00",
+   "dive_war_maul_fall_01"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dive_war_maul_land",
+  "atlas": "weapon_war_maul",
+  "frames": [
+   "dive_war_maul_land_00",
+   "dive_war_maul_land_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
+ },
+ {
+  "key": "dive_war_maul_windup",
+  "atlas": "weapon_war_maul",
+  "frames": [
+   "dive_war_maul_windup_00",
+   "dive_war_maul_windup_01"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1
+    ]
+   }
+  ]
  }
 ]

@@ -7,6 +7,7 @@ import { ticks } from '../tuning.ts';
 import { DIVE, type DiveDef } from '../../data/weapons.ts';
 import { boxToWorld, type HitGroup } from './hitGroups.ts';
 import { weaponIn } from './playerCombat.ts';
+import { scheduleHammerDiveBolt } from './weaponSpecials.ts';
 
 export interface DiveState {
   slot: 0 | 1;
@@ -57,6 +58,7 @@ export function onDiveEvents(w: GameWorld, events: MoveEvent[], input: InputStat
     d.impactId = addGroup(w, impact, impact.impactBox, d.slot, d.hitEnemies);
     d.impactTicks = ticks(impact.impactTime);
     if (impact.hit.heavy) w.shakeLevel('medium');
+    if (weaponIn(w, d.slot)?.dive === 'storm_hammer') scheduleHammerDiveBolt(w, d.slot, -d.impactId);
     return;
   }
   // A jump or dash out of the dive ends its descent box.

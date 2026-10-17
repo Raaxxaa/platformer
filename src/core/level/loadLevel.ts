@@ -12,7 +12,7 @@ export interface LevelObject {
 }
 
 export interface LevelData {
-  id: LevelId; kind: 'stage' | 'village'; stage: 0 | 1 | 2 | 3 | 4;
+  id: LevelId; kind: 'stage' | 'village' | 'training'; stage: 0 | 1 | 2 | 3 | 4;
   biome: string; widthTiles: number; heightTiles: number;
   tiles: Uint8Array;           // TileKind index (= gid) per cell, row-major
   objects: LevelObject[];      // ascending id
@@ -71,7 +71,7 @@ export function loadLevel(json: unknown): LevelData {
   }
   objects.sort((a, b) => a.id - b.id);
   return {
-    id: String(mp.levelId) as LevelId, kind: mp.kind === 'village' ? 'village' : 'stage', stage: Number(mp.stage ?? 0) as LevelData['stage'],
+    id: String(mp.levelId) as LevelId, kind: mp.kind === 'village' ? 'village' : mp.kind === 'training' ? 'training' : 'stage', stage: Number(mp.stage ?? 0) as LevelData['stage'],
     biome: String(mp.biome ?? mp.levelId), widthTiles: W, heightTiles: H, tiles, objects,
   };
 }

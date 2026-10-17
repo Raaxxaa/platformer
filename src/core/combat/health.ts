@@ -10,16 +10,26 @@ export interface PlayerHealth {
   hp: number; maxHp: number;
   iframeTicks: number;     // hurt i-frames left (wall ticks, counted from the hurt tick)
   hitstunTicks: number;    // hitstun left (pauses during the player's hit-stop)
+  abilityIframeTicks: number;   // 02 "ability i-frames": enemy hits miss, hazards still hit (player ticks)
   dead: boolean; deathCause: string | null;
 }
 
 export function createHealth(): PlayerHealth {
-  return { hp: COMBAT.MAX_HP, maxHp: COMBAT.MAX_HP, iframeTicks: 0, hitstunTicks: 0, dead: false, deathCause: null };
+  return { hp: COMBAT.MAX_HP, maxHp: COMBAT.MAX_HP, iframeTicks: 0, hitstunTicks: 0, abilityIframeTicks: 0, dead: false, deathCause: null };
 }
 
 export type HurtSource =
   | { kind: 'enemyHit'; enemyId: number; enemyDefId: string; damageA: number; attackerCx: number; melee: boolean; playerKb?: [number, number] }
   | { kind: 'hazard'; cause: 'spikes' | 'hazard'; damageA: number };
+
+/** Super armor sources (02 §5.3): Shoulder Charge, Rage, Iron Will while attacking (03). */
+const SUPER_ARMOR: ((w: GameWorld) => boolean)[] = [];
+export function addSuperArmor(f: (w: GameWorld) => boolean): void {
+  SUPER_ARMOR.push(f);
+}
+export function hasSuperArmor(w: GameWorld): boolean {
+  return SUPER_ARMOR.some((f) => f(w));
+}
 
 /** Hooks for later milestones (02 §5.2 steps 2–4, Second Wind). They never handle the hit in M2. */
 const ripostes = (): boolean => false;
@@ -36,13 +46,18 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   if (h.dead) return 0;
   // 1. Invulnerability. Hazards only respect hurt i-frames.
   if (h.iframeTicks > 0) return 0;
-  if (src.kind === 'enemyHit' && b.dashIframes) return 0;
+  if (src.kind === 'enemyHit' && (b.dashIframes || h.abilityIframeTicks > 0)) return 0;
   // 2–4. Riposte, parry, block: hooks.
   if (src.kind === 'enemyHit' && (ripostes() || parries() || blocks())) return 0;
   // 5. Damage.
-  const dealt = enemyHitDamage(src.damageA, 1, null);
+  // A practice hit (Sparring Dummy, 04 §2.11) deals 0 but runs the rest of the pipeline.
+  const practice = src.kind === 'enemyHit' && src.damageA === 0;
+  const dealt = practice ? 0 : enemyHitDamage(src.damageA, 1, null);
   h.hp -= dealt;
+  if (practice) w.events.push({ t: 'sparringHit' });
+  w.onPlayerDamaged();                                       // the hit streak resets (02 §1); a swap choice closes
   // 6. Death.
+  if (h.hp <= 0 && w.level?.kind === 'training') h.hp = 1;     // no death in the Training Yard (06 §12.4)
   if (h.hp <= 0 && !secondWind()) {
     h.hp = 0;
     h.dead = true;
@@ -52,8 +67,8 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
     return dealt;
   }
   const spikes = src.kind === 'hazard' && src.cause === 'spikes';
-  // 7. Hitstun and knockback (cancels the attack, drink and combo).
-  if (!spikes) {
+  // 7. Hitstun and knockback (cancels the attack, drink and combo) — not under super armor (02 §5.3).
+  if (!spikes && !hasSuperArmor(w)) {
     w.onPlayerHitstun();
     let kbx: number = COMBAT.HURT_KB_X, kby: number = COMBAT.HURT_KB_Y;
     let dir: 1 | -1 = (-b.facing) as 1 | -1;

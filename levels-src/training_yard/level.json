@@ -1,0 +1,1059 @@
+{
+ "levelId": "training_yard",
+ "kind": "training",
+ "stage": 0,
+ "biome": "plains",
+ "width": 489,
+ "height": 40,
+ "chunks": [
+  {
+   "file": "yard.txt",
+   "x": 0,
+   "y": 0
+  }
+ ],
+ "legend": {
+  "P": {
+   "type": "player_start"
+  },
+  "D": {
+   "type": "enemy",
+   "enemy": "training_dummy",
+   "facing": -1
+  },
+  "X": {
+   "type": "enemy",
+   "enemy": "sparring_dummy",
+   "facing": -1
+  },
+  "t": {
+   "type": "enemy",
+   "enemy": "straw_target",
+   "facing": -1
+  },
+  "B": {
+   "type": "checklist_board"
+  }
+ },
+ "objects": [
+  {
+   "type": "class_statue",
+   "x": 4,
+   "y": 33,
+   "props": {
+    "cls": "swordsman"
+   }
+  },
+  {
+   "type": "class_statue",
+   "x": 6,
+   "y": 33,
+   "props": {
+    "cls": "tank"
+   }
+  },
+  {
+   "type": "class_statue",
+   "x": 8,
+   "y": 33,
+   "props": {
+    "cls": "archer"
+   }
+  },
+  {
+   "type": "class_statue",
+   "x": 10,
+   "y": 33,
+   "props": {
+    "cls": "wizard"
+   }
+  },
+  {
+   "type": "exit",
+   "x": 0,
+   "y": 28,
+   "w": 1,
+   "h": 6,
+   "props": {
+    "to": "back"
+   }
+  },
+  {
+   "type": "respawn",
+   "x": 30,
+   "y": 34,
+   "w": 3,
+   "h": 2,
+   "props": {}
+  },
+  {
+   "type": "station",
+   "x": 14,
+   "y": 4,
+   "w": 25,
+   "h": 35,
+   "props": {
+    "id": 1,
+    "check": "reach"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 15,
+   "y": 33,
+   "props": {
+    "station": 1
+   }
+  },
+  {
+   "type": "hint",
+   "x": 14,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "A / D \u2014 move.   Space \u2014 jump",
+    "station": 1
+   }
+  },
+  {
+   "type": "station_goal",
+   "x": 34,
+   "y": 30,
+   "w": 4,
+   "h": 4,
+   "props": {
+    "station": 1
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 37,
+   "y": 33,
+   "props": {
+    "station": 1
+   }
+  },
+  {
+   "type": "station",
+   "x": 39,
+   "y": 4,
+   "w": 17,
+   "h": 35,
+   "props": {
+    "id": 2,
+    "check": "stand"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 40,
+   "y": 33,
+   "props": {
+    "station": 2
+   }
+  },
+  {
+   "type": "hint",
+   "x": 39,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Space in the air \u2014 double jump",
+    "station": 2
+   }
+  },
+  {
+   "type": "station_goal",
+   "x": 49,
+   "y": 25,
+   "w": 6,
+   "h": 3,
+   "props": {
+    "station": 2
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 54,
+   "y": 27,
+   "props": {
+    "station": 2
+   }
+  },
+  {
+   "type": "respawn",
+   "x": 62,
+   "y": 31,
+   "w": 8,
+   "h": 2,
+   "props": {}
+  },
+  {
+   "type": "station",
+   "x": 56,
+   "y": 4,
+   "w": 31,
+   "h": 35,
+   "props": {
+    "id": 3,
+    "check": "airDash"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 57,
+   "y": 27,
+   "props": {
+    "station": 3
+   }
+  },
+  {
+   "type": "hint",
+   "x": 56,
+   "y": 20,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Shift \u2014 dash. Works in the air too",
+    "station": 3
+   }
+  },
+  {
+   "type": "station_goal",
+   "x": 70,
+   "y": 24,
+   "w": 4,
+   "h": 4,
+   "props": {
+    "station": 3
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 72,
+   "y": 27,
+   "props": {
+    "station": 3
+   }
+  },
+  {
+   "type": "station",
+   "x": 87,
+   "y": 4,
+   "w": 19,
+   "h": 35,
+   "props": {
+    "id": 4,
+    "check": "reach"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 88,
+   "y": 33,
+   "props": {
+    "station": 4
+   }
+  },
+  {
+   "type": "hint",
+   "x": 87,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Jump on a wall \u2014 wall jump. Climb out the top",
+    "station": 4
+   }
+  },
+  {
+   "type": "station_goal",
+   "x": 102,
+   "y": 20,
+   "w": 4,
+   "h": 4,
+   "props": {
+    "station": 4
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 104,
+   "y": 23,
+   "props": {
+    "station": 4
+   }
+  },
+  {
+   "type": "station",
+   "x": 106,
+   "y": 4,
+   "w": 22,
+   "h": 35,
+   "props": {
+    "id": 5,
+    "check": "ledgeGrab"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 107,
+   "y": 23,
+   "props": {
+    "station": 5
+   }
+  },
+  {
+   "type": "hint",
+   "x": 106,
+   "y": 16,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Hold toward a ledge to grab it",
+    "station": 5
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 117,
+   "y": 18,
+   "props": {
+    "station": 5
+   }
+  },
+  {
+   "type": "station",
+   "x": 128,
+   "y": 4,
+   "w": 31,
+   "h": 35,
+   "props": {
+    "id": 6,
+    "check": "reach"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 129,
+   "y": 18,
+   "props": {
+    "station": 6
+   }
+  },
+  {
+   "type": "hint",
+   "x": 128,
+   "y": 11,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "S + Shift \u2014 slide. Keep holding S to crawl",
+    "station": 6
+   }
+  },
+  {
+   "type": "station_goal",
+   "x": 154,
+   "y": 15,
+   "w": 4,
+   "h": 4,
+   "props": {
+    "station": 6
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 157,
+   "y": 18,
+   "props": {
+    "station": 6
+   }
+  },
+  {
+   "type": "station",
+   "x": 159,
+   "y": 11,
+   "w": 17,
+   "h": 28,
+   "props": {
+    "id": 7,
+    "check": "dropThrough"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 160,
+   "y": 18,
+   "props": {
+    "station": 7
+   }
+  },
+  {
+   "type": "hint",
+   "x": 159,
+   "y": 11,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "S + Space on a thin platform \u2014 drop through",
+    "station": 7
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 174,
+   "y": 33,
+   "props": {
+    "station": 7
+   }
+  },
+  {
+   "type": "station",
+   "x": 176,
+   "y": 4,
+   "w": 17,
+   "h": 35,
+   "props": {
+    "id": 8,
+    "check": "diveHit"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 177,
+   "y": 33,
+   "props": {
+    "station": 8
+   }
+  },
+  {
+   "type": "hint",
+   "x": 176,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "S + J in the air \u2014 dive slam",
+    "station": 8
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 191,
+   "y": 33,
+   "props": {
+    "station": 8
+   }
+  },
+  {
+   "type": "station",
+   "x": 193,
+   "y": 4,
+   "w": 15,
+   "h": 35,
+   "props": {
+    "id": 9,
+    "check": "combo"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 194,
+   "y": 33,
+   "props": {
+    "station": 9
+   }
+  },
+  {
+   "type": "hint",
+   "x": 193,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "J \u2014 attack. Land a whole combo",
+    "station": 9
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 206,
+   "y": 33,
+   "props": {
+    "station": 9
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 213,
+   "y": 33,
+   "props": {
+    "dynamic": "kit_weapon2"
+   }
+  },
+  {
+   "type": "station",
+   "x": 208,
+   "y": 4,
+   "w": 17,
+   "h": 35,
+   "props": {
+    "id": 10,
+    "check": "weapon2"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 209,
+   "y": 33,
+   "props": {
+    "station": 10
+   }
+  },
+  {
+   "type": "hint",
+   "x": 208,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "E \u2014 pick up. K \u2014 attack with weapon 2",
+    "station": 10
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 223,
+   "y": 33,
+   "props": {
+    "station": 10
+   }
+  },
+  {
+   "type": "station",
+   "x": 225,
+   "y": 4,
+   "w": 19,
+   "h": 35,
+   "props": {
+    "id": 11,
+    "check": "dodge"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 226,
+   "y": 33,
+   "props": {
+    "station": 11
+   }
+  },
+  {
+   "type": "hint",
+   "x": 225,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Shift \u2014 dash through its swing (3 in a row)",
+    "station": 11
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 242,
+   "y": 33,
+   "props": {
+    "station": 11
+   }
+  },
+  {
+   "type": "station",
+   "x": 244,
+   "y": 4,
+   "w": 13,
+   "h": 35,
+   "props": {
+    "id": 12,
+    "check": "heal"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 245,
+   "y": 33,
+   "props": {
+    "station": 12
+   }
+  },
+  {
+   "type": "hint",
+   "x": 244,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Q \u2014 drink the flask",
+    "station": 12
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 255,
+   "y": 33,
+   "props": {
+    "station": 12
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 269,
+   "y": 33,
+   "props": {
+    "dynamic": "kit_ability2"
+   }
+  },
+  {
+   "type": "station",
+   "x": 257,
+   "y": 4,
+   "w": 27,
+   "h": 35,
+   "props": {
+    "id": 13,
+    "check": "link"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 258,
+   "y": 33,
+   "props": {
+    "station": 13
+   }
+  },
+  {
+   "type": "hint",
+   "x": 257,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "U / I \u2014 abilities. Use both within 3 s to link them",
+    "station": 13
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 282,
+   "y": 33,
+   "props": {
+    "station": 13
+   }
+  },
+  {
+   "type": "station",
+   "x": 284,
+   "y": 4,
+   "w": 47,
+   "h": 35,
+   "props": {
+    "id": 14,
+    "check": "rush"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 285,
+   "y": 33,
+   "props": {
+    "station": 14
+   }
+  },
+  {
+   "type": "hint",
+   "x": 284,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Keep moving and hitting \u2014 don't stop!",
+    "station": 14
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 329,
+   "y": 33,
+   "props": {
+    "station": 14
+   }
+  },
+  {
+   "type": "respawn",
+   "x": 341,
+   "y": 35,
+   "w": 8,
+   "h": 2,
+   "props": {}
+  },
+  {
+   "type": "station",
+   "x": 331,
+   "y": 4,
+   "w": 27,
+   "h": 35,
+   "props": {
+    "id": 15,
+    "check": "dashJump"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 332,
+   "y": 33,
+   "props": {
+    "station": 15
+   }
+  },
+  {
+   "type": "hint",
+   "x": 331,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Dash, then jump right away to keep the speed",
+    "station": 15
+   }
+  },
+  {
+   "type": "station_goal",
+   "x": 349,
+   "y": 30,
+   "w": 4,
+   "h": 4,
+   "props": {
+    "station": 15
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 356,
+   "y": 33,
+   "props": {
+    "station": 15
+   }
+  },
+  {
+   "type": "respawn",
+   "x": 369,
+   "y": 35,
+   "w": 6,
+   "h": 2,
+   "props": {}
+  },
+  {
+   "type": "station",
+   "x": 358,
+   "y": 4,
+   "w": 31,
+   "h": 35,
+   "props": {
+    "id": 16,
+    "check": "slideJump"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 359,
+   "y": 33,
+   "props": {
+    "station": 16
+   }
+  },
+  {
+   "type": "hint",
+   "x": 358,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Jump out of a slide to keep its speed",
+    "station": 16
+   }
+  },
+  {
+   "type": "station_goal",
+   "x": 375,
+   "y": 30,
+   "w": 4,
+   "h": 4,
+   "props": {
+    "station": 16
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 387,
+   "y": 33,
+   "props": {
+    "station": 16
+   }
+  },
+  {
+   "type": "respawn",
+   "x": 394,
+   "y": 36,
+   "w": 20,
+   "h": 2,
+   "props": {}
+  },
+  {
+   "type": "station",
+   "x": 389,
+   "y": 4,
+   "w": 33,
+   "h": 35,
+   "props": {
+    "id": 17,
+    "check": "diveBounce"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 390,
+   "y": 33,
+   "props": {
+    "station": 17
+   }
+  },
+  {
+   "type": "hint",
+   "x": 389,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Dive slam a target to bounce off it",
+    "station": 17
+   }
+  },
+  {
+   "type": "station_goal",
+   "x": 414,
+   "y": 30,
+   "w": 4,
+   "h": 4,
+   "props": {
+    "station": 17
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 420,
+   "y": 33,
+   "props": {
+    "station": 17
+   }
+  },
+  {
+   "type": "armory_label",
+   "x": 431,
+   "y": 30,
+   "props": {
+    "cls": "swordsman"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 430,
+   "y": 33,
+   "props": {
+    "weapon": "greatsword",
+    "cls": "swordsman"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 432,
+   "y": 33,
+   "props": {
+    "weapon": "katana",
+    "cls": "swordsman"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 434,
+   "y": 33,
+   "props": {
+    "ability": "blade_dash",
+    "cls": "swordsman"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 436,
+   "y": 33,
+   "props": {
+    "ability": "whirlwind",
+    "cls": "swordsman"
+   }
+  },
+  {
+   "type": "armory_label",
+   "x": 442,
+   "y": 30,
+   "props": {
+    "cls": "tank"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 441,
+   "y": 33,
+   "props": {
+    "weapon": "war_maul",
+    "cls": "tank"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 443,
+   "y": 33,
+   "props": {
+    "weapon": "iron_fists",
+    "cls": "tank"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 445,
+   "y": 33,
+   "props": {
+    "ability": "shockwave",
+    "cls": "tank"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 447,
+   "y": 33,
+   "props": {
+    "ability": "shoulder_charge",
+    "cls": "tank"
+   }
+  },
+  {
+   "type": "armory_label",
+   "x": 453,
+   "y": 30,
+   "props": {
+    "cls": "archer"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 452,
+   "y": 33,
+   "props": {
+    "weapon": "bow",
+    "cls": "archer"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 454,
+   "y": 33,
+   "props": {
+    "weapon": "crossbow",
+    "cls": "archer"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 456,
+   "y": 33,
+   "props": {
+    "ability": "arrow_rain",
+    "cls": "archer"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 458,
+   "y": 33,
+   "props": {
+    "ability": "hunters_mark",
+    "cls": "archer"
+   }
+  },
+  {
+   "type": "armory_label",
+   "x": 464,
+   "y": 30,
+   "props": {
+    "cls": "wizard"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 463,
+   "y": 33,
+   "props": {
+    "weapon": "storm_hammer",
+    "cls": "wizard"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 465,
+   "y": 33,
+   "props": {
+    "weapon": "staff",
+    "cls": "wizard"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 467,
+   "y": 33,
+   "props": {
+    "ability": "thunder_strike",
+    "cls": "wizard"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 469,
+   "y": 33,
+   "props": {
+    "ability": "blink",
+    "cls": "wizard"
+   }
+  },
+  {
+   "type": "item_stand",
+   "x": 474,
+   "y": 33,
+   "props": {
+    "ability": "vampire",
+    "cls": "neutral"
+   }
+  },
+  {
+   "type": "exit",
+   "x": 488,
+   "y": 28,
+   "w": 1,
+   "h": 6,
+   "props": {
+    "to": "back"
+   }
+  }
+ ]
+}

@@ -7,6 +7,7 @@ Style boards the user approved (08 §12.7) and contrast-report FAILs the user ac
 | Date | File | Commit |
 |---|---|---|
 | 2026-10-16 | `tools/approved/style_board_plains_v1.png` — approved as first version | 92d6e6d |
+| 2026-10-16 | `tools/approved/style_board_villages_v1.png` — approved | d0207b6 |
 
 ## Accepted contrast FAILs
 

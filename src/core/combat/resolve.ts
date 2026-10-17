@@ -1,16 +1,20 @@
 // 02 §2.1 steps 7a, 7b and 9: hit resolution and deaths.
-import { enemyCenter, enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
+import { enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { roundHalfUp } from '../math.ts';
 import { onBossKilled } from '../enemies/boss.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { COMBAT, ENEMY } from '../tuning.ts';
+import { COMBAT, ENEMY, RUSH, ticks } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
-import { applyControl, applyEnemyKnockback, damagePoise, isCommitted } from './enemyReactions.ts';
+import { applyEnemyKnockback, applyLaunch, applyPull, controlOrPoise, damagePoise, isCommitted } from './enemyReactions.ts';
+import { afterHit, guaranteedCrit, hitBonus, kbDir, onLanding, targetMult } from './hitMods.ts';
+import { elementOf, lightningChain } from './elements.ts';
 import { hurtPlayer } from './health.ts';
+import { refundDash } from '../player/dash.ts';
 import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
 import { maxStop, meleeHitStopTicks } from './hitStop.ts';
-import { rushGoldMult, rushLevel } from './rush.ts';
+import { addRush, rushGoldMult, rushLevel } from './rush.ts';
+import { TRAINING } from '../../data/enemies.ts';
 
 /** The player hurtbox as a rect. */
 export function playerRect(w: GameWorld): Rect {
@@ -35,10 +39,14 @@ export function killEnemy(w: GameWorld, e: EnemyState): void {
 /** One player direct hit on one enemy (02 §3.1, §4). */
 function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const spec = g.spec;
-  const grade = g.slot !== undefined ? w.combat.slots[g.slot]?.grade ?? 'C' : 'C';
-  // A broken boss takes its break multiplier (04 §9.1, a step-6 target multiplier).
-  const targetMult = e.def.boss && e.control?.type === 'stagger' ? e.def.boss.breakMult : 1;
-  const { damage } = playerHitDamage({ base: spec.damage, grade, matched: false, isWeapon: true, targetMult });
+  const isWeapon = g.ability === undefined;
+  const inst = g.slot !== undefined ? w.combat.slots[g.slot] : null;
+  const matched = isWeapon && g.slot !== undefined && w.classState.weaponMatched[g.slot];
+  if (w.noteLanding(g)) onLanding(w, g, e);                 // hit streak first: Blademaster's 3rd landing crits itself
+  const crit = guaranteedCrit(w, g, e);
+  const { damage, procBase } = playerHitDamage({
+    base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: targetMult(w, g, e),
+  });
   e.hp -= damage;
   e.lastPlayerHitTick = w.tick;
   e.damagedTicks = 0;
@@ -46,26 +54,36 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   e.hurtFlashTicks = ENEMY.HURT_FLASH_TICKS;
   const killed = e.def.tier !== 'dummy' && e.hp <= 0;
   if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
-  w.events.push({ t: 'hit', target: e.id, amount: damage, crit: false, heavy: !!spec.heavy });
+  w.events.push({ t: 'hit', target: e.id, amount: damage, crit, heavy: !!spec.heavy, slot: g.slot, step: g.step, ability: g.ability });
+  // Element on the direct hit (02 §6): Lightning chains to 2 others right away.
+  const el = elementOf(w, g);
+  if (el?.id === 'lightning') lightningChain(w, e, el.level, procBase, (x) => targetMult(w, g, x), (x) => killEnemy(w, x));
   if (spec.heavy) w.shakeLevel('small');
   w.onPlayerLandedHit(g, e);
-  // Hit-stop: melee freezes both, a shot only the target.
-  const stop = meleeHitStopTicks(spec.hitStop, false, killed);
+  // Hit-stop (02 §4.1): melee freezes both, a shot or a multi-hit group only the target.
+  const stop = meleeHitStopTicks(spec.hitStop, crit, killed);
   e.hitStopTicks = maxStop(e.hitStopTicks, stop);
-  if (g.kind === 'melee' && !spec.multiHit) w.body.hitStopTicks = maxStop(w.body.hitStopTicks, stop);
+  if (g.kind === 'melee' && !spec.multiHit && !g.noPlayerStop) w.body.hitStopTicks = maxStop(w.body.hitStopTicks, stop);
   if (killed) {
     killEnemy(w, e);
+    afterHit(w, g, e, { damage, killed });
+    g.onHit?.(w, g, e, { damage, killed });
     return;
   }
-  // Poise and stagger, then knockback (full if staggered; ignored if committed otherwise).
+  // Poise and stagger, then knockback (full if staggered; ignored if committed otherwise), then control.
   const committed = isCommitted(e);
   const staggered = damagePoise(w, e, spec.poise, !!spec.heavy);
-  const c = enemyCenter(e).x;
-  const dir: 1 | -1 = c === w.body.x ? w.body.facing : c > w.body.x ? 1 : -1;
-  if (staggered || !committed) applyEnemyKnockback(e, spec.kb, dir);
-  if (spec.control?.type === 'knockdown') applyControl(w, e, 'knockdown', spec.control.duration);
+  const dir = kbDir(w, g, e);
+  const frozen = e.control?.type === 'pin';
+  const ctl = spec.control;
+  if (ctl?.type === 'launch') applyLaunch(w, e, spec.kb, dir);
+  else if (!frozen && (staggered || !committed)) applyEnemyKnockback(e, spec.kb, dir);
+  if (ctl?.type === 'knockdown' || ctl?.type === 'stun') controlOrPoise(w, e, ctl.type, ctl.duration);
+  else if (ctl?.type === 'pull' && g.pullTo) applyPull(w, e, g.pullTo);
   // Instant awareness: resolved while unaware, flips right after (04 §2.4).
   w.onEnemyHitByPlayer(e);
+  afterHit(w, g, e, { damage, killed });
+  g.onHit?.(w, g, e, { damage, killed });
 }
 
 /** 7a: player hit groups vs enemies, groups in creation order, targets by ascending id. */
@@ -73,12 +91,16 @@ export function resolvePlayerHits(w: GameWorld): void {
   if (w.health.dead) return;                               // no hits from a dead player
   const playerFrozen = w.playerFrozenAtTickStart;
   const targets = [...w.enemies].sort((a, b) => a.id - b.id);
-  for (const g of [...w.hitGroups]) {
+  // Index loop: a group made during 7a (an orb's blast) is resolved on the same tick.
+  for (let i = 0; i < w.hitGroups.length; i++) {
+    const g = w.hitGroups[i];
     if (g.owner !== 'player' || !g.active) continue;
-    if (g.kind === 'melee' && playerFrozen) continue;      // a frozen melee box doesn't test overlap
+    if (g.kind === 'melee' && playerFrozen && !g.ability) continue;   // a frozen melee box doesn't test overlap
     for (const e of targets) {
+      if (!g.active) break;                                 // a projectile that stopped
       if (!hittable(e) || !canHit(g, e.id, w.tick)) continue;
       if (!overlaps(g.rect, enemyRect(e))) continue;
+      if (g.contact?.(w, g, e)) continue;
       markHit(g, e.id, w.tick);
       applyPlayerHit(w, g, e);
     }
@@ -110,6 +132,12 @@ export function resolveEnemyHits(w: GameWorld): void {
 /** Step 9: on-kill effects in order of death (02 §3.5). */
 export function processDeaths(w: GameWorld): void {
   for (const e of w.pendingDeaths) {
+    if (e.def.tier === 'target') {
+      // Straw target (04 §2.12): Rush only (a regular kill), no gold or flask; back in 3.0 s.
+      addRush(w, RUSH.KILL_REGULAR);
+      w.respawns.push({ spawn: { enemy: e.def.id, x: e.spawn.x, y: e.spawn.y, facing: e.spawn.facing }, at: w.tick + ticks(TRAINING.strawRespawnS) });
+      continue;
+    }
     const tier = e.def.elite ? 'elite' : 'regular';
     w.onPlayerKill(e, tier);
     // SPEC-GAP: M2 credits gold instantly; coins in M5
@@ -117,5 +145,7 @@ export function processDeaths(w: GameWorld): void {
     w.events.push({ t: 'kill', enemyId: e.id, tier });
     if (e.boss) onBossKilled(w, e);
   }
+  // Blademaster (03 §5.2): kills reset the dash; several kills on one tick = one call.
+  if (w.pendingDeaths.some((e) => e.def.tier !== 'target') && w.classState.bond === 'blademaster') refundDash(w.body);
   w.pendingDeaths = [];
 }

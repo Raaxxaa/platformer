@@ -10,7 +10,7 @@ from . import raster as R
 
 ATLAS = 'objects'
 ALLOWED = ['ink', 'white', 'trim', 'gray', 'npc', 'vl_wood', 'vl_plaster', 'vl_light',
-           'w_steel', 'w_wood', 'w_gold', 'w_magic', 'fx_heal']
+           'w_steel', 'w_wood', 'w_gold', 'w_magic', 'fx_heal', 'fx_poison']
 FLOOR_Y = 320                         # 06 §12.1: floor surface at row 20
 INN_ORIGIN = (39 * 16, 160)           # top-left of the inn frame in the village map
 INN_SIZE = (128, 160)
@@ -194,7 +194,6 @@ LAYOUT = {
                    ('shop_key_00', 32), ('shop_reroll_00', 35)],
     'home': [('class_statue_swordsman_00', 9), ('class_statue_tank_00', 13), ('class_statue_archer_00', 17),
              ('class_statue_wizard_00', 21),
-             # SPEC-GAP: 06 §12.3 has no mirror spot; tile 25 is the free gap (docs/art/SPEC-GAPS-art.md #2)
              ('mirror_spot_00', 25), ('training_dummy_idle_00', 28), ('unlocks_board_00', 34),
              ('seed_board_00', 37), ('gate_idle_00', 45.5)],
 }
@@ -526,8 +525,10 @@ def anims():
 
 
 def all_frames():
+    from . import objects
     fr = dict(building_frames())
     fr.update(prop_frames())
+    fr.update(objects.frames())
     return fr
 
 

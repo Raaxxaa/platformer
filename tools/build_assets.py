@@ -8,7 +8,7 @@ ROOT = os.path.dirname(TOOLS)
 sys.path.insert(0, TOOLS)
 
 from art import palette  # noqa: E402
-from art import atlas, build_player, build_world, contrast, items, npcs, projectiles, style_board, vfx, village  # noqa: E402
+from art import atlas, build_player, build_world, contrast, fonts, items, npcs, projectiles, style_board, ui, vfx, village, weapons  # noqa: E402
 from art.enemies import plains as enemies_plains  # noqa: E402
 from art.bosses import great_boar  # noqa: E402
 from audio import listen_sheet, sfx_defs  # noqa: E402
@@ -26,9 +26,13 @@ def build(root=ROOT):
     palette.write_json(os.path.join(assets, 'palette.json'))
     anims = []
     anims += build_player.build(assets, preview)
+    anims += weapons.build(assets, preview)
     anims += enemies_plains.build(assets, preview)
     anims += great_boar.build(assets, preview)
     build_world.build(assets, preview)
+    ui.build(assets, preview)
+    fonts.build(os.path.join(assets, 'fonts'))
+    fonts.sample(os.path.join(preview, 'font_sample.png'))
     anims += items.build(assets, preview)
     anims += projectiles.build(assets, preview)
     anims += vfx.build(assets, preview)

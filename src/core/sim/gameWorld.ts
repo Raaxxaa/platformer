@@ -9,14 +9,27 @@ import { overlaps } from '../combat/hitGroups.ts';
 import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
-import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
-import { CAMERA, FLASK, RESTART, RUSH } from '../tuning.ts';
+import { addFlaskFill, cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
+import { CAMERA, COMBAT, FLASK, RESTART, RUSH } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { isGrounded, pushOut } from '../physics/collide.ts';
 import { Bodies, type SolidBody } from '../physics/bodies.ts';
 import { checkSpikes } from '../hazards/spikes.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
+import { cloneLoadout, createAbilityRuntime, defaultLoadout, type Loadout } from '../abilities/runtime.ts';
+import type { AbilityId, AbilityRuntime, BondId, ClassId, ClassState, HybridId } from '../abilities/types.ts';
+import { clearAbilityEffects, fillAbilities, onCastCancelMove, onCastHurt, stepAbilities } from '../abilities/abilitySystem.ts';
+import { stepAbilityEntities, type AbilityEntity } from '../abilities/entities.ts';
+import '../abilities/list/index.ts';
+import { refreshTrainingStands, setupTraining, stepTraining, type TrainingState } from '../run/training.ts';
+import { onHurtCloseChoice, stepGroundItems, stepInteract, type GroundItem, type Interactable } from '../abilities/items.ts';
+import { vampireTenths } from '../abilities/list/vampire.ts';
+import { hammerOutIn, removeHammer, stepHammer, type HammerState } from '../combat/stormHammer.ts';
+import { clearPlayerProjectiles, clearSpentGroups, stepPlayerProjectiles, type PlayerProjectile } from '../combat/playerProjectiles.ts';
+import { classChanged, computeClassState } from '../classes/classState.ts';
+import { onBondChange, stepBonds } from '../classes/bonds.ts';
+import { clearHybridState, hybridNoticeMult, hybridSpeed } from '../classes/hybrids.ts';
 import { defaultModifiers, type MoveContext, type MoveModifiers } from '../player/modifiers.ts';
 import { stepPlayer } from '../player/movement.ts';
 import { deriveSeed, Rng } from '../rng.ts';
@@ -24,7 +37,7 @@ import { activateEnemies, spawnEnemy, type EnemyState } from '../enemies/enemy.t
 import { stepEnemyAttack, syncEnemyGroups } from '../enemies/attack.ts';
 import { separateEnemies, stepEnemyBody } from '../enemies/body.ts';
 import { becomeAware, stepAwareness } from '../enemies/awareness.ts';
-import { stepAi } from '../enemies/ai.ts';
+import { stepAi, stepSparring } from '../enemies/ai.ts';
 import { attackHooks } from '../enemies/special.ts';
 import { removeProjectile, stepProjectiles, type EnemyProjectile } from '../enemies/projectiles.ts';
 import { stepEnemyReactions } from '../combat/enemyReactions.ts';
@@ -51,7 +64,7 @@ export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
 
 export type WorldEvent =
   | { t: 'move'; e: MoveEvent }
-  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean }
+  | { t: 'hit'; target: 'player' | number; amount: number; crit: boolean; heavy: boolean; slot?: 0 | 1; step?: number; ability?: string; chainFrom?: number }
   | { t: 'shake'; level: 'small' | 'medium' }
   | { t: 'enemyTelegraph'; enemyId: number; attackId: string; duration: number }
   | { t: 'kill'; enemyId: number; tier: 'regular' | 'elite' }
@@ -64,7 +77,19 @@ export type WorldEvent =
   | { t: 'timedDoorOpened'; doorId: string }
   | { t: 'timedDoorMissed'; doorId: string }
   | { t: 'bossDefeated'; bossId: string; stage: Stage }
-  | { t: 'split'; index: number; runTicks: number; segmentTicks: number; deltaTicks: number | null; bestSegment: boolean };
+  | { t: 'split'; index: number; runTicks: number; segmentTicks: number; deltaTicks: number | null; bestSegment: boolean }
+  | { t: 'classChanged'; displayName: string; bond: BondId | null; hybrid: HybridId | null }
+  | { t: 'classDiscovered'; id: BondId | HybridId }
+  | { t: 'abilityUsed'; slot: 0 | 1; id: AbilityId; linked: boolean }
+  | { t: 'abilityLinked'; slot: 0 | 1 }
+  | { t: 'abilityFizzle'; slot: 0 | 1 }
+  | { t: 'abilityNotReady'; slot: 0 | 1 }
+  | { t: 'lockpickUsed' }
+  | { t: 'itemTaken'; itemId: number; slot: 0 | 1 }
+  | { t: 'sparringHit' }
+  | { t: 'openClassPick'; cls: ClassId }
+  | { t: 'stationDone'; id: number }
+  | { t: 'leftTraining' };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -81,6 +106,10 @@ export interface GameWorldOptions {
   enemies?: EnemySpawn[];
   /** Solid bodies at stage load (doors etc.); copied fresh on every restart. */
   bodies?: SolidBody[];
+  /** Items on the ground at stage start (M4 armory stands). */
+  items?: GroundItem[];
+  /** Weapons and abilities at stage start and on restart (default: the M2 loadout). */
+  loadout?: Loadout;
 }
 
 export class GameWorld {
@@ -94,6 +123,33 @@ export class GameWorld {
   health!: PlayerHealth;
   rush!: RushState;
   combat!: PlayerCombat;
+  abilities!: AbilityRuntime;
+  /** Live ability entities (zones, bolts, marks...): each ticks itself; death and stage start clear them (03 §7.9). */
+  abilityEntities: AbilityEntity[] = [];
+  /** Weapon and ability items on the ground, and placed interactables (05 §5.7, 06 §11). */
+  groundItems: GroundItem[] = [];
+  interactables: Interactable[] = [];
+  /** Straw targets waiting to come back (04 §2.12). */
+  respawns: { spawn: EnemySpawn; at: number }[] = [];
+  /** Training Yard state (null elsewhere) and the stations done this session (06 §12.4; saved in M7). */
+  training: TrainingState | null = null;
+  readonly trainingDone = new Set<number>();
+  weaponSwapChoice: { itemId: number } | null = null;
+  classState!: ClassState;
+  /** Bonds and hybrids seen this session (06 saves them in M7). */
+  readonly discoveredClasses = new Set<BondId | HybridId>();
+  /** 02 §1 hit streak: attack instances that landed, the streak and its last landing tick. */
+  hitStreak = 0;
+  lastLandingTick = -100000;
+  landedInstances = new Set<number>();
+  /** Attack instances whose landing made the streak a multiple of 3 (Blademaster). */
+  streakCrit = new Set<number>();
+  /** HP Iron Will added when it turned on (03 §5.3). */
+  ironWillAddedHP = 0;
+  /** Extra additive bonus per attack instance (Gladiator switch, Warden melee prime). */
+  instanceBonus = new Map<number, number>();
+  /** Thunderlord bolts called per attack instance (03 §6.5). */
+  thunderBolts = new Map<number, number>();
   flask!: FlaskState;
   drinking: DrinkState | null = null;
   drinkBufferTicks = 0;
@@ -114,11 +170,21 @@ export class GameWorld {
   enemies: EnemyState[] = [];
   pendingDeaths: EnemyState[] = [];
   projectiles: EnemyProjectile[] = [];
+  playerProjectiles: PlayerProjectile[] = [];
+  /** The thrown Storm Hammer (02 §11) and each slot's last launch tick. */
+  hammer: HammerState | null = null;
+  hammerLaunchTick: [number, number] = [-100000, -100000];
+  /** Blast hit groups: they live for the tick they appear (02 §10.4). */
+  blasts: number[] = [];
   dive: DiveState | null = null;
   lastDashEndTick = -100000;
   lastAttackStartTick = -100000;
   /** Player-side notice multipliers (Thief Silent Steps, 03); 1 by default. */
   noticeTimeMult = 1;
+  /** 04 §2.4 player-side notice time: the base times Thief's ×2 (03 §6.1). */
+  get noticeTime(): number {
+    return this.noticeTimeMult * hybridNoticeMult(this);
+  }
   noticeRangeMult = 1;
   private rushedInstances = new Set<number>();
   private dashThrough = new Set<number>();
@@ -186,10 +252,16 @@ export class GameWorld {
     this.flask = createFlask();
     this.drinking = null;
     this.drinkBufferTicks = 0;
-    this.combat = createPlayerCombat([
-      { weaponId: 'greatsword', grade: 'C', element: null, perk: null },
-      { weaponId: 'war_maul', grade: 'C', element: null, perk: null },
-    ]);
+    const lo = cloneLoadout(this.opts.loadout ?? defaultLoadout());
+    this.combat = createPlayerCombat(lo.weapons);
+    this.abilities = createAbilityRuntime(lo.abilities);
+    this.classState = computeClassState([null, null], [null, null]);
+    this.hitStreak = 0;
+    this.lastLandingTick = -100000;
+    this.landedInstances = new Set();
+    this.streakCrit = new Set();
+    this.ironWillAddedHP = 0;
+    this.instanceBonus = new Map();
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
     this.gold = 0;
@@ -201,9 +273,14 @@ export class GameWorld {
     this.hitGroups = [];
     this.events = [];
     this.nextId = 1;
+    this.refreshClassState();
     this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
     this.pendingDeaths = [];
     this.projectiles = [];
+    this.playerProjectiles = [];
+    this.blasts = [];
+    this.hammer = null;
+    this.hammerLaunchTick = [-100000, -100000];
     this.dive = null;
     this.lastDashEndTick = -100000;
     this.lastAttackStartTick = -100000;
@@ -215,10 +292,43 @@ export class GameWorld {
     this.activeHint = null;
     this.phase = 'stage';
     this.deathTick = 0;
+    this.abilityEntities = [];
+    this.groundItems = (this.opts.items ?? []).map((i) => ({ ...i, weapon: i.weapon && { ...i.weapon }, ability: i.ability && { ...i.ability } }));
+    this.weaponSwapChoice = null;
+    this.respawns = [];
+    this.training = null;
+    if (this.level?.kind === 'training') setupTraining(this);
+    fillAbilities(this);
   }
 
   restart(): void {
     this.reset();
+  }
+
+  /** Replace the loadout now and for every restart (kit pick, debug). */
+  setLoadout(l: Loadout): void {
+    this.opts.loadout = cloneLoadout(l);
+    const c = cloneLoadout(l);
+    this.combat.slots = c.weapons;
+    this.combat.current = null;
+    this.abilities.slots = c.abilities;
+    this.refreshClassState();
+    refreshTrainingStands(this);
+  }
+
+  /** 03 §4.4: recompute the class state after any slot change; emit classChanged / classDiscovered. */
+  refreshClassState(): void {
+    const prev = this.classState;
+    const next = computeClassState(this.abilities.slots.map((s) => s?.id ?? null), this.combat.slots.map((s) => s?.weaponId ?? null));
+    this.classState = next;
+    onBondChange(this, prev, next);
+    if (prev.hybrid !== next.hybrid) clearHybridState(this);
+    if (classChanged(prev, next)) this.events.push({ t: 'classChanged', displayName: next.displayName, bond: next.bond, hybrid: next.hybrid });
+    const found = next.bond ?? next.hybrid;
+    if (found && !this.discoveredClasses.has(found)) {
+      this.discoveredClasses.add(found);
+      this.events.push({ t: 'classDiscovered', id: found });
+    }
   }
 
   /** Run time in ticks (06 §5.1). */
@@ -280,15 +390,36 @@ export class GameWorld {
     // No ghost hits: every player hit group goes now; Rush resets at death (02 §8.1).
     cancelAttack(this, 'hurt');
     endDive(this);
+    clearAbilityEffects(this);
+    clearHybridState(this);
+    clearPlayerProjectiles(this);
+    removeHammer(this, true);
     this.hitGroups = this.hitGroups.filter((g) => g.owner !== 'player');
     this.rush.value = 0;
     this.events.push({ t: 'playerDied', cause });
+  }
+
+  /** 02 §1: an attack instance's first direct hit on an enemy adds 1 to the hit streak. */
+  noteLanding(g: HitGroup): boolean {
+    if (this.landedInstances.has(g.attackInstance)) return false;
+    this.landedInstances.add(g.attackInstance);
+    this.hitStreak += 1;
+    this.lastLandingTick = this.tick;
+    if (this.hitStreak % 3 === 0) this.streakCrit.add(g.attackInstance);
+    return true;
+  }
+
+  /** Unblocked damage to the player resets the hit streak (02 §5.2 step 10). */
+  onPlayerDamaged(): void {
+    this.hitStreak = 0;
+    onHurtCloseChoice(this);
   }
 
   /** Hurt pipeline hook: hitstun cancels the attack, charge and drink (02 §5.2 step 7). */
   onPlayerHitstun(): void {
     cancelAttack(this, 'hurt');
     cancelDrink(this);
+    onCastHurt(this);
   }
 
   /** A player hit group landed a direct hit on an enemy (Rush hooks). */
@@ -296,7 +427,7 @@ export class GameWorld {
     if (g.attackInstance < 0) onDiveGroupHit(this, g, e.id);
     if (this.rushedInstances.has(g.attackInstance)) return;
     this.rushedInstances.add(g.attackInstance);
-    const dashing = this.body.state === 'dash' || this.tick - this.lastDashEndTick <= RUSH.DASH_HIT_WINDOW_TICKS;
+    const dashing = g.dashAttack || this.body.state === 'dash' || this.tick - this.lastDashEndTick <= RUSH.DASH_HIT_WINDOW_TICKS;
     addRush(this, RUSH.HIT + (dashing ? RUSH.DASH_HIT : 0));
   }
 
@@ -358,6 +489,8 @@ export class GameWorld {
   /** On-kill effects that belong to other systems (flask, Rush). */
   onPlayerKill(_e: EnemyState, tier: 'regular' | 'elite'): void {
     onKillFill(this, tier);
+    const vamp = vampireTenths(this);
+    if (vamp > 0) addFlaskFill(this, vamp);                       // 03 §12
     addRush(this, tier === 'elite' ? RUSH.KILL_ELITE : RUSH.KILL_REGULAR);
   }
 
@@ -406,7 +539,11 @@ export class GameWorld {
     if (e.control) {
       if (!e.knockback && e.grounded) e.vx = 0;
     } else if (!e.knockback) {
-      if (e.ai.attack) stepEnemyAttack(this, e, attackHooks(e));
+      const sparring = e.def.id === 'sparring_dummy';
+      if (e.ai.attack) {
+        stepEnemyAttack(this, e, attackHooks(e));
+        if (sparring && !e.ai.attack) stepSparring(this, e);   // the next swing starts as the last ends (every 2.0 s)
+      } else if (sparring) stepSparring(this, e);
       else stepAi(this, e);
     }
     stepAwareness(this, e);
@@ -420,28 +557,35 @@ export class GameWorld {
     if (this.handleRestart(rawInput)) return;
     if (this.phase === 'deathScreen' || this.run.phase === 'stageClear') return;   // frozen; clocks stopped
     // A dead player takes no input; the world keeps running around them.
-    const input = this.health.dead ? emptyInput() : rawInput;
+    let input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
-    stepClocks(this.run);
+    clearSpentGroups(this);
+    if (this.level?.kind !== 'training') stepClocks(this.run);   // the Training Yard has no run timer (06 §12.4)
     this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
     for (const e of this.enemies) e.frozenAtTickStart = e.hitStopTicks > 0;
     // Wall-clock timers.
     if (this.health.iframeTicks > 0) this.health.iframeTicks -= 1;
     if (this.health.hitstunTicks > 0 && this.body.hitStopTicks === 0) this.health.hitstunTicks -= 1;
+    if (this.health.abilityIframeTicks > 0 && this.body.hitStopTicks === 0) this.health.abilityIframeTicks -= 1;
     // 3. Player actions.
-    this.ctx.slotUsable = [this.combat.slots[0] !== null, this.combat.slots[1] !== null];
+    // A slot whose Storm Hammer is out cannot dive (02 §11).
+    this.ctx.slotUsable = [this.combat.slots[0] !== null && !hammerOutIn(this, 0), this.combat.slots[1] !== null && !hammerOutIn(this, 1)];
+    input = stepInteract(this, input);
     stepPlayerCombat(this, input);
     tryStartDrink(this, input);
     stepDrink(this);
     if (this.drinking) this.mods.actionMoveMult = FLASK.MOVE_CAP;
+    stepAbilities(this, input);
+    if (this.tick - this.lastLandingTick > COMBAT.HIT_STREAK_TIMEOUT_TICKS) this.hitStreak = 0;
+    stepBonds(this);
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
-    this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush))];
+    this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush)), ...hybridSpeed(this)];
     const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
     if (checkSpikes(this)) moveEvents.push('spikeHit');   // 01 §3 step 9
     for (const e of moveEvents) {
       this.events.push({ t: 'move', e });
-      if (e === 'dashStart' || e === 'slideStart') { cancelAttack(this, 'dash'); cancelDrink(this); }
-      else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') { cancelAttack(this, 'jump'); cancelDrink(this); }
+      if (e === 'dashStart' || e === 'slideStart') { cancelAttack(this, 'dash'); cancelDrink(this); onCastCancelMove(this); }
+      else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') { cancelAttack(this, 'jump'); cancelDrink(this); onCastCancelMove(this); }
       else if (e === 'diveStart') cancelAttack(this, 'dive');
     }
     if (moveEvents.includes('dashStart')) this.dashThrough.clear();
@@ -454,8 +598,14 @@ export class GameWorld {
     for (const e of [...this.enemies].sort((a, b) => a.id - b.id)) this.stepEnemy(e);
     separateEnemies(this);
     syncEnemyGroups(this);
-    // 6. Moving hit groups.
+    // 6. Moving hit groups and ability entities (world ticks).
+    stepPlayerProjectiles(this);
+    stepHammer(this);
     stepProjectiles(this);
+    stepAbilityEntities(this);
+    stepGroundItems(this);
+    for (const r of this.respawns.filter((x) => x.at <= this.tick)) this.spawnExtra(r.spawn);
+    this.respawns = this.respawns.filter((x) => x.at > this.tick);
     // 7. Hit resolution: player hits first (ties go to the player), then enemy hits.
     resolvePlayerHits(this);
     resolveEnemyHits(this);
@@ -470,6 +620,7 @@ export class GameWorld {
     stepTimedDoors(this);
     stepZones(this);
     stepArenas(this);
+    stepTraining(this);
     stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());
     if (this.phase === 'dead' && this.tick - this.deathTick >= RESTART.DEATH_SIM_TICKS) this.phase = 'deathScreen';
   }

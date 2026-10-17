@@ -195,6 +195,12 @@ export const COMBAT = {
   POISE_REFILL: 1.5, POISE_REFILL_TICKS: ticks(1.5),
   ELITE_POISE_IMMUNE: 2.0, ELITE_POISE_IMMUNE_TICKS: ticks(2.0),
   ELITE_CONTROL_MULT: 0.5,
+  LAUNCH_LAND: 0.2, LAUNCH_LAND_TICKS: ticks(0.2),   // 02 §4.4: launched enemies act again 0.2 s after landing
+  PULL_MAX: 0.3, PULL_MAX_TICKS: ticks(0.3), PULL_ARRIVE: 4,
+  BOSS_CONTROL_POISE: 30,
+  /** 02 §6.4 Lightning chain per level: targets, % of procBase, range px. */
+  LIGHTNING: [{ targets: 2, pct: 0.35, range: 80 }, { targets: 2, pct: 0.50, range: 96 }, { targets: 2, pct: 0.65, range: 112 }],
+  HIT_STREAK_TIMEOUT: 2.0, HIT_STREAK_TIMEOUT_TICKS: ticks(2.0),
   FRONTAL_DX: 4,
 } as const;
 

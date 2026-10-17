@@ -28,6 +28,9 @@ function mayDrop(w: GameWorld, e: EnemyState): boolean {
 /** One enemy-time tick of movement. AI and attacks set `vx` before this; knockback owns it while active. */
 export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
   if (e.def.stationary) return;
+  const c = e.control;
+  if (c?.type === 'pin') { e.vx = 0; e.vy = 0; return; }                // held flush, no gravity (02 §4.4)
+  if (c?.type === 'pull' && c.to) { stepPull(w, e); return; }
   if (e.knockback) {
     e.vx = approach(e.vx, 0, (e.grounded ? COMBAT.ENEMY_KB_DECAY_GROUND : COMBAT.ENEMY_KB_DECAY_AIR) * TICK);
   } else if (e.grounded && e.vx !== 0 && !e.ai.attack?.def.leap) {
@@ -47,10 +50,33 @@ export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
   copyBack(e, box);
   e.grounded = isGrounded(box, w.grid, e.vy);
   if (e.grounded) e.vy = 0;
+  if (c?.type === 'launch' && !c.landed && e.grounded) c.landed = true;     // acts again 0.2 s after landing
   if (e.knockback && e.grounded && Math.abs(e.vx) < COMBAT.ENEMY_KB_CONTROL_SPEED) {
     e.knockback = false;
     e.vx = 0;
   }
+}
+
+/** Pull (02 §4.4): straight toward the point at its speed, no gravity; ends within 4 px (then a stun if set). */
+function stepPull(w: GameWorld, e: EnemyState): void {
+  const c = e.control!, to = c.to!;
+  const cy = e.y - e.def.hurtbox.h / 2;
+  const dx = to.x - e.x, dy = to.y - cy, d = Math.hypot(dx, dy);
+  const step = to.speed * TICK;
+  const box = asBox(e);
+  if (d <= COMBAT.PULL_ARRIVE || d <= step) {
+    moveX(box, w.grid, dx, true);
+    moveY(box, w.grid, dy, { dropping: false, preferDir: 0 });
+    copyBack(e, box);
+    e.vx = 0; e.vy = 0;
+    e.control = c.thenStun ? { type: 'stun', ticks: c.thenStun } : null;
+  } else {
+    e.vx = (dx / d) * to.speed; e.vy = (dy / d) * to.speed;
+    if (moveX(box, w.grid, e.vx * TICK, true) === 'wall') e.vx = 0;
+    moveY(box, w.grid, e.vy * TICK, { dropping: false, preferDir: 0 });
+    copyBack(e, box);
+  }
+  e.grounded = isGrounded(asBox(e), w.grid, e.vy);
 }
 
 /** Grounded non-boss enemies within 10 px push apart at 40 px/s each; lower id moves left on a tie. */

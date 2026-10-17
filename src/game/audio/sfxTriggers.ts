@@ -1,0 +1,147 @@
+// Which sounds a render frame plays (08 §13.3), from the ticks' events and state changes. Pure: no Phaser.
+import { rushLevel } from '../../core/combat/rush.ts';
+import type { EnemyState } from '../../core/enemies/enemy.ts';
+import type { GameWorld } from '../../core/sim/gameWorld.ts';
+import { TICK_RATE } from '../../core/tuning.ts';
+import { ANIM } from '../../data/art.ts';
+import { SFX } from '../../data/sfx.ts';
+import { WEAPONS } from '../../data/weapons.ts';
+import type { TickEvent } from '../view/vfx.ts';
+import type { SfxRequest } from './sfxRules.ts';
+
+/** 08 §13.3 thresholds. */
+export const SFX_TRIGGER = {
+  hitLightStop: 0.05, hitHeavyStop: 0.075,   // hit sound by hit-stop seconds
+  footstepFrames: [1, 5],                    // run frames that play a footstep
+  rushSemitones: 3,                          // rush_up pitch per level
+} as const;
+
+const SIZE: Record<string, 's' | 'm' | 'l'> = { small: 's', medium: 'm', large: 'l', boss: 'l' };
+const sizeOf = (e: EnemyState) => SIZE[e.def.size] ?? 'm';
+
+/** The state the triggers compare against (per scene, reset with the world). */
+export class SfxWatch {
+  private aware = new Map<number, boolean>();
+  private phase = new Map<number, string>();
+  private stagger = new Map<number, boolean>();
+  private intro = new Map<number, boolean>();
+  private swingKey = '';
+  private rush = 0;
+  private sipped = false;
+  private charges = -1;
+  private runFrame = -1;
+  private projectiles = new Set<number>();
+
+  reset(): void {
+    this.aware.clear(); this.phase.clear(); this.stagger.clear(); this.intro.clear();
+    this.swingKey = ''; this.rush = 0; this.sipped = false; this.charges = -1; this.runFrame = -1; this.projectiles.clear();
+  }
+
+  /** Footsteps on run frames 1 and 5, from the player view's anim (checked each render). */
+  footsteps(playerAnim: { key: string; frame: number }): SfxRequest[] {
+    const rf = playerAnim.key === 'run' ? playerAnim.frame : -1;
+    const step = rf !== this.runFrame && (SFX_TRIGGER.footstepFrames as readonly number[]).includes(rf);
+    this.runFrame = rf;
+    return step ? [{ id: 'step_soft' }] : [];
+  }
+
+  /** Called after every world tick with that tick's events, so no state change is missed between renders. */
+  collect(w: GameWorld, events: TickEvent[]): SfxRequest[] {
+    const out: SfxRequest[] = [];
+    const b = w.body;
+    for (const { e } of events) {
+      switch (e.t) {
+        case 'move': {
+          const m: Partial<Record<string, string>> = {
+            jump: 'jump', doubleJump: 'double_jump', wallJump: 'wall_jump', dashStart: 'dash', slideStart: 'slide',
+            ledgeGrab: 'ledge_grab', dropThrough: 'drop_through', diveStart: 'dive_start', diveBounce: 'dive_bounce', spikeHit: 'spike_hit',
+          };
+          if (e.e === 'land' && b.landSpeed >= ANIM.LAND_MIN_VY) out.push({ id: 'land' });
+          else if (e.e === 'diveLand') {
+            const wid = w.combat.slots[w.dive?.slot ?? 0]?.weaponId;
+            out.push({ id: wid && WEAPONS[wid]?.weight === 'heavy' ? 'dive_land_heavy' : 'dive_land' });
+          } else if (m[e.e]) out.push({ id: m[e.e]! });
+          break;
+        }
+        case 'hit': {
+          if (e.target === 'player') { out.push({ id: 'player_hurt' }); break; }
+          const en = w.enemies.find((x) => x.id === e.target);
+          const stop = (en?.hitStopTicks ?? 0) / TICK_RATE;
+          const id = e.crit ? 'hit_crit' : e.heavy || stop >= SFX_TRIGGER.hitHeavyStop ? 'hit_heavy' : stop >= SFX_TRIGGER.hitLightStop ? 'hit_medium' : 'hit_light';
+          out.push({ id });
+          break;
+        }
+        case 'kill': {
+          const en = w.enemies.find((x) => x.id === e.enemyId);
+          if (en && !en.boss) out.push({ id: `enemy_death_${sizeOf(en)}`, x: en.x });
+          break;
+        }
+        case 'enemyTelegraph': {
+          const en = w.enemies.find((x) => x.id === e.enemyId);
+          if (en && en.def.id === 'wild_boar' && e.attackId === 'charge') out.push({ id: 'vo_wild_boar', x: en.x });
+          break;
+        }
+        case 'playerDied': out.push({ id: 'player_death' }); break;
+        case 'drink': out.push({ id: 'flask_drink' }); break;
+        case 'healRefused': if (e.reason === 'noCharge') out.push({ id: 'flask_empty' }); break;
+        case 'arenaLocked': out.push({ id: 'door_slam' }); break;
+        case 'arenaCleared': out.push({ id: 'door_open' }, { id: 'arena_clear' }); break;
+        case 'timedDoorOpened': out.push({ id: 'timed_open' }, { id: 'door_open' }); break;
+        case 'timedDoorMissed': out.push({ id: 'timed_missed' }); break;
+        case 'bossDefeated': out.push({ id: 'boss_defeated' }); break;
+        case 'split': if (e.deltaTicks !== null) out.push({ id: e.deltaTicks <= 0 ? 'split_faster' : 'split_slower' }); break;
+        case 'stationDone': out.push({ id: 'ui_confirm' }); break;                   // 06 §12.4
+        default: break;
+      }
+    }
+    // Enemies: becoming aware (voice), an Act starting (swing), boss intro and break.
+    for (const en of w.enemies) {
+      if (en.dead) continue;
+      const aware = en.aware;
+      if (aware && this.aware.get(en.id) === false && SFX[`vo_${en.def.id}`]) out.push({ id: `vo_${en.def.id}`, x: en.x });
+      this.aware.set(en.id, aware);
+      const a = en.ai.attack;
+      const ph = a ? `${a.def.id}:${a.phase}` : '';
+      if (a && a.phase === 'act' && this.phase.get(en.id) !== ph && a.def.hit && !a.def.shots) out.push({ id: `enemy_swing_${sizeOf(en)}`, x: en.x });
+      this.phase.set(en.id, ph);
+      if (en.boss) {
+        const intro = en.boss.introTicks > 0;
+        if (intro && !this.intro.get(en.id) && SFX[`boss_roar_${en.def.id}`]) out.push({ id: `boss_roar_${en.def.id}` });
+        this.intro.set(en.id, intro);
+        const st = en.control?.type === 'stagger';
+        if (st && !this.stagger.get(en.id)) out.push({ id: 'boss_break' });
+        this.stagger.set(en.id, st);
+      }
+    }
+    // Enemy projectiles: spawn sound (rocks whistle as they fall).
+    const live = new Set<number>();
+    for (const p of w.projectiles) {
+      live.add(p.id);
+      if (this.projectiles.has(p.id)) continue;
+      const id = p.def.id === 'falling_rock' ? 'rock_whistle' : `proj_${p.def.id}`;
+      if (SFX[id]) out.push({ id, x: p.x });
+    }
+    this.projectiles = live;
+    // Player: a melee step's active phase starts (by weapon weight).
+    const cur = w.combat.current;
+    const key = cur && cur.phase === 'active' ? `${cur.attackInstance}` : '';
+    if (key && key !== this.swingKey) {
+      const inst = w.combat.slots[cur!.slot];
+      const weight = inst ? WEAPONS[inst.weaponId]?.weight : undefined;
+      if (weight) out.push({ id: `swing_${weight}` });
+    }
+    this.swingKey = key;
+    // Rush up / max / down.
+    const lvl = rushLevel(w.rush);
+    if (lvl > this.rush) out.push(lvl === 3 ? { id: 'rush_max' } : { id: 'rush_up', semitones: SFX_TRIGGER.rushSemitones * (lvl - 1) });
+    else if (lvl < this.rush) out.push({ id: 'rush_down' });
+    this.rush = lvl;
+    // Flask: the sip point and charges gained.
+    const sipped = !!w.drinking?.sipped;
+    if (sipped && !this.sipped) out.push({ id: 'flask_sip' });
+    this.sipped = sipped;
+    if (this.charges >= 0 && w.flask.charges > this.charges && !w.drinking) out.push({ id: 'flask_charge' });
+    this.charges = w.flask.charges;
+    return out;
+  }
+}

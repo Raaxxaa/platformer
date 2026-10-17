@@ -2,7 +2,8 @@
 
 /** 08 §4.3 draw order. */
 export const DEPTH = {
-  parallax: [0, 1, 2], deco: 10, terrain: 20, enemies: 40, player: 50, projectiles: 88, debug: 89, hud: 90,
+  parallax: [0, 1, 2], deco: 10, terrain: 20, doors: 30, items: 35, enemies: 40, boss: 41, afterimage: 49, player: 50,
+  playerProjectiles: 60, vfx: 70, markers: 88, projectiles: 88, debug: 89, hud: 90,
 } as const;
 
 /** 08 §9: tileset layout (16 × 9 tiles of 16 px, margin 1, spacing 2). */
@@ -29,14 +30,52 @@ export const ANIM = {
   KNOCKDOWN_F0: 0.1,                        // knockdown: f0 for 0.1 s, then f1
   BREAK_F0: 0.2, BREAK_FPS: 4,              // boss break: f0 for 0.2 s, then [1, 2] at 4 fps
   PROJ_ANGLE_STEP: 22.5,                    // projectiles rotate to the velocity angle in 22.5° steps
+  // 08 §6.1 player movement anims.
+  SKID_SPEED: 100,                          // skid: grounded, facing opposite to vx, abs(vx) > 100
+  RUN_MIN_SPEED: 1,                         // below this the grounded player idles
+  AIR_APEX_VY: 60,                          // jump vy < −60 / apex abs(vy) ≤ 60 / fall vy > 60
+  LAND_MIN_VY: 200,                         // land plays when landing at vy ≥ 200
+  DASH_FRAME_STARTS: [4, 14],               // dash ticks 0–3 → f0, 4–13 → f1, 14+ → f2
+  SLIDE_F0_TICKS: 6,
+  CRAWL_MOVE_SPEED: 10,
+  DRINK_FRAME_ENDS: [0.10, 0.25, 0.33],     // drink: 0–0.10 s f0, –0.25 f1, –0.33 f2, then f3
+  SMEAR_RECOVERY_TICKS: 6,                  // smear shows in the active phase and the first 6 ticks of recovery
 } as const;
 
 /** 08 §5.3 overlay flashes. */
 export const OVERLAY = {
   hitFlash: { color: 0xffffff, alpha: 1.0, minTicks: 6 },
   telegraphGo: { color: 0xfff4c8, alpha: 0.85 },
-  telegraph: { color: 0xff8a1f, alphaMin: 0.15, alphaMax: 0.55, period: 0.2 },
+  telegraph: { color: 0xff8a1f, unblockable: 0xff2e6a, alphaMin: 0.15, alphaMax: 0.55, period: 0.2 },
+  spawnIn: { color: 0x6a3a94, alphaFrom: 0.8 },
 } as const;
+
+/** 08 §8 doors: opening and closing slide 48 px in 0.15 s. */
+export const DOOR = { slide: 48, slideTime: 0.15 } as const;
+
+/** 08 §4.1 player weapon + smear frame: 160 × 96, feet at (80, 72). */
+export const WEAPON_FRAME = { w: 160, h: 96, anchorX: 80, anchorY: 72 } as const;
+
+/** 08 §11 VFX. */
+export const VFX = {
+  max: 256,
+  /** Anims drawn from the feet (bottom center); the rest are centered on their point. */
+  feetOrigin: ['dust_jump', 'dust_land', 'dust_slide', 'dive_impact', 'dive_impact_heavy', 'spawn_in', 'heal', 'rush_up'] as readonly string[],
+  hitJitter: 3,                       // hit point ± hash2 jitter
+  hitHeavyStopTicks: 9,               // hit-stop ≥ 0.075 s → hit_heavy
+  landMinVy: 300,                     // dust_land when landing at vy ≥ 300
+  wallDustEvery: 12, slideDustEvery: 6, diveTrailEvery: 4,   // ticks
+  afterimage: { every: 6, color: 0x7b9ed6, alpha: 0.6, life: 0.15 },
+  deathBurst: { count: 8, bossCount: 32, size: 2, speedMin: 60, speedMax: 160, gravity: 600, life: 0.4 },
+  stunStarsAbove: 4,                  // px above the hurtbox top
+  marker: { color: 0xff8a1f, go: 0xfff4c8, alphaMin: 0.4, alphaMax: 0.8, hz: 4, h: 4, shadowFrom: 0.25, shadowW: 18, shadowH: 5 },
+} as const;
+
+/** The 2 main ramp colors per enemy for `death_burst` (08 §7.3, base and light of `en_*`). */
+export const DEATH_BURST_COLORS: Record<string, [number, number]> = {
+  wolf: [0x737ca0, 0xadb6d4], bandit: [0xb8443f, 0x737ca0], bandit_archer: [0xb8443f, 0x737ca0],
+  wild_boar: [0x737ca0, 0xb8443f], bandit_brute: [0xb8443f, 0x737ca0], great_boar: [0x737ca0, 0xb8443f],
+};
 
 /** 08 §3.4 class trim tints. */
 export const TRIM_TINT = { swordsman: 0xff5a5a, tank: 0xff9a3c, archer: 0xa8d846, wizard: 0x42d9ff, none: 0x9d98b0 } as const;

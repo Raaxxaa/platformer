@@ -106,6 +106,11 @@ def write_ts(path):
     for name, ramp in RAMPS.items():
         lines.append(f'  {name}: [{", ".join(_num(c) for c in ramp)}],')
     lines.append('};')
+    lines.append('// Copy of 07 §3 UI colors; only a test reads it (08 §12.8 check 6).')
+    lines.append('export const UI_COLORS_COPY: Record<string, number> = {')
+    for name, c in UI_COLORS.items():
+        lines.append(f'  {name}: {_num(c)},')
+    lines.append('};')
     lines.append('')
     with open(path, 'w', newline='\n') as f:
         f.write('\n'.join(lines))
@@ -118,6 +123,21 @@ def write_json(path):
         f.write('\n')
 
 
+# 08 §3.6: a copy of 07's UI colors (07 §3.1 tokens, §3.2 grades, §3.3 classes). Used only for `ui` atlas
+# pixels, font pixels and previews; written to palette.generated.ts as UI_COLORS_COPY.
+UI_COLORS = {
+    'ink': (0x0d, 0x0b, 0x14), 'panel': (0x1b, 0x18, 0x26), 'panelBorder': (0x4a, 0x45, 0x60),
+    'text': (0xf2, 0xef, 0xe6), 'textDim': (0x9d, 0x98, 0xb0), 'textOff': (0x5c, 0x58, 0x70),
+    'slotEmpty': (0x3a, 0x36, 0x48), 'good': (0x5c, 0xe0, 0x6a), 'bad': (0xff, 0x4a, 0x4a),
+    'highlight': (0xff, 0xd3, 0x4a), 'hp': (0xe5, 0x40, 0x4a), 'hpLow': (0xff, 0x70, 0x80),
+    'flask': (0xff, 0x8f, 0xa0), 'rush1': (0xff, 0xd3, 0x4a), 'rush2': (0xff, 0xa8, 0x3a),
+    'rush3': (0xff, 0x5a, 0x3a), 'curse': (0xd0, 0x30, 0x6a), 'barrier': (0x6f, 0xe3, 0xff),
+    'ward': (0xc8, 0xa0, 0xff), 'elite': (0xff, 0xc9, 0x3c), 'crit': (0xff, 0xe9, 0x4a),
+}
+UI_COLORS.update({f'grade_{g}': c for g, c in GRADE_COLORS.items()})
+UI_COLORS.update({f'class_{k}': c for k, c in CLASS_COLORS.items() if k != 'none'})
+UI_COLORS['class_neutral'] = CLASS_COLORS['none']
+
 # Slot table: every ramp color gets one integer slot id, used by raster canvases.
 COLORS = []
 _SLOT = {}
@@ -128,13 +148,29 @@ for _ramp in RAMPS.values():
             COLORS.append(_c)
 
 
+for _c in UI_COLORS.values():
+    if _c not in _SLOT:
+        _SLOT[_c] = len(COLORS)
+        COLORS.append(_c)
+_PURE_WHITE = (255, 255, 255)
+
+
 def sid(color):
     """Slot id of an RGB tuple (must be a ramp color)."""
     return _SLOT[color]
 
 
 def ramp_ids(name):
+    """Slot ids of a ramp; 'ui:<key>' gives a one-color ramp from the 07 copy."""
+    if name.startswith('ui:'):
+        return [_SLOT[UI_COLORS[name[3:]]]]
     return [_SLOT[c] for c in RAMPS[name]]
+
+
+def allowed_ui():
+    """`ui` atlas colors (08 §12.5): ink, white, gray, w_*, fx_*, #ffffff and the 07 copy."""
+    s = allowed(['ink', 'white', 'gray', 'trim'] + [k for k in RAMPS if k.startswith(('w_', 'fx_'))])
+    return s | set(UI_COLORS.values())
 
 
 INK = _SLOT[RAMPS['ink'][0]]

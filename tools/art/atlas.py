@@ -46,10 +46,11 @@ def _layout(frames):
     return pages
 
 
-def pack_atlas(name, frames, out_dir):
+def pack_atlas(name, frames, out_dir, strict=True):
     """Pack frames {frameName: RGBA Image}; write <name>.png + <name>.json (or _0, _1 … pages)."""
-    for n in frames:
-        check_frame_name(n)
+    if strict:
+        for n in frames:
+            check_frame_name(n)
     os.makedirs(out_dir, exist_ok=True)
     pages = _layout(frames)
     meta = {'frames': {}, 'pages': []}

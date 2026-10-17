@@ -1,7 +1,9 @@
 // Level validation (06 §13.6). An empty list means the level is valid.
 import { TILE_SIZE } from '../tuning.ts';
-import { COMBAT_ARENA, LEVEL_RULES, MAIN_PATH, MERCHANT_FLOOR, STAGE_OBJECT_COUNTS, type StageLevelId } from '../../data/levelRules.ts';
+import { COMBAT_ARENA, EARLY_SPACING, LEVEL_RULES, MAIN_PATH, MAIN_PATH_BY_LEVEL, MERCHANT_FLOOR, STAGE_OBJECT_COUNTS, type StageLevelId } from '../../data/levelRules.ts';
 import { kindAt, type LevelData, type LevelObject } from './loadLevel.ts';
+
+export const TRAINING_STATIONS = 17;
 
 /** Length of a polyline in tiles. */
 export function pathLengthTiles(o: LevelObject): number {
@@ -13,12 +15,57 @@ export function pathLengthTiles(o: LevelObject): number {
 
 const inside = (x: number, y: number, r: LevelObject) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
 
+/** 06 §8.6: in Stage 1 sections 2–3, groups of at most 2 regulars, elites alone, 24+ tiles between groups, a lone bandit first. */
+export function spacingErrors(d: LevelData, elite: string): string[] {
+  const S = EARLY_SPACING;
+  const out: string[] = [];
+  const groups: { section: number; xs: number[]; ids: string[] }[] = [];
+  for (const sec of S.sections) {
+    const s = d.objects.find((o) => o.type === 'section' && Number(o.props.index) === sec);
+    if (!s) continue;
+    const es = d.objects
+      .filter((o) => o.type === 'enemy' && Number(o.props.wave ?? 0) === 0 && inside(o.x, o.y - 1, s))
+      .map((o) => ({ tx: Math.floor(o.x / TILE_SIZE), id: String(o.props.enemy) }))
+      .sort((a, b) => a.tx - b.tx);
+    const mine: typeof groups = [];
+    for (const e of es) {
+      const g = mine[mine.length - 1];
+      if (g && e.tx - g.xs[g.xs.length - 1] <= S.groupReach) { g.xs.push(e.tx); g.ids.push(e.id); }
+      else mine.push({ section: sec, xs: [e.tx], ids: [e.id] });
+    }
+    for (const g of mine) {
+      const lo = g.xs[0], hi = g.xs[g.xs.length - 1];
+      const regulars = g.ids.filter((id) => id !== elite).length;
+      if (regulars > S.maxRegulars) out.push(`spacing: section ${sec} group at x ${lo}–${hi} has ${regulars} regular enemies (max ${S.maxRegulars})`);
+      if (g.ids.includes(elite) && g.ids.length > 1) out.push(`spacing: elite ${elite} at x ${g.xs[g.ids.indexOf(elite)]} shares a group`);
+    }
+    for (let i = 1; i < mine.length; i++) {
+      const a = mine[i - 1], b = mine[i];
+      const gap = b.xs[0] - a.xs[a.xs.length - 1];
+      if (gap < S.minGap) out.push(`spacing: section ${sec} groups at x ${a.xs[a.xs.length - 1]} and x ${b.xs[0]} are ${gap} tiles apart (min ${S.minGap})`);
+    }
+    groups.push(...mine);
+  }
+  const first = groups[0];
+  if (first && (first.ids.length !== 1 || first.ids[0] !== S.firstEnemy)) out.push(`spacing: the first group of the stage must be a single ${S.firstEnemy}`);
+  return out;
+}
+
 export function validateLevel(d: LevelData): string[] {
   const errs: string[] = [];
   const of = (t: string) => d.objects.filter((o) => o.type === t);
 
   for (const o of d.objects) {
     if (!o.points && o.w > 0 && [o.x, o.y, o.w, o.h].some((v) => v % TILE_SIZE !== 0)) errs.push(`${o.type} #${o.id} is not tile-aligned`);
+  }
+  if (d.kind === 'training') {
+    // 06 §12.4: stations 1–17, each with a checkpoint and a sign (hint zone).
+    const ids = of('station').map((o) => Number(o.props.id)).sort((a, b) => a - b);
+    if (ids.join() !== Array.from({ length: TRAINING_STATIONS }, (_, i) => i + 1).join()) errs.push(`stations: expected 1–${TRAINING_STATIONS}, found ${ids.join(', ')}`);
+    for (const id of ids) {
+      if (!of('checkpoint').some((o) => Number(o.props.station) === id)) errs.push(`station ${id}: no checkpoint`);
+      if (!of('hint').some((o) => Number(o.props.station) === id)) errs.push(`station ${id}: no sign (hint zone)`);
+    }
   }
   if (d.kind !== 'stage') {
     if (of('player_start').length !== 1) errs.push(`player_start: expected 1, found ${of('player_start').length}`);
@@ -53,6 +100,8 @@ export function validateLevel(d: LevelData): string[] {
     if ((counts.get(id) ?? 0) !== n) errs.push(`${id}: expected ${n}, found ${counts.get(id) ?? 0}`);
   }
   if ((counts.get(rule.elite) ?? 0) !== rule.elites) errs.push(`${rule.elite}: expected ${rule.elites}, found ${counts.get(rule.elite) ?? 0}`);
+
+  if (EARLY_SPACING.levels.includes(d.id)) errs.push(...spacingErrors(d, rule.elite));
 
   // Arenas (06 §9, 04 §9.2).
   const arenas = of('arena');
@@ -108,7 +157,8 @@ export function validateLevel(d: LevelData): string[] {
   // Main path and size.
   for (const p of of('main_path')) {
     const len = pathLengthTiles(p);
-    if (len < MAIN_PATH.min || len > MAIN_PATH.max) errs.push(`main_path: ${len.toFixed(1)} tiles is outside ${MAIN_PATH.min}–${MAIN_PATH.max}`);
+    const lim = MAIN_PATH_BY_LEVEL[d.id] ?? MAIN_PATH;
+    if (len < lim.min || len > lim.max) errs.push(`main_path: ${len.toFixed(1)} tiles is outside ${lim.min}–${lim.max}`);
   }
   if (d.widthTiles > rule.maxSize.w || d.heightTiles > rule.maxSize.h) errs.push(`size ${d.widthTiles}×${d.heightTiles} is larger than ${rule.maxSize.w}×${rule.maxSize.h}`);
   return errs;

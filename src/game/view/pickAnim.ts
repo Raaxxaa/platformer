@@ -1,0 +1,133 @@
+// Which anim and frame a character shows, from core state (08 §5.2, §6.1, §6.3, §7.1–7.4). Pure: no Phaser.
+import type { MoveStateId } from '../../core/player/body.ts';
+import { BOSS, MOVE, TICK_RATE } from '../../core/tuning.ts';
+import { ANIM } from '../../data/art.ts';
+import { weaponDiveKey, weaponStepKey, WEAPON_ART } from '../../data/animKeys.ts';
+import { phaseFrame, timeFrame, type AnimDef } from './animClock.ts';
+
+export type Lookup = (key: string) => AnimDef | undefined;
+
+export interface PlayerAnimState {
+  state: MoveStateId; stateTicks: number; vx: number; vy: number; facing: 1 | -1; landSpeed: number;
+  dead: boolean;
+  /** The current weapon step (phaseTicks counts from 1, like core). */
+  attack: { weaponId: string; step: number; phase: 'startup' | 'active' | 'recovery'; phaseTicks: number; lens: Record<'startup' | 'active' | 'recovery', number> } | null;
+  /** Weapon whose dive layer draws during dive states. */
+  diveWeapon: string | null;
+  drinkTicks: number | null;
+  ticksSinceDoubleJump: number;
+  ticksSinceWallJump: number;
+}
+
+/** The weapon + smear layer for one frame (08 §4.2): the frame name lives in `weapon_<id>`. */
+export interface WeaponLayer { atlas: string; frame: string; behind: boolean; smear: string | null }
+export interface PlayerPick { key: string; frame: number; weapon: WeaponLayer | null }
+
+const sec = (ticks: number) => ticks / TICK_RATE;
+const n = (get: Lookup, k: string) => get(k)?.frames.length ?? 1;
+
+/** Movement anim (08 §6.1). `viewT` is the view's own anim time; `runPhase` the run accumulator. */
+function movement(s: PlayerAnimState, get: Lookup, runPhase: number): { key: string; frame: number } {
+  const A = ANIM, st = sec(s.stateTicks);
+  switch (s.state) {
+    case 'dash': {
+      const t = s.stateTicks - 1;
+      return { key: 'dash', frame: t < A.DASH_FRAME_STARTS[0] ? 0 : t < A.DASH_FRAME_STARTS[1] ? 1 : 2 };
+    }
+    case 'wallSlide': return { key: 'wall_slide', frame: timeFrame(get('wall_slide')!, st) };
+    case 'ledgeClimb': {
+      const total = MOVE.LEDGE_CLIMB_UP_TICKS + MOVE.LEDGE_CLIMB_OVER_TICKS;
+      return { key: 'ledge_climb', frame: Math.min(n(get, 'ledge_climb') - 1, Math.floor((s.stateTicks / total) * n(get, 'ledge_climb'))) };
+    }
+    case 'slide': return { key: 'slide', frame: s.stateTicks <= A.SLIDE_F0_TICKS ? 0 : 1 };
+    case 'crawl': return { key: 'crawl', frame: Math.abs(s.vx) > A.CRAWL_MOVE_SPEED ? timeFrame(get('crawl')!, st) : 0 };
+    case 'diveWindup': return { key: 'dive_windup', frame: phaseFrame(get('dive_windup')!, 'all', s.stateTicks, MOVE.DIVE_WINDUP_TICKS) };
+    case 'diveFall': return { key: 'dive_fall', frame: timeFrame(get('dive_fall')!, st) };
+    case 'diveLand': return { key: 'dive_land', frame: phaseFrame(get('dive_land')!, 'all', s.stateTicks, MOVE.DIVE_LAND_LAG_TICKS) };
+    case 'air': {
+      const dj = get('double_jump')!, wj = get('wall_jump')!;
+      if (s.ticksSinceDoubleJump < (dj.frames.length / dj.fps!) * TICK_RATE) return { key: 'double_jump', frame: timeFrame(dj, sec(s.ticksSinceDoubleJump)) };
+      if (s.ticksSinceWallJump < (wj.frames.length / wj.fps!) * TICK_RATE) return { key: 'wall_jump', frame: timeFrame(wj, sec(s.ticksSinceWallJump)) };
+      if (s.vy < -A.AIR_APEX_VY) return { key: 'jump', frame: timeFrame(get('jump')!, st) };
+      if (s.vy > A.AIR_APEX_VY) return { key: 'fall', frame: timeFrame(get('fall')!, st) };
+      return { key: 'apex', frame: 0 };
+    }
+    case 'ground': {
+      const land = get('land')!;
+      if (s.landSpeed >= A.LAND_MIN_VY && Math.abs(s.vx) < A.RUN_MIN_SPEED && st < land.frames.length / land.fps!) return { key: 'land', frame: timeFrame(land, st) };
+      if (Math.abs(s.vx) > A.SKID_SPEED && Math.sign(s.vx) !== s.facing) return { key: 'skid', frame: 0 };
+      if (Math.abs(s.vx) > A.RUN_MIN_SPEED) return { key: 'run', frame: Math.floor(runPhase) % n(get, 'run') };
+      return { key: 'idle', frame: timeFrame(get('idle')!, st) };
+    }
+    default: return { key: 'idle', frame: timeFrame(get('idle')!, st) };
+  }
+}
+
+/** 08 §5.2: dead → hurt → weapon step → drink → movement. */
+export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, runPhase: number): PlayerPick {
+  if (s.dead || s.state === 'dead') return { key: 'dead', frame: timeFrame(get('dead')!, viewT), weapon: null };
+  if (s.state === 'hurt') return { key: 'hurt', frame: timeFrame(get('hurt')!, sec(s.stateTicks)), weapon: null };
+  const a = s.attack;
+  if (a && WEAPON_ART[a.weaponId] && a.step < WEAPON_ART[a.weaponId].steps) {
+    const key = weaponStepKey(a.weaponId, a.step);
+    const def = get(key)!;
+    const frame = phaseFrame(def, a.phase, a.phaseTicks - 1, a.lens[a.phase]);
+    const smearOn = a.phase === 'active' || (a.phase === 'recovery' && a.phaseTicks <= ANIM.SMEAR_RECOVERY_TICKS);
+    return { key, frame, weapon: { atlas: `weapon_${a.weaponId}`, frame: def.frames[frame], behind: !!def.weaponBehind?.includes(frame), smear: smearOn ? `${key}_smear` : null } };
+  }
+  if (s.drinkTicks !== null) {
+    const t = sec(s.drinkTicks), e = ANIM.DRINK_FRAME_ENDS;
+    return { key: 'drink', frame: t < e[0] ? 0 : t < e[1] ? 1 : t < e[2] ? 2 : 3, weapon: null };
+  }
+  const m = movement(s, get, runPhase);
+  let weapon: WeaponLayer | null = null;
+  if (m.key.startsWith('dive_') && s.diveWeapon && WEAPON_ART[s.diveWeapon]) {
+    const wk = weaponDiveKey(s.diveWeapon, m.key.slice('dive_'.length) as 'windup' | 'fall' | 'land');
+    const wd = get(wk);
+    if (wd) weapon = { atlas: wd.atlas, frame: wd.frames[Math.min(m.frame, wd.frames.length - 1)], behind: false, smear: null };
+  }
+  return { ...m, weapon };
+}
+
+/** What an enemy view needs to know (a subset of EnemyState). */
+export interface EnemyAnimState {
+  dead: boolean; vx: number; vy: number; knockback: boolean;
+  control: { type: 'stagger' | 'knockdown' | 'dazed' | 'stun' | 'pin' | 'launch' | 'pull' } | null;
+  attack: { id: string; phase: string; t: number; len: number } | null;
+  boss: { introTicks: number } | null;
+  /** The boar's ledge skid (04 §3). */
+  skidding?: boolean;
+}
+
+export interface EnemyPick { key: string; frame: number; alpha: number }
+
+/** 08 §7.1–7.4. Keys are relative (`idle`, `atk_slash`); `get` resolves them for this enemy. */
+export function pickEnemyAnim(e: EnemyAnimState, get: Lookup, t: number, runPhase: number): EnemyPick {
+  const has = (k: string) => get(k) !== undefined;
+  if (e.dead) {
+    const def = get('death')!;
+    const i = timeFrame(def, t);
+    if (e.boss) return { key: 'death', frame: i, alpha: 1 };
+    const last = def.frames.length - 1, fps = def.fps ?? 1;
+    const fade = i < last ? 1 : Math.max(0, 1 - (t - last / fps) * fps);
+    return { key: 'death', frame: i, alpha: fade };
+  }
+  const c = e.control;
+  if (e.boss && e.boss.introTicks > 0 && has('intro')) {
+    const k = get('intro')!.frames.length;
+    return { key: 'intro', frame: Math.min(k - 1, Math.floor(((BOSS.INTRO_TICKS - e.boss.introTicks) / BOSS.INTRO_TICKS) * k)), alpha: 1 };
+  }
+  if (e.boss && c?.type === 'stagger' && has('break')) {
+    const f = t < ANIM.BREAK_F0 ? 0 : 1 + (Math.floor((t - ANIM.BREAK_F0) * ANIM.BREAK_FPS) % 2);
+    return { key: 'break', frame: f, alpha: 1 };
+  }
+  if (c?.type === 'knockdown' && has('knockdown')) return { key: 'knockdown', frame: t < ANIM.KNOCKDOWN_F0 ? 0 : 1, alpha: 1 };
+  if (c?.type === 'dazed' && has('dazed')) return { key: 'dazed', frame: timeFrame(get('dazed')!, t), alpha: 1 };
+  if (c) return { key: 'stagger', frame: timeFrame(get('stagger')!, t), alpha: 1 };
+  if (e.knockback && has('hurt')) return { key: 'hurt', frame: 0, alpha: 1 };
+  if (e.skidding && has('skid')) return { key: 'skid', frame: 0, alpha: 1 };
+  const a = e.attack;
+  if (a && has(`atk_${a.id}`)) return { key: `atk_${a.id}`, frame: phaseFrame(get(`atk_${a.id}`)!, a.phase, a.t, a.len, e.vy), alpha: 1 };
+  if (Math.abs(e.vx) > 0.5 && has('walk')) return { key: 'walk', frame: Math.floor(runPhase) % get('walk')!.frames.length, alpha: 1 };
+  return { key: 'idle', frame: timeFrame(get('idle')!, t), alpha: 1 };
+}

@@ -4,7 +4,7 @@ import { ENEMY } from '../core/tuning.ts';
 
 const REGULAR = { tier: 'regular', elite: false, attackGap: ENEMY.ATTACK_GAP_REGULAR, turnDelay: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged' } as const;
 
-export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'great_boar', EnemyDef> = {
+export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'great_boar', EnemyDef> = {
   wolf: {
     ...REGULAR, id: 'wolf', size: 'small', hurtbox: { w: 28, h: 16 }, hp: 30, poiseMax: 10, kbResist: 0,
     walk: 60, chase: 150, notice: { range: 176, rangeY: ENEMY.NOTICE_RANGE_Y, time: 0.35 }, preferred: [72, 112], gold: 3, dropsLedges: true,
@@ -82,4 +82,21 @@ export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'band
     walk: 0, chase: 0, notice: { range: 0, rangeY: 0, time: 0 }, preferred: [0, 0], attackGap: 0, turnDelay: 0, stationary: true,
     gold: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged', attacks: [],
   },
+  // 04 §2.11: the Training Dummy with a practice sword; swings while the player is within 64 px; 0 damage.
+  sparring_dummy: {
+    id: 'sparring_dummy', tier: 'dummy', elite: false, size: 'medium', hurtbox: { w: 16, h: 32 }, hp: 9999, poiseMax: 50, kbResist: 1.0,
+    walk: 0, chase: 0, notice: { range: 0, rangeY: 0, time: 0 }, preferred: [0, 0], attackGap: 0, turnDelay: 0, stationary: true,
+    gold: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged',
+    attacks: [{ id: 'practice_swing', use: { minX: 0, maxX: 64 }, cooldown: 0, token: 'none', telegraph: 0.6, active: 0.1, recovery: 1.3,
+      hit: { box: { dx: 24, dy: -16, w: 40, h: 28 }, damage: 0, playerKb: [120, -80] } }],
+  },
+  // 04 §2.12: HP 1, never acts; Rush only; respawns 3.0 s after breaking.
+  straw_target: {
+    id: 'straw_target', tier: 'target', elite: false, size: 'small', hurtbox: { w: 12, h: 24 }, hp: 1, poiseMax: 0, kbResist: 1.0,
+    walk: 0, chase: 0, notice: { range: 0, rangeY: 0, time: 0 }, preferred: [0, 0], attackGap: 0, turnDelay: 0, stationary: true,
+    gold: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged', attacks: [],
+  },
 };
+
+/** 04 §2.11–2.12 timings. */
+export const TRAINING = { sparringReach: 64, strawRespawnS: 3.0 } as const;

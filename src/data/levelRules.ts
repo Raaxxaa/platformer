@@ -38,5 +38,18 @@ export const STAGE_OBJECT_COUNTS: Record<string, number> = {
 
 /** 06 §13.6: main path length (tiles). */
 export const MAIN_PATH = { min: 650, max: 730 } as const;
+// SPEC-GAP: 06 §8.6 grew Stage 1's §2 (150–170) and §3 (120–140) but kept the 650–730 total; Plains gets the total
+// shifted by the same +60 the two section minimums grew.
+export const MAIN_PATH_BY_LEVEL: Partial<Record<string, { min: number; max: number }>> = { plains: { min: 710, max: 790 } };
 /** 06 §11.3: merchant spot needs this much flat open floor on each side (px), and 3 open rows above. */
 export const MERCHANT_FLOOR = { side: 112, openRows: 3 } as const;
+
+/** 06 §8.6 early-game spacing (Stage 1 only): small groups with calm ground between them. Distances in tiles. */
+export const EARLY_SPACING = {
+  levels: ['plains'] as readonly string[],
+  sections: [2, 3] as readonly number[],
+  groupReach: 8,            // enemies within 8 tiles of each other (along x) form a group
+  maxRegulars: 2,
+  minGap: 24,               // edge to edge between two groups
+  firstEnemy: 'bandit',
+} as const;

@@ -9,9 +9,14 @@ import type { HintAction } from '../../core/run/zones.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { formatTime } from '../../core/time.ts';
 import { TICK_RATE } from '../../core/tuning.ts';
+import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
+import { DoorViews, drawGuideArrows } from '../view/levelView.ts';
+import { YardView } from '../view/yardView.ts';
 import { STAGE_UI } from '../../data/stageUi.ts';
 import { WorldScene } from './WorldScene.ts';
+import { parseKit } from '../../ui/popups/classPickModel.ts';
+import { CLASS_IDS } from '../../data/classes.ts';
 
 /** Hint text with the M1 key names (07 shows real button prompts later). */
 const HINT_TEXT: Record<HintAction, string> = {
@@ -38,16 +43,18 @@ export class StageScene extends WorldScene {
   private levelId = 'plains';
   private level!: LevelData;
   private props!: Phaser.GameObjects.Graphics;
-  private labels: Phaser.GameObjects.Text[] = [];
-  private doorText = new Map<string, Phaser.GameObjects.Text>();
-  private hintText!: Phaser.GameObjects.Text;
-  private timerText!: Phaser.GameObjects.Text;
-  private splitText!: Phaser.GameObjects.Text;
+  private labels: Phaser.GameObjects.BitmapText[] = [];
+  private doorText = new Map<string, Phaser.GameObjects.BitmapText>();
+  private doorViews!: DoorViews;
+  private hintText!: Phaser.GameObjects.BitmapText;
+  private timerText!: Phaser.GameObjects.BitmapText;
+  private splitText!: Phaser.GameObjects.BitmapText;
   private splitUntil = -1;
   private bossBarGfx!: Phaser.GameObjects.Graphics;
-  private bossText!: Phaser.GameObjects.Text;
+  private bossText!: Phaser.GameObjects.BitmapText;
   private clearOverlay!: Phaser.GameObjects.Graphics;
-  private clearText!: Phaser.GameObjects.Text;
+  private clearText!: Phaser.GameObjects.BitmapText;
+  private yard: YardView | null = null;
 
   constructor() {
     super('Stage');
@@ -56,7 +63,9 @@ export class StageScene extends WorldScene {
   preload(): void {
     super.preload();
     const q = new URLSearchParams(window.location.search);
-    this.levelId = (q.get('debug') === '1' && q.get('start')) || 'plains';
+    // `?start=training` opens the Training Yard (06 §12.4: until the Home Village gate exists); other levels need ?debug=1.
+    const start = q.get('start');
+    this.levelId = start === 'training' ? 'training_yard' : (q.get('debug') === '1' && start) || 'plains';
     this.load.json(`level_${this.levelId}`, `levels/${this.levelId}.json`);
   }
 
@@ -80,20 +89,29 @@ export class StageScene extends WorldScene {
     this.props = this.add.graphics().setDepth(DEPTH.terrain + 5);
     for (const m of this.world.markers) {
       const y = CENTER_MARKERS.has(m.type) ? m.y + U.marker / 2 : m.y;
-      this.labels.push(this.add.text(m.x, y - U.marker / 2, MARKER_LETTER[m.type] ?? '?', { fontFamily: 'monospace', fontSize: '9px', color: '#ffffff' })
+      this.labels.push(this.add.bitmapText(m.x, y - U.marker / 2, FONTS.small, MARKER_LETTER[m.type] ?? '?')
         .setOrigin(0.5).setDepth(DEPTH.terrain + 6));
     }
-    const ui = { fontFamily: 'monospace', fontSize: '10px', color: '#ffffff', stroke: '#0d0b14', strokeThickness: 2 };
-    this.hintText = this.add.text(width / 2, height - U.hintBottom, '', ui).setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.timerText = this.add.text(width - 4, 4, '', { ...ui, fontSize: '12px' }).setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.splitText = this.add.text(width - 4, 20, '', { ...ui, color: '#ffd84a' }).setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.doorViews = new DoorViews(this);
+    drawGuideArrows(this, this.level.objects);
+    this.hintText = this.add.bitmapText(width / 2, height - U.hintBottom, FONTS.small, '').setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.timerText = this.add.bitmapText(width - 4, 4, FONTS.large, '').setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.splitText = this.add.bitmapText(width - 4, 24, FONTS.small, '').setTint(0xffd84a).setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
     this.bossBarGfx = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud);
-    this.bossText = this.add.text(width / 2, U.bossBarY - 2, '', ui).setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.bossText = this.add.bitmapText(width / 2, U.bossBarY - 2, FONTS.small, '').setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
     this.clearOverlay = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 5);
     this.clearOverlay.fillStyle(0x000000, 0.6).fillRect(0, 0, width, height);
-    this.clearText = this.add.text(width / 2, height / 2, '', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff', align: 'center' })
+    this.clearText = this.add.bitmapText(width / 2, height / 2, FONTS.large, '').setCenterAlign()
       .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
+    if (this.level.kind === 'training') this.yard = new YardView(this, this.level);
     this.installStageDebug();
+    // Before the run, pick a class and weapon (M4 plan Task 13). `?kit=archer:bow` skips the panel; debug runs keep
+    // the M2 loadout unless a kit is given.
+    const q = new URLSearchParams(window.location.search);
+    const kit = parseKit(q.get('kit'));
+    if (kit) this.equipKit(kit);
+    // In the Training Yard the class statues at the start do the picking (06 §12.4).
+    else if (this.level.kind !== 'training' && (q.get('debug') !== '1' || q.get('picker') === '1')) this.openClassPick([...CLASS_IDS], true);
   }
 
   private installStageDebug(): void {
@@ -103,6 +121,17 @@ export class StageScene extends WorldScene {
     api.killAll = () => { for (const e of this.world.enemies) if (!e.dead && !e.dormant && e.spawnInTicks === 0) killEnemy(this.world, e); };
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.levelId = () => this.level.id;
+    api.levelObjects = (type: string) => this.level.objects.filter((o) => o.type === type).map((o) => ({ x: o.x, y: o.y, w: o.w, h: o.h, props: o.props }));
+    // Training Yard: progress, and a jump to a station's checkpoint.
+    api.training = () => {
+      const t = this.world.training;
+      return t ? { done: [...this.world.trainingDone].sort((a, b) => a - b), current: t.current, sign: t.sign, fade: t.fade } : null;
+    };
+    api.stations = () => this.world.training?.stations.map((x) => ({ id: x.id, rect: x.rect, checkpoint: x.checkpoint })) ?? [];
+    api.toStation = (id: number) => {
+      const s = this.world.training?.stations.find((x) => x.id === id);
+      if (s) this.world.teleportPlayer(s.checkpoint.x, s.checkpoint.y);
+    };
     // Zooms out to show section n whole (0 = back to normal), for screenshots.
     api.overview = (n: number) => {
       const s = this.level.objects.find((o) => o.type === 'section' && o.props.index === n);
@@ -121,44 +150,28 @@ export class StageScene extends WorldScene {
   protected renderExtra(): void {
     const w = this.world, U = STAGE_UI;
     const g = this.props.clear();
-    // Doors and other bodies.
+    // Doors (sprites) and the timed door's countdown.
+    this.doorViews.update(w);
     for (const b of w.bodies.list) {
-      if (b.id.startsWith('arena_door') || w.timedDoors.some((t) => t.id === b.id)) {
-        const timed = w.timedDoors.find((t) => t.id === b.id);
-        const state = timed ? w.run.timedDoors[b.id] : null;
-        const color = state === 'missed' ? U.doorMissed : state === 'open' ? U.doorOpen : b.active ? U.doorActive : U.door;
-        if (b.active) g.fillStyle(color, 1).fillRect(b.x, b.y, b.w, b.h);
-        else g.lineStyle(1, color, 1).strokeRect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
-        if (timed) {
-          let t = this.doorText.get(b.id);
-          if (!t) { t = this.add.text(0, 0, '', { fontFamily: 'monospace', fontSize: '9px', color: '#ffffff', stroke: '#0d0b14', strokeThickness: 2 }).setOrigin(0.5, 1).setDepth(DEPTH.terrain + 6); this.doorText.set(b.id, t); }
-          t.setPosition(b.x + b.w / 2, b.y - 2).setText(state === 'pending' ? `${Math.ceil(timedDoorTimeLeft(w, b.id))}` : '');
-        }
-      }
+      const timed = w.timedDoors.find((t) => t.id === b.id);
+      if (!timed) continue;
+      const state = w.run.timedDoors[b.id];
+      let t = this.doorText.get(b.id);
+      if (!t) { t = this.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.doors + 1); this.doorText.set(b.id, t); }
+      t.setPosition(b.x + b.w / 2, b.y - 2).setText(state === 'pending' ? `${Math.ceil(timedDoorTimeLeft(w, b.id))}` : '');
     }
     // Loot markers (grey boxes with a letter) and guide arrows.
     for (const m of w.markers) {
       const cy = CENTER_MARKERS.has(m.type) ? m.y : m.y - U.marker / 2;
       g.fillStyle(U.markerColor, 1).fillRect(m.x - U.marker / 2, cy - U.marker / 2, U.marker, U.marker);
     }
-    for (const a of this.level.objects.filter((o) => o.type === 'guide_arrow')) {
-      const ang = (Number(a.props.angle ?? 0) * Math.PI) / 180, L = U.arrowLen;
-      const tx = a.x + Math.cos(ang) * L / 2, ty = a.y + Math.sin(ang) * L / 2;
-      g.lineStyle(2, 0xffffff, 1).lineBetween(a.x - Math.cos(ang) * L / 2, a.y - Math.sin(ang) * L / 2, tx, ty);
-      g.fillStyle(0xffffff, 1).fillTriangle(tx + Math.cos(ang) * 4, ty + Math.sin(ang) * 4,
-        tx + Math.cos(ang + 2.4) * 6, ty + Math.sin(ang + 2.4) * 6, tx + Math.cos(ang - 2.4) * 6, ty + Math.sin(ang - 2.4) * 6);
-    }
-    // Rockfall floor markers.
-    for (const r of w.rockMarkers) {
-      const a = [...w.arenas.values()].find((x) => x.kind === 'boss');
-      const floor = a ? a.rect.y + a.rect.h : r.topY;
-      g.fillStyle(U.rockMarker, 0.5 + 0.5 * Math.sin(w.tick / 4)).fillRect(r.x - 9, floor - 3, 18, 3);
-    }
     // Hint, timer, split popup, boss bar, stage clear.
-    this.hintText.setText(w.activeHint && !this.overview ? HINT_TEXT[w.activeHint] : '');
-    this.timerText.setVisible(!this.overview);
+    const sign = w.training?.sign ?? (w.activeHint ? HINT_TEXT[w.activeHint] : '');
+    this.hintText.setText(!this.overview ? sign : '');
+    this.timerText.setVisible(!this.overview && !this.yard);
+    this.yard?.update(w);
     this.timerText.setText(formatTime(w.run.runTicks));
-    for (const e of w.events) if (e.t === 'split') { this.splitUntil = w.tick + U.splitSeconds * TICK_RATE; this.splitText.setText(`Split ${e.index}  ${formatTime(e.runTicks)}`); }
+    for (const { e } of this.frameEvents) if (e.t === 'split') { this.splitUntil = w.tick + U.splitSeconds * TICK_RATE; this.splitText.setText(`Split ${e.index}  ${formatTime(e.runTicks)}`); }
     this.splitText.setVisible(w.tick < this.splitUntil);
     const bar = w.bossBar;
     const bg = this.bossBarGfx.clear();

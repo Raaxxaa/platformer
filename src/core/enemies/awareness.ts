@@ -57,9 +57,9 @@ export function becomeAware(w: GameWorld, e: EnemyState, byHit: boolean): void {
 
 /** One enemy-time tick of noticing. */
 export function stepAwareness(w: GameWorld, e: EnemyState): void {
-  if (e.aware || e.def.tier === 'dummy') return;
+  if (e.aware || e.def.tier === 'dummy' || e.def.tier === 'target') return;
   if (e.ai.pendingAwareAt >= 0 && w.tick >= e.ai.pendingAwareAt) { becomeAware(w, e, false); return; }
   if (canSee(w, e)) e.noticeT += 1;
   else e.noticeT = Math.max(0, e.noticeT - 1);
-  if (e.noticeT >= ticks(e.def.notice.time * w.noticeTimeMult)) becomeAware(w, e, false);
+  if (e.noticeT >= ticks(e.def.notice.time * w.noticeTime)) becomeAware(w, e, false);
 }
