@@ -1,5 +1,7 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
+import { stepLucky, type LuckyBlock } from '../loot/lucky.ts';
+import type { LuckyId } from '../../data/loot.ts';
 import { setupLoot, type Chest } from '../loot/sources.ts';
 import { newEconomy, stepCoins, type Coin, type EconomyState } from '../economy/gold.ts';
 import { stepKeys } from '../economy/keys.ts';
@@ -64,7 +66,7 @@ import { stepRockfall, type RockMarker } from '../enemies/greatBoar.ts';
 export type Stage = 1 | 2 | 3 | 4;
 
 /** Loot objects that are only grey markers until M4. */
-const MARKER_TYPES = new Set(['lucky_block', 'merchant_spot']);
+const MARKER_TYPES = new Set(['merchant_spot']);
 
 /** 'stage' while playing, 'dead' for the 1 s after death, then 'deathScreen' (06 §6.1). */
 export type WorldPhase = 'stage' | 'dead' | 'deathScreen';
@@ -102,7 +104,9 @@ export type WorldEvent =
   | { t: 'keyTaken' }
   | { t: 'chestOpened'; kind: 'key' | 'cursed' | 'timed'; objectId: number }
   | { t: 'curseApplied'; id: string }
-  | { t: 'curseLifted' };
+  | { t: 'curseLifted' }
+  | { t: 'luckyResult'; id: LuckyId }
+  | { t: 'luckyBroken'; objectId: number };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -171,6 +175,7 @@ export class GameWorld {
   econ: EconomyState = newEconomy();
   coins: Coin[] = [];
   chests: Chest[] = [];
+  luckyBlocks: LuckyBlock[] = [];
   /** Shown gold (05 §9.1). */
   get gold(): number { return Math.floor(this.econ.goldTenths / 10); }
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
@@ -637,6 +642,7 @@ export class GameWorld {
     stepAbilityEntities(this);
     stepGroundItems(this);
     stepKeys(this);
+    if (this.phase === 'stage') stepLucky(this);
     stepCoins(this);
     for (const r of this.respawns.filter((x) => x.at <= this.tick)) this.spawnExtra(r.spawn);
     this.respawns = this.respawns.filter((x) => x.at > this.tick);

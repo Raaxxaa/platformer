@@ -3,6 +3,7 @@ import type { InputState } from '../input.ts';
 import { roundHalfUp } from '../math.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, FLASK } from '../tuning.ts';
+import { LUCKY_FX } from '../../data/loot.ts';
 import { cancelAttack } from './playerCombat.ts';
 import type { FlaskState } from './types.ts';
 
@@ -27,7 +28,8 @@ export function addFlaskFill(w: GameWorld, tenths: number): void {
 }
 
 export function onKillFill(w: GameWorld, tier: 'regular' | 'elite'): void {
-  addFlaskFill(w, tier === 'elite' ? FLASK.FILL_ELITE : FLASK.FILL_REGULAR);
+  const mult = w.econ.buffs.includes('bloodrush') ? LUCKY_FX.bloodrushMult : 1;     // 05 §7.2 Bloodrush
+  addFlaskFill(w, (tier === 'elite' ? FLASK.FILL_ELITE : FLASK.FILL_REGULAR) * mult);
 }
 
 function startDrink(w: GameWorld): void {
@@ -40,7 +42,8 @@ export function tryStartDrink(w: GameWorld, input: InputState): void {
   if (w.health.dead) return;
   if (input.heal.pressed) {
     if (w.drinking) return;
-    const reason = w.flask.charges < 1 ? 'noCharge' : w.health.hp >= w.health.maxHp ? 'fullHp' : w.body.state === 'hurt' || w.health.hitstunTicks > 0 ? 'hitstun' : null;
+    const blocked = w.econ.debuffs.some((d) => d.id === 'dry_flask') || w.econ.curse?.id === 'no_heal';
+    const reason = w.flask.charges < 1 ? 'noCharge' : w.health.hp >= w.health.maxHp ? 'fullHp' : blocked ? 'blocked' : w.body.state === 'hurt' || w.health.hitstunTicks > 0 ? 'hitstun' : null;
     if (reason) { w.events.push({ t: 'healRefused', reason }); return; }
     w.drinkBufferTicks = COMBAT.INPUT_BUFFER_TICKS;
   } else if (w.drinkBufferTicks > 0 && w.body.hitStopTicks === 0) {

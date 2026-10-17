@@ -23,7 +23,8 @@ describe('GameWorld.fromLevel (M3 Task 4)', () => {
     expect(doors.map((b) => b.active)).toEqual([false, false]);
     expect(w.bodies.get('td1')?.active).toBe(true);
     expect(w.grid.kindAt(10, 6)).toBe('solid');             // the timed door blocks
-    expect(w.markers.map((m) => m.type).sort()).toEqual(['lucky_block']);
+    expect(w.markers.map((m) => m.type)).toEqual([]);
+    expect(w.luckyBlocks.length).toBe(1);
     expect(w.groundItems.filter((i) => i.key).length).toBe(1);
     expect(w.chests.map((c) => c.kind)).toEqual(['timed']);
   });

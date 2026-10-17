@@ -1,5 +1,6 @@
 // Weapon and ability items on the ground, interacting, pickup and the swap choices (03 §7.1, 05 §5.7, 06 §11, 07 §6.2–6.3).
 // Interactables (statues, boards) share the same targeting; their owners give the action.
+import { slot2Locked } from '../loot/lucky.ts';
 import { onItemTaken } from '../loot/sources.ts';
 import { resetLeech } from '../loot/perks.ts';
 import type { InputState } from '../input.ts';
@@ -111,7 +112,9 @@ function pickUp(w: GameWorld, it: GroundItem): void {
     w.abilities.swapChoice = { itemId: String(it.id) };
   } else if (it.weapon) {
     if (w.combat.current || w.combat.charge) return;          // refused while attacking (02 §9.5)
-    const empty = w.combat.slots.findIndex((s) => s === null);
+    // Butterfingers (05 §7.3): an empty slot 2 counts as full and locked.
+    const locked = slot2Locked(w);
+    const empty = w.combat.slots.findIndex((s, i) => s === null && !(locked && i === 1));
     if (empty >= 0) { takeInto(w, it, empty as 0 | 1); return; }
     w.weaponSwapChoice = { itemId: it.id };
   }
@@ -142,7 +145,7 @@ export function stepInteract(w: GameWorld, input: InputState): InputState {
     if (!it || !overlaps(itemRect(it), pr) || input.interact.pressed) { closeChoices(w); return input; }
     const out = { ...input };
     if (w.weaponSwapChoice) {
-      const pick = input.attack1.pressed ? 0 : input.attack2.pressed ? 1 : null;
+      const pick = input.attack1.pressed ? 0 : input.attack2.pressed && !slot2Locked(w) ? 1 : null;
       out.attack1 = emptyButton(); out.attack2 = emptyButton();
       if (pick !== null) takeInto(w, it, pick);
     } else {

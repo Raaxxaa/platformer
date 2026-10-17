@@ -1,4 +1,5 @@
 // The player's weapon attacks: combo, input buffer, cancels, move caps and facing (02 §9.1–9.3, §9.5–9.6).
+import { slot2Locked } from '../loot/lucky.ts';
 import { chargeTimeOf } from './signatures.ts';
 import { attackSpeedBonus } from '../loot/perks.ts';
 import type { InputState } from '../input.ts';
@@ -227,7 +228,7 @@ export function stepPlayerCombat(w: GameWorld, input: InputState): void {
   if (b.grounded || b.state === 'wallSlide') c.uppercutUsed = false;
   let press: Slot | null = null;
   if (input.attack1.pressed && c.slots[0]) press = 0;
-  else if (input.attack2.pressed && c.slots[1]) press = 1;
+  else if (input.attack2.pressed && c.slots[1] && !slot2Locked(w)) press = 1;          // Butterfingers (05 §7.3)
   if (press !== null && isDivePress(b, input, w, press)) press = null;
   // While the Storm Hammer is out, any press of its button recalls it instead (02 §11).
   if (press !== null && hammerOutIn(w, press)) { recallHammer(w); press = null; }

@@ -6,12 +6,15 @@ import { enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { onBossKilled } from '../enemies/boss.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { COMBAT, ENEMY, RUSH, ticks } from '../tuning.ts';
+import { COMBAT, ELEMENT, ENEMY, RUSH, ticks } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
 import { applyEnemyKnockback, applyLaunch, applyPull, controlOrPoise, damagePoise, isCommitted } from './enemyReactions.ts';
 import { afterHit, guaranteedCrit, hitBonus, kbDir, onLanding, targetMult } from './hitMods.ts';
 import { elementOf, lightningChain } from './elements.ts';
-import { applyElementHit, creditKillSource, shatterMult, spreadBurn, windMults } from './status.ts';
+import { applyBurn, applyElementHit, creditKillSource, shatterMult, spreadBurn, windMults } from './status.ts';
+import { hasBuff, hitLuckyBlocks, onCurseKill } from '../loot/lucky.ts';
+import { LUCKY_FX } from '../../data/loot.ts';
+import { elementBonus } from './elements.ts';
 import { hurtPlayer } from './health.ts';
 import { refundDash } from '../player/dash.ts';
 import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
@@ -67,6 +70,8 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const killer = isWeapon ? inst : null;
   if (el?.id === 'lightning') lightningChain(w, e, el.level, procBase, (x) => targetMult(w, g, x), (x) => { killEnemy(w, x); creditKillSource(w, killer, x); });
   else if (el && el.id !== 'wind' && !killed) applyElementHit(w, e, el, procBase, tMult, null, killer);
+  // Firestarter (05 §7.2): every weapon and ability direct hit burns at level 1 (a fire weapon's own burn keeps the higher value).
+  if (hasBuff(w, 'firestarter') && !killed) applyBurn(e, ELEMENT.BURN.pct[LUCKY_FX.firestarterBurnLevel - 1] * (1 + elementBonus(w)) * procBase * tMult, ELEMENT.BURN.spread[0], killer);
   const wind = windMults(el);
   if (spec.heavy) w.shakeLevel('small');
   w.onPlayerLandedHit(g, e);
@@ -117,6 +122,7 @@ export function resolvePlayerHits(w: GameWorld): void {
       applyPlayerHit(w, g, e);
     }
   }
+  hitLuckyBlocks(w);
 }
 
 /** 7b: enemy hit groups vs the player, in creation order. Ties already went to the player in 7a. */
@@ -160,6 +166,7 @@ export function processDeaths(w: GameWorld): void {
     }), 'kill');
     w.events.push({ t: 'kill', enemyId: e.id, tier });
     lootOnKill(w, e);
+    onCurseKill(w);
     if (e.boss) onBossKilled(w, e);
   }
   // Blademaster (03 §5.2): kills reset the dash; several kills on one tick = one call.

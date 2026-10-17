@@ -36,6 +36,7 @@ function abilityItem(w: GameWorld, rng: RngFn, table: 'free' | 'key'): Pick<Grou
 /** Stage load: stands roll their items, keys are placed, chests become interactables, elites get their drop. */
 export function setupLoot(w: GameWorld): void {
   w.chests = [];
+  w.luckyBlocks = [];
   const objs = w.level?.objects ?? [];
   for (const o of objs) {
     if (o.type === 'loot_stand') {
@@ -47,6 +48,7 @@ export function setupLoot(w: GameWorld): void {
       it.resting = true;
     }
     if (o.type === 'key') dropKey(w, o.x, o.y);
+    if (o.type === 'lucky_block') w.luckyBlocks.push({ objectId: o.id, x: o.x, y: o.y, broken: false });
     const kind = CHEST_KIND[o.type];
     if (kind) {
       const c: Chest = { objectId: o.id, kind, x: o.x, y: o.y, opened: false };

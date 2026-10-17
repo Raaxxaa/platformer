@@ -1,7 +1,10 @@
 // Player HP and the hurt pipeline (02 §5.1–5.2).
 import { incomingMult } from '../loot/perks.ts';
 import { applyKnockback, setDead } from '../player/movement.ts';
-import { COMBAT } from '../tuning.ts';
+import { COMBAT, ticks } from '../tuning.ts';
+import { hasDebuff, trySecondWind } from '../loot/lucky.ts';
+import { dropLeakyCoins } from '../economy/gold.ts';
+import { LUCKY_FX } from '../../data/loot.ts';
 import { enemyHitDamage } from './damage.ts';
 import { maxStop } from './hitStop.ts';
 import { addRushValue } from './rush.ts';
@@ -36,7 +39,6 @@ export function hasSuperArmor(w: GameWorld): boolean {
 const ripostes = (): boolean => false;
 const parries = (): boolean => false;
 const blocks = (): boolean => false;
-const secondWind = (): boolean => false;
 
 /**
  * 02 §5.2 for one enemy direct hit or hazard. Returns the damage dealt (0 = it did not land).
@@ -53,13 +55,15 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   // 5. Damage.
   // A practice hit (Sparring Dummy, 04 §2.11) deals 0 but runs the rest of the pipeline.
   const practice = src.kind === 'enemyHit' && src.damageA === 0;
-  const dealt = practice ? 0 : enemyHitDamage(src.damageA, incomingMult(w), null);
+  // 05 §8 one_hit: every damage equals current HP.
+  const dealt = practice ? 0 : enemyHitDamage(src.damageA, incomingMult(w), w.econ.curse?.id === 'one_hit' ? h.hp : null);
   h.hp -= dealt;
   if (practice) w.events.push({ t: 'sparringHit' });
   w.onPlayerDamaged();                                       // the hit streak resets (02 §1); a swap choice closes
   // 6. Death.
   if (h.hp <= 0 && w.level?.kind === 'training') h.hp = 1;     // no death in the Training Yard (06 §12.4)
-  if (h.hp <= 0 && !secondWind()) {
+  const saved = h.hp <= 0 && trySecondWind(w);                // 05 §7.2: once, back to half HP
+  if (h.hp <= 0 && !saved) {
     h.hp = 0;
     h.dead = true;
     h.deathCause = src.kind === 'enemyHit' ? src.enemyDefId : src.cause;
@@ -80,11 +84,12 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
     applyKnockback(b, dir * kbx, kby, COMBAT.HITSTUN_TICKS, w.mods);
     h.hitstunTicks = COMBAT.HITSTUN_TICKS;
   }
-  // 8. I-frames from this tick.
-  h.iframeTicks = COMBAT.HURT_IFRAMES_TICKS;
+  // 8. I-frames from this tick (Second Wind: 2.0 s instead).
+  h.iframeTicks = saved ? ticks(LUCKY_FX.secondWindIframeS) : COMBAT.HURT_IFRAMES_TICKS;
   // 9. Hit-stop for the player (and a melee attacker: done by the caller).
   if (!spikes) b.hitStopTicks = maxStop(b.hitStopTicks, COMBAT.HURT_HIT_STOP_TICKS);
-  // 10. Rush −75.
+  // 10. Rush −75; Leaky Pockets drops gold as coins (05 §9.4).
   addRushValue(w.rush, COMBAT.RUSH_HURT);
+  if (dealt > 0 && hasDebuff(w, 'leaky_pockets')) dropLeakyCoins(w);
   return dealt;
 }
