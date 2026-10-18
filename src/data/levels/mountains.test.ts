@@ -105,6 +105,8 @@ describe('Mountain road layout (M7.1 Task 5)', () => {
     const w = GameWorld.fromLevel(level, { seedText: 'MOUNTAIN-CART' }), cart = w.minecarts[0], initialX = cart.x;
     stepSpec(w, { interact: true }); expect(w.body.cartId).toBe(cart.id);
     let jumpLeft = 0, first = false, second = false, jumps = 0, crashes = 0;
+    const tunnels = [{ left: 312, right: 320, roofBottom: 91, floor: 92 }, { left: 386, right: 393, roofBottom: 131, floor: 132 }];
+    const samples = [0, 0], aboveRoof: { tunnel: number; x: number; top: number; feet: number }[] = [];
     for (let i = 0; i < 1800 && cart.active; i++) {
       w.health.iframeTicks = 1000;
       if (!first && cart.x >= 321 * 16 && cart.x < 324 * 16) { first = true; jumpLeft = 40; }
@@ -112,11 +114,19 @@ describe('Mountain road layout (M7.1 Task 5)', () => {
       const events = stepSpec(w, { jump: jumpLeft-- > 0 });
       jumps += events.filter((e) => e.t === 'move' && e.e === 'cartJump').length;
       crashes += events.filter((e) => e.t === 'move' && e.e === 'cartCrash').length;
+      tunnels.forEach((tunnel, index) => {
+        if (cart.x - cart.w / 2 < tunnel.left * 16 || cart.x + cart.w / 2 > tunnel.right * 16) return;
+        samples[index]++;
+        if (w.body.cartId !== cart.id || cart.y - cart.h < tunnel.roofBottom * 16 || cart.y > tunnel.floor * 16)
+          aboveRoof.push({ tunnel: index + 1, x: cart.x, top: cart.y - cart.h, feet: cart.y });
+      });
     }
     const stop = level.objects.find((o) => o.type === 'minecart_stop')!;
     expect(jumps).toBe(2); expect(crashes).toBe(1);
     expect(cart.x, JSON.stringify({ x: cart.x / 16, y: cart.y / 16, first, second })).toBeGreaterThanOrEqual(stop.x - cart.w / 2 - 1);
     expect(cart.x - initialX).toBeGreaterThanOrEqual(120 * 16);
+    expect(samples.every(count => count > 0)).toBe(true);
+    expect(aboveRoof).toEqual([]);
     expect(cart.active).toBe(false); expect(w.body.cartId).toBeNull();
   });
 });

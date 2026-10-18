@@ -186,4 +186,3 @@ it('Queen death clears her children and their effects on the killing tick withou
   expect(w.puddles.some((p) => p.owner === other.id)).toBe(true);
   expect(w.run.stats.kills).toBe(kills + 1);
 });
-

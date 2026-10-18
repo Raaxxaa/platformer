@@ -164,9 +164,20 @@ No later milestone is authorized.
 - Final checks: 1222 unit tests in 161 files; standalone typecheck/build; three Stage 2 view and five legacy sprite browser cases passed. Root inspected all nine resulting screenshots. Independent review is clear.
 - Diff and protected-path checks passed. No new SPEC-GAP. The existing large-bundle warning remains.
 
+### M7.1 Task 7
+
+- Added both full Plains-to-Crossroads-to-road browser runs, exact Guardian kill-tick split 2, the 120-tick stat delay, Border Village and the continuation screen. Normal Mountain and Forest segment times survive reload; typed runs leave records unchanged.
+- Captured every section of both roads at gameplay scale and as a map. Fresh scenes and a player-in-camera assertion prevent an earlier arena lock from spoiling later section pictures.
+- Browser tests use real movement for the full cart ride, both gaps and low tunnels, water speed/jump, and darkness with a same-world-point light comparison.
+- Screenshot review exposed a real second-tunnel defect: the cart landed on its roof. Stronger unit and browser checks failed first. The descent now finishes earlier and gives the cart eleven flat columns to settle before the roof; both full-width below-roof checks pass. Counts, both gaps, the normal foot route and at least 120 actual cart tiles remain valid. Repeated generation is byte-identical.
+- Final local gate: standalone typecheck; 1222 unit tests in 161 files; standalone production build; all 101 browser tests passed. Bundle: `index-4Y6GOvOt.js`.
+- Archived and inspected all 188 final browser screenshots. Root checked all 54 Stage 2 images; independent reviewers checked the other 134. Three legacy debug pictures inject 9999 HP and overfill the HP bar; this is a test-fixture artifact, not normal-play acceptance, and those images are excluded from the presentation. Both complete section galleries and both level documents are ready for the designer.
+- Bounded source and acceptance-test review is clear. Protected paths and the full milestone diff check pass. No new gap beyond 15 and 16 was added in this task.
+
 ## Active task
 
-M7 is delivered. M7.1 Tasks 1–6 are committed. Task 7 is active: both roads' complete browser runs, all section screenshots, final checks, push and Pages deployment. Human play of at least one road remains the owner's acceptance step.
+M7 is delivered. M7.1 implementation and the complete local gate are finished. The remaining acceptance step is for the owner to play at least one road and give road length, difficulty and gimmick feedback. This is not confirmed by automated tests. Do not start M9.
+For deployment evidence, use the successful GitHub Pages workflow whose commit matches the delivered `main` HEAD, then confirm the live road JSON matches the tested maps; the tunnel correction does not change the JavaScript bundle name.
 Root owns this handoff. Source partitions require clear file ownership and tested commits. No later milestone is authorized.
 
 ## Remaining integration notes
@@ -180,14 +191,13 @@ Root owns this handoff. Source partitions require clear file ownership and teste
 - Minecarts require real boarding, jumps/exits, death detachment, collision, stop/crash, respawn, and nearest-interaction coverage. Water/ice affect existing movement and clamp rules; body-supported ice must retain its surface.
 - Python is installed as `python` on Windows; `python3` is a WindowsApps alias. Keep the protected builder scripts unchanged.
 
-## Delivery checks still required
+## Final handoff
 
-- Complete all M7.1 tasks.
-- `npm run typecheck`, `npm test`, `npm run build`, `npm run test:e2e` on the final milestone state.
-- Inspect all required milestone screenshots and share the useful screens with the designer.
-- Fetch current GitHub state before pushing; preserve concurrent art work.
-- Verify Pages deployment of the exact pushed commit.
-- Report any new SPEC-GAPs. Stage 2 owner play acceptance remains a separate requirement.
+- Both Stage 2 roads and the Border Village are ready for the owner playtest. ART7 remains absent on `main`, so Stage 2 uses the authorized grey fallbacks.
+- Level documents: `docs/levels/mountains.md` and `docs/levels/swamps.md`.
+- New design questions are gaps 15 (Queen venom range versus the shared speed cap) and 16 (Mountain combat-room width). M7 gap 14 records the saved unbuilt-weapon fallback. The full log remains `docs/SPEC-GAPS.md`.
+- GitHub was refreshed before delivery: no open issues, `origin/main` at the delivered M7 commit `4bae25b`, and design branch still at `b95aa41`. No concurrent main or art work was overwritten.
+- Human play of at least one Stage 2 road is still required by the plan's Done condition.
 
 ## Existing warnings
 
