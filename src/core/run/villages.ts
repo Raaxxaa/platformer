@@ -4,9 +4,15 @@ import type { ClassId } from '../abilities/types.ts';
 import { createRunState } from './runState.ts';
 import { beginTransition } from './phases.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
+import { buyFlaskUpgrade, buyKey, refill, rerollShop } from '../economy/shop.ts';
+
+const SERVICES: Record<string, (w: GameWorld) => boolean> = { shop_flask: buyFlaskUpgrade, shop_refill: refill, shop_key: buyKey, shop_reroll: rerollShop };
 
 export function setupVillage(w: GameWorld): void {
   for (const o of w.level?.objects ?? []) {
+    if (o.type === 'ability_altar') w.interactables.push({ id: w.newId(), kind: o.type, label: String(Number(o.props.slot) - 1), x: o.x, y: o.y, use: () => {} });
+    if (SERVICES[o.type]) w.interactables.push({ id: w.newId(), kind: o.type, label: o.type, x: o.x, y: o.y,
+      use: (ww) => { const before = ww.events.length; if (!SERVICES[o.type](ww) && !ww.events.slice(before).some((e) => e.t === 'cantAfford')) ww.events.push({ t: 'cantAfford' }); } });
     if (o.type === 'class_statue') w.interactables.push(classStatue(w, o.props.cls as ClassId, o.x, o.y));
     if (['training_gate', 'seed_board', 'unlocks_board'].includes(o.type)) {
       const panel = o.type === 'training_gate' ? 'training' : o.type === 'seed_board' ? 'seed' : 'records';

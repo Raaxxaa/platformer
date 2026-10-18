@@ -34,6 +34,8 @@ import type { Kit } from '../../ui/popups/classPickModel.ts';
 import { VillageView } from '../view/villageView.ts';
 import { RUN } from '../../core/tuning.ts';
 import { interactTarget } from '../../core/abilities/items.ts';
+import { ShopView } from '../../ui/popups/shop.ts';
+import { interactPrompt } from '../../ui/model/prompt.ts';
 
 /** Hint text with the M1 key names (07 shows real button prompts later). */
 const HINT_TEXT: Record<HintAction, string> = {
@@ -70,6 +72,7 @@ export class StageScene extends WorldScene {
   private leaving = false;
   private fade!: Phaser.GameObjects.Graphics;
   private villageView: VillageView | null = null;
+  private shopView: ShopView | null = null;
 
   constructor(key = 'Stage') {
     super(key);
@@ -79,7 +82,7 @@ export class StageScene extends WorldScene {
   private chosen: string | null = null;
   init(data?: { level?: string; carry?: WorldCarry }): void {
     this.chosen = data?.level ?? null;
-    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.labels = []; this.doorText.clear(); this.splitUntil = -1;
+    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.labels = []; this.doorText.clear(); this.splitUntil = -1;
   }
 
   preload(): void {
@@ -126,6 +129,7 @@ export class StageScene extends WorldScene {
     this.bossTitle = this.add.bitmapText(U.bossTitleRight, U.bossName[1], FONTS.small, '').setOrigin(1, 0).setTint(UI_COLOR.textDim).setScrollFactor(0).setDepth(DEPTH.hud);
     if (this.level.kind === 'training') this.yard = new YardView(this, this.level);
     if (this.level.kind === 'village') this.villageView = new VillageView(this, this.level);
+    if (this.level.kind === 'village' && this.level.id !== 'home') this.shopView = new ShopView(this);
     this.fade = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 30).fillStyle(UI_COLOR.ink).fillRect(0, 0, width, height).setVisible(false);
     this.installStageDebug();
     // Before the run, pick a class and weapon (M4 plan Task 13). `?kit=archer:bow` skips the panel; debug runs keep
@@ -147,6 +151,7 @@ export class StageScene extends WorldScene {
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.levelId = () => this.level.id;
     api.save = () => structuredClone(saveStore().data);
+    api.shop = () => structuredClone(this.world.shop);
     api.restartRun = () => this.world.restart();
     api.loadout = () => structuredClone({ weapons: this.world.combat.slots, abilities: this.world.abilities.slots });
     api.homePanel = () => this.homePanel?.model.kind ?? null;
@@ -243,6 +248,7 @@ export class StageScene extends WorldScene {
   protected renderExtra(): void {
     const w = this.world, U = STAGE_UI;
     this.villageView?.update(w, saveStore().data.typedSeed);
+    this.shopView?.update(w, this.frameEvents.some(({ e }) => e.t === 'cantAfford'));
     if (w.run.phase === 'loading' && w.run.transition) { this.goLevel(w.run.transition.target.levelId, captureWorld(w)); return; }
     for (const { e } of this.frameEvents) if (e.t === 'openHomePanel') {
       if (e.panel === 'training') this.enterTraining(); else this.openHomePanel(e.panel);
@@ -267,13 +273,13 @@ export class StageScene extends WorldScene {
     }
     // Hint, timer, split popup, boss bar, stage clear.
     const target = this.level.kind === 'village' ? interactTarget(w) : null;
-    const sign = w.villageMessage ?? w.training?.sign ?? (target && 'use' in target ? `[E] ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label}` : w.activeHint ? HINT_TEXT[w.activeHint] : '');
+    const sign = w.villageMessage ?? w.training?.sign ?? (target && 'use' in target ? (interactPrompt(w, target) ? '' : `[E] ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label}`) : w.activeHint ? HINT_TEXT[w.activeHint] : '');
     this.hintText.setText(!this.overview ? sign : '');
     this.yard?.update(w);
     if (this.frameEvents.some(({ e }) => e.t === 'leftTraining')) { if (gameSession.trainingReturn === 'home') this.goLevel('home'); else this.toTitle(); return; }
     const timerOn = !this.overview && !this.yard && w.run.phase !== 'homeVillage';
     this.timerText.setVisible(timerOn).setText(formatTime(w.run.runTicks));
-    this.segmentText.setVisible(timerOn).setText(`STAGE ${this.level.stage}  ${formatTime(w.run.stageTicks ?? w.run.runTicks)}`);
+    this.segmentText.setVisible(timerOn && this.level.kind === 'stage').setText(`STAGE ${this.level.stage}  ${formatTime(w.run.stageTicks ?? w.run.runTicks)}`);
     // Info line: a pending timed door within 640 px (07 §4.11).
     let info = '', infoBad = false;
     for (const d of w.timedDoors) {

@@ -67,6 +67,7 @@ import { beginTransition, canHoldRestart, completeLoading, simulatesWorld, stepT
 import type { StartKit } from '../save/schema.ts';
 import type { WorldCarry } from '../run/session.ts';
 import { setupVillage, stepVillage } from '../run/villages.ts';
+import { setupShop, stepAltarInteraction, type AltarHold, type ShopState } from '../economy/shop.ts';
 import { applyStatUpgrade, maxPlayerHp, offerStatUpgrades } from '../economy/stats.ts';
 import { STAT_PICK_DEFAULT_INDEX, type StatUpgradeId } from '../../data/economy.ts';
 
@@ -241,6 +242,8 @@ export class GameWorld {
   private villageEntryPending = false;
   private loadRequestPending = false;
   villageMessage: string | null = null;
+  shop: ShopState | null = null;
+  altarHold: AltarHold | null = null;
 
   constructor(opts: GameWorldOptions) {
     this.opts = opts;
@@ -366,6 +369,7 @@ export class GameWorld {
     this.respawns = [];
     this.training = null;
     this.interactables = [];
+    this.shop = null; this.altarHold = null;
     this.villageMessage = null;
     if (this.level?.kind === 'training') setupTraining(this);
     if (this.level?.kind === 'village') setupVillage(this);
@@ -685,6 +689,7 @@ export class GameWorld {
     }
     if (this.villageEntryPending && this.run.phase !== 'loading' && this.run.phase !== 'paused') {
       this.events.push({ t: 'enterVillage', villageId: this.run.levelId });
+      if (this.level?.id !== 'home' && this.level?.kind === 'village') setupShop(this, this.level.id === 'crossroads' ? 1 : this.level.id === 'border' ? 2 : 3);
       this.villageEntryPending = false;
     }
     if (this.handleRestart(rawInput)) return;
@@ -717,6 +722,7 @@ export class GameWorld {
     // 3. Player actions.
     // A slot whose Storm Hammer is out cannot dive (02 §11).
     this.ctx.slotUsable = [this.combat.slots[0] !== null && !hammerOutIn(this, 0), this.combat.slots[1] !== null && !hammerOutIn(this, 1)];
+    input = stepAltarInteraction(this, input);
     input = stepInteract(this, input);
     stepPlayerCombat(this, input);
     tryStartDrink(this, input);

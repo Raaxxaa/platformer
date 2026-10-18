@@ -4,18 +4,20 @@ import Phaser from 'phaser';
 import { interactTarget } from '../../core/abilities/items.ts';
 import { enemyCenter, enemyRect } from '../../core/enemies/enemy.ts';
 import { interactPrompt } from '../../ui/model/prompt.ts';
-import { MERCHANT_LAYOUT, priceOf } from '../../core/loot/merchant.ts';
+import { MERCHANT_LAYOUT, upgradePrice } from '../../core/loot/merchant.ts';
 import type { GameWorld } from '../../core/sim/gameWorld.ts';
 import { TICK_RATE } from '../../core/tuning.ts';
 import type { AnimDef } from './animClock.ts';
 import type { TickEvent } from './vfx.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
-import { PRICES, GOLD } from '../../data/economy.ts';
+import { GOLD } from '../../data/economy.ts';
 import { LUCKY } from '../../data/loot.ts';
 import { LOOT_FX as F } from '../../data/stageUi.ts';
 import { HUD_COLOR, UI_COLOR } from '../../data/uiText.ts';
 import { SIGNATURE } from '../../data/weapons.ts';
+import { SHOP_UI } from '../../data/shopUi.ts';
+import { SHOP_RULES } from '../../data/shop.ts';
 
 type Spr = Phaser.GameObjects.Sprite;
 interface Fx { s: Spr; def: AnimDef; born: number }
@@ -28,9 +30,9 @@ class Tag {
     this.coin = scene.add.image(0, 0, 'ui', 'hud_coin').setOrigin(0, 0).setDepth(DEPTH.items + 2);
     this.text = scene.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0, 0).setDepth(DEPTH.items + 2);
   }
-  set(x: number, y: number, price: number | null, word: string | null, affordable: boolean): void {
+  set(x: number, y: number, price: number | null, word: string | null, affordable: boolean, refused = false): void {
     const s = word ?? String(price);
-    this.text.setText(s).setTint(word ? UI_COLOR.textDim : affordable ? UI_COLOR.highlight : UI_COLOR.bad);
+    this.text.setText(s).setTint(refused ? UI_COLOR.bad : word ? UI_COLOR.textDim : affordable ? UI_COLOR.highlight : UI_COLOR.bad);
     const coinW = word ? 0 : this.coin.width + 1;
     const left = Math.round(x - (coinW + this.text.width) / 2);
     this.coin.setVisible(!word).setPosition(left, y);
@@ -55,6 +57,10 @@ export class LootView {
   private sigSeen = new Set<number>();
   private prompt: Phaser.GameObjects.BitmapText | null = null;
   private prompt2: Phaser.GameObjects.BitmapText | null = null;
+  private refusedItem: number | null = null;
+  private refuseUntil = -1;
+  private holdRing: Phaser.GameObjects.Graphics | null = null;
+  private glyphMeasure: Phaser.GameObjects.BitmapText | null = null;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -95,6 +101,10 @@ export class LootView {
 
   update(w: GameWorld, events: readonly TickEvent[]): void {
     const now = w.tick;
+    if (events.some(({ e }) => e.t === 'cantAfford')) {
+      const target = interactTarget(w);
+      if (target && !('use' in target) && target.price !== undefined) { this.refusedItem = target.id; this.refuseUntil = now + SHOP_UI.blinkTicks; }
+    }
     this.seen.clear();
     this.onEvents(w, events);
     this.drawChests(w);
@@ -208,7 +218,8 @@ export class LootView {
       const k = `item${it.id}`;
       used.add(k);
       const owned = !!it.ability && w.abilities.slots.some((s) => s?.id === it.ability!.id);
-      this.tag(k).set(it.x, it.y + F.tagGap, it.price, owned ? 'Owned' : null, w.gold >= it.price);
+      const refused = this.refusedItem === it.id && now < this.refuseUntil && Math.floor(now / (TICK_RATE / (SHOP_UI.blinkHz * 2))) % 2 === 0;
+      this.tag(k).set(it.x, it.y + F.tagGap, it.price, owned ? 'Owned' : null, w.gold >= it.price, refused);
     }
     const altarDef = this.defs.get('ability_altar_idle');
     const liveAltars = new Set<number>();
@@ -224,7 +235,7 @@ export class LootView {
       used.add(k);
       if (!ab) used.delete(k);
       else if (ab.level >= MERCHANT_LAYOUT.maxLevel) this.tag(k).set(ia.x, ia.y + F.tagGap, null, 'MAX', false);
-      else { const p = priceOf(PRICES.upgradeTo[ab.level + 1], false); this.tag(k).set(ia.x, ia.y + F.tagGap, p, null, w.gold >= p); }
+      else { const p = upgradePrice(w, ab.level + 1); this.tag(k).set(ia.x, ia.y + F.tagGap, p, null, w.gold >= p); }
     }
     for (const [id, s] of this.altars) if (!liveAltars.has(id)) { s.destroy(); this.altars.delete(id); }
     for (const [k, t] of this.tags) if (!used.has(k)) { t.destroy(); this.tags.delete(k); }
@@ -235,7 +246,10 @@ export class LootView {
     if (!this.prompt) {
       this.prompt = this.scene.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.hud - 1);
       this.prompt2 = this.scene.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.hud - 1);
+      this.holdRing = this.scene.add.graphics().setDepth(DEPTH.hud);
+      this.glyphMeasure = this.scene.add.bitmapText(0, 0, FONTS.small, '[E]').setVisible(false);
     }
+    this.holdRing!.clear();
     const tg = interactTarget(w);
     const t = tg && 'use' in tg ? tg : null;
     const p = t && !w.health.dead ? interactPrompt(w, t) : null;
@@ -246,6 +260,16 @@ export class LootView {
     const top = t.y - (t.h ?? F.promptObjH) - F.promptGap;
     this.prompt2!.setText(p.l2 ?? '').setTint(UI_COLOR.textDim).setPosition(t.x, top);
     this.prompt.setText(`${p.glyph ? '[E] ' : ''}${p.l1}`).setTint(color).setPosition(t.x, p.l2 ? top - this.prompt2!.height - 1 : top);
+    const hold = w.altarHold;
+    if (t.kind === 'ability_altar' && p.glyph && hold && !hold.cancelled && !hold.sold && hold.ticks >= SHOP_RULES.altarRingStartTicks) {
+      // Measure the same rendered line: the [E] glyph starts at its left edge, not at the object's center.
+      const x = this.prompt.x - this.prompt.width / 2 + this.glyphMeasure!.width / 2, y = this.prompt.y - this.prompt.height / 2;
+      for (let i = 0; i < SHOP_UI.ringDots; i++) {
+        const angle = -Math.PI / 2 + Math.PI * 2 * i / SHOP_UI.ringDots;
+        this.holdRing!.fillStyle(i / SHOP_UI.ringDots < hold.ticks / SHOP_RULES.altarHoldTicks ? UI_COLOR.highlight : UI_COLOR.textOff)
+          .fillCircle(x + Math.cos(angle) * SHOP_UI.ringRadius, y + Math.sin(angle) * SHOP_UI.ringRadius, SHOP_UI.ringDot);
+      }
+    }
   }
 
   /** Burn flames, chill frost, the freeze ice block (shatter shards when it ends), poison bubbles. */

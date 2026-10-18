@@ -36,6 +36,7 @@ export interface GroundItem {
   /** A shop or merchant item: its price (05 §11); taking it pays. */
   price?: number;
   merchantSlot?: number;
+  shopSlot?: number;
 }
 
 /** A placed interactable (statue, board...): 24 × 32 box with its bottom center on (x, y). */
@@ -47,14 +48,19 @@ export interface Interactable {
 
 const INTERACT_STATES = new Set(['ground', 'air', 'crawl', 'slide', 'dash', 'wallSlide', 'diveLand']);
 
-export const itemRect = (it: GroundItem): Rect => ({ x: it.x - ITEM.box / 2, y: it.y - ITEM.box, w: ITEM.box, h: ITEM.box });
+export const itemRect = (it: GroundItem): Rect => it.shopSlot !== undefined || it.merchantSlot !== undefined
+  ? { x: it.x - ITEM.interactW / 2, y: it.y - ITEM.interactH, w: ITEM.interactW, h: ITEM.interactH }
+  : { x: it.x - ITEM.box / 2, y: it.y - ITEM.box, w: ITEM.box, h: ITEM.box };
+const GROUND_OBJECTS = new Set(['ability_altar', 'merchant_altar', 'shop_flask', 'shop_refill', 'shop_key', 'shop_reroll', 'inn', 'class_statue', 'seed_board', 'unlocks_board', 'training_gate']);
+const needsGround = (o: GroundItem | Interactable) => 'use' in o ? GROUND_OBJECTS.has(o.kind) : o.shopSlot !== undefined || o.merchantSlot !== undefined;
+const villageState = (w: GameWorld) => w.body.state === 'ground' || w.body.state === 'crawl';
 const objRect = (o: Interactable): Rect => {
   const w = o.w ?? ITEM.interactW, h = o.h ?? ITEM.interactH;
   return { x: o.x - w / 2, y: o.y - h, w, h };
 };
 
 /** Drops an item at a point (05 §5.7): inside a solid it moves straight up to the first free row (06 §11.2), then falls. */
-export function dropItem(w: GameWorld, x: number, y: number, item: Pick<GroundItem, 'weapon' | 'ability' | 'endless' | 'label' | 'key' | 'chestGroup' | 'price' | 'stand' | 'fromChest' | 'merchantSlot'>): GroundItem {
+export function dropItem(w: GameWorld, x: number, y: number, item: Pick<GroundItem, 'weapon' | 'ability' | 'endless' | 'label' | 'key' | 'chestGroup' | 'price' | 'stand' | 'fromChest' | 'merchantSlot' | 'shopSlot'>): GroundItem {
   let yy = y;
   while (yy > ITEM.box && w.grid.isSolidPx(Math.floor(x), yy - 1)) yy -= 1;
   const it: GroundItem = { id: w.newId(), x, y: yy, vy: 0, resting: false, ...item };
@@ -85,6 +91,8 @@ function closeChoices(w: GameWorld): void {
 
 /** Puts the item's ability or weapon in `slot`; the old one drops at the feet with its state. */
 function takeInto(w: GameWorld, it: GroundItem, slot: 0 | 1): void {
+  if (needsGround(it) && !villageState(w)) return;
+  if (!canBuy(w, it)) { w.events.push({ t: 'cantAfford' }); closeChoices(w); return; }
   const b = w.body;
   if (it.ability) {
     const old = w.abilities.slots[slot];
@@ -129,7 +137,7 @@ export function interactTarget(w: GameWorld): GroundItem | Interactable | null {
   const pr = playerRect(w);
   const list: { o: GroundItem | Interactable; cx: number }[] = [];
   for (const it of w.groundItems) if (!it.key && overlaps(itemRect(it), pr)) list.push({ o: it, cx: it.x });
-  for (const o of w.interactables) if (overlaps(objRect(o), pr)) list.push({ o, cx: o.x });
+  for (const o of w.interactables) if ((o.kind !== 'shop_key' || w.shop?.keyInStock) && overlaps(objRect(o), pr)) list.push({ o, cx: o.x });
   list.sort((a, b) => Math.abs(a.cx - w.body.x) - Math.abs(b.cx - w.body.x) || a.o.id - b.o.id);
   return list[0]?.o ?? null;
 }
@@ -162,6 +170,7 @@ export function stepInteract(w: GameWorld, input: InputState): InputState {
   if (!input.interact.pressed || !INTERACT_STATES.has(w.body.state)) return input;
   const t = interactTarget(w);
   if (!t) return input;
+  if (needsGround(t) && !villageState(w)) return input;
   if (isItem(t)) pickUp(w, t);
   else t.use(w);
   return input;

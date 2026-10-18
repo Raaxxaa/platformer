@@ -20,6 +20,7 @@ export function priceOf(base: number, merchant: boolean, haggler = false): numbe
   const markup = merchant ? PRICES.merchantMarkupPct : 100, hag = haggler ? PRICES.hagglerPct : 100;
   return 5 * Math.floor((base * markup * hag + 25000) / 50000);
 }
+export const upgradePrice = (w: GameWorld, nextLevel: number): number => priceOf(PRICES.upgradeTo[nextLevel], false, statCount(w, 'haggler') > 0);
 
 /** Stage load: the presence draw, then the stock (with the abilities carried now). `force` (debug) skips the 40% draw. */
 export function setupMerchant(w: GameWorld, force = false): void {
@@ -60,6 +61,7 @@ export function onBought(w: GameWorld, it: GroundItem): void {
   if (it.price === undefined) return;
   addGoldTenths(w, -it.price * 10, 'purchase');
   if (w.merchant && it.merchantSlot !== undefined) w.merchant.sold[it.merchantSlot] = true;
+  if (w.shop && it.shopSlot !== undefined) w.shop.slots[it.shopSlot] = 'sold';
   w.events.push({ t: 'purchase', what: it.weapon?.weaponId ?? it.ability?.id ?? '', price: it.price });
 }
 
@@ -67,7 +69,7 @@ export function onBought(w: GameWorld, it: GroundItem): void {
 export function upgradeAt(w: GameWorld, slot: 0 | 1): boolean {
   const s = w.abilities.slots[slot];
   if (!s || s.level >= MERCHANT_LAYOUT.maxLevel) return false;
-  const price = priceOf(PRICES.upgradeTo[s.level + 1], false, statCount(w, 'haggler') > 0);
+  const price = upgradePrice(w, s.level + 1);
   if (w.gold < price) { w.events.push({ t: 'cantAfford' }); return false; }
   const oldMax = maxCharges(s);
   s.level = (s.level + 1) as typeof s.level;

@@ -81,6 +81,6 @@ export const CURSE_LINE: Record<import('./loot.ts').CurseId, string> = {
 /** 07 §4.7, §6.8, §6.10 loot HUD timings (s). */
 export const LOOT_HUD = {
   debuffBlinkS: 5, blinkHz: 4,
-  bannerS: { lucky: 1.6, curse: 2.0, lifted: 1.2 },
+  bannerS: { lucky: 1.6, curse: 2.0, lifted: 1.2, village: 2.0 },
   toastS: { keysFull: 2.0, lockpick: 2.0, purchase: 1.5 },
 } as const;

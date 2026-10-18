@@ -59,7 +59,8 @@ export class ItemViews {
       if (!o) { const m = this.make(it); if (!m) continue; o = m; this.views.set(it, o); }
       if (it.key) { o.icon.setPosition(it.x, it.y); continue; }
       const bob = it.resting ? Math.round(Math.sin(t * Math.PI * 2 * ITEM_FX.bobHz) * ITEM_FX.bobPx) : 0;
-      const cy = it.y - (o.stand ? o.stand.height + YARD_UI.iconLift : 0) - 8 + bob;
+      const lift = o.stand ? o.stand.height + YARD_UI.iconLift : it.shopSlot !== undefined ? this.scene.textures.get('objects').get('shop_item_00').height + YARD_UI.iconLift : 0;
+      const cy = it.y - lift - 8 + bob;
       o.stand?.setPosition(it.x, it.y);
       o.beam?.setPosition(it.x, it.y - (o.stand ? o.stand.height : 0));
       o.glow?.setPosition(it.x, cy).setAlpha(ITEM_FX.glowMin + (1 - ITEM_FX.glowMin) * (0.5 + 0.5 * Math.sin(t * Math.PI * 2 * ITEM_FX.glowHz)));

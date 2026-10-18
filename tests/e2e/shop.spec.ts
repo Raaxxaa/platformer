@@ -1,0 +1,28 @@
+import { test, expect } from '@playwright/test';
+test('Crossroads shop charges only on take, upgrades on tap, sells on hold and rerolls SOLD', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?debug=1&start=crossroads&seed=SHOP&kit=tank:war_maul');
+  await page.waitForFunction(() => (window as any).__game?.ready);
+  await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.setGold(3000); g.step(1, {}); });
+  await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+  await page.screenshot({ path: 'test-results/m7-crossroads-stock.png' });
+  const before = await page.evaluate(() => (window as any).__game.loot().gold);
+  await page.evaluate(() => { const g = (window as any).__game; g.teleport(9 * 16 + 8, 320); g.step(1, { interact: true }); });
+  expect(await page.evaluate(() => (window as any).__game.loot().gold)).toBeLessThan(before);
+  expect(await page.evaluate(() => (window as any).__game.shop().slots[0])).toBe('sold');
+  await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+  await page.screenshot({ path: 'test-results/m7-crossroads-sold.png' });
+  await page.evaluate(() => { const g = (window as any).__game; g.teleport(19 * 16 + 8, 320); g.step(1, {}); g.step(30, { interact: true }); });
+  await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+  await page.screenshot({ path: 'test-results/m7-crossroads-altar-hold.png' });
+  await page.evaluate(() => (window as any).__game.step(1, {}));
+  expect(await page.evaluate(() => (window as any).__game.loadout().abilities[0].level)).toBe(2);
+  await page.evaluate(() => { const g = (window as any).__game; g.step(90, { interact: true }); g.step(1, {}); });
+  expect(await page.evaluate(() => (window as any).__game.loadout().abilities[0])).toBeNull();
+  await page.evaluate(() => { const g = (window as any).__game; g.teleport(35 * 16 + 8, 320); g.step(1, { interact: true }); });
+  expect(await page.evaluate(() => (window as any).__game.shop().rerollCount)).toBe(1);
+  expect(await page.evaluate(() => (window as any).__game.shop().slots.every((s: unknown) => s !== 'sold'))).toBe(true);
+  await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+  await page.screenshot({ path: 'test-results/m7-crossroads-shop.png' });
+  expect(errors).toEqual([]);
+});

@@ -25,6 +25,7 @@ const kindOf = (id: LuckyId) => LUCKY.find((l) => l.id === id)!;
 /** §6.8 loot banners. */
 export function bannerFor(ev: WorldEvent): Banner | null {
   const S = LOOT_HUD.bannerS;
+  if (ev.t === 'enterVillage' && ev.villageId !== 'home') return { l1: ({ crossroads: 'CROSSROADS VILLAGE', border: 'BORDER VILLAGE', rebel_camp: 'REBEL CAMP' } as Record<string, string>)[ev.villageId] ?? ev.villageId.toUpperCase(), l2: 'Shop, then sleep at the inn', tone: 'text', s: S.village };
   if (ev.t === 'luckyResult') {
     const d = kindOf(ev.id);
     if (ev.id === 'jackpot') return { l1: 'JACKPOT!', l2: LUCKY_LINE.jackpot, tone: 'S', s: S.lucky };

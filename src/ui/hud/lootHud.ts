@@ -51,7 +51,7 @@ export class LootHud {
 
     this.lockpick.setVisible(shown && w.classState.hybrid === 'thief' && !w.abilities.lockpickUsedThisStage);
     const g = this.g.clear();
-    const row = shown ? effectsRow(w.econ) : [];
+    const row = shown && w.level?.kind !== 'village' ? effectsRow(w.econ) : [];
     const blinkOff = Math.floor(now / (500 / LOOT_HUD.blinkHz)) % 2 === 1;
     while (this.icons.length < row.length) {
       this.icons.push(this.scene.add.image(0, 0, 'ui', 'effect_swift').setOrigin(0).setScrollFactor(0).setDepth(DEPTH.hud + 1));
