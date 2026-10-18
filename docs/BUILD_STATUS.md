@@ -117,9 +117,16 @@ No later milestone is authorized.
 - Root reviewed all 46 M7 screenshots across the task checks and saved the final set; independent review checked 32 legacy UI images with no visible regressions.
 - Gaps 12/13 are resolved. New gap 14 remains documented; no other M7 gap was added.
 
+### M7.1 Task 1 — `d024eaf`
+
+- Added water and ice movement, minecarts, collapsing platforms, grapple pull mechanics, charge-breakable walls, falling rocks, and darkness/firefly level data.
+- Real failing regressions covered cart rider size, jump cuts and cancellation, stationary boarding, interaction order, hurt-water speed, and dive landing on water.
+- Final checks: 1041 unit tests in 136 files; typecheck/build; eight movement/combat browser checks passed. Root inspected all nine browser screenshots.
+- Independent review is clear. No new SPEC-GAP. Task 1 is committed locally; M7.1 remains undeployed until its final milestone gate.
+
 ## Active task
 
-M7 is delivered. M7.1 Task 1 is active: surfaces and hazards, followed by Tasks 2–7 in order.
+M7 is delivered. M7.1 Task 1 is committed. Task 2 is active: Mountain enemies and their projectiles, followed by Tasks 3–7 in order.
 Root owns this handoff. Source partitions require clear file ownership and tested commits. No later milestone is authorized.
 
 ## Remaining integration notes
