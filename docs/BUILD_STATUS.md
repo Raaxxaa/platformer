@@ -72,19 +72,28 @@ No later milestone is authorized.
 - Final checks: 808 unit tests in 108 files; typecheck/build; three inn browser tests plus seven related browser cases passed.
 - Root inspected road-choice and ending screenshots. No new SPEC-GAP; the plan's authorized placeholder comment is present.
 
+### M7 Task 6 — `13ff1c0`
+
+- Added cumulative splits, original-start-class PB comparisons, immediate best segments, and completed-run PB helpers. Segment 1 writes both road keys; typed and practice attempts compare without writing records.
+- Replaced the old timer text with the real timer block and split alert. It shows village names, signed/color deltas, and a best-segment badge; hiding the timer retains info and alerts.
+- Test-first review fixes cover full ISO saved dates, a 0.1-second UI frame limit, and practice events leaving normal progress unchanged.
+- Corrected an earlier carry bug: curses now end at village entry and death, along with stage effects. Permanent stat stacks stay intact.
+- Final checks: 844 unit tests in 112 files; typecheck/build; eighteen related browser tests and the final four split browser checks passed.
+- Root inspected all three split/timer screenshots. Independent review is clear; no new SPEC-GAP.
+
 ## Active task
 
-M7 Task 6: timer, split comparisons, best segments, and personal bests.
+M7 Task 7: save validation, recovery, portable codes, history, and write moments.
 The M7 writer is authorized to continue Tasks 3–10 strictly in order, with a tested commit per task and checkpoint reports.
 Root owns this handoff. Review agents stay read-only. No feature push before M7 checks and screenshot review.
 
-## Required integration after Task 2
+## Remaining integration notes
 
-- Tasks 3–4 must build fresh worlds on `loadLevel` and explicitly carry run/loadout/HP/flask/economy state before loot rolls.
-- Preserve the original starting kit separately from current equipment; do not turn collected gear into the restart kit.
-- Clear Lucky buffs and debuffs at stage end (05 section 7.4); keep stat stacks and curse progress.
-- Implement real Home/Crossroads scenes and cross-level restart loading before milestone delivery.
+- Keep the original starting kit separate from collected equipment and preserve fresh-world carry ordering before loot rolls.
+- Lucky buffs, debuffs, and curses end with the stage; permanent stat stacks carry on.
 - Save schema section 15.2 omits `training`, but section 12.4 and Task 7 require it; add it with default `[]`.
+- Capture end-history snapshots before restart/reset; village history uses the last played stage.
+- A collected blueprint joins the next run's pool, not the current run's later worlds.
 - Python is installed as `python` on Windows; `python3` is a WindowsApps alias. Keep the protected builder scripts unchanged.
 
 ## Delivery checks still required
