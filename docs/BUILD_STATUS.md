@@ -44,8 +44,6 @@ No later milestone is authorized.
 - Both stat-card screenshots were inspected by the writer and root. Independent review findings were fixed and rechecked.
 - No new SPEC-GAP.
 
-## Active task
-
 ### M7 Task 3 — `58cd749`
 
 - Added the Home Village with existing ART3 assets, class statues, the first-kit Training prompt, seed/records boards, gate checks, and persistent kit/training progress.
@@ -58,7 +56,17 @@ No later milestone is authorized.
 - Existing protected scripts/art were unchanged. The level wrapper honors `PYTHON`; bundled Python with Pillow was used locally. Original `kinds.png` bytes were restored.
 - No new SPEC-GAP.
 
-M7 Task 4: Crossroads Village and the full shop.
+### M7 Task 4 — `7919ae3`
+
+- Added the Crossroads map, exact seeded stock, delayed purchase payment/SOLD state, ability tap upgrades and hold sales, flask services, keys, and rerolls.
+- Verified canceled/invalidated swaps, Owned/MAX/Full states, key sold-state preservation, and price modifiers.
+- Review fixes align merchant tags with the real discounted price and place the hold ring around the measured interaction glyph.
+- Final checks: 793 unit tests in 105 files; typecheck/build; fifteen related browser checks plus the final shop rerender passed.
+- Root inspected stock, SOLD, held-ring, and shop screenshots. No remaining review finding; no new SPEC-GAP.
+
+## Active task
+
+M7 Task 5: inn, road choice, sleep, and the authorized run-so-far ending.
 The M7 writer is authorized to continue Tasks 3–10 strictly in order, with a tested commit per task and checkpoint reports.
 Root owns this handoff. Review agents stay read-only. No feature push before M7 checks and screenshot review.
 
