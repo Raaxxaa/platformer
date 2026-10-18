@@ -138,9 +138,17 @@ No later milestone is authorized.
 - Root's ten world tests verify wake timing, harmless Spider drops, both Wisp reward paths, fixed root markers/gaps, flask sip/cancel cleanup, and stopping an existing dash. Test-fixture corrections were separated from source defects.
 - Final checks: 1116 unit tests in 144 files; typecheck/build; diff and protected-path checks passed. Independent review is clear. No new SPEC-GAP.
 
+### M7.1 Task 4 — `b50a283`
+
+- Added the Stone Colossus, Spider Queen and Spiderlings, their attacks and phases, and Stage 2 Guardian rewards and split timing.
+- Real failing regressions covered chilled rain timing, summoned-enemy rewards, wave knockback, boss death duration, immediate kill-tick cleanup, repeated boss moves and airborne Break cancellation.
+- Root's ten world cases verify both real arena intros, exact HP, chosen-road split 2, stat-pick delay, reward rolls, armor Break and full summon spawn-in/cleanup.
+- Final checks: 1152 unit tests in 148 files; standalone typecheck/build; diff and protected-path checks passed. Independent review is clear.
+- New gap 15 preserves the shared projectile speed cap when long-range Queen venom cannot reach its named targets.
+
 ## Active task
 
-M7 is delivered. M7.1 Tasks 1–3 are committed. Task 4 is active: Stone Colossus and Spider Queen, followed by Tasks 5–7 in order.
+M7 is delivered. M7.1 Tasks 1–4 are committed. Task 5 is active: both level design documents, then chunks, Border Village and road integration. Tasks 6–7 follow in order.
 Root owns this handoff. Source partitions require clear file ownership and tested commits. No later milestone is authorized.
 
 ## Remaining integration notes
