@@ -36,6 +36,7 @@ export class SfxWatch {
   private charges = -1;
   private runFrame = -1;
   private projectiles = new Set<number>();
+  private hazardRocks = new Map<number, number>();
   private shots = new Set<number>();
   private hammer: 'none' | 'out' | 'back' = 'none';
   private charge: 'none' | 'charging' | 'full' = 'none';
@@ -43,14 +44,17 @@ export class SfxWatch {
   reset(): void {
     this.aware.clear(); this.phase.clear(); this.frozen.clear(); this.stagger.clear(); this.intro.clear();
     this.swingKey = ''; this.rush = 0; this.sipped = false; this.charges = -1; this.runFrame = -1; this.projectiles.clear();
+    this.hazardRocks.clear();
   }
 
   /** Footsteps on run frames 1 and 5, from the player view's anim (checked each render). */
-  footsteps(playerAnim: { key: string; frame: number }): SfxRequest[] {
+  footsteps(playerAnim: { key: string; frame: number }, w?: GameWorld): SfxRequest[] {
     const rf = playerAnim.key === 'run' ? playerAnim.frame : -1;
     const step = rf !== this.runFrame && (SFX_TRIGGER.footstepFrames as readonly number[]).includes(rf);
     this.runFrame = rf;
-    return step ? [{ id: 'step_soft' }] : [];
+    const biome = w?.level?.biome ?? 'plains';
+    const id = w?.body.inWater ? 'step_wet' : w?.body.onIce ? 'step_ice' : ['plains', 'swamps', 'village_home', 'village_crossroads'].includes(biome) ? 'step_soft' : 'step_hard';
+    return step ? [{ id }] : [];
   }
 
   /** Called after every world tick with that tick's events, so no state change is missed between renders. */
@@ -63,6 +67,7 @@ export class SfxWatch {
           const m: Partial<Record<string, string>> = {
             jump: 'jump', doubleJump: 'double_jump', wallJump: 'wall_jump', dashStart: 'dash', slideStart: 'slide',
             ledgeGrab: 'ledge_grab', dropThrough: 'drop_through', diveStart: 'dive_start', diveBounce: 'dive_bounce', spikeHit: 'spike_hit',
+            enterWater: 'splash', exitWater: 'splash', cartJump: 'cart_jump', cartCrash: 'cart_crash', platformShake: 'platform_shake', platformCollapse: 'platform_collapse',
           };
           if (e.e === 'land' && b.landSpeed >= ANIM.LAND_MIN_VY) out.push({ id: 'land' });
           else if (e.e === 'diveLand') {
@@ -158,6 +163,10 @@ export class SfxWatch {
       if (SFX[id]) out.push({ id, x: p.x });
     }
     this.projectiles = live;
+    const rocks = new Map(w.fallingRocks.rocks.map(r => [r.id, r.x]));
+    for (const [id, x] of rocks) if (!this.hazardRocks.has(id)) out.push({ id: 'rock_whistle', x });
+    for (const [id, x] of this.hazardRocks) if (!rocks.has(id)) out.push({ id: 'rock_shatter', x });
+    this.hazardRocks = rocks;
     // Player shots, the thrown hammer, charging (ART5 sounds).
     const shotLive = new Set<number>();
     for (const p of w.playerProjectiles) {

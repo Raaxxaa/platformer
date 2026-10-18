@@ -34,6 +34,7 @@ describe('player anim choice (08 §5.2, §6.1)', () => {
     expect(pick({ state: 'dash', stateTicks: 5 }).frame).toBe(1);
     expect(pick({ state: 'dash', stateTicks: 16 }).frame).toBe(2);
   });
+  it('uses the existing cart_ride pose while seated',()=>{expect(pick({state:'minecart'}).key).toBe('cart_ride');});
   it('dead beats hurt beats attack beats drink', () => {
     const attack = { weaponId: 'greatsword', step: 0, phase: 'active' as const, phaseTicks: 1, lens: { startup: 30, active: 6, recovery: 30 } };
     expect(pick({ dead: true, attack }).key).toBe('dead');

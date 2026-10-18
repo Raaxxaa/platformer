@@ -1,4 +1,4 @@
-// Shared scene for a GameWorld: steps it at 120 Hz and draws it with the Plains art (boxes where art doesn't exist yet).
+// Shared scene for a GameWorld: steps it at 120 Hz and uses each biome's art, with grey fallbacks.
 import Phaser from 'phaser';
 import { rushLevel } from '../../core/combat/rush.ts';
 import { enemyRect, type EnemyState } from '../../core/enemies/enemy.ts';
@@ -14,7 +14,7 @@ import { ClassPickModel, type Kit } from '../../ui/popups/classPickModel.ts';
 import { ClassPickView } from '../../ui/popups/classPick.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { specToInput, type InputSpec } from '../../core/sim/playerSim.ts';
-import { ENEMY, TICK_RATE } from '../../core/tuning.ts';
+import { BOSS, ENEMY, TICK_RATE } from '../../core/tuning.ts';
 import { formatTime } from '../../core/time.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
@@ -53,6 +53,10 @@ import { StatPickInput } from '../input/statPickInput.ts';
 import { STAT_PICK_UI } from '../../data/statUi.ts';
 import { getUiSettings, menuConfirmKey, menuPauseKey } from '../../ui/inputSettings.ts';
 import { applySettings } from '../settings.ts';
+import { BIOME_VIEW as B } from '../../data/biomeView.ts';
+import { DarknessView } from '../view/darkness.ts';
+import { Stage2FeatureView } from '../view/stage2Features.ts';
+import { enemyDrawing } from '../view/enemyFallback.ts';
 
 /** Grey-box enemy colors (plan M2, Task 17). */
 const ENEMY_COLOR: Partial<Record<EnemyId, number>> = {
@@ -78,6 +82,11 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected overlayText!: Phaser.GameObjects.BitmapText;
   protected marks = new Map<number, Phaser.GameObjects.Text>();
   protected boxes!: Phaser.GameObjects.Graphics;
+  private bossBoxes!: Phaser.GameObjects.Graphics;
+  private playerShots!: Phaser.GameObjects.Graphics;
+  private features!: Stage2FeatureView;
+  private darkness!: DarknessView;
+  private lastViewTime = 0;
   protected parallax!: Parallax;
   protected playerView!: PlayerSprite;
   protected enemyViews = new Map<EnemyState, EnemySprite>();
@@ -155,14 +164,20 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     });
     this.bank = new AnimBank(this.cache.json.get('anims') as AnimDef[]);
     this.boxesMode = new URLSearchParams(window.location.search).get('boxes') === '1';
-    const bg = this.world.level?.kind === 'training' ? 'village_home' : this.world.level?.biome ?? 'plains';
+    const bg = this.world.level?.kind === 'training' ? 'village_home' : this.world.level?.id === 'border' ? 'village_border' : this.world.level?.biome ?? 'plains';
     this.parallax = new Parallax(this, this.world.grid.heightPx, bg in PARALLAX ? bg as keyof typeof PARALLAX : 'plains');
-    drawTerrain(this, this.world.grid, 'plains', this.world.level?.kind !== 'village');
+    drawTerrain(this, this.world.grid, this.world.level?.biome ?? 'plains', this.world.level?.kind !== 'village');
     this.boxes = this.add.graphics().setDepth(DEPTH.enemies);
+    this.bossBoxes = this.add.graphics().setDepth(DEPTH.boss);
+    this.playerShots = this.add.graphics().setDepth(DEPTH.playerProjectiles);
+    this.features = new Stage2FeatureView(this, this.world);
+    this.darkness = new DarknessView(this);
+    this.lastViewTime = this.time.now;
+    this.events.once('shutdown', () => { this.features.destroy(); this.darkness.destroy(); });
     this.playerView = new PlayerSprite(this, this.bank);
     if (this.pickedKit) this.playerView.setOutfit(this.pickedKit.cls);
     this.projViews = new ProjectileSprites(this, this.bank);
-    this.playerProjViews = new ProjectileSprites(this, this.bank);
+    this.playerProjViews = new ProjectileSprites(this, this.bank, DEPTH.playerProjectiles);
     this.hammerSprite = this.add.sprite(0, 0, 'projectiles').setDepth(DEPTH.playerProjectiles).setVisible(false);
     this.vfx = new VfxDirector(new VfxPool(this, this.bank));
     this.markersGfx = this.add.graphics().setDepth(DEPTH.markers);
@@ -269,6 +284,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     const evs = this.world.events.map((e) => ({ tick: this.world.tick, e }));
     this.frameEvents.push(...evs);
     this.sfxQueue.push(...this.sfxWatch.collect(this.world, evs));
+    this.features?.onTick(this.world, evs);
     this.abilityView?.onTick(this.world, this.world.events, feet);
     if (this.vfx) this.vfx.update(this.world, evs, { atlas: `player_${this.playerView.outfit}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
     this.syncStatPick();
@@ -456,9 +472,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     }
     this.parallax.setVisible(!this.overview);
     this.hud.setVisible(!this.overview);
-    this.parallax.update(cam.x + cam.shakeX, cam.y + cam.shakeY);
+    this.parallax.update(cam.x + cam.shakeX, cam.y + cam.shakeY, Math.min(B.frameClamp, Math.max(0, this.time.now - this.lastViewTime) / 1000));
+    this.lastViewTime = this.time.now;
     const g = this.gfx.clear();
     this.boxes.clear();
+    this.bossBoxes.clear();
+    this.playerShots.clear();
     // A restart rewinds the tick: drop effects of the old run.
     if (w.tick < this.lastRenderTick) {
       this.vfx.reset(); this.abilityView.reset(); this.lootView.reset(); this.frameEvents = []; this.playerEv = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
@@ -484,7 +503,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     // Player projectiles with ART5 art (arrows, bolts, orbs); a grey box for any without.
     this.playerProjViews.update(this.boxesMode ? [] : w.playerProjectiles, w.tick);
     for (const p of w.playerProjectiles) {
-      if (this.boxesMode || !this.playerProjViews.hasArt(p.def.id)) g.fillStyle(DRAW.playerShot, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
+      if (this.boxesMode || !this.playerProjViews.hasArt(p.def.id)) this.playerShots.fillStyle(DRAW.playerShot, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
     }
     for (const id of w.blasts) { const bl = w.hitGroups.find((x) => x.id === id); if (bl) g.fillStyle(DRAW.blast, DRAW.blastAlpha).fillRect(bl.rect.x, bl.rect.y, bl.rect.w, bl.rect.h); }
 
@@ -502,6 +521,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     else this.playerView.update(w, this.playerEv);
     this.vfx.pool.update(w.tick);
     drawMarkers(this.markersGfx.clear(), w);
+    this.features.update(w, [], w.tick / TICK_RATE);
+    this.darkness.setVisible(!this.overview);
+    this.darkness.update(w, w.tick / TICK_RATE);
     this.itemViews.update(w.groundItems, w.tick);
     this.abilityView.update(w);
     this.abilityHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
@@ -513,9 +535,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     const tgt = choiceId !== null ? w.groundItems.find((i) => i.id === choiceId) ?? null : interactTarget(w);
     const item = tgt && !('use' in tgt) ? (tgt as GroundItem) : null;
     this.card.update(item, item ? itemCard(w, item) : null, this.time.now, !this.overview && !w.health.dead);
-    const reqs = [...this.sfxQueue, ...this.sfxWatch.footsteps(this.playerView.anim)];
+    const reqs = [...this.sfxQueue, ...this.sfxWatch.footsteps(this.playerView.anim, w)];
     this.sfxQueue = [];
     this.sfx.play(reqs, w.tick, { camCenterX: cam.x + this.scale.width / 2, playerX: b.x });
+    this.sfx.updateCart(w);
     this.soundNote.setVisible(this.sfx.locked && !this.overview);
     if (this.debug) g.lineStyle(1, COLOR.hurtbox, 1).strokeRect(left + 0.5, top + 0.5, b.w - 1, b.h - 1);
 
@@ -564,7 +587,24 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   private drawEnemy(g: Phaser.GameObjects.Graphics, e: EnemyState): void {
     if (e.dead && e.deathTicks <= 0) return;
     const r = enemyRect(e);
-    if (this.boxesMode || !this.enemyViews.get(e)?.hasArt) this.drawEnemyBox(this.boxes, e);
+    const drawing = enemyDrawing(this.world, e);
+    if (drawing.hidden) {
+      if (drawing.bubble) {
+        const phase = (this.time.now / 1000 / B.bubblePeriod) % 1;
+        g.lineStyle(1, B.bubbleColor, 1 - phase).strokeCircle(e.x, e.y - phase * B.bubbleRise, B.bubbleRadius);
+      }
+      return;
+    }
+    const bodyGraphics = e.boss ? this.bossBoxes : this.boxes;
+    if (drawing.threadTop !== null) {
+      const shake = drawing.warning ? (this.world.tick % 2 ? B.threadShake : -B.threadShake) : 0;
+      bodyGraphics.lineStyle(B.threadWidth, B.thread, 1).lineBetween(e.x + shake, drawing.threadTop, e.x + shake, r.y);
+    }
+    if (this.boxesMode || !this.enemyViews.get(e)?.hasArt) this.drawEnemyBox(bodyGraphics, e);
+    // Fog dims the body, while eyes and the orange warning remain visible above it.
+    const ex = e.facing > 0 ? r.x + r.w - B.eyeW - B.eyeInset : r.x + B.eyeInset;
+    if (drawing.glint) g.fillStyle(B.eye, 1).fillRect(ex, r.y + B.eyeTop, B.eyeW, B.eyeH);
+    if (drawing.warning) g.lineStyle(1, e.ai.attack!.len - e.ai.attack!.t <= ENEMY.TELEGRAPH_FLASH_LAST_TICKS ? DRAW.telegraphLast : DRAW.telegraph, 1).strokeRect(r.x, r.y, r.w, r.h);
     if (this.debug) g.lineStyle(1, DRAW.enemyHurtbox, 1).strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
     // HP bar: elites always, regulars after the first damage.
     if (!e.dead && (e.def.hpBar === 'always' || e.everDamaged)) {
@@ -577,8 +617,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   /** Enemies without art yet (the Training Dummy) stay grey boxes. */
   private drawEnemyBox(g: Phaser.GameObjects.Graphics, e: EnemyState): void {
     const r = enemyRect(e);
-    const alpha = e.dead ? e.deathTicks / ENEMY.DEATH_ANIM_TICKS : 1;
-    let color = ENEMY_COLOR[e.def.id] ?? 0xffffff;
+    const alpha = e.dead ? Math.min(1, e.deathTicks / (e.boss ? BOSS.DEATH_ANIM_TICKS : ENEMY.DEATH_ANIM_TICKS)) : e.spawnInTicks > 0 ? 1 - e.spawnInTicks / ENEMY.SPAWN_IN_TICKS : 1;
+    let color = ENEMY_COLOR[e.def.id] ?? B.enemy;
     const a = e.ai.attack;
     if (a && a.phase === 'tele') color = a.len - a.t <= ENEMY.TELEGRAPH_FLASH_LAST_TICKS ? DRAW.telegraphLast : DRAW.telegraph;
     if (e.control && e.control.type !== 'dazed') color = DRAW.controlled;

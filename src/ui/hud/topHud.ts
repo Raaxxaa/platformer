@@ -1,6 +1,6 @@
 // The top-left HUD (07 §4.1–4.6): plate, heart, the 160 × 12 HP bar with lag, heal flash and low-HP pulse, Rush,
 // flask charges and fill, gold and keys. Reads TopHudView only.
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 import type { WorldEvent } from '../../core/sim/gameWorld.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
@@ -18,6 +18,8 @@ export class TopHud {
   private goldText: Phaser.GameObjects.BitmapText;
   private keyText: Phaser.GameObjects.BitmapText;
   private flaskIcons: Phaser.GameObjects.Image[] = [];
+  private statusIcons = new Map<string, Phaser.GameObjects.Image>();
+  private poisonStacks: Phaser.GameObjects.BitmapText;
   private lag = -1;
   private lastDrop = -1e9;
   private healFrom = 0;
@@ -44,6 +46,12 @@ export class TopHud {
     const key = d(scene.add.image(T.key[0], T.key[1], 'ui', 'hud_key').setOrigin(0).setScrollFactor(0), 1);
     this.keyText = d(scene.add.bitmapText(T.keyText[0], T.keyText[1], FONTS.small, '').setScrollFactor(0), 1);
     this.objs.push(this.g, this.hpText, coin, this.goldText, key, this.keyText);
+    for (const id of T.status.order) {
+      const image = d(scene.add.image(T.status.x, T.status.y, 'ui', `status_${id}`).setOrigin(0).setScrollFactor(0), 1);
+      this.statusIcons.set(id, image); this.objs.push(image);
+    }
+    this.poisonStacks = d(scene.add.bitmapText(T.status.x, T.status.y, FONTS.small, '').setScrollFactor(0), 1);
+    this.objs.push(this.poisonStacks);
   }
 
   /** `now` in ms (real time, 07 §1.3). */
@@ -51,6 +59,12 @@ export class TopHud {
     for (const o of this.objs) o.setVisible(shown);
     for (const i of this.flaskIcons) i.setVisible(shown);
     if (!shown) return;
+    for (const image of this.statusIcons.values()) image.setVisible(false);
+    this.poisonStacks.setVisible(false);
+    for (const status of v.statuses) {
+      this.statusIcons.get(status.id)!.setVisible(true).setPosition(status.x, T.status.y);
+      if (status.stacks !== null) this.poisonStacks.setVisible(true).setPosition(status.x + T.status.stackDx, T.status.y).setText(String(status.stacks));
+    }
     const dt = Math.min(0.1, (now - this.lastNow) / 1000);
     this.lastNow = now;
     for (const e of events) if (e.t === 'healRefused') this.refusedUntil = now + T.refusedS * 1000;

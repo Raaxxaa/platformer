@@ -1,5 +1,5 @@
 // Sound effect table (08 §13.2–13.3). `variants` 0 = one file `<id>.wav`; n = `<id>_1.wav` … `<id>_n.wav`.
-export interface SfxDef { vol: number; variants: number; maxVoices?: number; bus?: 'sfx' | 'ui'; world?: boolean }
+export interface SfxDef { vol: number; variants: number; maxVoices?: number; bus?: 'sfx' | 'ui'; world?: boolean; optional?: boolean }
 
 /** 08 §13.2 playback rules. */
 export const SFX_RULES = {
@@ -11,6 +11,7 @@ export const SFX_RULES = {
   fadeStart: 320, fadeLen: 320,   // world volume × clamp(1 − (d − 320) / 320, 0, 1)
   maxVoices: 32,
   busTrim: { sfx: 0.85, ui: 0.60 },   // 08 §15
+  cartRateBase: 0.8, cartRateSpeed: 0.4,
 } as const;
 
 const S = SFX_RULES;
@@ -22,6 +23,12 @@ export const SFX: Record<string, SfxDef> = {
   jump: { vol: 0.45, variants: 2 }, double_jump: { vol: 0.45, variants: 2 }, wall_jump: { vol: 0.45, variants: 2 },
   land: { vol: 0.45, variants: 3 },
   step_soft: { vol: 0.22, variants: 4, maxVoices: S.maxVoicesStep },
+  step_hard: { optional: true, vol: 0.22, variants: 4, maxVoices: S.maxVoicesStep },
+  step_wet: { optional: true, vol: 0.22, variants: 4, maxVoices: S.maxVoicesStep },
+  step_ice: { optional: true, vol: 0.22, variants: 4, maxVoices: S.maxVoicesStep },
+  splash: { optional: true, vol: 0.45, variants: 2 },
+  cart_roll: { optional: true, vol: 0.5, variants: 0, maxVoices: 1 }, cart_jump: { optional: true, vol: 0.5, variants: 0 }, cart_crash: { optional: true, vol: 0.5, variants: 0 },
+  platform_shake: { optional: true, vol: 0.45, variants: 0, ...W }, platform_collapse: { optional: true, vol: 0.45, variants: 0, ...W },
   dash: { vol: 0.5, variants: 2 }, slide: { vol: 0.5, variants: 2 }, ledge_grab: { vol: 0.5, variants: 2 }, drop_through: { vol: 0.5, variants: 2 },
   dive_start: { vol: 0.6, variants: 0 }, dive_land: { vol: 0.6, variants: 0 }, dive_land_heavy: { vol: 0.6, variants: 0 }, dive_bounce: { vol: 0.6, variants: 0 },
   spike_hit: { vol: 0.45, variants: 2 },
@@ -36,10 +43,18 @@ export const SFX: Record<string, SfxDef> = {
   enemy_swing_s: { vol: 0.45, variants: 3, ...W }, enemy_swing_m: { vol: 0.45, variants: 3, ...W }, enemy_swing_l: { vol: 0.45, variants: 3, ...W },
   vo_wolf: { vol: 0.4, variants: 2, ...W }, vo_bandit: { vol: 0.4, variants: 2, ...W }, vo_bandit_archer: { vol: 0.4, variants: 2, ...W },
   vo_wild_boar: { vol: 0.4, variants: 2, ...W }, vo_bandit_brute: { vol: 0.4, variants: 2, ...W },
+  vo_bat_swarm: { optional: true, vol: 0.4, variants: 2, ...W }, vo_goblin_miner: { optional: true, vol: 0.4, variants: 2, ...W }, vo_rock_golem: { optional: true, vol: 0.4, variants: 2, ...W },
+  vo_ram: { optional: true, vol: 0.4, variants: 2, ...W }, vo_goblin_shaman: { optional: true, vol: 0.4, variants: 2, ...W },
+  vo_bog_zombie: { optional: true, vol: 0.4, variants: 2, ...W }, vo_giant_spider: { optional: true, vol: 0.4, variants: 2, ...W }, vo_wisp: { optional: true, vol: 0.4, variants: 2, ...W },
+  vo_swamp_witch: { optional: true, vol: 0.4, variants: 2, ...W }, vo_treant: { optional: true, vol: 0.4, variants: 2, ...W },
+  tele_unblockable: { optional: true, vol: 0.5, variants: 0, ...W },
   enemy_death_s: { vol: 0.55, variants: 2, ...W }, enemy_death_m: { vol: 0.55, variants: 2, ...W }, enemy_death_l: { vol: 0.55, variants: 2, ...W },
   proj_enemy_arrow: { vol: 0.45, variants: 2, ...W }, proj_brute_wave: { vol: 0.45, variants: 2, ...W }, proj_shockwave: { vol: 0.45, variants: 2, ...W },
+  proj_bomb: { optional: true, vol: 0.45, variants: 2, ...W }, proj_hex_bolt: { optional: true, vol: 0.45, variants: 2, ...W }, proj_potion: { optional: true, vol: 0.45, variants: 2, ...W }, proj_venom_glob: { optional: true, vol: 0.45, variants: 2, ...W },
+  bomb_fuse: { optional: true, vol: 0.45, variants: 2, ...W },
   rock_shatter: { vol: 0.45, variants: 2, ...W }, rock_whistle: { vol: 0.5, variants: 2, ...W },
   boss_roar_great_boar: { vol: 0.8, variants: 0 }, boss_break: { vol: 0.8, variants: 0 }, boss_defeated: { vol: 0.8, variants: 0 },
+  boss_roar_stone_colossus: { optional: true, vol: 0.8, variants: 0 }, boss_roar_spider_queen: { optional: true, vol: 0.8, variants: 0 }, boss_phase: { optional: true, vol: 0.8, variants: 0 },
   door_slam: { vol: 0.6, variants: 0 }, door_open: { vol: 0.6, variants: 0 }, timed_open: { vol: 0.6, variants: 0 },
   timed_missed: { vol: 0.6, variants: 0 }, arena_clear: { vol: 0.6, variants: 0 },
   lucky_hit: { vol: 0.7, variants: 0 }, lucky_buff: { vol: 0.7, variants: 0 }, lucky_debuff: { vol: 0.7, variants: 0 }, jackpot: { vol: 0.7, variants: 0 },

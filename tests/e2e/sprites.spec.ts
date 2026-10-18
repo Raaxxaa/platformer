@@ -7,6 +7,9 @@ async function boot(page: Page, query = '') {
   await page.goto(`/?debug=1&start=plains&seed=PLAINS${query}`);
   await page.waitForFunction(() => (window as any).__game?.ready === true);
   await page.evaluate(() => (window as any).__game.setManual(true));
+  // Audio assertions check actual playback after the browser's required gesture.
+  await page.locator('canvas').click({ position: { x: 320, y: 180 } });
+  await expect.poll(() => page.evaluate(() => (window as any).PHASER_GAME.sound.locked)).toBe(false);
   return errors;
 }
 async function nextFrames(page: Page) {

@@ -1,5 +1,5 @@
 // Level art (08 §9, §10.1, §8): terrain tiles, auto-deco, parallax, doors and guide arrows. Reads state; never changes it.
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 import { decoTile, terrainTile } from '../../core/level/autotile.ts';
 import type { LevelObject } from '../../core/level/loadLevel.ts';
 import type { TileGrid } from '../../core/level/tiles.ts';
@@ -8,9 +8,24 @@ import { TICK_RATE } from '../../core/tuning.ts';
 import { OBJECT_FRAMES } from '../../data/animKeys.ts';
 import { DEPTH, DOOR, PARALLAX, TILESET, VIEW } from '../../data/art.ts';
 import { BIOME } from '../assets/loadAssets.ts';
+import { BIOME_VIEW as B } from '../../data/biomeView.ts';
 
 /** Terrain (blob autotiles) at depth 20 and auto-deco at depth 10 (08 §9.2–9.4). */
 export function drawTerrain(scene: Phaser.Scene, grid: TileGrid, biome: string = BIOME, autoDeco = true): void {
+  const key = `tiles_${biome}`;
+  if (!scene.textures.exists(key)) {
+    const g = scene.add.graphics().setDepth(DEPTH.terrain);
+    // Consecutive tiles form one rectangle, so a tall road does not need thousands of objects.
+    for (let y = 0; y < grid.h; y++) for (let x = 0; x < grid.w;) {
+      const kind = grid.baseKindAt(x, y);
+      const start = x++;
+      while (x < grid.w && grid.baseKindAt(x, y) === kind) x++;
+      if (kind === 'empty' || kind === 'water') continue;
+      const color = kind.startsWith('spike') ? B.terrain.spike : B.terrain[kind as 'solid' | 'ice' | 'oneway'];
+      g.fillStyle(color).fillRect(start * TILESET.tile, y * TILESET.tile, (x - start) * TILESET.tile, kind === 'oneway' ? B.onewayHeight : TILESET.tile);
+    }
+    return;
+  }
   const terrain: number[][] = [], deco: number[][] = [];
   for (let ty = 0; ty < grid.h; ty++) {
     const t: number[] = [], d: number[] = [];
@@ -20,7 +35,6 @@ export function drawTerrain(scene: Phaser.Scene, grid: TileGrid, biome: string =
     }
     terrain.push(t); deco.push(d);
   }
-  const key = `tiles_${biome}`;
   for (const [data, depth] of [[deco, DEPTH.deco], [terrain, DEPTH.terrain]] as const) {
     const map = scene.make.tilemap({ data: data as number[][], tileWidth: TILESET.tile, tileHeight: TILESET.tile });
     const set = map.addTilesetImage(key, key, TILESET.tile, TILESET.tile, TILESET.margin, TILESET.spacing)!;
@@ -30,27 +44,44 @@ export function drawTerrain(scene: Phaser.Scene, grid: TileGrid, biome: string =
 
 /** Three camera-fixed parallax layers over a sky-top fill (08 §10.1). */
 export class Parallax {
-  private readonly layers: Phaser.GameObjects.TileSprite[] = [];
+  private readonly layers: { sprite: Phaser.GameObjects.TileSprite | Phaser.GameObjects.Rectangle; set: keyof typeof PARALLAX; index: number; cave: boolean }[] = [];
   private readonly levelHeightPx: number;
   private readonly biome: keyof typeof PARALLAX;
+  caveAlpha = 0;
   constructor(scene: Phaser.Scene, levelHeightPx: number, biome: keyof typeof PARALLAX = BIOME) {
     this.levelHeightPx = levelHeightPx;
     this.biome = biome;
     const set = PARALLAX[biome];
     scene.cameras.main.setBackgroundColor(set.skyTop);
-    for (let i = 0; i < 3; i++) {
-      this.layers.push(scene.add.tileSprite(0, 0, VIEW.w, VIEW.h, `bg_${biome}_${i}`).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.parallax[i]));
-    }
+    const make = (id: keyof typeof PARALLAX, cave: boolean) => {
+      if (![0, 1, 2].every(i => scene.textures.exists(`bg_${id}_${i}`))) {
+        const sprite = scene.add.rectangle(0, 0, VIEW.w, VIEW.h, cave ? B.cave : B.background).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.parallax[0] + (cave ? 0.5 : 0));
+        this.layers.push({ sprite, set: id, index: 0, cave });
+        return;
+      }
+      for (let i = 0; i < set.layers.length; i++) {
+        const sprite = scene.add.tileSprite(0, 0, VIEW.w, VIEW.h, `bg_${id}_${i}`).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.parallax[i] + (cave ? 0.5 : 0));
+        this.layers.push({ sprite, set: id, index: i, cave });
+      }
+    };
+    make(biome, false);
+    if (biome === 'mountains') make('mountains_cave', true);
+    this.update(0, 0, 0);
   }
   setVisible(on: boolean): void {
-    for (const s of this.layers) s.setVisible(on);
+    for (const s of this.layers) s.sprite.setVisible(on);
   }
 
-  update(camX: number, camY: number): void {
-    const set = PARALLAX[this.biome];
-    this.layers.forEach((s, i) => {
-      s.tilePositionX = Math.round(camX * set.layers[i].fx);
-      s.y = Math.round((this.levelHeightPx - VIEW.h - camY) * set.layers[i].fy);
+  update(camX: number, camY: number, seconds = 0): void {
+    const target = this.biome === 'mountains' && camY + VIEW.h / 2 >= this.levelHeightPx * B.caveStartFraction ? 1 : 0;
+    const step = Math.max(0, seconds) / B.caveFadeSeconds;
+    this.caveAlpha = this.caveAlpha < target ? Math.min(target, this.caveAlpha + step) : Math.max(target, this.caveAlpha - step);
+    this.layers.forEach(({ sprite, set, index, cave }) => {
+      sprite.setAlpha(cave ? this.caveAlpha : 1 - this.caveAlpha);
+      if ('tilePositionX' in sprite) {
+        sprite.tilePositionX = Math.round(camX * PARALLAX[set].layers[index].fx);
+        sprite.y = Math.round((this.levelHeightPx - VIEW.h - camY) * PARALLAX[set].layers[index].fy);
+      }
     });
   }
 }

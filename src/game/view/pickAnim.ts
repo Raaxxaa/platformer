@@ -35,6 +35,7 @@ const n = (get: Lookup, k: string) => get(k)?.frames.length ?? 1;
 function movement(s: PlayerAnimState, get: Lookup, runPhase: number): { key: string; frame: number } {
   const A = ANIM, st = sec(s.stateTicks);
   switch (s.state) {
+    case 'minecart':return {key:'cart_ride',frame:timeFrame(get('cart_ride')!,st)};
     case 'dash': {
       const t = s.stateTicks - 1;
       return { key: 'dash', frame: t < A.DASH_FRAME_STARTS[0] ? 0 : t < A.DASH_FRAME_STARTS[1] ? 1 : 2 };

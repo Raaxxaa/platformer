@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { cardDelta, flaskFillW, hpFillW, rushFills, weaponDmg } from './hudModel.ts';
+import { cardDelta, flaskFillW, hpFillW, rushFills, weaponDmg, topHudView } from './hudModel.ts';
+import { arenaWorld } from '../../core/testkit/combatWorld.ts';
 
 describe('HUD numbers (07 test checklist)', () => {
+  it('packs player statuses in fixed order and keeps the Poison stack digit', () => {
+    const w = arenaWorld();
+    expect(topHudView(w).statuses).toEqual([]);
+    w.playerStatus.rooted = 120; w.playerStatus.chilled = 120;
+    w.playerStatus.poisoned = { stacks: 3, left: 120, next: 120, damageA: 3 };
+    expect(topHudView(w).statuses).toEqual([{ id: 'poisoned', x: 184, stacks: 3 }, { id: 'chilled', x: 200, stacks: null }, { id: 'rooted', x: 210, stacks: null }]);
+    w.playerStatus.burning = { stacks: 1, left: 120, next: 120, damageA: 4 };
+    expect(topHudView(w).statuses[0]).toEqual({ id: 'burning', x: 184, stacks: null });
+    expect(topHudView(w).statuses[1].x).toBe(194);
+  });
   it('1: HP fill width on the 158 px fill area', () => {
     expect(hpFillW(50, 100)).toBe(79);
     expect(hpFillW(1, 208)).toBe(1);

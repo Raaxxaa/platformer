@@ -162,6 +162,7 @@ export class EnemySprite {
   update(worldTick: number): void {
     const e = this.e;
     if (!this.hasArt || this.gone) return;
+    if (e.swamp?.submerged) { this.hide(); return; }
     if (this.dummy) {
       feet(this.sprite.setFrame(this.dummyFrame(worldTick))).setPosition(e.x, e.y);
       this.updateOverlay(worldTick, 1);
@@ -243,9 +244,11 @@ export class ProjectileSprites {
   private readonly sprites = new Map<number, Phaser.GameObjects.Sprite>();
   private readonly scene: Phaser.Scene;
   private readonly bank: AnimBank;
-  constructor(scene: Phaser.Scene, bank: AnimBank) {
+  private readonly depth: number;
+  constructor(scene: Phaser.Scene, bank: AnimBank, depth: number = DEPTH.projectiles) {
     this.scene = scene;
     this.bank = bank;
+    this.depth = depth;
   }
 
   hasArt(id: string): boolean {
@@ -261,7 +264,7 @@ export class ProjectileSprites {
       if (!def) continue;
       live.add(p.id);
       let s = this.sprites.get(p.id);
-      if (!s) { s = this.scene.add.sprite(0, 0, def.atlas, def.frames[0]).setDepth(DEPTH.projectiles); s.setData('def', p.def.id); this.sprites.set(p.id, s); spawned.push(p); }
+      if (!s) { s = this.scene.add.sprite(0, 0, def.atlas, def.frames[0]).setDepth(this.depth); s.setData('def', p.def.id); this.sprites.set(p.id, s); spawned.push(p); }
       const i = def.mode === 'loop' ? timeFrame(def, worldTick / TICK_RATE) : 0;
       const ang = Math.round(Math.atan2(p.vy, p.vx) / step) * step;
       s.setFrame(def.frames[i]).setPosition(p.x, p.y).setRotation(ang);

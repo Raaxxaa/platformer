@@ -3,7 +3,7 @@
 /** 08 §4.3 draw order. */
 export const DEPTH = {
   parallax: [0, 1, 2], deco: 10, terrain: 20, doors: 30, items: 35, enemies: 40, boss: 41, afterimage: 49, player: 50,
-  playerProjectiles: 60, vfx: 70, markers: 88, projectiles: 88, debug: 89, hud: 90,
+  playerProjectiles: 60, vfx: 70, water: 75, darkness: 85, eyes: 88, markers: 88, projectiles: 88, debug: 89, hud: 90,
 } as const;
 
 /** 08 §9: tileset layout (16 × 9 tiles of 16 px, margin 1, spacing 2). */
@@ -22,6 +22,10 @@ export const PARALLAX = {
   plains: { skyTop: 0x78bfe6, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
   village_home: { skyTop: 0xf2b48a, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
   village_crossroads: { skyTop: 0xe0785a, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
+  mountains: { skyTop: 0x5878ae, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
+  mountains_cave: { skyTop: 0x0f1119, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
+  swamps: { skyTop: 0x121a20, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
+  village_border: { skyTop: 0x5878ae, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
 } as const;
 export const VIEW = { w: 640, h: 360 } as const;
 

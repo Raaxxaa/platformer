@@ -45,6 +45,7 @@ export const ABILITY_FX = {
 
 /** 07 §4.1 top-left HUD layout and §4.2–4.6 timings (seconds). */
 export const TOP_HUD = {
+  status: { x: 184, y: 22, size: 8, step: 10, poisonStep: 16, stackDx: 9, order: ['burning', 'poisoned', 'chilled', 'rooted'] },
   plate: [4, 4, 196, 48], plateBottom: [4, 280, 128, 76],
   heart: [8, 9], heartSize: 10, hpFrame: [20, 8, 160, 12], hpText: [184, 10],
   rushX: [8, 58, 108], rushY: 22, rushW: 48, rushH: 6,
