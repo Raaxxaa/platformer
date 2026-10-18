@@ -46,7 +46,19 @@ No later milestone is authorized.
 
 ## Active task
 
-M7 Task 3: Home Village, fresh-world carry, shared save/session scaffold, and Home/Training/Stage loading.
+### M7 Task 3 — `58cd749`
+
+- Added the Home Village with existing ART3 assets, class statues, the first-kit Training prompt, seed/records boards, gate checks, and persistent kit/training progress.
+- Fresh-world carry keeps the original starting kit separate, transfers run stats and Iron Will/Vitality state, and is consumed only once before loot rolls.
+- Added real Home/Training/Stage loading, correct Training return source, untimed Home/Yard clocks, and one Stage 1 run-start event.
+- Shared save scaffold catches storage getter/method failures, protects newer saves, and exposes a one-time visible warning.
+- Test-first and red-to-green review fixes cover held controller inputs, same-session return paths, visible warnings, and HP transfer.
+- Final checks: 762 unit tests in 101 files; typecheck/build; 22 Home/class/HUD/Stage 1 browser tests passed.
+- Root inspected all four Home screenshots. Independent review fixes were rechecked with no findings.
+- Existing protected scripts/art were unchanged. The level wrapper honors `PYTHON`; bundled Python with Pillow was used locally. Original `kinds.png` bytes were restored.
+- No new SPEC-GAP.
+
+M7 Task 4: Crossroads Village and the full shop.
 The M7 writer is authorized to continue Tasks 3–10 strictly in order, with a tested commit per task and checkpoint reports.
 Root owns this handoff. Review agents stay read-only. No feature push before M7 checks and screenshot review.
 
