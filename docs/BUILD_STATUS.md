@@ -64,9 +64,17 @@ No later milestone is authorized.
 - Final checks: 793 unit tests in 105 files; typecheck/build; fifteen related browser checks plus the final shop rerender passed.
 - Root inspected stock, SOLD, held-ring, and shop screenshots. No remaining review finding; no new SPEC-GAP.
 
+### M7 Task 5 — `2fc4b3b`
+
+- Added the saved road choice, exact 120-tick inn sleep, mid-fade health refill, and the authorized run-so-far ending with real Restart/Home/Title actions.
+- The ending freezes gameplay and never claims Stage 2 progress, a completed run, or a PB. Canceling the road choice keeps the current run unchanged.
+- Review regressions failed first for ignored route-menu pause and a second restart caused by a held controller button. Both were fixed and independently rechecked.
+- Final checks: 808 unit tests in 108 files; typecheck/build; three inn browser tests plus seven related browser cases passed.
+- Root inspected road-choice and ending screenshots. No new SPEC-GAP; the plan's authorized placeholder comment is present.
+
 ## Active task
 
-M7 Task 5: inn, road choice, sleep, and the authorized run-so-far ending.
+M7 Task 6: timer, split comparisons, best segments, and personal bests.
 The M7 writer is authorized to continue Tasks 3–10 strictly in order, with a tested commit per task and checkpoint reports.
 Root owns this handoff. Review agents stay read-only. No feature push before M7 checks and screenshot review.
 
