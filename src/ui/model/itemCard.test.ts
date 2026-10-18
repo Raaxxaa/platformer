@@ -1,8 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { newAbility, newWeapon } from '../../core/abilities/runtime.ts';
 import { dropItem } from '../../core/abilities/items.ts';
 import { arenaWorld, stepSpec } from '../../core/testkit/combatWorld.ts';
 import { itemCard } from './itemCard.ts';
+import { defaultSettings } from '../../data/save.ts';
+import { applyUiSettings, noteInputDevice } from '../inputSettings.ts';
+afterEach(() => { applyUiSettings(defaultSettings()); noteInputDevice('keyboard'); });
 
 function world(abilities: [string | null, string | null], weapons: [string | null, string | null]) {
   const w = arenaWorld();
@@ -68,5 +71,25 @@ describe('item card with loot (M5)', () => {
     const ca = itemCard(w, ab);
     expect(ca.bottom).toBe('Owned');
     expect(ca.bottomTone).toBe('bad');
+  });
+});
+
+describe('current item-card action bindings (07 §8.4)', () => {
+  it('uses imported weapon, ability and interact keys while retaining action metadata for drawn glyphs', () => {
+    const settings = defaultSettings(); settings.bindings.keyboard.attack1 = ['KeyZ', null]; settings.bindings.keyboard.attack2 = ['KeyX', null];
+    settings.bindings.keyboard.ability1 = ['KeyC', null]; settings.bindings.keyboard.ability2 = ['KeyV', null]; settings.bindings.keyboard.interact = ['KeyF', null]; applyUiSettings(settings);
+    const w = world(['blade_dash', 'whirlwind'], ['greatsword', 'war_maul']);
+    const weapon = itemCard(w, dropItem(w, 300, 320, { weapon: newWeapon('katana') }));
+    expect(weapon.options.map((option) => option.text.slice(0, 3))).toEqual(['[Z]', '[X]']); expect(weapon.options.map((option) => option.action)).toEqual(['attack1', 'attack2']);
+    expect(weapon.bottom).toBe('[F] Swap'); expect(weapon.bottomAction).toBe('interact');
+    const ability = itemCard(w, dropItem(w, 300, 320, { ability: newAbility('arrow_rain') }));
+    expect(ability.options.map((option) => option.text.slice(0, 3))).toEqual(['[C]', '[V]']); expect(ability.options.map((option) => option.action)).toEqual(['ability1', 'ability2']);
+  });
+  it('uses forced pad labels, and Owned has no active pickup prompt', () => {
+    const settings = defaultSettings(); settings.promptStyle = 'playstation'; applyUiSettings(settings);
+    const w = world(['blade_dash', null], ['greatsword', 'war_maul']), weapon = itemCard(w, dropItem(w, 300, 320, { weapon: newWeapon('katana') }));
+    expect(weapon.options[0].text).toMatch(/^\[□\]/); expect(weapon.bottom).toBe('[○] Swap');
+    const owned = itemCard(w, dropItem(w, 300, 320, { ability: newAbility('blade_dash'), price: 120 }));
+    expect(owned.bottom).toBe('Owned'); expect(owned.bottomAction).toBeUndefined();
   });
 });

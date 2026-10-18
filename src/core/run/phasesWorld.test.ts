@@ -18,6 +18,14 @@ const defeat = (w: GameWorld) => { killEnemy(w, w.enemies.find((e) => e.boss)!);
 const lethal = (w: GameWorld) => { w.health.hp = 1; hurtPlayer(w, { kind: 'hazard', cause: 'spikes', damageA: 20 }); };
 
 describe('phase machine in the world (M7 Task 1)', () => {
+  it('leaves the frozen death screen through an untimed 60-tick Home fade', () => {
+    const w = arenaWorld(); lethal(w); stepSpec(w, {}, 120); expect(w.phase).toBe('deathScreen');
+    const body = structuredClone(w.body), ticks = w.run.runTicks;
+    beginTransition(w.run, 'toHome', { phase: 'homeVillage', levelId: 'home', stage: 0 });
+    stepSpec(w, { moveX: 1, restart: true }, 59); expect(w.run.phase).toBe('transition');
+    const events = stepSpec(w, {}); expect(w.run.phase).toBe('loading'); expect(events).toContainEqual({ t: 'loadLevel', levelId: 'home', stage: 0 });
+    expect(w.body).toEqual(body); expect(w.run.runTicks).toBe(ticks);
+  });
   it('opens the stat pick exactly 120 ticks after a Guardian kill; its clock runs but everything else freezes', () => {
     const w = bossWorld(); defeat(w);
     const at = w.tick;

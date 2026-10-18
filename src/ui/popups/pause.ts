@@ -6,11 +6,15 @@ import { ABILITY_INFO } from '../../data/abilities.ts';
 import { FONTS, itemIcon } from '../../data/animKeys.ts';
 import { BONDS, CLASS_NAME, WEAPON_CLASSES } from '../../data/classes.ts';
 import { PAUSE_UI as P } from '../../data/stageUi.ts';
-import { ABILITY_BLURB, BOND_BLURB, CLASS_COLOR, CONTROLS_LIST, GRADE_COLOR, HUD_COLOR, HYBRID_BLURB, HYBRID_COLOR, UI_COLOR, WEAPON_BLURB, WEAPON_NAME } from '../../data/uiText.ts';
+import { ABILITY_BLURB, BOND_BLURB, CLASS_COLOR, GRADE_COLOR, HUD_COLOR, HYBRID_BLURB, HYBRID_COLOR, UI_COLOR, WEAPON_BLURB, WEAPON_NAME } from '../../data/uiText.ts';
 import { weaponDmg } from '../model/hudModel.ts';
 import { PAUSE, type PauseModel } from '../model/pauseModel.ts';
 import { box, SKIN } from '../skin.ts';
 import { STAT_PICK_UI } from '../../data/statUi.ts';
+import { getUiSettings, keyLabel, menuGlyphs } from '../inputSettings.ts';
+import { MENU_UI } from '../../data/menuUi.ts';
+import type { ActionId } from '../../core/save/schema.ts';
+import { promptLine } from '../promptLine.ts';
 
 export class PauseView {
   private scene: Phaser.Scene;
@@ -37,7 +41,7 @@ export class PauseView {
   }
 
   draw(m: PauseModel, w: GameWorld, info: string): void {
-    const key = JSON.stringify([m.tab, m.cursor, m.label(m.cursor), info, w.combat.slots, w.abilities.slots]);
+    const key = JSON.stringify([m.tab, m.cursor, m.label(m.cursor), info, w.combat.slots, w.abilities.slots, getUiSettings(), menuGlyphs()]);
     if (key === this.key) return;
     this.key = key;
     this.c.removeAll(true);
@@ -58,7 +62,7 @@ export class PauseView {
     if (m.tab === 'MENU') this.menu(m, info);
     else if (m.tab === 'LOADOUT') this.loadout(w);
     else this.controls();
-    this.t(pw / 2, P.hintY, '←→ Tabs   ↑↓ Select   [ENT] Confirm   [ESC] Resume', UI_COLOR.textDim).setOrigin(0.5, 0);
+    promptLine(this.scene, this.c, px + pw / 2, py + P.hintY, ['←→ Tabs   ↑↓ Select   ', { menu: 'confirm' }, ' Confirm   ', { menu: 'back' }, ' Resume']);
   }
 
   private menu(m: PauseModel, info: string): void {
@@ -116,8 +120,10 @@ export class PauseView {
   }
 
   private controls(): void {
-    const half = Math.ceil(CONTROLS_LIST.length / 2);
-    CONTROLS_LIST.forEach(([action, keyName], i) => {
+    const controls = Object.entries(MENU_UI.settings.controlNames) as [ActionId, string][];
+    const half = Math.ceil(controls.length / 2);
+    controls.forEach(([id, action], i) => {
+      const keyName = getUiSettings().bindings.keyboard[id].filter((key) => key !== null).map((key) => keyLabel(key, true)).join(' / ');
       const col = i < half ? 0 : 2, row = i % half;
       const y = P.controlsY + row * P.controlsStep;
       this.t(P.colX[col], y, action, UI_COLOR.textDim);

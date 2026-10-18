@@ -7,6 +7,8 @@ import { FONTS } from '../../data/animKeys.ts';
 import { RUN_UI as U } from '../../data/runUi.ts';
 import { UI_COLOR } from '../../data/uiText.ts';
 import { activeHomePad, HomePanelInput, type HomePanelAction, type HomePanelPad } from '../home/homePanels.ts';
+import { menuGlyphs, noteInputDevice } from '../inputSettings.ts';
+import { promptLine } from '../promptLine.ts';
 
 export interface RouteChoiceData {
   lastRoad: Road;
@@ -48,7 +50,6 @@ export class RouteChoiceView {
   private readonly dim: Phaser.GameObjects.Graphics;
   private closed = false;
   private enabled = true;
-  private padHints = false;
   private drawn = '';
   private readonly scene: Phaser.Scene;
   private readonly callbacks: RouteChoiceCallbacks;
@@ -68,12 +69,12 @@ export class RouteChoiceView {
   }
   private readonly keyDown = (event: KeyboardEvent) => {
     if (!this.enabled || this.closed) return;
-    if (this.input.key(event.code, true, event.repeat)) { this.padHints = false; event.preventDefault(); }
+    if (this.input.key(event.code, true, event.repeat)) { noteInputDevice('keyboard'); event.preventDefault(); }
   };
   private readonly keyUp = (event: KeyboardEvent) => { this.input.key(event.code, false); };
   update(seconds: number, pad: HomePanelPad | null = activeHomePad()): void {
     if (!this.enabled || this.closed) return;
-    if (pad?.buttons.some((button) => button.pressed) || pad?.axes.some((axis) => Math.abs(axis) >= U.stick)) this.padHints = true;
+    if (pad?.buttons.some((button) => button.pressed) || pad?.axes.some((axis) => Math.abs(axis) >= U.stick)) noteInputDevice('gamepad', (pad as HomePanelPad & { id?: string }).id);
     for (const action of this.input.poll(Math.min(U.frameClamp, Math.max(0, seconds)), pad)) this.action(action);
     this.draw();
   }
@@ -100,7 +101,7 @@ export class RouteChoiceView {
   }
   private draw(): void {
     if (this.closed) return;
-    const key = JSON.stringify([this.model.cursor, this.padHints]); if (key === this.drawn) return;
+    const key = JSON.stringify([this.model.cursor, menuGlyphs()]); if (key === this.drawn) return;
     this.drawn = key; this.c.removeAll(true);
     const R = U.route, [x, y, w, h] = R.panel;
     if (this.scene.textures.exists('ui') && this.scene.textures.get('ui').has(U.panelFrame)) {
@@ -120,7 +121,6 @@ export class RouteChoiceView {
         this.model.select(i); this.action('confirm');
       }); this.c.add(area);
     });
-    const glyph = this.padHints ? U.glyphs.pad : U.glyphs.keyboard;
-    this.text(x + w / 2, R.hintY, `←→ Road   [${glyph.confirm}] Sleep   [${glyph.back}] Cancel`, UI_COLOR.textDim);
+    promptLine(this.scene, this.c, x + w / 2, R.hintY, ['←→ Road   ', { menu: 'confirm' }, ' Sleep   ', { menu: 'back' }, ' Cancel']);
   }
 }

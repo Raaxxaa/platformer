@@ -5,7 +5,6 @@ import { killEnemy } from '../../core/combat/resolve.ts';
 import { loadLevel, type LevelData } from '../../core/level/loadLevel.ts';
 import { sectionAt } from '../../core/level/routeLint.ts';
 import { timedDoorTimeLeft } from '../../core/run/timedDoors.ts';
-import type { HintAction } from '../../core/run/zones.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
@@ -43,14 +42,16 @@ import { SAVE_RULES } from '../../data/save.ts';
 import { dropBlueprint } from '../../core/loot/blueprintItems.ts';
 import type { BlueprintId } from '../../core/loot/blueprints.ts';
 import { abilityPool, weaponPool } from '../../core/loot/roll.ts';
+import { MenuScreens } from '../menuScreens.ts';
+import { DeathView } from '../../ui/screens/death.ts';
+import { getUiSettings } from '../../ui/inputSettings.ts';
+import type { HomePanelAction } from '../../ui/home/homePanels.ts';
+import { FRONT_UI } from '../../data/frontUi.ts';
+import { UI_FRAME_SECONDS } from '../../data/stageUi.ts';
+import { HINT_PARTS } from '../../data/hints.ts';
+import { promptLine, type PromptPart } from '../../ui/promptLine.ts';
+import { PROMPT } from '../../data/prompts.ts';
 
-/** Hint text with the M1 key names (07 shows real button prompts later). */
-const HINT_TEXT: Record<HintAction, string> = {
-  move: 'A / D — move', jump: 'Space — jump', double_jump: 'Space in the air — double jump', dash: 'Shift — dash (through attacks)',
-  wall_jump: 'Space on a wall — wall jump', slide: 'S + Shift — slide', dive_slam: 'S + J in the air — dive slam',
-  attack: 'J / K — attack', lucky_block: 'Hit the block!', ability: 'U / I — ability', heal: 'Q — drink the flask',
-  interact: 'E — pick up', drop_through: 'S + Space — drop through',
-};
 /** Grey marker letters for loot objects that start working in M4. */
 const MARKER_LETTER: Record<string, string> = {
   lucky_block: 'L', loot_stand: 'S', key: 'K', key_chest: 'C', cursed_chest: 'Q', timed_chest: 'T', merchant_spot: 'M',
@@ -64,7 +65,7 @@ export class StageScene extends WorldScene {
   private labels: Phaser.GameObjects.BitmapText[] = [];
   private doorText = new Map<string, Phaser.GameObjects.BitmapText>();
   private doorViews!: DoorViews;
-  private hintText!: Phaser.GameObjects.BitmapText;
+  private hintText!: Phaser.GameObjects.Container;
   private timerBlock!: TimerBlock;
   private bossBarGfx!: Phaser.GameObjects.Graphics;
   private bossText!: Phaser.GameObjects.BitmapText;
@@ -78,6 +79,10 @@ export class StageScene extends WorldScene {
   private shopView: ShopView | null = null;
   private routeChoice: RouteChoiceView | null = null;
   private runSoFar: RunSoFarView | null = null;
+  private menus!: MenuScreens;
+  private deathView: DeathView | null = null;
+  private deathCause = 'hazard';
+  private titleFadeLeft = 0;
 
   constructor(key = 'Stage') {
     super(key);
@@ -85,8 +90,9 @@ export class StageScene extends WorldScene {
 
   /** The level the start screen chose (else the URL decides). */
   private chosen: string | null = null;
-  init(data?: { level?: string; carry?: WorldCarry }): void {
+  init(data?: { level?: string; carry?: WorldCarry; titleFade?: boolean }): void {
     this.chosen = data?.level ?? null;
+    this.deathView = null; this.deathCause = 'hazard'; this.titleFadeLeft = data?.titleFade ? FRONT_UI.title.fadeSeconds : 0;
     this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.labels = []; this.doorText.clear();
   }
 
@@ -114,6 +120,8 @@ export class StageScene extends WorldScene {
   }
 
   protected createExtra(): void {
+    this.menus = new MenuScreens(this, () => this.clearMenuInput(), () => { this.devices.setEnabled(false); this.clearMenuInput(); }, () => gameSession.refreshRecords(this.world));
+    this.events.once('shutdown', () => { this.deathView?.destroy(); this.deathView = null; });
     const U = STAGE_UI;
     const { width, height } = this.scale;
     this.props = this.add.graphics().setDepth(DEPTH.terrain + 5);
@@ -124,7 +132,7 @@ export class StageScene extends WorldScene {
     }
     this.doorViews = new DoorViews(this);
     drawGuideArrows(this, this.level.objects);
-    this.hintText = this.add.bitmapText(width / 2, height - U.hintBottom, FONTS.small, '').setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.hintText = this.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH.hud);
     this.timerBlock = new TimerBlock(this);
     this.bossBarGfx = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud);
     this.bossText = this.add.bitmapText(U.bossName[0], U.bossName[1], FONTS.small, '').setScrollFactor(0).setDepth(DEPTH.hud);
@@ -155,6 +163,9 @@ export class StageScene extends WorldScene {
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.levelId = () => this.level.id;
     api.save = () => structuredClone(saveStore().data);
+    api.appliedSettings = () => structuredClone(getUiSettings());
+    api.screenState = () => this.menus.active ? this.menus.snapshot() : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
+    api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else this.deathView?.action(action); };
     api.timerBlock = () => this.timerBlock.snapshot();
     api.dropBlueprint = (id: BlueprintId) => dropBlueprint(this.world, id, this.world.body.x, this.world.body.y);
     api.poolSnapshot = () => ({ unlocked: [...this.world.run.lootUnlocked], dropped: [...this.world.run.blueprintsDropped],
@@ -215,8 +226,11 @@ export class StageScene extends WorldScene {
   protected pausePlace(): 'run' | 'training' | 'home' { return this.level.kind === 'training' ? 'training' : this.level.id === 'home' ? 'home' : 'run'; }
   protected pauseInfo(): string {
     if (this.level.kind === 'training') return 'Training Yard';
-    return PauseView.info(this.level.stage, this.world.run.runTicks, null);
+    return PauseView.info(this.world.run.stage || Math.max(1, this.world.run.splits.filter((s) => s !== null).length), this.world.run.runTicks, this.world.run.seeded ? this.world.run.seedText : null);
   }
+  protected pauseMenuCovered(): boolean { return !!this.menus?.active; }
+  protected freezesExtraMenuWorld(): boolean { return this.titleFadeLeft > 0 || this.menus?.snapshot().screen === 'records'; }
+  protected onPauseSettings(): void { this.menus.openSettings(); this.clearMenuInput(); }
   /** Quitting, or leaving the Training Yard: back to the start screen (M4.1 Task 2). */
   protected onPauseQuit(): void {
     if (this.level.kind === 'training' && gameSession.trainingReturn === 'home') this.goLevel('home');
@@ -229,7 +243,7 @@ export class StageScene extends WorldScene {
     saveStore().update((s) => { s.lastKit = { ...kit }; });
     if (first && this.level.id === 'home') this.openHomePanel('training');
   }
-  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar; }
+  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar || !!this.menus?.active || this.titleFadeLeft > 0; }
   private requestHome(): void {
     gameSession.endRun(this.world, 'quit');
     this.runSoFar?.destroy(); this.runSoFar = null;
@@ -250,6 +264,7 @@ export class StageScene extends WorldScene {
     }, { onRestart: () => { this.runSoFar?.destroy(); this.runSoFar = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
   }
   private openHomePanel(kind: HomePanelKind): void {
+    if (kind === 'records') { this.menus.openRecords(); this.clearMenuInput(); return; }
     this.homePanel?.destroy();
     this.homePanel = new HomePanels(this, kind, saveStore().data, {
       onSeedChange: (seed) => { saveStore().update((s) => { s.typedSeed = seed; }); this.world.opts.seeded = seed !== null; this.world.opts.seedText = seed ?? randomSeed(); this.world.run.seeded = seed !== null; this.world.run.seedText = this.world.opts.seedText; },
@@ -265,6 +280,10 @@ export class StageScene extends WorldScene {
     this.scene.start(['home', 'crossroads', 'border', 'rebel_camp'].includes(level) ? 'Village' : 'Stage', { level, carry });
   }
   update(time: number, delta: number): void {
+    this.menus?.update(delta / 1000);
+    this.deathView?.setEnabled(!this.pause); if (!this.pause) this.deathView?.update(delta / 1000);
+    this.devices?.setEnabled(!this.manual && !this.menus?.active && this.titleFadeLeft === 0);
+    this.titleFadeLeft = Math.max(0, this.titleFadeLeft - Math.min(UI_FRAME_SECONDS, delta / 1000));
     this.timerBlock?.advance(delta / 1000, !!this.pause);
     if (this.homePanel?.active) { this.homePanel.setEnabled(!this.pause); this.homePanel.update(delta / 1000); }
     this.routeChoice?.setEnabled(!this.pause); this.routeChoice?.update(delta / 1000);
@@ -282,6 +301,16 @@ export class StageScene extends WorldScene {
 
   protected renderExtra(): void {
     const w = this.world, U = STAGE_UI;
+    for (const { e } of this.frameEvents) if (e.t === 'playerDied') this.deathCause = e.cause;
+    const deathVisible = w.phase === 'deathScreen' && (w.run.phase === 'dead' || w.run.phase === 'paused' && w.run.pausedFrom === 'dead');
+    if (!deathVisible) { this.deathView?.destroy(); this.deathView = null; }
+    if (deathVisible) {
+      this.overlay.setVisible(false); this.overlayText.setVisible(false);
+      if (!this.deathView) this.deathView = new DeathView(this, { stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText }, (result) => {
+        this.deathView?.destroy(); this.deathView = null; this.clearMenuInput();
+        if (result === 'restart') w.restart(); else if (result === 'home') this.requestHome(); else this.toTitle();
+      });
+    }
     this.syncRunPanels();
     this.villageView?.update(w, saveStore().data.typedSeed);
     this.shopView?.update(w, this.frameEvents.some(({ e }) => e.t === 'cantAfford'));
@@ -293,7 +322,7 @@ export class StageScene extends WorldScene {
       if (e.panel === 'training') this.enterTraining(); else this.openHomePanel(e.panel);
     }
     const transition = w.run.transition;
-    this.fade?.setVisible(w.run.phase === 'transition').setAlpha(transition ? (transition.part === 'out' ? 1 - transition.left / RUN.FADE_TICKS : transition.left / (transition.kind === 'restart' ? RUN.RESTART_FADE_TICKS : RUN.FADE_TICKS)) : 0);
+    this.fade?.setVisible(w.run.phase === 'transition' || this.titleFadeLeft > 0).setAlpha(this.titleFadeLeft > 0 ? this.titleFadeLeft / FRONT_UI.title.fadeSeconds : transition ? (transition.part === 'out' ? 1 - transition.left / RUN.FADE_TICKS : transition.left / (transition.kind === 'restart' ? RUN.RESTART_FADE_TICKS : RUN.FADE_TICKS)) : 0);
     const g = this.props.clear();
     // Doors (sprites) and the timed door's countdown.
     this.doorViews.update(w);
@@ -312,8 +341,9 @@ export class StageScene extends WorldScene {
     }
     // Hint, timer, split popup, boss bar, stage clear.
     const target = this.level.kind === 'village' ? interactTarget(w) : null;
-    const sign = w.villageMessage ?? w.training?.sign ?? (target && 'use' in target ? (interactPrompt(w, target) ? '' : `[E] ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label}`) : w.activeHint ? HINT_TEXT[w.activeHint] : '');
-    this.hintText.setText(!this.overview ? sign : '');
+    const sign: readonly PromptPart[] = w.villageMessage || w.training?.sign ? [w.villageMessage ?? w.training!.sign!] : target && 'use' in target ? interactPrompt(w, target) ? [] : [{ action: 'interact' }, ` ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label}`] : w.activeHint && !saveStore().data.progress.stage1Cleared ? HINT_PARTS[w.activeHint] : [];
+    this.hintText.removeAll(true);
+    if (!this.overview) promptLine(this, this.hintText, this.scale.width / 2, this.scale.height - U.hintBottom - PROMPT.height, sign);
     this.yard?.update(w);
     if (this.frameEvents.some(({ e }) => e.t === 'leftTraining')) { if (gameSession.trainingReturn === 'home') this.goLevel('home'); else this.toTitle(); return; }
     this.timerBlock.draw(w, saveStore().data.settings.showTimer, !!this.overview, this.frameEvents.map(({ e }) => e));

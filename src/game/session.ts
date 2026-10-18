@@ -14,6 +14,11 @@ export const gameSession = {
   trainingReturn: 'title' as 'home' | 'title',
   kitNotice: null as string | null,
   takeKitNotice(): string | null { const text = this.kitNotice; this.kitNotice = null; return text; },
+  /** A confirmed import replaces comparisons too; live gear, run state and its frozen pool stay intact. */
+  refreshRecords(w: GameWorld): void {
+    const save = saveStore().data;
+    w.records.pbs = structuredClone(save.pbs); w.records.bestSegments = structuredClone(save.bestSegments);
+  },
   makeWorld(level: LevelData, carry?: WorldCarry, debugSeed?: string | null): GameWorld {
     const save = saveStore().data;
     const homeTransition = carry?.run.transition?.target.phase === 'homeVillage' ? structuredClone(carry.run.transition) : null;

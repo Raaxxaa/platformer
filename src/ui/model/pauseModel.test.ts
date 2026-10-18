@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { PauseModel } from './pauseModel.ts';
 
 describe('pause menu (07 §7.6)', () => {
-  it('opens on MENU; left/right switch tabs; disabled items are skipped', () => {
+  it('opens on MENU; left/right switch tabs; Settings is available', () => {
     const m = new PauseModel('run');
     expect(m.tab).toBe('MENU');
     expect(m.items.map((i) => i.label)).toEqual(['Resume', 'Restart run', 'Settings', 'Quit to Home Village']);
     m.input('down', 0);
     expect(m.selected.label).toBe('Restart run');
     m.input('down', 0);
-    expect(m.selected.label).toBe('Quit to Home Village');          // Settings is disabled until the settings screen exists
+    expect(m.selected.label).toBe('Settings'); expect(m.input('confirm', 0)).toBe('settings');
     m.input('right', 0);
     expect(m.tab).toBe('LOADOUT');
     m.input('right', 0); m.input('right', 0);
@@ -28,6 +28,7 @@ describe('pause menu (07 §7.6)', () => {
   it('a quit item needs a second confirm within 2.0 s', () => {
     const m = new PauseModel('training');
     expect(m.items.map((i) => i.label)).toEqual(['Resume', 'Settings', 'Leave Training Yard']);
+    m.input('down', 0);
     m.input('down', 0);
     expect(m.input('confirm', 0)).toBeNull();
     expect(m.selected.label).toBe('Quit? Confirm again');

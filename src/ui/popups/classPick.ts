@@ -1,5 +1,5 @@
 // Class pick panel (07 §6.7): 220 × 176 at (210, 72), fixed to the screen. Draws a ClassPickModel.
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 import { STARTING_KITS } from '../../data/classes.ts';
 import { CLASS_NAME } from '../../data/classes.ts';
 import { ABILITIES } from '../../data/abilities.ts';
@@ -8,8 +8,9 @@ import { DEPTH } from '../../data/art.ts';
 import { ABILITY_BLURB, CLASS_COLOR, CLASS_STYLE, UI_COLOR, WEAPON_BLURB, WEAPON_NAME } from '../../data/uiText.ts';
 import type { ClassPickModel, Kit } from './classPickModel.ts';
 import { box, SKIN } from '../skin.ts';
-
-const P = { x: 210, y: 72, w: 220, h: 176, pad: 8, rowY: 112, rowGap: 14 } as const;
+import { CLASS_PICK_UI as P } from '../../data/classPickUi.ts';
+import { promptLine } from '../promptLine.ts';
+import { menuGlyphs } from '../inputSettings.ts';
 
 export class ClassPickView {
   private readonly g: Phaser.GameObjects.Graphics;
@@ -17,8 +18,14 @@ export class ClassPickView {
   private readonly icon: Phaser.GameObjects.Image;
   private readonly scene: Phaser.Scene;
   private panel: Phaser.GameObjects.GameObject[] = [];
-  constructor(scene: Phaser.Scene) {
+  private targets: Phaser.GameObjects.Rectangle[] = [];
+  private readonly hint: Phaser.GameObjects.Container;
+  private readonly confirm: () => void;
+  private key = '';
+  constructor(scene: Phaser.Scene, confirm: () => void = () => {}) {
     this.scene = scene;
+    this.confirm = confirm;
+    this.hint = scene.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH.hud + P.depthOffset + 1);
     this.g = scene.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 10);
     this.icon = scene.add.image(P.x + P.w / 2, P.y + 16, 'ui', 'icon_class_swordsman').setScrollFactor(0).setDepth(DEPTH.hud + 11);
   }
@@ -30,6 +37,8 @@ export class ClassPickView {
   }
 
   draw(m: ClassPickModel, equipped: Kit | null): void {
+    const key = JSON.stringify([m.cls, m.wi, equipped, menuGlyphs()]); if (key === this.key) return; this.key = key;
+    for (const target of this.targets) target.destroy(); this.targets = []; this.hint.removeAll(true);
     for (const t of this.texts) t.destroy();
     this.texts.length = 0;
     this.g.clear();
@@ -50,13 +59,17 @@ export class ClassPickView {
       const mark = equipped && equipped.cls === cls && equipped.weapon === wid ? ' (equipped)' : '';
       this.text(P.x + P.pad, y, `${i === m.wi ? '>' : ' '} ${WEAPON_NAME(wid)}${mark}`, i === m.wi ? UI_COLOR.highlight : UI_COLOR.text, false, false);
       this.text(P.x + P.pad + 10, y + 11, WEAPON_BLURB[wid], UI_COLOR.textDim, false, false);
+      const target = this.scene.add.rectangle(P.x + P.pad, y, P.w - P.pad * 2, P.rowGap * 2).setOrigin(0).setScrollFactor(0).setDepth(DEPTH.hud + P.depthOffset + 1).setInteractive({ useHandCursor: true });
+      const select = () => { if (m.wi !== i) { m.wi = i; this.draw(m, equipped); } };
+      target.on('pointerover', select); target.on('pointerdown', (pointer: Phaser.Input.Pointer) => { if (pointer.button === 0) { select(); this.confirm(); } }); this.targets.push(target);
     });
-    this.text(cx, P.y + 162, m.classes.length > 1 ? '<> Class   ↑↓ Weapon   [Space] Equip' : '↑↓ Weapon   [Space] Equip   [Esc] Close', UI_COLOR.textDim);
+    promptLine(this.scene, this.hint, cx, P.y + P.hintY, ['↑↓ Weapon   ', { menu: 'confirm' }, ' Equip   ', { menu: 'back' }, ' Back']);
   }
 
   destroy(): void {
     this.g.destroy();
     this.icon.destroy();
+    this.hint.destroy(); for (const target of this.targets) target.destroy();
     for (const t of this.texts) t.destroy();
     for (const o of this.panel) o.destroy();
   }

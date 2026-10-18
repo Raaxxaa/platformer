@@ -1,11 +1,13 @@
 // 07 §6.11: a view of the core's three offered upgrades. Gameplay rules stay in the core.
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 import { STAT_UPGRADES, type StatUpgradeId } from '../../data/economy.ts';
 import { STAT_PICK_UI as U } from '../../data/statUi.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { UI_COLOR } from '../../data/uiText.ts';
 import { icon } from '../skin.ts';
 import type { StatPickModel } from './statPickModel.ts';
+import { menuPrompt } from '../hud/abilityHud.ts';
+import { promptLine } from '../promptLine.ts';
 
 export class StatPickView {
   private readonly scene: Phaser.Scene;
@@ -21,7 +23,7 @@ export class StatPickView {
     this.c = scene.add.container(0, 0).setScrollFactor(0).setDepth(U.depth);
   }
   draw(model: StatPickModel, offer: readonly StatUpgradeId[], stacks: Partial<Record<StatUpgradeId, number>>): void {
-    const key = JSON.stringify([model.cursor, offer, stacks]); if (key === this.key) return;
+    const key = JSON.stringify([model.cursor, offer, stacks, menuPrompt('confirm')]); if (key === this.key) return;
     this.key = key; this.c.removeAll(true);
     const text = (x: number, y: number, s: string, color: number, large = false) => {
       const t = this.scene.add.bitmapText(x, y, large ? FONTS.large : FONTS.small, s).setTint(color).setOrigin(0.5, 0);
@@ -49,7 +51,7 @@ export class StatPickView {
       });
       this.c.add(area);
     });
-    text(this.scene.scale.width / 2, U.hintY, U.hint, UI_COLOR.textDim);
+    promptLine(this.scene, this.c, this.scene.scale.width / 2, U.hintY, ['←→ Choose   ', { menu: 'confirm' }, ' Pick']);
   }
   destroy(): void { this.c.destroy(); this.dim.destroy(); }
 }

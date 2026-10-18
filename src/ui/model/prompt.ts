@@ -6,6 +6,7 @@ import { ABILITY_INFO } from '../../data/abilities.ts';
 import { CURSE_KILLS } from '../../data/loot.ts';
 import { PRICES } from '../../data/economy.ts';
 import { upgradePrice } from '../../core/loot/merchant.ts';
+import { actionLabel } from '../inputSettings.ts';
 
 export interface Prompt { l1: string; l2?: string; tone: 'text' | 'textDim' | 'textOff' | 'curse'; glyph: boolean }
 
@@ -16,7 +17,7 @@ export function interactPrompt(w: GameWorld, t: Interactable): Prompt | null {
       const s = w.abilities.slots[Number(t.label)];
       if (!s) return { l1: 'No ability', tone: 'textOff', glyph: false };
       const first = s.level >= MERCHANT_LAYOUT.maxLevel ? 'MAX' : `Upgrade ${ABILITY_INFO[s.id].name} Lv ${s.level} → ${s.level + 1} (${upgradePrice(w, s.level + 1)})`;
-      return { l1: first, l2: `Hold [E]: sell for ${PRICES.sell[s.level as keyof typeof PRICES.sell]}`, tone: s.level >= MERCHANT_LAYOUT.maxLevel ? 'textDim' : 'text', glyph: true };
+      return { l1: first, l2: `Hold [${actionLabel('interact')}]: sell for ${PRICES.sell[s.level as keyof typeof PRICES.sell]}`, tone: s.level >= MERCHANT_LAYOUT.maxLevel ? 'textDim' : 'text', glyph: true };
     }
     case 'shop_flask': return { l1: 'Flask +1 charge', tone: 'text', glyph: true };
     case 'shop_refill': return { l1: 'Refill flask', tone: 'text', glyph: true };

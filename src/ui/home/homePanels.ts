@@ -3,6 +3,9 @@ import type Phaser from 'phaser';
 import { FONTS } from '../../data/animKeys.ts';
 import { UI_COLOR } from '../../data/uiText.ts';
 import { HOME_UI as U } from '../../data/homeUi.ts';
+import { fixedMenuAction, menuConfirmKey, menuGlyphs, noteInputDevice } from '../inputSettings.ts';
+import { promptLine } from '../promptLine.ts';
+export { configureMenuBindings } from '../inputSettings.ts';
 
 export type HomePanelKind = 'seed' | 'training' | 'records';
 export type HomePanelAction = 'left' | 'right' | 'up' | 'down' | 'confirm' | 'back' | 'backspace' | { text: string };
@@ -93,13 +96,14 @@ export class HomePanelInput {
   }
   key(code: string, down: boolean, repeat = false): boolean {
     const nav: Record<string, HomePanelAction> = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Enter: 'confirm', Escape: 'back' };
-    let action = nav[code];
+    let action: HomePanelAction | undefined = nav[code];
     if (this.kind === 'seed') {
       if (code === 'Backspace') action = 'backspace';
       else if (/^Key[A-Z]$/.test(code)) action = { text: code.slice(3) };
       else if (/^(Digit|Numpad)[0-9]$/.test(code)) action = { text: code.at(-1)! };
     } else {
-      action ??= ({ KeyA: 'left', KeyD: 'right', KeyW: 'up', KeyS: 'down', Space: 'confirm', KeyE: 'confirm', Backspace: 'back' } as Record<string, HomePanelAction>)[code];
+      action ??= fixedMenuAction(code);
+      if (!action && menuConfirmKey(code)) action = 'confirm';
     }
     if (!action) return code === 'Space' || code === 'Tab';
     if (!down) this.keys.delete(code);
@@ -153,12 +157,13 @@ export class HomePanels {
   }
   get active(): boolean { return !this.closed; }
   setEnabled(on: boolean): void { if (this.enabled === on) return; this.enabled = on; this.input.clear(); if (on) this.input.blockHeldPad(activeHomePad()); }
-  private readonly keyDown = (e: KeyboardEvent) => { if (this.enabled && this.input.key(e.code, true, e.repeat)) e.preventDefault(); };
+  private readonly keyDown = (e: KeyboardEvent) => { if (this.enabled && this.input.key(e.code, true, e.repeat)) { noteInputDevice('keyboard'); e.preventDefault(); } };
   private readonly keyUp = (e: KeyboardEvent) => { this.input.key(e.code, false); };
   update(seconds: number, pad?: HomePanelPad | null): void {
     if (this.closed || !this.enabled) return;
     const pads = pad === undefined ? (navigator.getGamepads?.() ?? []).filter((p): p is Gamepad => p !== null && p.connected) : [];
     const activePad = pad === undefined ? pads.find((p) => p.mapping === 'standard') ?? pads[0] : pad;
+    if (activePad?.buttons.some((b) => b.pressed) || activePad?.axes.some((axis) => Math.abs(axis) >= U.stick)) noteInputDevice('gamepad', (activePad as HomePanelPad & { id?: string }).id);
     for (const action of this.input.poll(Math.min(U.frameClamp, Math.max(0, seconds)), activePad)) this.action(action);
     this.draw();
   }
@@ -200,7 +205,7 @@ export class HomePanels {
   }
   private draw(): void {
     if (this.closed) return;
-    const m = this.model, key = JSON.stringify([m.kind, m.cursor, m.boxes, m.classes, m.blueprints]);
+    const m = this.model, key = JSON.stringify([m.kind, m.cursor, m.boxes, m.classes, m.blueprints, menuGlyphs()]);
     if (key === this.lastDraw) return; this.lastDraw = key; this.c.removeAll(true);
     if (m.kind === 'seed') {
       const S = U.seed, [x, y, w, h] = S.panel; this.panel(x, y, w, h); this.text(x + w / 2, y + S.titleY, 'SEED', UI_COLOR.text, true);
@@ -215,7 +220,7 @@ export class HomePanels {
         this.rect(xx, y + S.actionsY, S.actionW, S.actionH, m.cursor === index);
         this.text(xx + S.actionW / 2, y + S.actionsY + U.border, label, disabled ? UI_COLOR.textOff : m.cursor === index ? UI_COLOR.highlight : UI_COLOR.text);
         if (!disabled) this.target(xx, y + S.actionsY, S.actionW, S.actionH, index);
-      }); this.text(x + w / 2, y + S.hintY, S.hint, UI_COLOR.textDim);
+      }); promptLine(this.scene, this.c, x + w / 2, y + S.hintY, ['←→ Position   ↑↓ Change   ', { menu: 'confirm' }, ' Use   ', { menu: 'back' }, ' Back']);
     } else if (m.kind === 'training') {
       const T = U.training, [x, y, w, h] = T.panel; this.panel(x, y, w, h);
       this.text(x + w / 2, y + T.titleY, T.title, UI_COLOR.text, true); this.text(x + w / 2, y + T.bodyY, T.body, UI_COLOR.textDim);

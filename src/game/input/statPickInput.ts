@@ -1,10 +1,11 @@
 // Menus read devices directly (07 §7.1), independently of gameplay InputState.
 import type { StatPickAction } from '../../ui/popups/statPickModel.ts';
 import { STAT_PICK_UI as U } from '../../data/statUi.ts';
+import { menuConfirmKey } from '../../ui/inputSettings.ts';
 
 const KEY: Readonly<Record<string, StatPickAction>> = {
   ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
-  Enter: 'confirm', Space: 'confirm', KeyE: 'confirm', Escape: 'back', Backspace: 'back',
+  Enter: 'confirm', Space: 'confirm', Escape: 'back', Backspace: 'back',
 };
 type Pad = { axes: readonly number[]; buttons: readonly { pressed: boolean }[] };
 export class StatPickInput {
@@ -13,7 +14,7 @@ export class StatPickInput {
   private held = new Map<StatPickAction, number>();
   private releaseGate = false;
   key(code: string, down: boolean, repeat: boolean): boolean {
-    const action = KEY[code];
+    const action = KEY[code] ?? (menuConfirmKey(code) ? 'confirm' : undefined);
     if (!action) return false;
     if (!down) this.keys.delete(code);
     else if (!repeat && !this.keys.has(code)) { this.keys.add(code); this.pending.push(action); }
@@ -29,7 +30,7 @@ export class StatPickInput {
       return [];
     }
     const out = this.pending.splice(0);
-    const now = new Set<StatPickAction>([...this.keys].map((k) => KEY[k]));
+    const now = new Set<StatPickAction>([...this.keys].map((k) => KEY[k] ?? 'confirm'));
     const add = (a: StatPickAction) => { if (!now.has(a) && !this.held.has(a)) out.push(a); now.add(a); };
     if (pad) {
       if (pad.buttons[14]?.pressed || (pad.axes[0] ?? 0) <= -U.stick) add('left');

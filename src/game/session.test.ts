@@ -4,12 +4,27 @@ import { GameWorld } from '../core/sim/gameWorld.ts';
 import { bossLevel, feet, levelFrom } from '../core/testkit/levelData.ts';
 import { gameSession } from './session.ts';
 import { grantKingUnlocks } from '../core/loot/blueprintItems.ts';
+import { recordSplit } from '../core/run/splits.ts';
 
 const testStore = vi.hoisted(() => ({ current: null as null | { data: SaveData; writes: number; update(change: (save: SaveData) => void): void } }));
 vi.mock('./save/storage.ts', () => ({ saveStore: () => testStore.current, saveDate: () => '2026-10-18T02:00:00.000Z' }));
 beforeEach(() => { testStore.current = { data: defaultSave(), writes: 0, update(change) { change(this.data); this.writes++; } }; });
 
 describe('session write boundaries (06 §14–15)', () => {
+  it('uses imported record caches for the live run without overwriting imported later best segments', async () => {
+    const { SaveStore } = await vi.importActual<typeof import('./save/storage.ts')>('./save/storage.ts');
+    const store = new SaveStore({ getItem: () => null, setItem: () => {} });
+    const w = GameWorld.fromLevel(bossLevel(), { seedText: 'IMPORT', startKit: { cls: 'tank', weapon: 'war_maul' }, records: store.data });
+    const imported = defaultSave(); imported.bestSegments['tank|forest'] = [500, 222, 333, 444];
+    imported.pbs['tank|forest'] = { ticks: 2000, splits: [500, 1000, 1500, 2000], date: '2026-10-18T02:00:00.000Z', seedText: 'PB', kit: { displayName: 'Tank', weapons: [null, null], abilities: [null, null] } };
+    expect(store.replace(imported)).toBe(true); testStore.current!.data = store.data;
+    const pool = [...w.run.lootUnlocked], body = structuredClone(w.body);
+    gameSession.refreshRecords(w); w.run.runTicks = 100;
+    const result = recordSplit(w.run, 1, w.records)!; expect(result.deltaTicks).toBe(-400);
+    w.events = [{ t: 'split', ...result }]; gameSession.events(w);
+    expect(testStore.current!.data.bestSegments['tank|forest']).toEqual([100, 222, 333, 444]);
+    expect(w.body).toEqual(body); expect(w.run.lootUnlocked).toEqual(pool);
+  });
   it('saves King blueprint and third-starter unlock events immediately and without duplicates', () => {
     const w = GameWorld.fromLevel(bossLevel(), { seedText: 'KING', startKit: { cls: 'tank', weapon: 'war_maul' } });
     grantKingUnlocks(w); gameSession.events(w); gameSession.events(w);

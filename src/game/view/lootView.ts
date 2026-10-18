@@ -18,6 +18,8 @@ import { HUD_COLOR, UI_COLOR } from '../../data/uiText.ts';
 import { SIGNATURE } from '../../data/weapons.ts';
 import { SHOP_UI } from '../../data/shopUi.ts';
 import { SHOP_RULES } from '../../data/shop.ts';
+import { promptLine } from '../../ui/promptLine.ts';
+import { PROMPT } from '../../data/prompts.ts';
 
 type Spr = Phaser.GameObjects.Sprite;
 interface Fx { s: Spr; def: AnimDef; born: number }
@@ -55,12 +57,10 @@ export class LootView {
   private tags = new Map<string, Tag>();
   private frozen = new Map<number, boolean>();
   private sigSeen = new Set<number>();
-  private prompt: Phaser.GameObjects.BitmapText | null = null;
-  private prompt2: Phaser.GameObjects.BitmapText | null = null;
+  private prompt: Phaser.GameObjects.Container | null = null;
   private refusedItem: number | null = null;
   private refuseUntil = -1;
   private holdRing: Phaser.GameObjects.Graphics | null = null;
-  private glyphMeasure: Phaser.GameObjects.BitmapText | null = null;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -244,26 +244,24 @@ export class LootView {
   /** 07 §5.7: `[E] Verb` 4 px above the targeted object (items show their card instead). */
   private drawPrompt(w: GameWorld): void {
     if (!this.prompt) {
-      this.prompt = this.scene.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.hud - 1);
-      this.prompt2 = this.scene.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.hud - 1);
+      this.prompt = this.scene.add.container(0, 0).setDepth(DEPTH.hud - 1);
       this.holdRing = this.scene.add.graphics().setDepth(DEPTH.hud);
-      this.glyphMeasure = this.scene.add.bitmapText(0, 0, FONTS.small, '[E]').setVisible(false);
     }
+    this.prompt.removeAll(true);
     this.holdRing!.clear();
     const tg = interactTarget(w);
     const t = tg && 'use' in tg ? tg : null;
     const p = t && !w.health.dead ? interactPrompt(w, t) : null;
     this.prompt.setVisible(!!p);
-    this.prompt2!.setVisible(!!p?.l2);
     if (!p || !t) return;
     const color = p.tone === 'curse' ? HUD_COLOR.curse : UI_COLOR[p.tone];
     const top = t.y - (t.h ?? F.promptObjH) - F.promptGap;
-    this.prompt2!.setText(p.l2 ?? '').setTint(UI_COLOR.textDim).setPosition(t.x, top);
-    this.prompt.setText(`${p.glyph ? '[E] ' : ''}${p.l1}`).setTint(color).setPosition(t.x, p.l2 ? top - this.prompt2!.height - 1 : top);
+    if (p.l2) promptLine(this.scene, this.prompt, t.x, top - PROMPT.height, t.kind === 'ability_altar' ? ['Hold ', { action: 'interact' }, p.l2.slice(p.l2.indexOf(']') + 1)] : [p.l2], UI_COLOR.textDim, false);
+    const line = promptLine(this.scene, this.prompt, t.x, top - PROMPT.height * (p.l2 ? 2 : 1), p.glyph ? [{ action: 'interact' }, ` ${p.l1}`] : [p.l1], color, false);
     const hold = w.altarHold;
     if (t.kind === 'ability_altar' && p.glyph && hold && !hold.cancelled && !hold.sold && hold.ticks >= SHOP_RULES.altarRingStartTicks) {
-      // Measure the same rendered line: the [E] glyph starts at its left edge, not at the object's center.
-      const x = this.prompt.x - this.prompt.width / 2 + this.glyphMeasure!.width / 2, y = this.prompt.y - this.prompt.height / 2;
+      // The hold ring and actual prompt glyph share the same measured coordinates.
+      const { x, y } = line.glyphs[0];
       for (let i = 0; i < SHOP_UI.ringDots; i++) {
         const angle = -Math.PI / 2 + Math.PI * 2 * i / SHOP_UI.ringDots;
         this.holdRing!.fillStyle(i / SHOP_UI.ringDots < hold.ticks / SHOP_RULES.altarHoldTicks ? UI_COLOR.highlight : UI_COLOR.textOff)

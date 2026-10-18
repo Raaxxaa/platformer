@@ -1,7 +1,7 @@
 // Pause menu state (07 §7.6): tabs MENU / LOADOUT / CONTROLS, the item cursor, the two-step quit. Pure.
 export type PauseTab = 'MENU' | 'LOADOUT' | 'CONTROLS';
 export type PauseAction = 'up' | 'down' | 'left' | 'right' | 'confirm' | 'back';
-export type PauseResult = 'resume' | 'restart' | 'quit' | null;
+export type PauseResult = 'resume' | 'restart' | 'settings' | 'quit' | null;
 interface Item { id: 'resume' | 'restart' | 'settings' | 'quit'; label: string; disabled?: boolean }
 
 export const PAUSE = { tabs: ['MENU', 'LOADOUT', 'CONTROLS'] as PauseTab[], quitConfirmMs: 2000, quitArmed: 'Quit? Confirm again' } as const;
@@ -13,10 +13,9 @@ export class PauseModel {
   private readonly base: Item[];
 
   constructor(place: 'run' | 'training' | 'home') {
-    // Settings is enabled when its screen arrives in M7 Task 9.
     this.base = place === 'run'
-      ? [{ id: 'resume', label: 'Resume' }, { id: 'restart', label: 'Restart run' }, { id: 'settings', label: 'Settings', disabled: true }, { id: 'quit', label: 'Quit to Home Village' }]
-      : [{ id: 'resume', label: 'Resume' }, { id: 'settings', label: 'Settings', disabled: true }, { id: 'quit', label: place === 'training' ? 'Leave Training Yard' : 'Quit to title' }];
+      ? [{ id: 'resume', label: 'Resume' }, { id: 'restart', label: 'Restart run' }, { id: 'settings', label: 'Settings' }, { id: 'quit', label: 'Quit to Home Village' }]
+      : [{ id: 'resume', label: 'Resume' }, { id: 'settings', label: 'Settings' }, { id: 'quit', label: place === 'training' ? 'Leave Training Yard' : 'Quit to title' }];
   }
 
   get tab(): PauseTab { return PAUSE.tabs[this.tabIndex]; }
@@ -47,7 +46,7 @@ export class PauseModel {
       this.armedUntil = nowMs + PAUSE.quitConfirmMs;
       return null;
     }
-    return it.id === 'settings' ? null : it.id;
+    return it.id;
   }
 
   /** Call each frame so the armed quit label reverts after 2.0 s. */

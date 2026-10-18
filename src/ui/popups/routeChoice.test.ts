@@ -35,7 +35,7 @@ function fakeScene() {
   const objects: Obj[] = [], listeners = new Map<string, (event: any) => void>();
   const make = (kind: string, args: any[]) => {
     const object: Obj = { kind, args, handlers: {}, children: [], destroyed: false };
-    for (const method of ['setScrollFactor', 'setDepth', 'setTint', 'setOrigin', 'setInteractive', 'setMaxWidth', 'setCenterAlign', 'fillStyle', 'fillRect', 'lineStyle', 'strokeRect']) {
+    for (const method of ['setScrollFactor', 'setDepth', 'setTint', 'setOrigin', 'setInteractive', 'setMaxWidth', 'setCenterAlign', 'fillStyle', 'fillRect', 'lineStyle', 'strokeRect', 'fillCircle', 'fillRoundedRect', 'strokeRoundedRect']) {
       object[method] = (...values: any[]) => { object[method + 'Args'] = values; return object; };
     }
     object.on = (event: string, fn: (pointer?: unknown) => void) => { object.handlers[event] = fn; return object; };

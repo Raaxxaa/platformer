@@ -51,6 +51,8 @@ import { StatPickView } from '../../ui/popups/statPick.ts';
 import { StatPickModel, type StatPickAction } from '../../ui/popups/statPickModel.ts';
 import { StatPickInput } from '../input/statPickInput.ts';
 import { STAT_PICK_UI } from '../../data/statUi.ts';
+import { getUiSettings, menuConfirmKey, menuPauseKey } from '../../ui/inputSettings.ts';
+import { applySettings } from '../settings.ts';
 
 /** Grey-box enemy colors (plan M2, Task 17). */
 const ENEMY_COLOR: Partial<Record<EnemyId, number>> = {
@@ -108,6 +110,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   private statPopup: { model: StatPickModel; view: StatPickView; lastRunTick: number } | null = null;
   private readonly statMenu = new StatPickInput();
   private readonly classMenu = new HomePanelInput('training');
+  private readonly pauseMenu = new HomePanelInput('training');
   /** `?boxes=1`: the old grey boxes instead of sprites (debugging). */
   protected boxesMode = false;
   /** Debug overview: the camera zooms out to show this world rect (screenshots of whole sections). */
@@ -118,6 +121,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   /** Extra drawing after the shared pass (doors, markers, timer...). */
   protected renderExtra(): void {}
   protected extraMenuOpen(): boolean { return false; }
+  protected freezesExtraMenuWorld(): boolean { return false; }
+  protected pauseMenuCovered(): boolean { return false; }
+  protected onPauseSettings(): void {}
   protected onKitEquipped(_kit: Kit): void {}
 
   preload(): void {
@@ -128,7 +134,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.world = this.makeWorld();
     this.pickedKit = this.world.run.startKit;
     this.prevSpec = {}; this.manual = false; this.frameEvents = []; this.classPick = null; this.pause = null;
-    this.devices = new Devices();
+    applySettings(this, saveStore().data.settings);
+    this.devices = new Devices(getUiSettings().bindings);
     this.statPopup = null;
     this.statMenu.clear();
     window.addEventListener('keydown', this.onStatKeyDown);
@@ -230,7 +237,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.classMenu.blockHeldPad(activeHomePad());
     this.classPick?.view.destroy();
     const model = new ClassPickModel(classes, this.pickedKit);
-    const view = new ClassPickView(this);
+    const view = new ClassPickView(this, () => this.classAction('confirm'));
     view.draw(model, this.pickedKit);
     this.classPick = { model, view, pauseWorld };
   }
@@ -254,6 +261,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   /** One world tick, keeping its events for the next render. */
   protected stepWorld(input: Parameters<GameWorld['step']>[0]): void {
+    if (this.freezesExtraMenuWorld()) return;
     const before = this.world.tick, feet = { x: this.world.body.x, y: this.world.body.y };
     this.world.step(input);
     gameSession.events(this.world);
@@ -291,7 +299,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     const ok = this.world.confirmStatPick(index ?? this.statPopup?.model.cursor ?? STAT_PICK_UI.defaultCursor);
     if (!ok) return false;
     this.statPopup?.model.accept();
-    const held = this.devices.builder.build();
+    const held = this.readInput().input;
     for (const b of BUTTON_IDS) if (held[b].held) this.swallow.add(b);
     this.syncStatPick();
     return true;
@@ -306,10 +314,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   private readonly onStatKeyDown = (e: KeyboardEvent) => {
     if (this.classPick && !this.pause) { if (this.classMenu.key(e.code, true, e.repeat)) e.preventDefault(); return; }
     if (this.pause || this.world.run.phase !== 'statPick') return;
-    if ((e.code === 'Escape' || e.code === 'KeyP') && !e.repeat) { e.preventDefault(); this.openPause(); return; }
+    if ((e.code === 'Escape' || menuPauseKey(e.code)) && !e.repeat) { e.preventDefault(); this.openPause(); return; }
     if (this.statMenu.key(e.code, true, e.repeat)) e.preventDefault();
   };
-  private readonly onStatKeyUp = (e: KeyboardEvent) => { this.statMenu.key(e.code, false, false); this.classMenu.key(e.code, false, false); };
+  private readonly onStatKeyUp = (e: KeyboardEvent) => { this.statMenu.key(e.code, false, false); this.classMenu.key(e.code, false, false); this.pauseMenu.key(e.code, false, false); };
   private pollStatMenu(seconds: number): void {
     if (this.world.run.phase !== 'statPick') return;
     const pads = (navigator.getGamepads?.() ?? []).filter((p): p is Gamepad => p !== null && p.connected);
@@ -318,10 +326,16 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   }
 
   update(_time: number, delta: number): void {
+    this.devices.setBindings(getUiSettings().bindings);
     this.devices.pollGamepad();
+    const pad = activeHomePad(), pauseButton = getUiSettings().bindings.gamepad.pause;
+    const menuPauseAllowed = (pauseKey: string | null) => pauseKey === null || pauseKey === 'Escape' || menuPauseKey(pauseKey) || (pauseButton !== null && !!pad?.buttons[pauseButton]?.pressed);
     if (this.pause) {
+      if (!this.pauseMenuCovered()) for (const action of this.pauseMenu.poll(Math.min(STAT_PICK_UI.frameClamp, delta / 1000), activeHomePad())) if (typeof action === 'string' && action !== 'backspace') this.pauseAction(action);
+      if (!this.pause) { this.render(); return; }
       // Paused (07 §1.5): no world, no run timer; drain the input latches so nothing fires on resume.
-      this.devices.builder.build();
+      const paused = this.readInput();
+      if (!this.pauseMenuCovered() && paused.input.pause.pressed && menuPauseAllowed(paused.pauseKey)) { this.closePause(); this.render(); return; }
       this.pause.model.tick(this.time.now);
       this.pause.view.draw(this.pause.model, this.world, this.pauseInfo());
       this.render();
@@ -331,14 +345,15 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     if (this.classPick) {
       const pads = navigator.getGamepads?.() ?? [];
       const pad = Array.from(pads).find((p) => p?.connected && p.mapping === 'standard') ?? Array.from(pads).find((p) => p?.connected);
-      for (const action of this.classMenu.poll(delta / 1000, pad)) if (typeof action === 'string' && action !== 'backspace') this.classAction(action);
+      for (const action of this.classMenu.poll(Math.min(STAT_PICK_UI.frameClamp, delta / 1000), pad)) if (typeof action === 'string' && action !== 'backspace') this.classAction(action);
     }
     if (!this.manual) {
       const n = this.stepper.advance(delta / 1000);
       for (let i = 0; i < n; i++) {
-        const input = this.swallowHeld(this.devices.builder.build());
-        if (input.pause.pressed && !this.classPick) { this.openPause(); if (this.pause) break; }
-        if (this.extraMenuOpen()) { this.stepWorld({ ...emptyInput(), restart: input.restart }); continue; }
+        const snapshot = this.readInput(), input = this.swallowHeld(snapshot.input);
+        const menu = this.world.run.phase === 'statPick' || this.extraMenuOpen();
+        if (input.pause.pressed && !this.classPick && (!menu || menuPauseAllowed(snapshot.pauseKey))) { this.openPause(); if (this.pause) break; }
+        if (this.extraMenuOpen()) { if (!this.freezesExtraMenuWorld()) this.stepWorld({ ...emptyInput(), restart: input.restart }); continue; }
         if (this.classPick) {
           if (this.classPick?.pauseWorld) continue;
           this.stepWorld(emptyInput());                       // the world keeps running; the player gets neutral input
@@ -350,8 +365,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   /** 07 §1.5 input swallow: buttons held when a menu closed count as not held until released. */
   private swallow = new Set<(typeof BUTTON_IDS)[number]>();
+  /** Consume a physical key source only with the exact pressed edge it describes, including after zero-tick frames. */
+  private readInput(): { input: InputState; pauseKey: string | null } {
+    return { input: this.devices.builder.build(), pauseKey: this.devices.takePauseKey() };
+  }
   protected clearMenuInput(): void {
-    const held = this.devices.builder.build();
+    const held = this.readInput().input;
     for (const b of BUTTON_IDS) if (held[b].held) this.swallow.add(b);
     this.classMenu.clear();
   }
@@ -375,31 +394,35 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   private readonly onFocusLost = () => this.openPause(true);
   private readonly onVisibilityChanged = () => { if (document.hidden) this.openPause(true); };
   private readonly onPauseKey = (e: KeyboardEvent) => {
-    if (!this.pause || e.repeat) return;
+    if (!this.pause || this.pauseMenuCovered()) return;
     const map: Record<string, PauseAction> = {
       ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
-      Enter: 'confirm', Space: 'confirm', KeyE: 'confirm', Escape: 'back', Backspace: 'back', KeyP: 'back',
+      Enter: 'confirm', Space: 'confirm', Escape: 'back', Backspace: 'back',
     };
-    const a = map[e.code];
+    const a = map[e.code] ?? (menuConfirmKey(e.code) ? 'confirm' : undefined);
     if (!a) return;
     e.preventDefault();
-    this.pauseAction(a);
+    this.pauseMenu.key(e.code, true, e.repeat);
   };
 
   pauseAction(a: PauseAction): void {
-    if (!this.pause) return;
+    if (!this.pause || this.pauseMenuCovered()) return;
     const r = this.pause.model.input(a, this.time.now);
     if (r === 'resume') this.closePause();
     else if (r === 'restart') { this.closePause(); this.world.restart(); }
     else if (r === 'quit') { this.closePause(); this.onPauseQuit(); }
+    else if (r === 'settings') this.onPauseSettings();
   }
 
   openPause(focusLost = false): void {
     if (this.pause || this.world.run.phase === 'runSoFar') return;
-    if (!focusLost && (this.world.run.phase === 'transition' || this.world.run.phase === 'loading')) return;
+    if (this.pauseMenuCovered() || !focusLost && this.freezesExtraMenuWorld()) return;
+    if (!focusLost && !['homeVillage', 'stage', 'statPick', 'village', 'routeChoice'].includes(this.world.run.phase)) return;
     this.statMenu.clear();
+    this.pauseMenu.blockHeldPad(activeHomePad());
     pauseRun(this.world.run);
     this.pause = { model: new PauseModel(this.pausePlace()), view: new PauseView(this) };
+    this.readInput(); // The opening pause press must not become a fresh resume press.
     window.addEventListener('keydown', this.onPauseKey);
   }
 
@@ -408,10 +431,11 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     resumeRun(this.world.run);
     this.pause.view.destroy();
     this.pause = null;
+    this.pauseMenu.clear();
     if (this.world.run.phase === 'statPick') this.statMenu.blockUntilRelease();
     else this.statMenu.clear();
     window.removeEventListener('keydown', this.onPauseKey);
-    const held = this.devices.builder.build();
+    const held = this.readInput().input;
     for (const b of BUTTON_IDS) if (held[b].held) this.swallow.add(b);
   }
 
@@ -420,6 +444,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     const warning = saveStore().takeWarning();
     if (warning) this.abilityHud.toast(warning, UI_COLOR.bad, this.time.now, SAVE_RULES.warningSeconds);
     const cam = w.camera;
+    if (!getUiSettings().screenShake) { cam.shakeX = 0; cam.shakeY = 0; }
     const main = this.cameras.main;
     if (this.overview) {
       const o = this.overview;
@@ -514,6 +539,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.overlayText.setVisible(dead);
     this.renderExtra();
     this.syncStatPick();
+    this.classPick?.view.draw(this.classPick.model, this.pickedKit);
     this.frameEvents = [];
   }
 

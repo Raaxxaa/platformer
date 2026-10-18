@@ -85,7 +85,7 @@ test('every Training entry records its source even after a previous Home visit',
   await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.title);
   await page.evaluate(() => (window as any).__game.titleChoose(0)); await ready(page, 'home');
   await page.evaluate(() => { const g = (window as any).__game; g.teleport(32, 320); g.step(1, { interact: true }); }); await ready(page, 'training_yard');
-  const leave = () => page.evaluate(() => { const g = (window as any).__game; g.openPause(); g.pauseAction('down'); g.pauseAction('confirm'); g.pauseAction('confirm'); });
+    const leave = () => page.evaluate(() => { const g = (window as any).__game; g.openPause(); g.pauseAction('down'); g.pauseAction('down'); g.pauseAction('confirm'); g.pauseAction('confirm'); });
   await leave(); await ready(page, 'home');
   await page.evaluate(() => { const g = (window as any).__game; g.openPause(); g.pauseAction('down'); g.pauseAction('down'); g.pauseAction('confirm'); g.pauseAction('confirm'); });
   await page.waitForFunction(() => (window as any).__game?.title); await page.evaluate(() => (window as any).__game.titleChoose(1)); await ready(page, 'training_yard');

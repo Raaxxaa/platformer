@@ -4,10 +4,17 @@ import { arenaWorld } from '../../core/testkit/combatWorld.ts';
 import { interactPrompt } from './prompt.ts';
 import { serviceTag } from '../popups/shop.ts';
 import { upgradeAt } from '../../core/loot/merchant.ts';
+import { applyUiSettings } from '../inputSettings.ts';
+import { defaultSettings } from '../../data/save.ts';
 
 const ia = (kind: string, label = '0') => ({ id: 1, x: 0, y: 0, kind, label, use: () => {} });
 
 describe('interact prompts (07 §5.7, §6.4)', () => {
+  it('shows the current imported interact binding on altar sell hints', () => {
+    const settings = defaultSettings(); settings.bindings.keyboard.interact = ['KeyF', null]; applyUiSettings(settings);
+    const w = arenaWorld(); w.abilities.slots[0] = newAbility('blink');
+    expect(interactPrompt(w, ia('ability_altar'))?.l2).toContain('[F]'); applyUiSettings(defaultSettings());
+  });
   it('chests', () => {
     const w = arenaWorld();
     expect(interactPrompt(w, ia('key_chest'))).toEqual({ l1: 'Locked', tone: 'textDim', glyph: false });

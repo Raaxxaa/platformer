@@ -719,7 +719,7 @@ export class GameWorld {
       this.villageEntryPending = false;
     }
     if (this.handleRestart(rawInput)) return;
-    if (this.phase === 'deathScreen') return;
+    if (this.phase === 'deathScreen' && this.run.phase === 'dead') return;
     if (this.level?.kind !== 'training') stepClocks(this.run);
     if (!simulatesWorld(this.run.phase)) {
       const transition = this.run.transition;

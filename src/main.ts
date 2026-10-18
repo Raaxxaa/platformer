@@ -5,12 +5,14 @@ import { CombatTestScene } from './game/scenes/CombatTestScene.ts';
 import { StageScene } from './game/scenes/StageScene.ts';
 import { TitleScene } from './game/scenes/TitleScene.ts';
 import { VillageScene } from './game/scenes/VillageScene.ts';
+import { BootScene } from './game/scenes/BootScene.ts';
+import { debugEnabled } from './game/debug.ts';
 
 // The start screen by default; ?start=plains / ?start=training skip it. ?scene=combat opens the M2 combat test level,
 // ?scene=movement the M1 movement level.
 const q = new URLSearchParams(window.location.search);
 const which = q.get('scene');
-const scene = which === 'movement' ? MovementTestScene : which === 'combat' ? CombatTestScene : q.get('start') ? StageScene : TitleScene;
+const scene = which === 'movement' ? MovementTestScene : which === 'combat' ? CombatTestScene : q.get('start') ? StageScene : BootScene;
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -26,8 +28,10 @@ const game = new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   // The start screen is always registered so leaving the Training Yard or quitting can return to it.
-  scene: scene === TitleScene ? [TitleScene, StageScene, VillageScene] : scene === StageScene ? [StageScene, TitleScene, VillageScene] : [scene],
+  scene: scene === BootScene ? [BootScene, TitleScene, StageScene, VillageScene] : scene === StageScene ? [StageScene, TitleScene, VillageScene] : [scene],
 });
+declare global { interface Window { PHASER_GAME?: Phaser.Game } }
+if (debugEnabled()) window.PHASER_GAME = game;
 
 // Whole-number zoom only (2×, 3×, …); the black page background shows as bars.
 window.addEventListener('resize', () => {

@@ -1,6 +1,6 @@
 // The popup skin and HUD art from the `ui` atlas (07 §3.4), with 07 §1.1's stand-ins while a frame isn't drawn yet:
 // a 9-slice panel falls back to a flat `panel` box with a 1 px border; any other frame to a `textDim` box with an `ink` border.
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 import { UI_COLOR } from '../data/uiText.ts';
 
 export const SKIN = {

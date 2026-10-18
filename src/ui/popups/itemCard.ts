@@ -1,6 +1,6 @@
 // The item card (07 §6.1): drawn over the current interact target while it is a weapon or ability on the ground.
 // Rebuilt when its text changes; follows the item on screen (round(world − camera scroll)).
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 import type { GroundItem } from '../../core/abilities/items.ts';
 import { FONTS, itemIcon } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
@@ -10,6 +10,9 @@ import type { HybridId } from '../../core/abilities/types.ts';
 import type { ClassColorKeyLike } from '../model/hudModel.ts';
 import type { ItemCardView } from '../model/itemCard.ts';
 import { box, SKIN } from '../skin.ts';
+import type { ActionId } from '../../core/save/schema.ts';
+import { PromptGlyph, actionPrompt } from '../hud/abilityHud.ts';
+import { shownPromptStyle } from '../inputSettings.ts';
 
 const colorOf = (k: ClassColorKeyLike): number =>
   k === 'none' ? UI_COLOR.textDim : k === 'neutral' ? UI_COLOR.textDim : (CLASS_COLOR as Record<string, number>)[k] ?? HYBRID_COLOR[k as HybridId];
@@ -32,6 +35,12 @@ export class ItemCardPopup {
     const t = this.scene.add.bitmapText(x, y, font, s).setTint(color);
     this.c.add(t);
     return t;
+  }
+  private prefix(x: number, y: number, value: string, action: ActionId | undefined, color: number): { x: number; text: string } {
+    if (!action) return { x, text: value };
+    const glyph = new PromptGlyph(this.scene, 0, y, actionPrompt(action)); glyph.update(actionPrompt(action), color);
+    glyph.container.setPosition(x + glyph.width / 2, y).setScrollFactor(1); this.c.add(glyph.container);
+    return { x: x + glyph.width + C.pad, text: value.replace(/^\[[^\]]*\]\s*/, '') };
   }
 
   private build(v: ItemCardView): void {
@@ -59,20 +68,22 @@ export class ItemCardPopup {
       widest = Math.max(widest, C.row3[0] + b.width);
     }
     for (const o of v.options) {
-      let x: number = C.row3[0];
-      const arrow = o.after ? o.text.lastIndexOf('→') : -1;
+      const prefix = this.prefix(C.row3[0], y, o.text, o.action, o.after === null ? UI_COLOR.textDim : UI_COLOR.text);
+      let x: number = prefix.x;
+      const option = prefix.text, arrow = o.after ? option.lastIndexOf('→') : -1;
       if (arrow >= 0 && o.after) {
-        if (arrow > 0) x += this.text(x, y, o.text.slice(0, arrow), UI_COLOR.text).width;
+        if (arrow > 0) x += this.text(x, y, option.slice(0, arrow), UI_COLOR.text).width;
         x += this.text(x, y, `→ ${o.after.name}`, colorOf(o.after.color)).width;
         if (o.after.bond) x += this.text(x, y, ` + ${o.after.bond}`, UI_COLOR.highlight).width;
       } else {
-        x += this.text(x, y, o.text, o.after === null || o.text.startsWith('(') ? UI_COLOR.textDim : UI_COLOR.text).width;
+        x += this.text(x, y, option, o.after === null || option.startsWith('(') ? UI_COLOR.textDim : UI_COLOR.text).width;
         if (o.delta) x += this.text(x + 4, y, o.delta.text, TONE[o.delta.tone]).width + 4;
       }
       widest = Math.max(widest, x);
       y += C.rowStep;
     }
-    this.text(C.row3[0], y, v.bottom, v.bottomTone === 'bad' ? UI_COLOR.bad : UI_COLOR.highlight);
+    const bottomColor = v.bottomTone === 'bad' ? UI_COLOR.bad : UI_COLOR.highlight, bottom = this.prefix(C.row3[0], y, v.bottom, v.bottomAction, bottomColor);
+    widest = Math.max(widest, bottom.x + this.text(bottom.x, y, bottom.text, bottomColor).width);
     this.w = Math.min(C.maxW, Math.max(C.minW, widest + 8));
     this.h = y + C.bottomPad;
     badge.setX(this.w - C.pad);
@@ -83,7 +94,7 @@ export class ItemCardPopup {
   /** `item` = the interact target if it's a ground item, else null. `now` in ms. */
   update(item: GroundItem | null, v: ItemCardView | null, now: number, shown = true): void {
     if (!item || !v || !shown) { this.c.setVisible(false); this.key = ''; return; }
-    const key = JSON.stringify(v);
+    const key = JSON.stringify([v, shownPromptStyle()]);
     if (key !== this.key) { if (!this.key) this.shownAt = now; this.key = key; this.build(v); }
     const cam = this.scene.cameras.main;
     const top = item.y - (item.endless ? C.standLift : 0) - 16 - C.lift - this.h;
