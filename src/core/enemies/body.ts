@@ -33,25 +33,27 @@ export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
   if (c?.type === 'pull' && c.to) { stepPull(w, e); return; }
   if (e.knockback) {
     e.vx = approach(e.vx, 0, (e.grounded ? COMBAT.ENEMY_KB_DECAY_GROUND : COMBAT.ENEMY_KB_DECAY_AIR) * TICK);
-  } else if (e.grounded && e.vx !== 0 && !e.ai.attack?.def.leap) {
+    if (e.def.flying) e.vy = approach(e.vy, 0, COMBAT.ENEMY_KB_DECAY_GROUND * TICK);
+  } else if (!e.def.flying && e.grounded && e.vx !== 0 && !e.ai.attack?.def.leap) {
     const dir: 1 | -1 = e.vx > 0 ? 1 : -1;
     if (!supportAhead(w, e, dir) && !mayDrop(w, e)) e.vx = 0;     // stop at the edge
   }
-  // Gravity (flyers come later).
+  // Flyers retain their AI's vertical velocity and pass through one-way platforms (04 §2.1).
   const vyStart = e.vy;
-  if (!e.grounded || e.vy < 0) e.vy = Math.min(ENEMY.MAX_FALL, e.vy + ENEMY.GRAVITY * TICK);
+  if (!e.def.flying && (!e.grounded || e.vy < 0)) e.vy = Math.min(ENEMY.MAX_FALL, e.vy + ENEMY.GRAVITY * TICK);
   const box = asBox(e);
   if (moveX(box, w.grid, e.vx * TICK, true) === 'wall') {
     e.vx = 0;
     e.hitWall = true;
   }
-  const r = moveY(box, w.grid, ((vyStart + e.vy) / 2) * TICK, { dropping: false, preferDir: 0 });
-  if (r === 'bonk') e.vy = 0;
+  const r = moveY(box, w.grid, ((vyStart + e.vy) / 2) * TICK, { dropping: e.def.flying === true, preferDir: 0 });
+  if (r === 'bonk') { e.vy = 0; if (e.def.flying) e.hitWall = true; }
+  if (r === 'landed' && e.def.flying) { e.vy = 0; e.hitWall = true; }
   copyBack(e, box);
-  e.grounded = isGrounded(box, w.grid, e.vy);
+  e.grounded = !e.def.flying && isGrounded(box, w.grid, e.vy);
   if (e.grounded) e.vy = 0;
   if (c?.type === 'launch' && !c.landed && e.grounded) c.landed = true;     // acts again 0.2 s after landing
-  if (e.knockback && e.grounded && Math.abs(e.vx) < COMBAT.ENEMY_KB_CONTROL_SPEED) {
+  if (e.knockback && (e.grounded || e.def.flying) && !e.control && Math.abs(e.vx) < COMBAT.ENEMY_KB_CONTROL_SPEED) {
     e.knockback = false;
     e.vx = 0;
   }

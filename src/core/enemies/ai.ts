@@ -2,15 +2,19 @@
 import { overlaps } from '../combat/hitGroups.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { TRAINING } from '../../data/enemies.ts';
-import { ENEMY, VIEW_H, VIEW_W } from '../tuning.ts';
+import { ENEMY, VIEW_H, VIEW_W, ticks } from '../tuning.ts';
 import { startEnemyAttack } from './attack.ts';
 import { lineOfSight, playerDY } from './awareness.ts';
 import { supportAhead } from './body.ts';
 import { enemyCenter, type EnemyState } from './enemy.ts';
 import type { EnemyAttackDef } from './types.ts';
+import { stepMountainAi, wardCandidates } from './mountains.ts';
 
 export function facePlayer(w: GameWorld, e: EnemyState): void {
-  if (Math.abs(w.body.x - e.x) >= 2) e.facing = w.body.x > e.x ? 1 : -1;
+  const dir = w.body.x > e.x ? 1 : -1;
+  if (Math.abs(w.body.x - e.x) < 2 || dir === e.facing) { e.ai.turnTicks = 0; return; }
+  if (e.ai.state !== 'alert' && e.def.turnDelay > 0 && ++e.ai.turnTicks < ticks(e.def.turnDelay)) return;
+  e.facing = dir; e.ai.turnTicks = 0;
 }
 
 function isRanged(a: EnemyAttackDef): boolean {
@@ -22,6 +26,11 @@ export function eligibleAttacks(w: GameWorld, e: EnemyState): EnemyAttackDef[] {
   const distX = Math.abs(w.body.x - e.x), dY = playerDY(w, e);
   const out: EnemyAttackDef[] = [];
   for (const a of e.def.attacks) {
+    if (a.id === 'stone_ward' && e.def.id === 'goblin_shaman') {
+      if ((e.ai.cooldowns.get(a.id) ?? 0) <= 0 && wardCandidates(w,e).some((ally) => !ally.ward)) out.push(a);
+      continue;
+    }
+    if (e.def.id === 'bat_swarm' && a.id === 'dive_bite' && Math.hypot(w.body.x - e.x, dY) > a.use.maxX) continue;
     const ranged = isRanged(a);
     const minDY = a.use.minDY ?? (ranged ? ENEMY.RANGED_DY_MIN : ENEMY.MELEE_DY_MIN);
     const maxDY = a.use.maxDY ?? (ranged ? ENEMY.RANGED_DY_MAX : ENEMY.MELEE_DY_MAX);
@@ -87,13 +96,14 @@ function stepEngage(w: GameWorld, e: EnemyState): void {
   const [min, max] = e.def.preferred;
   // SPEC-GAP: 04 §3's Wolf "paces" after backing off is undefined; it stands in its band for now.
   const toward: 1 | -1 = w.body.x >= e.x ? 1 : -1;
-  if (distX > max) e.vx = toward * e.def.chase;
+  if (stepMountainAi(w, e)) { /* Bat waypoints replace the ground preferred band (04 §4). */ }
+  else if (distX > max) e.vx = toward * e.def.chase;
   else if (distX < (e.def.backOff ?? min)) {
     const away = (-toward) as 1 | -1;
     const speed = isRanged(e.def.attacks[0] ?? ({} as EnemyAttackDef)) ? e.def.walk : e.def.chase;
     e.vx = e.grounded && !supportAhead(w, e, away) ? 0 : away * speed;
   } else e.vx = 0;
-  if (e.ai.gapTicks > 0 || w.health.dead) return;
+  if (e.ai.gapTicks > 0 || w.health.dead || e.ai.turnTicks > 0) return;
   const a = chooseAttack(w, e);
   if (a) startEnemyAttack(w, e, a);
 }

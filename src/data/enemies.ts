@@ -4,7 +4,7 @@ import { ENEMY } from '../core/tuning.ts';
 
 const REGULAR = { tier: 'regular', elite: false, attackGap: ENEMY.ATTACK_GAP_REGULAR, turnDelay: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged' } as const;
 
-export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'great_boar', EnemyDef> = {
+export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'great_boar' | 'bat_swarm' | 'goblin_miner' | 'rock_golem' | 'ram' | 'goblin_shaman', EnemyDef> = {
   wolf: {
     ...REGULAR, id: 'wolf', size: 'small', hurtbox: { w: 28, h: 16 }, hp: 30, poiseMax: 10, kbResist: 0,
     walk: 60, chase: 150, notice: { range: 176, rangeY: ENEMY.NOTICE_RANGE_Y, time: 0.35 }, preferred: [72, 112], gold: 3, dropsLedges: true,
@@ -56,6 +56,55 @@ export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'band
       { id: 'overhead_smash', use: { minX: 0, maxX: 56 }, cooldown: 3.5, token: 'melee', telegraph: 0.80, active: 0.10, recovery: 0.80,
         hit: { box: { dx: 30, dy: -12, w: 40, h: 24 }, damage: 22, playerKb: [300, -240] },
         shots: [{ projectile: 'brute_wave', angles: [0], aim: 'facing' }] },
+    ],
+  },
+  bat_swarm: {
+    ...REGULAR, id: 'bat_swarm', size: 'small', hurtbox: { w: 24, h: 16 }, hp: 25, poiseMax: 0, kbResist: 0,
+    walk: 0, chase: 0, fly: 110, flying: true, noFacing: true, notice: { range: 160, rangeY: 128, time: .30 }, preferred: [0, 0], gold: 3,
+    attacks: [{ id: 'dive_bite', use: { minX: 0, maxX: 96, minDY: -96, maxDY: 96 }, cooldown: 1.5, token: 'melee', telegraph: .40, active: .50, recovery: .60,
+      hit: { box: { dx: 0, dy: -8, w: 20, h: 14 }, damage: 8 } }],
+  },
+  goblin_miner: {
+    ...REGULAR, id: 'goblin_miner', size: 'small', hurtbox: { w: 12, h: 20 }, hp: 30, poiseMax: 10, kbResist: 0,
+    walk: 55, chase: 70, notice: { range: 192, rangeY: ENEMY.NOTICE_RANGE_Y, time: .45 }, preferred: [80, 180], gold: 4,
+    attacks: [
+      { id: 'bomb_toss', use: { minX: 48, maxX: 200 }, cooldown: 2.2, token: 'ranged', telegraph: .55, active: 0, recovery: .50,
+        shots: [{ projectile: 'bomb', angles: [0], aim: 'arc' }] },
+      { id: 'pick_swing', use: { minX: 0, maxX: 30 }, cooldown: 1.2, token: 'melee', telegraph: .40, active: .10, recovery: .40,
+        hit: { box: { dx: 14, dy: -10, w: 20, h: 18 }, damage: 9 } },
+    ],
+  },
+  rock_golem: {
+    ...REGULAR, id: 'rock_golem', size: 'large', hurtbox: { w: 26, h: 32 }, hp: 60, poiseMax: 40, kbResist: .6,
+    walk: 35, chase: 35, notice: { range: 128, rangeY: ENEMY.NOTICE_RANGE_Y, time: .60 }, preferred: [20, 40], gold: 5, turnDelay: .8,
+    guard: { guardMult: .25, when: 'always', bypassAbove: true },
+    attacks: [
+      { id: 'fist_slam', use: { minX: 0, maxX: 44 }, cooldown: 1.6, token: 'melee', telegraph: .65, active: .12, recovery: .70,
+        hit: { box: { dx: 24, dy: -10, w: 36, h: 20 }, damage: 14 } },
+      { id: 'shoulder_ram', use: { minX: 48, maxX: 120 }, cooldown: 3, token: 'melee', telegraph: .60, active: .30, recovery: .70,
+        move: { dist: 96, time: .3 }, hit: { box: { dx: 16, dy: -16, w: 24, h: 30 }, damage: 12, playerKb: [280, -180] } },
+    ],
+  },
+  ram: {
+    ...REGULAR, id: 'ram', size: 'medium', hurtbox: { w: 26, h: 22 }, hp: 40, poiseMax: 25, kbResist: .3,
+    walk: 50, chase: 90, notice: { range: 176, rangeY: ENEMY.NOTICE_RANGE_Y, time: .40 }, preferred: [24, 56], gold: 4,
+    attacks: [
+      { id: 'headbutt', use: { minX: 0, maxX: 64 }, cooldown: 1.8, token: 'melee', telegraph: .55, active: .20, recovery: .60,
+        move: { dist: 72, time: .2 }, hit: { box: { dx: 16, dy: -11, w: 22, h: 20 }, damage: 11, playerKb: [420, -220] } },
+      { id: 'leap_butt', use: { minX: 0, maxX: 96, minDY: -64, maxDY: -24 }, cooldown: 3, token: 'melee', telegraph: .60, active: ENEMY.LEAP_MAX, recovery: .50,
+        leap: { vx: 160, vy: -420 }, hit: { box: { dx: 16, dy: -11, w: 22, h: 20 }, damage: 11, playerKb: [420, -220] } },
+    ],
+  },
+  goblin_shaman: {
+    id: 'goblin_shaman', tier: 'elite', elite: true, size: 'large', hurtbox: { w: 14, h: 24 }, hp: 120, poiseMax: 50, kbResist: .5,
+    walk: 50, chase: 60, notice: { range: 208, rangeY: ENEMY.NOTICE_RANGE_Y, time: .50 }, preferred: [120, 200], gold: 20,
+    attackGap: ENEMY.ATTACK_GAP_ELITE, turnDelay: 0, itemRoll: 'elite', blueprintRoll: true, hpBar: 'always',
+    attacks: [
+      { id: 'stone_ward', use: { minX: 0, maxX: 0 }, cooldown: 7, token: 'none', telegraph: .60, active: 0, recovery: .40 },
+      { id: 'hex_bolt', use: { minX: 48, maxX: 224 }, cooldown: 2, token: 'ranged', telegraph: .55, active: 0, recovery: .50,
+        shots: [{ projectile: 'hex_bolt', angles: [0], aim: 'player' }] },
+      { id: 'stone_spikes', use: { minX: 0, maxX: 64 }, cooldown: 4, token: 'melee', telegraph: .70, active: .20, recovery: .60,
+        hit: { box: { dx: 36, dy: -12, w: 64, h: 24 }, damage: 20, playerKb: [200, -300] } },
     ],
   },
   // 04 §9.1, §10.1. Bosses: always aware, no tokens, kbResist 1.0.

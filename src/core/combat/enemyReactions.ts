@@ -12,6 +12,7 @@ export function isCommitted(e: EnemyState): boolean {
 }
 
 export function applyEnemyKnockback(e: EnemyState, kb: [number, number], dir: 1 | -1): void {
+  if (e.ward) return;
   const k = 1 - e.def.kbResist;
   if (k <= 0) return;
   e.vx = dir * kb[0] * k;
@@ -22,6 +23,7 @@ export function applyEnemyKnockback(e: EnemyState, kb: [number, number], dir: 1 
 
 /** Removes poise; returns true if this hit staggers the enemy (02 §4.3). */
 export function damagePoise(w: GameWorld, e: EnemyState, amount: number, heavy: boolean): boolean {
+  if (e.ward) return false;
   e.noPoiseHitTicks = 0;
   if (e.control?.type === 'stagger') return false;     // locked at 0; no extension
   if (e.poiseImmuneTicks > 0) return false;

@@ -6,6 +6,7 @@ import { COMBAT } from '../tuning.ts';
 import { BOND } from '../../data/classes.ts';
 import type { HitGroup } from './hitGroups.ts';
 import type { ElementId, Grade } from './types.ts';
+import { applyEnemyDamage } from './enemyDamage.ts';
 
 export interface ElementOnHit { id: ElementId; level: 1 | 2 | 3 }
 
@@ -50,7 +51,7 @@ export function lightningChain(w: GameWorld, target: EnemyState, level: 1 | 2 | 
   const pct = L.pct * (1 + elementBonus(w));
   for (const { e } of list) {
     const dmg = Math.max(1, roundHalfUp(procBase * pct * targetMult(e)));
-    e.hp -= dmg;
+    applyEnemyDamage(e,dmg);
     e.damagedTicks = 0;
     e.everDamaged = true;
     w.events.push({ t: 'hit', target: e.id, amount: dmg, crit: false, heavy: false, chainFrom: target.id });

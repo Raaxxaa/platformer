@@ -7,13 +7,14 @@ import { supportAhead } from './body.ts';
 import type { EnemyState } from './enemy.ts';
 import { spawnEnemyProjectile } from './projectiles.ts';
 import { greatBoarHooks } from './greatBoar.ts';
+import { mountainAttackHooks } from './mountains.ts';
 
 
 function fireShots(w: GameWorld, e: EnemyState): void {
   for (const s of e.ai.attack?.def.shots ?? []) {
     const def = ENEMY_PROJECTILES[s.projectile];
     if (!def) continue;
-    for (const angle of s.angles) spawnEnemyProjectile(w, e, def, s.aim === 'player' ? 'player' : 'facing', angle);
+    for (const angle of s.angles) spawnEnemyProjectile(w, e, def, s.aim, angle);
   }
 }
 
@@ -35,6 +36,8 @@ export function attackHooks(e: EnemyState): AttackHooks {
   const def = e.ai.attack?.def;
   if (!def) return {};
   if (e.def.id === 'great_boar') return greatBoarHooks(e);
+  const mountain = mountainAttackHooks(e);
+  if (mountain) return mountain;
   return {
     onActStart(w, en) {
       if (def.leap && 'vx' in def.leap) {

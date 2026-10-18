@@ -23,6 +23,9 @@ import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups
 import { maxStop, meleeHitStopTicks } from './hitStop.ts';
 import { addRush, rushLevel } from './rush.ts';
 import { TRAINING } from '../../data/enemies.ts';
+import { applyEnemyDamage, enemyGuarded } from './enemyDamage.ts';
+import { MOUNTAIN } from '../../data/mountains.ts';
+import { removePlayerProjectile } from './playerProjectiles.ts';
 
 /** The player hurtbox as a rect. */
 export function playerRect(w: GameWorld): Rect {
@@ -55,11 +58,18 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const chance = critChance(w, isWeapon ? g.slot : undefined);
   const crit = guaranteedCrit(w, g, e) || (chance > 0 && w.rng.combat.next() < chance);
   // Shatter (02 §6.3): any direct hit on a Frozen enemy, as a target multiplier; it ends the freeze.
-  const tMult = targetMult(w, g, e) * shatterMult(w, e, true);
+  const guarded = enemyGuarded(w,g,e), warded = e.ward !== null;
+  const tMult = targetMult(w, g, e) * shatterMult(w, e, true) * (guarded ? e.def.guard!.guardMult : 1);
   const { damage, procBase } = playerHitDamage({
     base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: tMult,
   });
-  e.hp -= damage;
+  applyEnemyDamage(e,damage);
+  if (guarded && g.kind === 'melee') w.body.vx = -w.body.facing * MOUNTAIN.guardRecoil;
+  if (guarded && g.kind === 'shot') {
+    const p = w.playerProjectiles.find((p) => p.groupId === g.id);
+    if (p) removePlayerProjectile(w,p);
+    g.active = false;
+  }
   e.lastPlayerHitTick = w.tick;
   e.damagedTicks = 0;
   e.everDamaged = true;
@@ -90,13 +100,15 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   }
   // Poise and stagger, then knockback (full if staggered; ignored if committed otherwise), then control.
   const committed = isCommitted(e);
-  const staggered = damagePoise(w, e, spec.poise * wind.poise, !!spec.heavy);
+  const staggered = !warded && damagePoise(w, e, spec.poise * wind.poise * (guarded && !spec.heavy ? MOUNTAIN.guardPoiseMult : 1), !!spec.heavy);
   const dir = kbDir(w, g, e);
   const frozen = e.control?.type === 'pin' || e.status.frozen !== null;    // Frozen takes no knockback (02 §6.3)
   const ctl = spec.control;
   const kb: [number, number] = [spec.kb[0] * wind.kb, spec.kb[1] * wind.kb];
-  if (ctl?.type === 'launch') applyLaunch(w, e, spec.kb, dir);
-  else if (!frozen && (staggered || !committed)) applyEnemyKnockback(e, kb, dir);
+  if (!warded && (!guarded || spec.heavy)) {
+    if (ctl?.type === 'launch') applyLaunch(w, e, spec.kb, dir);
+    else if (!frozen && (staggered || !committed)) applyEnemyKnockback(e, kb, dir);
+  }
   if (ctl?.type === 'knockdown' || ctl?.type === 'stun') controlOrPoise(w, e, ctl.type, ctl.duration);
   else if (ctl?.type === 'pull' && g.pullTo) applyPull(w, e, g.pullTo);
   // Instant awareness: resolved while unaware, flips right after (04 §2.4).
@@ -119,7 +131,7 @@ export function resolvePlayerHits(w: GameWorld): void {
       if (!g.active) break;                                 // a projectile that stopped
       if (!hittable(e) || !canHit(g, e.id, w.tick)) continue;
       if (!overlaps(g.rect, enemyRect(e))) continue;
-      if (g.contact?.(w, g, e)) continue;
+      if (!enemyGuarded(w,g,e) && g.contact?.(w, g, e)) continue;
       markHit(g, e.id, w.tick);
       applyPlayerHit(w, g, e);
     }
@@ -138,7 +150,7 @@ export function resolveEnemyHits(w: GameWorld): void {
     const attackerCx = g.kind === 'melee' && owner ? owner.x : g.rect.x + g.rect.w / 2;
     const dealt = hurtPlayer(w, {
       kind: 'enemyHit', enemyId: g.owner, enemyDefId: owner?.def.id ?? 'enemy', damageA: enemyDamageA(w, g.enemyHit.damage),
-      attackerCx, melee: g.kind === 'melee', playerKb: g.enemyHit.playerKb,
+      attackerCx, melee: g.kind === 'melee', playerKb: g.enemyHit.playerKb, travelDir: g.dir,
     });
     if (dealt === 0) continue;                                  // invulnerable: not marked, may hit later
     markHit(g, 0, w.tick);

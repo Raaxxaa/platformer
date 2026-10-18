@@ -8,6 +8,7 @@ import type { ElementOnHit } from './elements.ts';
 import { elementBonus } from './elements.ts';
 import { killEnemy } from './resolve.ts';
 import type { WeaponInstance } from './types.ts';
+import { applyEnemyDamage } from './enemyDamage.ts';
 
 export interface EnemyStatus {
   burn: { perTick: number; left: number; next: number; spread: number; src: WeaponInstance | null } | null;
@@ -90,7 +91,7 @@ export function windMults(el: ElementOnHit | null): { kb: number; poise: number 
 
 function dot(w: GameWorld, e: EnemyState, amount: number, src: WeaponInstance | null): void {
   const dmg = Math.max(1, roundHalfUp(amount));
-  e.hp -= dmg;
+  applyEnemyDamage(e,dmg);
   e.damagedTicks = 0;
   e.everDamaged = true;
   w.events.push({ t: 'hit', target: e.id, amount: dmg, crit: false, heavy: false, dot: true });

@@ -40,6 +40,7 @@ export interface AiState {
   lostTicks: number;               // ticks the player has been beyond loseRange
   pendingAwareAt: number;          // alert spread: world tick to become aware at (−1 = none)
   backingOff: boolean;             // Wolf: back off after an attack
+  turnTicks: number;
 }
 
 export interface EnemyState {
@@ -76,6 +77,8 @@ export interface EnemyState {
   killedBy?: import('../combat/types.ts').WeaponInstance | null;
   /** 04 §2.9 elite item roll, made at stage load. */
   drop?: 'key' | 'ability' | null;
+  ward: { hp: number; ticks: number; sourceId: number } | null;
+  mountain?: { waypoint?: { x:number; y:number }; waypointTicks: number; blinkTicks: number };
 }
 
 /** Stage-scaled attack damage A (a float; 02 §3.3 rounds it). */
@@ -92,10 +95,10 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
     id: w.newId(), def, x: s.x, y: s.y, remX: 0, remY: 0, vx: 0, vy: 0, facing: s.facing,
     hp: maxHp, maxHp, poise: def.poiseMax, poiseImmuneTicks: 0, noPoiseHitTicks: 0,
     aware: def.id === 'sparring_dummy', noticeT: 0,     // the sparring dummy is always aware (04 §2.11)
-    ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false },
+    ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false, turnTicks: 0 },
     hitStopTicks: 0, frozenAtTickStart: false, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,
-    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0, boss: null, status: newStatus(),
+    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0, boss: null, status: newStatus(), ward: null,
   };
 }
 

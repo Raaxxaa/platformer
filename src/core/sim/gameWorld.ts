@@ -80,6 +80,7 @@ import { breakCrackedWalls } from '../abilities/list/shoulder_charge.ts';
 import { buildLevelFeatures, type DarkZone, type Firefly, type GrapplePoint } from '../level/features.ts';
 import { createFallingRocks, stepFallingRocks, type FallingRocksState } from '../hazards/fallingRocks.ts';
 import { FALLING_ROCKS } from '../../data/hazards.ts';
+import { stepMountainReaction } from '../enemies/mountains.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -695,6 +696,7 @@ export class GameWorld {
       stepEnemyBody(this, e);
       return;
     }
+    if (e.control || e.status.frozen || e.knockback) stepMountainReaction(this,e); // cancel even when its final control tick ends below
     stepEnemyReactions(e);
     // Frozen: no action (its attack is cancelled); Chilled: acts on a fraction of ticks (02 §6.3). Gravity always.
     if (!enemyActs(e)) {
@@ -717,7 +719,8 @@ export class GameWorld {
       if (!e.knockback && e.grounded) e.vx = 0;
     } else if (!e.knockback) {
       const sparring = e.def.id === 'sparring_dummy';
-      if (e.ai.attack) {
+      if (stepMountainReaction(this,e)) { /* Hittable Blink Away fade; no attack or walking. */ }
+      else if (e.ai.attack) {
         stepEnemyAttack(this, e, attackHooks(e));
         if (sparring && !e.ai.attack) stepSparring(this, e);   // the next swing starts as the last ends (every 2.0 s)
       } else if (sparring) stepSparring(this, e);
@@ -806,6 +809,7 @@ export class GameWorld {
     syncPlayerGroups(this);
     // 5. Enemy AI and movement; hazard timers (06 §2.8: rock markers).
     stepRockfall(this);
+    for (const e of this.enemies) if (e.ward && (e.ward.ticks -= this.worldTimeScale) <= 0) e.ward = null;
     if (stepFallingRocks(this.fallingRocks, this.grid, playerRect(this), this.worldTimeScale)) hurtPlayer(this, { kind: 'hazard', cause: 'hazard', damageA: FALLING_ROCKS.damage });
     activateEnemies(this);
     stepStatuses(this);

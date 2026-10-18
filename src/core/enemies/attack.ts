@@ -61,6 +61,7 @@ export interface AttackHooks {
   onActStart?(w: GameWorld, e: EnemyState): void;
   onActTick?(w: GameWorld, e: EnemyState): boolean;   // return true to end Act now
   onRecStart?(w: GameWorld, e: EnemyState): void;
+  onRecTick?(w: GameWorld, e: EnemyState): void;
 }
 
 /** One enemy-time tick of the running attack. Returns true when the attack finished this tick. */
@@ -88,6 +89,7 @@ export function stepEnemyAttack(w: GameWorld, e: EnemyState, hooks: AttackHooks 
     hooks.onRecStart?.(w, e);
     return false;
   }
+  hooks.onRecTick?.(w, e);
   if (a.t < a.len) return false;
   setCooldown(e, a.def);
   e.ai.attack = null;
