@@ -2,8 +2,8 @@
 import type { InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { isGrounded, pushOut } from '../physics/collide.ts';
-import { MOVE, TICK, ticks } from '../tuning.ts';
-import { setState, type PlayerBody } from './body.ts';
+import { MOVE, TERRAIN, TICK, ticks } from '../tuning.ts';
+import { detachCart, setState, type PlayerBody } from './body.ts';
 import { runMaxEff, type MoveModifiers } from './modifiers.ts';
 
 export interface ForcedMove {
@@ -26,12 +26,14 @@ export interface ForcedRt {
   endReason: string | null;
   /** The owner's tag (ability id, weapon move) so the owner knows its move is still running. */
   owner: string;
+  grapple?: { kind: 'point' | 'wall'; startX: number };
 }
 
 export const ARRIVE_DIST_DEFAULT = 12;
 
 /** Starts a ForcedMove from combat or abilities (02 §2.1 step 3); its first movement tick is this tick's step 4. */
 export function startForcedMove(b: PlayerBody, fm: ForcedMove, owner: string): void {
+  detachCart(b);
   if (b.state === 'wallSlide') b.lastWallPt = b.pt;
   b.forced = { fm, ticks: Math.max(1, ticks(fm.durationS)), endReason: null, owner };
   b.dashIframes = false;
@@ -47,6 +49,15 @@ export function endForcedMove(b: PlayerBody, g: TileGrid, mods: MoveModifiers, r
   rt.endReason = reason;
   b.forced = null;
   b.lastForced = rt;
+  if (rt.grapple && (reason === 'arrived' || reason === 'wall')) {
+    const point = reason === 'arrived' && rt.grapple.kind === 'point';
+    const dx = rt.fm.target!.x - rt.grapple.startX;
+    b.vx = point && Math.abs(dx) >= TERRAIN.GRAPPLE_ZERO_X ? TERRAIN.GRAPPLE_VX * Math.sign(dx) : 0;
+    b.vy = point ? TERRAIN.GRAPPLE_VY : 0;
+    b.grounded = false; b.coyoteValid = false; b.jumpCuttable = false;
+    if (point) b.airDashAvailable = b.doubleJumpAvailable = true;
+    setState(b, 'air', 0); return;
+  }
   if (rt.fm.endVelocity === 'zero') { b.vx = 0; b.vy = 0; }
   else if (rt.fm.endVelocity === 'clampToRun') {
     const max = runMaxEff(b, mods);

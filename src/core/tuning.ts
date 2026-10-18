@@ -132,6 +132,19 @@ export const SPIKES = {
   SIDE_VX: 220, SIDE_VY: -200, SIDE_LOCK: 14,   // ticks of steering lock
 } as const;
 
+/** Surfaces, collapsing platforms, minecarts and grapple points (01 §13). */
+export const TERRAIN = {
+  WATER_SPEED_MULT: 0.5, WATER_JUMP_V: -340, WATER_MAX_FALL: 160,
+  ICE_ACCEL: 450, ICE_DECEL: 200, ICE_TURN: 900, ICE_OVERSPEED: 120,
+  COLLAPSE_DELAY: 0.5, COLLAPSE_RESPAWN: 4, COLLAPSE_VISUAL_TICKS: ticks(1),
+  CART_W: 24, CART_H: 14, CART_RIDER_H: 20, CART_SEAT: 8, CART_ACCEL: 800, CART_MAX: 260,
+  CART_GRAVITY: 1500, CART_MAX_FALL: 520, CART_JUMP_V: -420, CART_THROW_V: -300,
+  CART_RESPAWN_TICKS: ticks(2),
+  GRAPPLE_SIZE: 16, GRAPPLE_ARRIVE: 12, GRAPPLE_VX: 200, GRAPPLE_VY: -250, GRAPPLE_ZERO_X: 8,
+  CHARGE_WALL_REACH: 4,
+  DARK_LIGHT_RADIUS: 112, FIREFLY_RADIUS: 48,
+} as const;
+
 /** Combat arenas (06 §9.2). Fill in tenths of a percent. */
 export const ARENA = {
   NEXT_WAVE: 0.75, NEXT_WAVE_TICKS: ticks(0.75),

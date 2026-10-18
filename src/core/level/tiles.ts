@@ -1,6 +1,6 @@
 // Tile map queries for collision (01 §2.3, §13).
 import { TILE_SIZE } from '../tuning.ts';
-import { OVERLAY_ONEWAY, OVERLAY_SOLID, type Bodies } from '../physics/bodies.ts';
+import { OVERLAY_ICE, OVERLAY_ONEWAY, OVERLAY_SOLID, type Bodies } from '../physics/bodies.ts';
 
 export type TileKind = 'empty' | 'solid' | 'oneway' | 'ice' | 'water'
   | 'spikeUp' | 'spikeDown' | 'spikeLeft' | 'spikeRight';
@@ -36,6 +36,7 @@ export class TileGrid {
     if (this.bodies && k !== 'solid' && k !== 'ice') {
       const o = this.bodies.at(tx, ty);
       if (o === OVERLAY_SOLID) return 'solid';
+      if (o === OVERLAY_ICE) return 'ice';
       if (o === OVERLAY_ONEWAY) return 'oneway';
     }
     return k;

@@ -3,8 +3,8 @@ import type { InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { approach, clampAbs } from '../math.ts';
 import { boxFree, isGrounded, moveX, moveY, oneWayApexSnap, pushOut } from '../physics/collide.ts';
-import { MOVE, TICK } from '../tuning.ts';
-import { setState, type MoveEvent, type PlayerBody } from './body.ts';
+import { MOVE, TERRAIN, TICK } from '../tuning.ts';
+import { detachCart, setState, type MoveEvent, type PlayerBody } from './body.ts';
 import { endDashOrSlide, standingFits, stepDashOrSlide, tryStartDash } from './dash.ts';
 import { applyJumpCut, tryJump } from './jump.ts';
 import { defaultModifiers, runMaxEff, type MoveContext, type MoveModifiers } from './modifiers.ts';
@@ -12,10 +12,12 @@ import { leaveWall, updateWallSlide } from './wall.ts';
 import { checkLedgeGrab, stepLedgeClimb } from './ledge.ts';
 import { stepDivePhases, tryStartDive } from './dive.ts';
 import { forcedAfterMove, forcedTimeAndCancels, forcedVelocity } from './forcedMove.ts';
+import { updateSurfaces } from './surfaces.ts';
 
 interface Rates { accel: number; decel: number; turn: number; overspeed: number }
 const GROUND_RATES: Rates = { accel: MOVE.GROUND_ACCEL, decel: MOVE.GROUND_DECEL, turn: MOVE.GROUND_TURN, overspeed: MOVE.OVERSPEED_DECAY_GROUND };
 const AIR_RATES: Rates = { accel: MOVE.AIR_ACCEL, decel: MOVE.AIR_DECEL, turn: MOVE.AIR_TURN, overspeed: MOVE.OVERSPEED_DECAY_AIR };
+const ICE_RATES: Rates = { accel: TERRAIN.ICE_ACCEL, decel: TERRAIN.ICE_DECEL, turn: TERRAIN.ICE_TURN, overspeed: TERRAIN.ICE_OVERSPEED };
 
 /** 01 §5.3 horizontal rules for `ground`, `air` and `crawl`. */
 function steer(b: PlayerBody, dir: -1 | 0 | 1, max: number, r: Rates, mods: MoveModifiers): void {
@@ -53,6 +55,7 @@ export function applyKnockback(b: PlayerBody, vx: number, vy: number, stunTicks:
 
 /** The body becomes `dead` (01 §5.4): it keeps falling and sliding but ignores input. */
 export function setDead(b: PlayerBody): void {
+  detachCart(b);
   b.dashIframes = false;
   b.steerLockTicks = 0;
   b.jumpCuttable = false;
@@ -82,13 +85,13 @@ function horizontalVelocity(b: PlayerBody, input: InputState, mods: MoveModifier
     if (b.state === 'ground' || b.state === 'air' || b.state === 'crawl') return;
   }
   switch (b.state) {
-    case 'ground': steer(b, input.moveX, runMaxEff(b, mods), GROUND_RATES, mods); break;
+    case 'ground': steer(b, input.moveX, runMaxEff(b, mods), b.onIce ? ICE_RATES : GROUND_RATES, mods); break;
     case 'air': steer(b, input.moveX, runMaxEff(b, mods), AIR_RATES, mods); break;
-    case 'crawl': steer(b, input.moveX, runMaxEff(b, mods, MOVE.CRAWL_MAX), GROUND_RATES, mods); break;
+    case 'crawl': steer(b, input.moveX, runMaxEff(b, mods, MOVE.CRAWL_MAX), b.onIce ? ICE_RATES : GROUND_RATES, mods); break;
     case 'wallSlide': case 'diveWindup': case 'diveFall': case 'diveLand': b.vx = 0; break;
     case 'hurt': case 'dead':
       // Input ignored: the no-input decel for the surface (01 §5.4, §12.2).
-      b.vx = approach(b.vx, 0, (b.grounded ? MOVE.GROUND_DECEL : MOVE.AIR_DECEL) * TICK);
+      b.vx = approach(b.vx, 0, (b.grounded ? b.onIce ? TERRAIN.ICE_DECEL : MOVE.GROUND_DECEL : MOVE.AIR_DECEL) * TICK);
       break;
     default: break;
   }
@@ -100,7 +103,7 @@ function verticalVelocity(b: PlayerBody, input: InputState, mods: MoveModifiers)
     case 'ground': case 'crawl': case 'dash': case 'slide': case 'diveWindup': case 'diveLand': b.vy = 0; break;
     case 'diveFall': b.vy = MOVE.DIVE_SPEED; break;
     case 'air': {
-      const cap = mods.maxFallOverride ?? (input.moveY === 1 ? MOVE.MAX_FALL_DOWN_HELD : MOVE.MAX_FALL);
+      const cap = b.inWater ? TERRAIN.WATER_MAX_FALL : mods.maxFallOverride ?? (input.moveY === 1 ? MOVE.MAX_FALL_DOWN_HELD : MOVE.MAX_FALL);
       b.vy = fall(b.vy, MOVE.GRAVITY * mods.gravityMult, cap);
       break;
     }
@@ -108,7 +111,7 @@ function verticalVelocity(b: PlayerBody, input: InputState, mods: MoveModifiers)
       b.vy = fall(b.vy, MOVE.GRAVITY, input.moveY === 1 ? MOVE.WALL_SLIDE_MAX_DOWN_HELD : MOVE.WALL_SLIDE_MAX);
       break;
     case 'hurt': case 'dead':
-      b.vy = b.grounded && b.vy >= 0 ? 0 : fall(b.vy, MOVE.GRAVITY, MOVE.MAX_FALL);
+      b.vy = b.grounded && b.vy >= 0 ? 0 : fall(b.vy, MOVE.GRAVITY, b.state === 'hurt' && b.inWater ? TERRAIN.WATER_MAX_FALL : MOVE.MAX_FALL);
       break;
     default: break;
   }
@@ -126,7 +129,7 @@ function land(b: PlayerBody, ev: MoveEvent[]): void {
 /** Step 9: grounded check, landing and leaving the ground (01 §5.5), wall hits, ledge grab, wall slide, crawl. */
 function afterMove(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers, hitWall: boolean, ev: MoveEvent[]): boolean {
   const wasGrounded = b.grounded;
-  const grounded = isGrounded(b, g, b.vy);
+  const grounded = isGrounded(b, g, b.vy) || (b.state === 'diveLand' && b.inWater);
   b.grounded = grounded;
 
   let dashWallDir: -1 | 0 | 1 = 0;
@@ -195,6 +198,7 @@ function updateBox(b: PlayerBody, g: TileGrid): void {
 /** Runs one movement tick for the player (01 §3). Returns this tick's movement events. */
 export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: MoveModifiers, ctx: MoveContext): MoveEvent[] {
   const ev: MoveEvent[] = [];
+  updateSurfaces(b, g, ev);
   // 1. Hit-stop: frozen, unless a jump or dash pressed now can happen (then hit-stop ends and the move runs).
   if (b.hitStopTicks > 0) {
     if ((input.jump.pressed || input.dash.pressed) && pressWouldAct(b, input, g, mods)) {
@@ -273,6 +277,14 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
   // 10. Facing and box (a ForcedMove keeps its box).
   updateFacing(b, input, mods);
   if (b.state !== 'forced') updateBox(b, g);
+  updateSurfaces(b, g, ev);
+  if (b.state === 'diveFall' && b.inWater) {
+    b.landSpeed = b.vy; b.vx = 0; b.vy = 0;
+    b.grounded = true; b.jumpCuttable = false;
+    b.lastGroundPt = b.pt; b.lastGroundY = b.y;
+    b.airDashAvailable = b.doubleJumpAvailable = true;
+    setState(b, 'diveLand', 0); ev.push('diveLand');
+  }
   b.jumpPressFresh = false;
   return ev;
 }

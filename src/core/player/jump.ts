@@ -1,7 +1,7 @@
 // Jumping: ground jump, double jump, jump cut, coyote time and the jump buffer (01 §6).
 import type { InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
-import { MOVE } from '../tuning.ts';
+import { MOVE, TERRAIN } from '../tuning.ts';
 import { NEVER, setState, type MoveEvent, type MoveStateId, type PlayerBody } from './body.ts';
 import { endDashOrSlide, standingFits } from './dash.ts';
 import { supportIsOnlyOneWay } from '../physics/collide.ts';
@@ -61,7 +61,7 @@ export function tryJump(b: PlayerBody, input: InputState, g: TileGrid, mods: Mov
 
   // 2. Ground jump: grounded, or coyote time after leaving the ground without a jump.
   if (b.grounded || (b.coyoteValid && b.pt - b.lastGroundPt <= MOVE.COYOTE_TICKS)) {
-    startJump(b, MOVE.JUMP_V, mods);
+    startJump(b, b.inWater ? TERRAIN.WATER_JUMP_V : MOVE.JUMP_V, mods);
     return 'jump';
   }
   // 3. Wall jump: a wall within 3 px on either side, or wall coyote.

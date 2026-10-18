@@ -1,5 +1,5 @@
 // Inputs from other systems (combat, abilities, curses) to movement (01 §12.1).
-import { MOVE } from '../tuning.ts';
+import { MOVE, TERRAIN } from '../tuning.ts';
 import type { PlayerBody } from './body.ts';
 
 export interface MoveModifiers {
@@ -38,5 +38,6 @@ export function speedMult(m: MoveModifiers): number {
 /** 01 §5.2 effective max speed for `base` (RUN_MAX, or CRAWL_MAX in crawl). `actionMoveMult` only applies while grounded. */
 export function runMaxEff(b: PlayerBody, mods: MoveModifiers, base: number = MOVE.RUN_MAX): number {
   const action = b.state === 'ground' || b.state === 'crawl' ? mods.actionMoveMult : 1;
-  return base * speedMult(mods) * action * mods.statusMult;
+  const surface = b.inWater && !['dash', 'slide', 'forced', 'minecart'].includes(b.state) ? TERRAIN.WATER_SPEED_MULT : 1;
+  return base * speedMult(mods) * action * mods.statusMult * surface;
 }

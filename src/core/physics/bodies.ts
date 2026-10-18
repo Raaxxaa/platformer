@@ -8,7 +8,7 @@ export interface SolidBody {
 }
 
 /** Overlay values per cell. */
-export const OVERLAY_NONE = 0, OVERLAY_SOLID = 1, OVERLAY_ONEWAY = 2;
+export const OVERLAY_NONE = 0, OVERLAY_SOLID = 1, OVERLAY_ONEWAY = 2, OVERLAY_ICE = 3;
 
 export class Bodies {
   readonly list: SolidBody[] = [];
@@ -47,7 +47,8 @@ export class Bodies {
   }
 
   solidAt(px: number, py: number): boolean {
-    return this.at(Math.floor(px / TILE_SIZE), Math.floor(py / TILE_SIZE)) === OVERLAY_SOLID;
+    const kind = this.at(Math.floor(px / TILE_SIZE), Math.floor(py / TILE_SIZE));
+    return kind === OVERLAY_SOLID || kind === OVERLAY_ICE;
   }
 
   oneWayTopAt(px: number, py: number): boolean {
@@ -58,11 +59,11 @@ export class Bodies {
     this.overlay.fill(OVERLAY_NONE);
     for (const b of this.list) {
       if (!b.active) continue;
-      const v = b.oneWay ? OVERLAY_ONEWAY : OVERLAY_SOLID;
+      const v = b.oneWay ? OVERLAY_ONEWAY : b.surface === 'ice' ? OVERLAY_ICE : OVERLAY_SOLID;
       for (let ty = b.y / TILE_SIZE; ty < (b.y + b.h) / TILE_SIZE; ty++)
         for (let tx = b.x / TILE_SIZE; tx < (b.x + b.w) / TILE_SIZE; tx++) {
           const i = ty * this.wTiles + tx;
-          if (tx >= 0 && ty >= 0 && tx < this.wTiles && ty < this.hTiles && this.overlay[i] !== OVERLAY_SOLID) this.overlay[i] = v;
+          if (tx >= 0 && ty >= 0 && tx < this.wTiles && ty < this.hTiles && this.overlay[i] !== OVERLAY_SOLID && this.overlay[i] !== OVERLAY_ICE) this.overlay[i] = v;
         }
     }
   }

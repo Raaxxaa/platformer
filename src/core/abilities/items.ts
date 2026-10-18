@@ -139,7 +139,8 @@ export function interactTarget(w: GameWorld): GroundItem | Interactable | null {
   const pr = playerRect(w);
   const list: { o: GroundItem | Interactable; cx: number }[] = [];
   for (const it of w.groundItems) if (!it.key && !it.blueprint && overlaps(itemRect(it), pr)) list.push({ o: it, cx: it.x });
-  for (const o of w.interactables) if ((o.kind !== 'shop_key' || w.shop?.keyInStock) && overlaps(objRect(o), pr)) list.push({ o, cx: o.x });
+  for (const o of w.interactables) if ((o.kind !== 'shop_key' || w.shop?.keyInStock)
+    && (o.kind !== 'minecart' || w.minecarts.some((c) => c.id === o.id && c.active && !c.started)) && overlaps(objRect(o), pr)) list.push({ o, cx: o.x });
   list.sort((a, b) => Math.abs(a.cx - w.body.x) - Math.abs(b.cx - w.body.x) || a.o.id - b.o.id);
   return list[0]?.o ?? null;
 }

@@ -39,6 +39,7 @@ export function endDashOrSlide(b: PlayerBody, mods: MoveModifiers): 'dashEnd' | 
 
 /** Natural-end speed clamp (01 §7.3): |vx| = min(|vx|, max(runMaxEff, preDashSpeed)). */
 function clampEndSpeed(b: PlayerBody, mods: MoveModifiers): void {
+  if (b.onIce) return;
   const max = Math.max(runMaxEff(b, mods), b.preDashSpeed);
   if (Math.abs(b.vx) > max) b.vx = Math.sign(b.vx) * max;
 }

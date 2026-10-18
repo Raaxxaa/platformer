@@ -89,7 +89,7 @@ export function levelGrid(d: LevelData): TileGrid {
 export interface SolidBodyDef {
   id: string; objectId: number; type: string;
   x: number; y: number; w: number; h: number;
-  oneWay: boolean; grabbable: boolean; noTeleport: boolean; active: boolean;
+  oneWay: boolean; surface: 'normal' | 'ice'; grabbable: boolean; noTeleport: boolean; active: boolean;
   arena?: string; role?: string;
 }
 
@@ -108,7 +108,7 @@ export function buildWorldParts(d: LevelData): { grid: TileGrid; bodies: SolidBo
       const active = o.type === 'arena_door' ? role === 'exit' : true;
       bodies.push({
         id: String(o.props.id ?? `${o.type}#${o.id}`), objectId: o.id, type: o.type, x: o.x, y: o.y, w: o.w, h: o.h,
-        oneWay: o.props.oneWay === true, grabbable: o.type === 'cracked_wall' || o.type === 'collapsing_platform',
+        oneWay: o.props.oneWay === true, surface: o.props.surface === 'ice' ? 'ice' : 'normal', grabbable: o.type === 'cracked_wall' || o.type === 'collapsing_platform',
         noTeleport: o.type === 'arena_door' || o.type === 'timed_door' || o.type === 'blink_block',
         active, arena: o.props.arena as string | undefined, role,
       });

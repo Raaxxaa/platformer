@@ -5,14 +5,22 @@ import { endForcedMove, startForcedMove } from '../../player/forcedMove.ts';
 import { ABILITY } from '../../../data/abilities.ts';
 import { registerAbility } from '../abilitySystem.ts';
 import { abilityHit, addAbilityGroup, attachToMove, linkedValue, newInstance } from '../helpers.ts';
-import { ticks } from '../../tuning.ts';
+import { TERRAIN, ticks } from '../../tuning.ts';
 import type { GameWorld } from '../../sim/gameWorld.ts';
 
 const A = ABILITY.shoulderCharge;
 const OWNER = 'ability:shoulder_charge';
 
-/** Cracked walls (06) break here once a stage has them; M4 stages have none. */
-export function breakCrackedWalls(_w: GameWorld, _dir: 1 | -1): void {}
+/** Called at the start of every charge tick, before player collision (03 §9.2). */
+export function breakCrackedWalls(w: GameWorld, dir: 1 | -1): void {
+  const b = w.body;
+  const left = b.x - b.w / 2 - (dir < 0 ? TERRAIN.CHARGE_WALL_REACH : 0);
+  const right = b.x + b.w / 2 + (dir > 0 ? TERRAIN.CHARGE_WALL_REACH : 0);
+  for (const o of w.level?.objects ?? []) if (o.type === 'cracked_wall') {
+    const id = String(o.props.id ?? `${o.type}#${o.id}`), wall = w.bodies.get(id);
+    if (wall?.active && left < wall.x + wall.w && right > wall.x && b.y - b.h < wall.y + wall.h && b.y > wall.y) w.bodies.setActive(id, false);
+  }
+}
 
 addSuperArmor((w) => w.body.forced?.owner === OWNER);
 

@@ -11,7 +11,7 @@ import { dashCooldownMult, extraSpeed } from '../loot/perks.ts';
 import { cancelEnemyAttack } from '../enemies/attack.ts';
 import { enemyActs, stepStatuses } from '../combat/status.ts';
 import { createCamera, shake, snapCamera, stepCamera, type CameraState } from '../camera.ts';
-import { createHealth, type PlayerHealth } from '../combat/health.ts';
+import { createHealth, hurtPlayer, type PlayerHealth } from '../combat/health.ts';
 import type { HitGroup } from '../combat/hitGroups.ts';
 import { addRush, createRush, rushLevel, rushSpeedPercent, stepRush } from '../combat/rush.ts';
 import { enemyRect } from '../enemies/enemy.ts';
@@ -74,6 +74,12 @@ import { recordSplit, type RunRecords } from '../run/splits.ts';
 import { captureRunEnd, type RunEndSnapshot } from '../run/history.ts';
 import { unlockedCatalog, type BlueprintId } from '../loot/blueprints.ts';
 import { stepBlueprints } from '../loot/blueprintItems.ts';
+import { boardCart, createMinecart, landOnMinecart, stepMinecarts, type MinecartState, type CartStop } from '../player/minecart.ts';
+import { buildCollapsingPlatforms, stepCollapsingPlatforms, type CollapsingPlatform } from '../hazards/collapsingPlatforms.ts';
+import { breakCrackedWalls } from '../abilities/list/shoulder_charge.ts';
+import { buildLevelFeatures, type DarkZone, type Firefly, type GrapplePoint } from '../level/features.ts';
+import { createFallingRocks, stepFallingRocks, type FallingRocksState } from '../hazards/fallingRocks.ts';
+import { FALLING_ROCKS } from '../../data/hazards.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -224,6 +230,14 @@ export class GameWorld {
   timedDoors: TimedDoorRt[] = [];
   activeHint: HintAction | null = null;
   rockMarkers: RockMarker[] = [];
+  minecarts: MinecartState[] = [];
+  cartStops: CartStop[] = [];
+  collapsingPlatforms: CollapsingPlatform[] = [];
+  worldTimeScale = 1;
+  grapplePoints: GrapplePoint[] = [];
+  darkZones: DarkZone[] = [];
+  fireflies: Firefly[] = [];
+  fallingRocks!: FallingRocksState;
   readonly level: LevelData | null;
   readonly waveSpawns: LevelEnemySpawn[];
   readonly markers: LevelObject[];
@@ -279,7 +293,7 @@ export class GameWorld {
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
     const bodies: SolidBody[] = parts.bodies.map((b) => ({
-      id: b.id, x: b.x, y: b.y, w: b.w, h: b.h, oneWay: b.oneWay, surface: 'normal', grabbable: b.grabbable, noTeleport: b.noTeleport, active: b.active,
+      id: b.id, x: b.x, y: b.y, w: b.w, h: b.h, oneWay: b.oneWay, surface: b.surface, grabbable: b.grabbable, noTeleport: b.noTeleport, active: b.active,
     }));
     return new GameWorld({
       grid: parts.grid, spawn: { x: start.x, y: start.y }, facing: Number(start.props.facing ?? 1) < 0 ? -1 : 1,
@@ -389,6 +403,15 @@ export class GameWorld {
     this.respawns = [];
     this.training = null;
     this.interactables = [];
+    this.worldTimeScale = 1;
+    this.minecarts = (this.level?.objects ?? []).filter((o) => o.type === 'minecart').map((o) => createMinecart(o.id, o.x, o.y, Number(o.props.dir ?? 1) < 0 ? -1 : 1));
+    this.cartStops = (this.level?.objects ?? []).filter((o) => o.type === 'minecart_stop').map((o) => ({ x: o.x, y: o.y, w: o.w, h: o.h }));
+    this.collapsingPlatforms = buildCollapsingPlatforms(this.level?.objects ?? []);
+    Object.assign(this, buildLevelFeatures(this.level?.objects ?? []));
+    this.fallingRocks = createFallingRocks(this.level?.objects ?? []);
+    for (const c of this.minecarts) this.interactables.push({ id: c.id, x: c.spawnX, y: c.spawnY, w: c.w, h: c.h, kind: 'minecart', label: 'Ride', use: (w) => {
+      if (c.active && !c.started && boardCart(c, w.body)) w.events.push({ t: 'move', e: 'cartBoard' });
+    } });
     this.shop = null; this.altarHold = null;
     this.villageMessage = null;
     if (this.level?.kind === 'training') setupTraining(this);
@@ -760,12 +783,21 @@ export class GameWorld {
     // 4. Player movement and collision. A dash, jump or dive that happened cancels the attack (01 §3 step 5).
     this.mods.speedPercents = [rushSpeedPercent(rushLevel(this.rush)), ...hybridSpeed(this), extraSpeed(this)];
     this.mods.dashCooldownMult = dashCooldownMult(this);
-    const moveEvents = stepPlayer(this.body, input, this.grid, this.mods, this.ctx);
+    if (this.body.forced?.owner === 'ability:shoulder_charge') breakCrackedWalls(this, this.body.forced.fm.vx < 0 ? -1 : 1);
+    if (this.body.state === 'minecart') this.mods.actionMoveMult = 1;
+    const beforeMove = { x: this.body.x, y: this.body.y };
+    const cartStep = stepMinecarts(this.minecarts, this.body, input, this.grid, this.mods, this.cartStops);
+    const moveEvents = cartStep.events;
+    if (!cartStep.handled) {
+      moveEvents.push(...stepPlayer(this.body, cartStep.input, this.grid, this.mods, this.ctx));
+      if (landOnMinecart(this.minecarts, this.body, beforeMove)) moveEvents.push('cartBoard');
+    }
+    moveEvents.push(...stepCollapsingPlatforms(this.collapsingPlatforms, this.bodies, this.grid, this.body, this.minecarts, this.worldTimeScale, moveEvents.includes('diveLand')));
     if (checkSpikes(this)) moveEvents.push('spikeHit');   // 01 §3 step 9
     for (const e of moveEvents) {
       this.events.push({ t: 'move', e });
       if (e === 'dashStart' || e === 'slideStart') { cancelAttack(this, 'dash'); cancelDrink(this); onCastCancelMove(this); }
-      else if (e === 'jump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') { cancelAttack(this, 'jump'); cancelDrink(this); onCastCancelMove(this); }
+      else if (e === 'jump' || e === 'cartJump' || e === 'doubleJump' || e === 'wallJump' || e === 'dropThrough') { cancelAttack(this, 'jump'); cancelDrink(this); onCastCancelMove(this); }
       else if (e === 'diveStart') cancelAttack(this, 'dive');
     }
     if (moveEvents.includes('dashStart')) this.dashThrough.clear();
@@ -774,6 +806,7 @@ export class GameWorld {
     syncPlayerGroups(this);
     // 5. Enemy AI and movement; hazard timers (06 §2.8: rock markers).
     stepRockfall(this);
+    if (stepFallingRocks(this.fallingRocks, this.grid, playerRect(this), this.worldTimeScale)) hurtPlayer(this, { kind: 'hazard', cause: 'hazard', damageA: FALLING_ROCKS.damage });
     activateEnemies(this);
     stepStatuses(this);
     stepSignatures(this);

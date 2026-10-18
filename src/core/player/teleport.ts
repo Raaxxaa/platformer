@@ -1,7 +1,7 @@
 // teleport(dx, dy) (01 §12.4): Blink. Passes thin walls, never noTeleport bodies or the camera bounds.
 import type { TileGrid } from '../level/tiles.ts';
 import { boxFree, isGrounded } from '../physics/collide.ts';
-import type { PlayerBody } from './body.ts';
+import { detachCart, type PlayerBody } from './body.ts';
 
 export interface TeleportResult { ok: boolean; dx: number; dy: number }
 interface Rect { x: number; y: number; w: number; h: number }
@@ -16,6 +16,7 @@ const overlaps = (a: Rect, c: Rect) => a.x < c.x + c.w && c.x < a.x + a.w && a.y
  * then steps back 1 px at a time toward the start until the box fits. Fails (no move) when only the start fits.
  */
 export function teleport(b: PlayerBody, g: TileGrid, dx: number, dy: number, bounds: Rect): TeleportResult {
+  detachCart(b);
   const steps = Math.max(Math.abs(dx), Math.abs(dy));
   if (steps === 0) return { ok: false, dx: 0, dy: 0 };
   const sx = b.x, sy = b.y;

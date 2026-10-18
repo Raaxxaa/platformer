@@ -36,6 +36,7 @@ export interface PlayerBody extends AABBBody {
   climbTop: number;       // the ledge top L,
   climbStandX: number;    // and the standing spot's x
   forced: ForcedRt | null;      // the running ForcedMove (01 §12.3)
+  cartId: number | null;
   lastForced: ForcedRt | null;  // the last one that ended (its owner reads endReason)
 }
 
@@ -49,7 +50,7 @@ export function createPlayerBody(x: number, y: number): PlayerBody {
     dashPressPt: NEVER, dashReadyPt: 0, lastWallPt: NEVER, lastWallDir: 1,
     steerLockTicks: 0, dashIframes: false, preDashSpeed: 0,
     hitStopTicks: 0, hurtTicks: 0, endSlideRequested: false, landSpeed: 0, lastGroundY: y,
-    climbFromX: 0, climbFromY: 0, climbTop: 0, climbStandX: 0, forced: null, lastForced: null,
+    climbFromX: 0, climbFromY: 0, climbTop: 0, climbStandX: 0, forced: null, lastForced: null, cartId: null,
   };
 }
 
@@ -57,4 +58,13 @@ export function createPlayerBody(x: number, y: number): PlayerBody {
 export function setState(b: PlayerBody, s: MoveStateId, stateTicks: number): void {
   b.state = s;
   b.stateTicks = stateTicks;
+}
+
+/** Ability moves, teleports and death detach before changing movement state (01 §13.6). */
+export function detachCart(b: PlayerBody): void {
+  if (b.cartId === null) return;
+  b.cartId = null;
+  b.h = MOVE.BOX_H;
+  b.grounded = false;
+  setState(b, 'air', 0);
 }

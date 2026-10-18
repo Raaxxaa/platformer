@@ -83,7 +83,7 @@ function startability(w: GameWorld): 'yes' | 'hold' | 'buffer' {
   const s = w.body.state;
   if (w.isDrinking()) return 'buffer';
   if ((w.abilities.cast as { phase: string } | null)?.phase === 'startup') return 'buffer';   // 03 §7.6
-  if (s === 'ground' || s === 'air' || s === 'crawl' || s === 'slide' || s === 'wallSlide') return 'yes';
+  if (s === 'ground' || s === 'air' || s === 'crawl' || s === 'slide' || s === 'wallSlide' || s === 'minecart') return 'yes';
   if (s === 'dash' || s === 'ledgeClimb') return 'hold';
   return 'buffer';
 }
