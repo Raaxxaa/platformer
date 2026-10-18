@@ -99,9 +99,17 @@ No later milestone is authorized.
 - Final checks: 940 unit tests in 118 files; typecheck/build; sixteen related browser tests and five final blueprint browser checks passed. Independent review reran 42 focused tests with no findings.
 - Root inspected the blueprint toast. No new SPEC-GAP.
 
+### M7 Task 9 — `d09a196`
+
+- Added Boot/Title, guarded Death, Records, current-feature Settings, and portable save Export/Import screens.
+- Settings and imported controls apply to the live game and prompts. Text entry isolates gameplay while controller menu actions remain usable.
+- Red-to-green review fixes cover audio unlock, fresh Pause/Start resume, fixed menu key priority, zero-tick input latches, two-key held actions, frozen Home Records, both death-to-Home fades, and imported record caches.
+- Final checks: 987 unit tests in 128 files; typecheck/build/diff checks; seventeen browser cases plus the zero-tick regression and three affected import reruns passed.
+- Root inspected all fifteen UI screenshots and saved stable copies. Independent review is clear; no new SPEC-GAP.
+
 ## Active task
 
-M7 Task 9: title, death, records, settings, export/import, and live settings application.
+M7 Task 10: full-run E2E, determinism, final milestone checks, and delivery.
 The M7 writer is authorized to continue Tasks 3–10 strictly in order, with a tested commit per task and checkpoint reports.
 Root owns this handoff. Review agents stay read-only. No feature push before M7 checks and screenshot review.
 
