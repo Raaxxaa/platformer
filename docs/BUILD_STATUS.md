@@ -81,9 +81,18 @@ No later milestone is authorized.
 - Final checks: 844 unit tests in 112 files; typecheck/build; eighteen related browser tests and the final four split browser checks passed.
 - Root inspected all three split/timer screenshots. Independent review is clear; no new SPEC-GAP.
 
+### M7 Task 7 — `3b95dc2`
+
+- Added full save validation/migration, strict CRC-checked portable codes, backup/corrupt recovery, and protected newer-version saves.
+- Added immutable old-run history before restart/reset, short-restart filtering, stage-reached tracking, bounded history, and real run counters/write moments.
+- Red-to-green review fixes preserve a valid backup on failed repair, reset invalid bindings together, and strip temporary combat fields from history/PB snapshots so real saves round-trip exactly.
+- Valid imported kits with an unbuilt third weapon keep their saved data and use a working class starter for this session, with a visible notice.
+- Final checks: 915 unit tests in 116 files; typecheck/build; seven real save browser tests passed. Independent review reran 100 focused tests with no remaining finding.
+- Root inspected storage-warning and future-weapon-notice screenshots. New SPEC-GAP #14 records the unspecified older-build kit fallback.
+
 ## Active task
 
-M7 Task 7: save validation, recovery, portable codes, history, and write moments.
+M7 Task 8: blueprint drops, frozen run loot pools, and persistent unlocks.
 The M7 writer is authorized to continue Tasks 3–10 strictly in order, with a tested commit per task and checkpoint reports.
 Root owns this handoff. Review agents stay read-only. No feature push before M7 checks and screenshot review.
 
