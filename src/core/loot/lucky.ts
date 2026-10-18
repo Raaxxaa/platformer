@@ -11,6 +11,7 @@ import { ENEMIES } from '../../data/enemies.ts';
 import { addPlayerStatSource } from './perks.ts';
 import { pick, sourceRng, type Rng } from './pick.ts';
 import { rollWeapon } from './roll.ts';
+import { statCount } from '../economy/stats.ts';
 
 export interface LuckyBlock { objectId: number; x: number; y: number; broken: boolean }
 /** Lucky Block box: 16 × 16 centred on its point (08 sprite size). */
@@ -87,7 +88,7 @@ export function breakLucky(w: GameWorld, b: LuckyBlock): void {
   if (b.broken) return;
   b.broken = true;
   const rng = sourceRng(w.runSeed, 'lucky', w.level?.id ?? 'test', b.objectId);
-  const r = rollLucky(rng, w.econ.buffs, false);
+  const r = rollLucky(rng, w.econ.buffs, statCount(w, 'lucky_charm') > 0);
   w.events.push({ t: 'luckyBroken', objectId: b.objectId });
   applyLucky(w, r.id, b.x, b.y, b.objectId);
 }

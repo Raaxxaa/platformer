@@ -4,13 +4,13 @@ import type { GameWorld } from '../../core/sim/gameWorld.ts';
 import { formatTime } from '../../core/time.ts';
 import { ABILITY_INFO } from '../../data/abilities.ts';
 import { FONTS, itemIcon } from '../../data/animKeys.ts';
-import { DEPTH } from '../../data/art.ts';
 import { BONDS, CLASS_NAME, WEAPON_CLASSES } from '../../data/classes.ts';
 import { PAUSE_UI as P } from '../../data/stageUi.ts';
 import { ABILITY_BLURB, BOND_BLURB, CLASS_COLOR, CONTROLS_LIST, GRADE_COLOR, HUD_COLOR, HYBRID_BLURB, HYBRID_COLOR, UI_COLOR, WEAPON_BLURB, WEAPON_NAME } from '../../data/uiText.ts';
 import { weaponDmg } from '../model/hudModel.ts';
 import { PAUSE, type PauseModel } from '../model/pauseModel.ts';
 import { box, SKIN } from '../skin.ts';
+import { STAT_PICK_UI } from '../../data/statUi.ts';
 
 export class PauseView {
   private scene: Phaser.Scene;
@@ -19,7 +19,7 @@ export class PauseView {
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    this.c = scene.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH.hud + 20);
+    this.c = scene.add.container(0, 0).setScrollFactor(0).setDepth(STAT_PICK_UI.pauseDepth);
   }
 
   destroy(): void { this.c.destroy(); }

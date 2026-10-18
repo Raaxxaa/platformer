@@ -1,6 +1,6 @@
 // Gold (05 §9): integer tenths, kill gold, Leaky Pockets coins. Keys are in keys.ts.
 import type { CurseId, LuckyId } from '../../data/loot.ts';
-import { GOLD } from '../../data/economy.ts';
+import { GOLD, type StatUpgradeId } from '../../data/economy.ts';
 import { playerRect } from '../combat/resolve.ts';
 import { overlaps } from '../combat/hitGroups.ts';
 import { moveX, moveY } from '../physics/collide.ts';
@@ -13,8 +13,9 @@ export interface EconomyState {
   debuffs: { id: LuckyId; ticksLeft: number }[];
   curse: { id: CurseId; killsLeft: number } | null;
   secondWindUsed: boolean;
+  statStacks: Partial<Record<StatUpgradeId, number>>;
 }
-export const newEconomy = (): EconomyState => ({ goldTenths: 0, keys: 0, buffs: [], debuffs: [], curse: null, secondWindUsed: false });
+export const newEconomy = (): EconomyState => ({ goldTenths: 0, keys: 0, buffs: [], debuffs: [], curse: null, secondWindUsed: false, statStacks: {} });
 
 export interface Coin { id: number; x: number; y: number; vx: number; vy: number; value: number; born: number; resting: boolean }
 export const COIN_SIZE = 6;

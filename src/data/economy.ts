@@ -14,3 +14,24 @@ export const GOLD = {
 } as const;
 export const KEYS_MAX = 3;
 export const MERCHANT_CHANCE = 0.40;
+export const STAT_OFFER_COUNT = 3;
+export const STAT_PICK_DEFAULT_INDEX = 1;
+
+export type StatUpgradeId = 'vitality' | 'might' | 'quickstep' | 'focus' | 'bloodthirst' | 'precision'
+  | 'frenzy' | 'iron_skin' | 'prospector' | 'light_feet' | 'haggler' | 'lucky_charm';
+export interface StatUpgradeDef { id: StatUpgradeId; name: string; text: string; value: number; maxStacks: number }
+/** 05 §13: table order is part of the seeded offer algorithm. Flask values are in tenths. */
+export const STAT_UPGRADES: readonly StatUpgradeDef[] = [
+  { id: 'vitality', name: 'Vitality', text: '+20 max HP. Heal by the HP gained.', value: 20, maxStacks: 3 },
+  { id: 'might', name: 'Might', text: '+10% weapon and ability damage.', value: 0.10, maxStacks: 3 },
+  { id: 'quickstep', name: 'Quickstep', text: '+8% movement speed.', value: 0.08, maxStacks: 3 },
+  { id: 'focus', name: 'Focus', text: 'Abilities recharge 15% faster.', value: 0.15, maxStacks: 3 },
+  { id: 'bloodthirst', name: 'Bloodthirst', text: '+2% flask fill per kill.', value: 20, maxStacks: 3 },
+  { id: 'precision', name: 'Precision', text: '+8% critical hit chance.', value: 0.08, maxStacks: 3 },
+  { id: 'frenzy', name: 'Frenzy', text: '+10% attack speed.', value: 0.10, maxStacks: 3 },
+  { id: 'iron_skin', name: 'Iron Skin', text: 'Take 12% less damage.', value: 0.88, maxStacks: 3 },
+  { id: 'prospector', name: 'Prospector', text: '+25% gold from kills.', value: 25, maxStacks: 3 },
+  { id: 'light_feet', name: 'Light Feet', text: 'Dash cooldown is 20% shorter.', value: 0.80, maxStacks: 3 },
+  { id: 'haggler', name: 'Haggler', text: 'Buy prices are 15% lower.', value: 0.85, maxStacks: 1 },
+  { id: 'lucky_charm', name: 'Lucky Charm', text: 'Lucky Blocks give buffs 70% of the time.', value: 0.70, maxStacks: 1 },
+];

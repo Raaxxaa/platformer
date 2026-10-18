@@ -125,6 +125,7 @@ test('the boss fight ends in a split, a compulsory stat pick, and the village tr
   })).toBe('statPick');
   const phase = await page.evaluate(() => {
     const g = (window as any).__game;
+    g.step(36, {});                      // stat cards cannot confirm for their first 0.30 seconds
     g.confirmStatPick();
     for (let i = 0; i < 2400 && g.runState().phase === 'stage'; i++) g.step(1, { moveX: 1 });
     return g.runState().phase;

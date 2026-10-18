@@ -5,8 +5,7 @@ import { addSuperArmor } from '../combat/health.ts';
 import { addHitMod } from '../combat/hitMods.ts';
 import type { ClassState } from '../abilities/types.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { roundHalfUp } from '../math.ts';
-import { COMBAT } from '../tuning.ts';
+import { maxPlayerHp } from '../economy/stats.ts';
 import { BOND } from '../../data/classes.ts';
 import { WEAPONS } from '../../data/weapons.ts';
 
@@ -33,12 +32,12 @@ export function onBondChange(w: GameWorld, prev: ClassState, next: ClassState): 
   const h = w.health;
   const wasIW = prev.bond === 'iron_will', isIW = next.bond === 'iron_will';
   if (!wasIW && isIW) {
-    const max = roundHalfUp(COMBAT.MAX_HP * (1 + BOND.IRON_WILL_HP));
+    const max = maxPlayerHp(w, true);
     w.ironWillAddedHP = max - h.maxHp;
     h.maxHp = max;
     if (!h.dead) h.hp += w.ironWillAddedHP;
   } else if (wasIW && !isIW) {
-    h.maxHp = COMBAT.MAX_HP;
+    h.maxHp = maxPlayerHp(w, false);
     if (!h.dead) h.hp = Math.min(h.maxHp, Math.max(1, h.hp - w.ironWillAddedHP));
     w.ironWillAddedHP = 0;
   }

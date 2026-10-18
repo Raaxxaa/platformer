@@ -3,6 +3,7 @@
 import { enemyCenter, type EnemyState } from '../enemies/enemy.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import type { HitGroup } from './hitGroups.ts';
+import { statValue } from '../economy/stats.ts';
 
 export interface HitModSource {
   /** Before damage, on the landing (first direct hit) of an attack instance on an enemy. */
@@ -29,7 +30,7 @@ export function afterHit(w: GameWorld, g: HitGroup, e: EnemyState, info: { damag
 
 /** Step 4: Σ attacker bonuses (the group's own, e.g. the link, plus every registered source). */
 export function hitBonus(w: GameWorld, g: HitGroup, e: EnemyState): number {
-  return (g.bonus ?? 0) + (w.instanceBonus.get(g.attackInstance) ?? 0) + SOURCES.reduce((s, m) => s + (m.bonus?.(w, g, e) ?? 0), 0);
+  return statValue(w, 'might') + (g.bonus ?? 0) + (w.instanceBonus.get(g.attackInstance) ?? 0) + SOURCES.reduce((s, m) => s + (m.bonus?.(w, g, e) ?? 0), 0);
 }
 
 /** §3.2 guaranteed crits. */

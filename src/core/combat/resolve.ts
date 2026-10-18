@@ -2,6 +2,7 @@
 import { lootOnKill } from '../loot/sources.ts';
 import { addGoldTenths, killGoldTenths } from '../economy/gold.ts';
 import { critChance } from '../loot/perks.ts';
+import { statCount } from '../economy/stats.ts';
 import { enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { onBossKilled } from '../enemies/boss.ts';
@@ -50,7 +51,7 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const matched = isWeapon && g.slot !== undefined && w.classState.weaponMatched[g.slot];
   if (w.noteLanding(g)) onLanding(w, g, e);                 // hit streak first: Blademaster's 3rd landing crits itself
   // 02 §3.2: a guaranteed crit, else roll the `combat` stream when critChance > 0 (Keen).
-  const chance = isWeapon && g.slot !== undefined ? critChance(w, g.slot) : 0;
+  const chance = critChance(w, isWeapon ? g.slot : undefined);
   const crit = guaranteedCrit(w, g, e) || (chance > 0 && w.rng.combat.next() < chance);
   // Shatter (02 §6.3): any direct hit on a Frozen enemy, as a target multiplier; it ends the freeze.
   const tMult = targetMult(w, g, e) * shatterMult(w, e, true);
@@ -161,7 +162,7 @@ export function processDeaths(w: GameWorld): void {
     w.onPlayerKill(e, tier);
     // 05 §9.3: kill gold at once, in tenths (Golden Touch, Greedy on the killing weapon).
     addGoldTenths(w, killGoldTenths({
-      gold: e.def.gold, rushLevel: rushLevel(w.rush), goldenTouch: w.econ.buffs.includes('golden_touch'), prospector: 0,
+      gold: e.def.gold, rushLevel: rushLevel(w.rush), goldenTouch: w.econ.buffs.includes('golden_touch'), prospector: statCount(w, 'prospector'),
       greedy: e.killedBy?.perk === 'greedy',
     }), 'kill');
     w.events.push({ t: 'kill', enemyId: e.id, tier });

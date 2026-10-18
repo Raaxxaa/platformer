@@ -133,7 +133,7 @@ export class StageScene extends WorldScene {
     const api = window.__game as unknown as Record<string, unknown> | undefined;
     if (!api) return;
     api.runState = () => structuredClone(this.world.run);
-    api.confirmStatPick = () => this.world.confirmStatPick();
+    api.confirmStatPick = (index?: number) => this.chooseStat(index);
     api.completeLoading = () => this.world.completeLoading();
     api.killAll = () => { for (const e of this.world.enemies) if (!e.dead && !e.dormant && e.spawnInTicks === 0) killEnemy(this.world, e); };
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };

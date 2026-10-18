@@ -4,6 +4,7 @@ import { roundHalfUp } from '../math.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, FLASK } from '../tuning.ts';
 import { LUCKY_FX } from '../../data/loot.ts';
+import { statValue } from '../economy/stats.ts';
 import { cancelAttack } from './playerCombat.ts';
 import type { FlaskState } from './types.ts';
 
@@ -27,9 +28,9 @@ export function addFlaskFill(w: GameWorld, tenths: number): void {
   convert(w.flask);
 }
 
-export function onKillFill(w: GameWorld, tier: 'regular' | 'elite'): void {
+export function onKillFill(w: GameWorld, tier: 'regular' | 'elite', extraTenths = 0): void {
   const mult = w.econ.buffs.includes('bloodrush') ? LUCKY_FX.bloodrushMult : 1;     // 05 §7.2 Bloodrush
-  addFlaskFill(w, (tier === 'elite' ? FLASK.FILL_ELITE : FLASK.FILL_REGULAR) * mult);
+  addFlaskFill(w, ((tier === 'elite' ? FLASK.FILL_ELITE : FLASK.FILL_REGULAR) + statValue(w, 'bloodthirst') + extraTenths) * mult);
 }
 
 function startDrink(w: GameWorld): void {

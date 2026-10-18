@@ -9,6 +9,7 @@ import { MERCHANT_CHANCE, PRICES } from '../../data/economy.ts';
 import { GRADE_ODDS, type StageIndex } from '../../data/loot.ts';
 import { sourceRng } from './pick.ts';
 import { rollAbility, rollWeapon } from './roll.ts';
+import { statCount } from '../economy/stats.ts';
 
 export interface MerchantState { present: boolean; x: number; y: number; sold: boolean[] }
 /** 06 §11.3 entity x offsets from the spot. */
@@ -37,7 +38,7 @@ export function setupMerchant(w: GameWorld, force = false): void {
   const ab = rollAbility(rng, w.abilities.slots.filter((s) => s).map((s) => s!.id) as AbilityId[], carried);
   const stock: Pick<GroundItem, 'weapon' | 'ability'>[] = [{ weapon: a }, { weapon: b }, ab ? { ability: ab } : { weapon: rollWeapon(rng, GRADE_ODDS.cursed[stage], carried) }];
   stock.forEach((s, i) => {
-    const price = priceOf(s.weapon ? PRICES.weapon[s.weapon.grade] : PRICES.abilityBuy, true);
+    const price = priceOf(s.weapon ? PRICES.weapon[s.weapon.grade] : PRICES.abilityBuy, true, statCount(w, 'haggler') > 0);
     const it = dropItem(w, spot.x + MERCHANT_LAYOUT.items[i], spot.y, { ...s, price, merchantSlot: i });
     it.resting = true;
   });
@@ -66,7 +67,7 @@ export function onBought(w: GameWorld, it: GroundItem): void {
 export function upgradeAt(w: GameWorld, slot: 0 | 1): boolean {
   const s = w.abilities.slots[slot];
   if (!s || s.level >= MERCHANT_LAYOUT.maxLevel) return false;
-  const price = priceOf(PRICES.upgradeTo[s.level + 1], false);
+  const price = priceOf(PRICES.upgradeTo[s.level + 1], false, statCount(w, 'haggler') > 0);
   if (w.gold < price) { w.events.push({ t: 'cantAfford' }); return false; }
   const oldMax = maxCharges(s);
   s.level = (s.level + 1) as typeof s.level;

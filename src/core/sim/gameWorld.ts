@@ -19,7 +19,7 @@ import { overlaps } from '../combat/hitGroups.ts';
 import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { ElementId, FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
-import { addFlaskFill, cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
+import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
 import { CAMERA, COMBAT, FLASK, RESTART, RUN, RUSH } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
@@ -64,6 +64,8 @@ import { stepClocks } from '../run/runState.ts';
 import { bossBar, stepBossPhases, type BossBar } from '../enemies/boss.ts';
 import { stepRockfall, type RockMarker } from '../enemies/greatBoar.ts';
 import { beginTransition, canHoldRestart, completeLoading, simulatesWorld, stepTransition } from '../run/phases.ts';
+import { applyStatUpgrade, offerStatUpgrades } from '../economy/stats.ts';
+import { STAT_PICK_DEFAULT_INDEX, type StatUpgradeId } from '../../data/economy.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -184,6 +186,7 @@ export class GameWorld {
   camera!: CameraState;
   tick = 0;
   econ: EconomyState = newEconomy();
+  statPick: { offer: StatUpgradeId[]; openedAt: number } | null = null;
   coins: Coin[] = [];
   chests: Chest[] = [];
   luckyBlocks: LuckyBlock[] = [];
@@ -306,6 +309,7 @@ export class GameWorld {
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
     this.econ = newEconomy();
+    this.statPick = null;
     this.coins = [];
     this.rng = {
       enemyAI: new Rng(deriveSeed(this.runSeed, 'enemyAI', this.stage)),
@@ -365,11 +369,15 @@ export class GameWorld {
     if (target?.phase === 'village' || target?.phase === 'homeVillage') this.villageEntryPending = true;
   }
 
-  /** Task 2 applies the selected upgrade, then acknowledges the compulsory choice here. */
-  confirmStatPick(): boolean {
-    if (this.run.phase !== 'statPick') return false;
+  /** Compulsory choice (07 §6.11): the core owns the guard, offered IDs and apply-once rule. */
+  confirmStatPick(index = STAT_PICK_DEFAULT_INDEX): boolean {
+    const pick = this.statPick;
+    if (this.run.phase !== 'statPick' || !pick || this.run.runTicks - pick.openedAt < RUN.STAT_PICK_CONFIRM_TICKS) return false;
+    const id = pick.offer[index];
+    if (!id || !applyStatUpgrade(this, id)) return false;
     this.run.statPickDone = true;
     this.run.phase = 'stage';
+    this.statPick = null;
     return true;
   }
 
@@ -566,10 +574,9 @@ export class GameWorld {
   }
 
   /** On-kill effects that belong to other systems (flask, Rush). */
-  onPlayerKill(_e: EnemyState, tier: 'regular' | 'elite'): void {
-    onKillFill(this, tier);
-    const vamp = vampireTenths(this);
-    if (vamp > 0) addFlaskFill(this, vamp);                       // 03 §12
+  onPlayerKill(e: EnemyState, tier: 'regular' | 'elite'): void {
+    // Bosses refill charges in onBossKilled; their banked fill stays unchanged (02 §7.3).
+    if (e.def.tier !== 'boss') onKillFill(this, tier, vampireTenths(this));
     addRush(this, tier === 'elite' ? RUSH.KILL_ELITE : RUSH.KILL_REGULAR);
   }
 
@@ -738,7 +745,10 @@ export class GameWorld {
     stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());
     // Phase changes take effect on the following tick (06 §2.8).
     if (this.run.phase === 'stage' && this.stage < 4 && this.run.bossDefeatedTick !== null
-      && !this.run.statPickDone && this.tick - this.run.bossDefeatedTick >= RUN.STAT_PICK_DELAY_TICKS) this.run.phase = 'statPick';
+      && !this.run.statPickDone && this.tick - this.run.bossDefeatedTick >= RUN.STAT_PICK_DELAY_TICKS) {
+      this.run.phase = 'statPick';
+      this.statPick = { offer: offerStatUpgrades(this, this.stage), openedAt: this.run.runTicks };
+    }
     if (this.phase === 'dead' && this.tick - this.deathTick >= RESTART.DEATH_SIM_TICKS) this.phase = 'deathScreen';
   }
 }

@@ -6,6 +6,7 @@ import type { HitGroup } from '../combat/hitGroups.ts';
 import type { WeaponInstance } from '../combat/types.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { FINISHER_HP, PERKS, type PerkId } from '../../data/loot.ts';
+import { statValue, statProduct } from '../economy/stats.ts';
 
 const PERK = Object.fromEntries(PERKS.map((p) => [p.id, p])) as Record<PerkId, (typeof PERKS)[number]>;
 const hasPerk = (inst: WeaponInstance | null | undefined, id: PerkId) => inst?.perk === id;
@@ -23,22 +24,22 @@ export function addPlayerStatSource(s: PlayerStatSource): void { STAT_SOURCES.pu
 
 /** 02 §9.9 attack-speed bonuses for a slot's attacks (Quick). */
 export function attackSpeedBonus(w: GameWorld, slot: 0 | 1): number {
-  return hasPerk(w.combat.slots[slot], 'quick') ? PERK.quick.value : 0;
+  return statValue(w, 'frenzy') + (hasPerk(w.combat.slots[slot], 'quick') ? PERK.quick.value : 0);
 }
 /** 02 §3.2 critChance for a slot's direct hits (Keen), capped at 1. */
-export function critChance(w: GameWorld, slot: 0 | 1): number {
-  return Math.min(1, hasPerk(w.combat.slots[slot], 'keen') ? PERK.keen.value : 0);
+export function critChance(w: GameWorld, slot?: 0 | 1): number {
+  return Math.min(1, statValue(w, 'precision') + (slot !== undefined && hasPerk(w.combat.slots[slot], 'keen') ? PERK.keen.value : 0));
 }
 /** Extra speedPercents: Fleet per carried copy, plus registered sources (Swift, Heavy). */
 export function extraSpeed(w: GameWorld): number {
-  return carriedCount(w, 'fleet') * PERK.fleet.value + STAT_SOURCES.reduce((s, x) => s + (x.speed?.(w) ?? 0), 0);
+  return statValue(w, 'quickstep') + carriedCount(w, 'fleet') * PERK.fleet.value + STAT_SOURCES.reduce((s, x) => s + (x.speed?.(w) ?? 0), 0);
 }
 /** 02 §3.3 incoming multiplier: Sturdy ×0.90 per carried copy, × registered sources (Glass Bones). */
 export function incomingMult(w: GameWorld): number {
-  return PERK.sturdy.value ** carriedCount(w, 'sturdy') * STAT_SOURCES.reduce((p, x) => p * (x.incoming?.(w) ?? 1), 1);
+  return statProduct(w, 'iron_skin') * PERK.sturdy.value ** carriedCount(w, 'sturdy') * STAT_SOURCES.reduce((p, x) => p * (x.incoming?.(w) ?? 1), 1);
 }
 export function dashCooldownMult(w: GameWorld): number {
-  return STAT_SOURCES.reduce((p, x) => p * (x.dashMult?.(w) ?? 1), 1);
+  return statProduct(w, 'light_feet') * STAT_SOURCES.reduce((p, x) => p * (x.dashMult?.(w) ?? 1), 1);
 }
 
 /** Leeching (§4.4): a weapon leaving the slots resets its bank. */

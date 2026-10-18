@@ -12,6 +12,7 @@ import type { GameWorld } from '../sim/gameWorld.ts';
 import { ticks } from '../tuning.ts';
 import { ABILITIES, ABILITY } from '../../data/abilities.ts';
 import { BOND } from '../../data/classes.ts';
+import { statValue } from '../economy/stats.ts';
 import { NO_PRESS } from './runtime.ts';
 import type { AbilityDef, AbilityId, AbilityKind, AbilityLevelRow, AbilitySlot } from './types.ts';
 
@@ -69,7 +70,7 @@ export function castRt(w: GameWorld): CastRt | null {
 
 /** 03 §7.7: rechargeRate = 1 + Σ bonuses (Storm Caller +0.25). */
 export function rechargeRate(w: GameWorld): number {
-  return 1 + (w.classState.bond === 'storm_caller' ? BOND.STORM_CALLER_RECHARGE : 0);
+  return 1 + statValue(w, 'focus') + (w.classState.bond === 'storm_caller' ? BOND.STORM_CALLER_RECHARGE : 0);
 }
 
 /** 03 §7.7 one player tick of recharging for every slot. */

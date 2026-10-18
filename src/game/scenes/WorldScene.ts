@@ -41,6 +41,10 @@ import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../de
 import { COLOR, STATE_COLOR } from '../greybox.ts';
 import { Devices } from '../input/devices.ts';
 import { pauseRun, resumeRun } from '../../core/run/phases.ts';
+import { StatPickView } from '../../ui/popups/statPick.ts';
+import { StatPickModel, type StatPickAction } from '../../ui/popups/statPickModel.ts';
+import { StatPickInput } from '../input/statPickInput.ts';
+import { STAT_PICK_UI } from '../../data/statUi.ts';
 
 /** Grey-box enemy colors (plan M2, Task 17). */
 const ENEMY_COLOR: Partial<Record<EnemyId, number>> = {
@@ -95,6 +99,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected classPick: { model: ClassPickModel; view: ClassPickView; pauseWorld: boolean } | null = null;
   /** The kit picked this session (instant restart keeps it, 03 §3). */
   protected pickedKit: Kit | null = null;
+  private statPopup: { model: StatPickModel; view: StatPickView; lastRunTick: number } | null = null;
+  private readonly statMenu = new StatPickInput();
   /** `?boxes=1`: the old grey boxes instead of sprites (debugging). */
   protected boxesMode = false;
   /** Debug overview: the camera zooms out to show this world rect (screenshots of whole sections). */
@@ -112,6 +118,15 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   create(): void {
     this.world = this.makeWorld();
     this.devices = new Devices();
+    this.statPopup = null;
+    this.statMenu.clear();
+    window.addEventListener('keydown', this.onStatKeyDown);
+    window.addEventListener('keyup', this.onStatKeyUp);
+    this.events.once('shutdown', () => {
+      window.removeEventListener('keydown', this.onStatKeyDown);
+      window.removeEventListener('keyup', this.onStatKeyUp);
+      this.statPopup?.view.destroy(); this.statPopup = null;
+    });
     window.addEventListener('blur', this.onFocusLost);
     document.addEventListener('visibilitychange', this.onVisibilityChanged);
     this.events.once('shutdown', () => {
@@ -173,6 +188,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       api.interactables = () => this.world.interactables.map((o) => ({ id: o.id, kind: o.kind, label: o.label, x: o.x, y: o.y }));
       api.cardOpen = () => { const t = interactTarget(this.world); return !!t && !('use' in t); };
       api.groundItems = () => this.world.groundItems.map((i) => ({ id: i.id, x: i.x, y: i.y, weapon: i.weapon?.weaponId, ability: i.ability?.id }));
+      api.statPick = () => this.world.statPick ? { ...structuredClone(this.world.statPick), cursor: this.statPopup?.model.cursor ?? STAT_PICK_UI.defaultCursor, stacks: { ...this.world.econ.statStacks } } : null;
+      api.confirmStatPick = (index?: number) => this.chooseStat(index);
+      api.statPickAction = (action: StatPickAction) => this.statAction(action);
     }
     this.render();
   }
@@ -227,6 +245,57 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.sfxQueue.push(...this.sfxWatch.collect(this.world, evs));
     this.abilityView?.onTick(this.world, this.world.events, feet);
     if (this.vfx) this.vfx.update(this.world, evs, { atlas: `player_${this.playerView.outfit}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
+    this.syncStatPick();
+  }
+
+  /** Stat cards use direct menu input; only the core owns/apply-checks the selected upgrade. */
+  private syncStatPick(): void {
+    const w = this.world;
+    const visible = w.statPick && (w.run.phase === 'statPick' || (w.run.phase === 'paused' && w.run.pausedFrom === 'statPick'));
+    if (!visible) {
+      this.statPopup?.view.destroy(); this.statPopup = null; this.statMenu.clear(); return;
+    }
+    if (!this.statPopup) {
+      const model = new StatPickModel();
+      const view = new StatPickView(this, (i) => {
+        if (this.world.run.phase !== 'statPick' || this.pause) return;
+        this.statPopup?.model.select(i); this.syncStatPick();
+      }, () => this.statAction('confirm'));
+      this.statPopup = { model, view, lastRunTick: w.statPick!.openedAt };
+    }
+    const p = this.statPopup;
+    p.model.advance((w.run.runTicks - p.lastRunTick) / TICK_RATE);
+    p.lastRunTick = w.run.runTicks;
+    p.view.draw(p.model, w.statPick!.offer, w.econ.statStacks);
+  }
+  protected chooseStat(index?: number): boolean {
+    this.syncStatPick();
+    const ok = this.world.confirmStatPick(index ?? this.statPopup?.model.cursor ?? STAT_PICK_UI.defaultCursor);
+    if (!ok) return false;
+    this.statPopup?.model.accept();
+    const held = this.devices.builder.build();
+    for (const b of BUTTON_IDS) if (held[b].held) this.swallow.add(b);
+    this.syncStatPick();
+    return true;
+  }
+  private statAction(action: StatPickAction): void {
+    if (this.pause || this.world.run.phase !== 'statPick') return;
+    this.syncStatPick();
+    const index = this.statPopup?.model.input(action);
+    if (index !== null && index !== undefined) this.chooseStat(index);
+    this.syncStatPick();
+  }
+  private readonly onStatKeyDown = (e: KeyboardEvent) => {
+    if (this.pause || this.world.run.phase !== 'statPick') return;
+    if ((e.code === 'Escape' || e.code === 'KeyP') && !e.repeat) { e.preventDefault(); this.openPause(); return; }
+    if (this.statMenu.key(e.code, true, e.repeat)) e.preventDefault();
+  };
+  private readonly onStatKeyUp = (e: KeyboardEvent) => { this.statMenu.key(e.code, false, false); };
+  private pollStatMenu(seconds: number): void {
+    if (this.world.run.phase !== 'statPick') return;
+    const pads = (navigator.getGamepads?.() ?? []).filter((p): p is Gamepad => p !== null && p.connected);
+    const pad = pads.find((p) => p.mapping === 'standard') ?? pads[0];
+    for (const action of this.statMenu.poll(Math.min(STAT_PICK_UI.frameClamp, seconds), pad)) this.statAction(action);
   }
 
   update(_time: number, delta: number): void {
@@ -239,6 +308,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       this.render();
       return;
     }
+    this.pollStatMenu(delta / 1000);
     if (!this.manual) {
       const n = this.stepper.advance(delta / 1000);
       for (let i = 0; i < n; i++) {
@@ -297,6 +367,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   openPause(): void {
     if (this.pause) return;
+    this.statMenu.clear();
     pauseRun(this.world.run);
     this.pause = { model: new PauseModel(this.pausePlace()), view: new PauseView(this) };
     window.addEventListener('keydown', this.onPauseKey);
@@ -307,6 +378,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     resumeRun(this.world.run);
     this.pause.view.destroy();
     this.pause = null;
+    if (this.world.run.phase === 'statPick') this.statMenu.blockUntilRelease();
+    else this.statMenu.clear();
     window.removeEventListener('keydown', this.onPauseKey);
     const held = this.devices.builder.build();
     for (const b of BUTTON_IDS) if (held[b].held) this.swallow.add(b);
@@ -408,6 +481,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.overlay.setVisible(dead);
     this.overlayText.setVisible(dead);
     this.renderExtra();
+    this.syncStatPick();
     this.frameEvents = [];
   }
 

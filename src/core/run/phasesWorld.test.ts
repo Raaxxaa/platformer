@@ -49,7 +49,7 @@ describe('phase machine in the world (M7 Task 1)', () => {
     w.teleportPlayer(42 * 16 + 8, 17 * 16);
     stepSpec(w, {});
     expect(w.run.phase).toBe('stage');
-    stepSpec(w, {}, 119); w.confirmStatPick();
+    stepSpec(w, {}, 119 + 36); w.confirmStatPick();
     stepSpec(w, {});
     expect(w.run.phase).toBe('transition');
     const ticks = w.run.runTicks, x = w.body.x;
