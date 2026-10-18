@@ -58,13 +58,13 @@ describe('boss layer (04 §9)', () => {
     stepSpec(w, {});
     expect(b.boss!.enraged).toBe(true);
   });
-  it('the kill emits bossDefeated, gives +60 gold, refills the flask to max and opens the exit door', () => {
+  it('the kill emits bossDefeated, grants100Rush before60base gold, refills the flask and opens the exit', () => {
     const w = world();
     walkIn(w);
     w.flask.charges = 0;
     const ev = (() => { killEnemy(w, boss(w)); return stepSpec(w, {}); })();
     expect(ev).toContainEqual({ t: 'bossDefeated', bossId: 'great_boar', stage: 1 });
-    expect(w.gold).toBe(60);
+    expect(w.gold).toBe(66); // 02 §8.2 / 05 §9.3: +100 Rush reaches level1 before the60base gold.
     expect(w.flask.charges).toBe(w.flask.maxCharges);
     const exit = w.bodies.list.find((b) => b.id.includes('arena_door') && b.x === 40 * 16)!;
     expect(exit.active).toBe(false);

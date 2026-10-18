@@ -157,6 +157,7 @@ export const ARENA = {
 export const BOSS = {
   SPAWN_FRACTION: 0.75,                  // of the arena width from the entry side
   INTRO: 1.0, INTRO_TICKS: ticks(1.0),
+  DEATH_ANIM_TICKS: ticks(1.5),
   POISE_IMMUNE: 2.0, POISE_IMMUNE_TICKS: ticks(2.0),
 } as const;
 
@@ -241,6 +242,7 @@ export const RUSH = {
   DASH_THROUGH: 4,              // per enemy per dash
   KILL_REGULAR: 15,
   KILL_ELITE: 40,
+  KILL_BOSS: 100,
   MOVE_GAIN: 6,                 // per second while |vx| ≥ 60% of base run max
   MOVE_FRACTION: 0.6,
   STILL_SPEED: 20,              // px/s

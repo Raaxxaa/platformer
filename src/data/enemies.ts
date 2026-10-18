@@ -1,10 +1,15 @@
 // Stage 1 enemies and the Training Dummy (04 §3, §2.10). Stage-1 base values; scaling is applied at spawn.
 import type { EnemyDef, EnemyId } from '../core/enemies/types.ts';
 import { ENEMY } from '../core/tuning.ts';
+import { STONE_COLOSSUS, SPIDER_QUEEN } from './guardians2.ts';
+import { SPIDERLING } from './spiderlings.ts';
 
 const REGULAR = { tier: 'regular', elite: false, attackGap: ENEMY.ATTACK_GAP_REGULAR, turnDelay: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged' } as const;
 
 export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'great_boar' | 'bat_swarm' | 'goblin_miner' | 'rock_golem' | 'ram' | 'goblin_shaman' | 'bog_zombie' | 'giant_spider' | 'wisp' | 'swamp_witch' | 'treant', EnemyDef> = {
+  stone_colossus: STONE_COLOSSUS,
+  spider_queen: SPIDER_QUEEN,
+  spiderling: SPIDERLING,
   wolf: {
     ...REGULAR, id: 'wolf', size: 'small', hurtbox: { w: 28, h: 16 }, hp: 30, poiseMax: 10, kbResist: 0,
     walk: 60, chase: 150, notice: { range: 176, rangeY: ENEMY.NOTICE_RANGE_Y, time: 0.35 }, preferred: [72, 112], gold: 3, dropsLedges: true,

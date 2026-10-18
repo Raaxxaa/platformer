@@ -81,7 +81,7 @@ function endFreeze(e: EnemyState): void {
 /** Wind (02 §6.6): kills by a wind weapon refund the dash. Greedy gold etc. read the killing weapon elsewhere. */
 export function creditKillSource(w: GameWorld, weapon: WeaponInstance | null, e?: EnemyState): void {
   if (e) e.killedBy = weapon;
-  if (weapon?.element === 'wind') refundDash(w.body);
+  if (!e?.noRewards && weapon?.element === 'wind') refundDash(w.body);
 }
 
 /** Wind knockback and poise multipliers for a hit's element. */

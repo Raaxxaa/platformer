@@ -6,9 +6,9 @@ import { critChance } from '../loot/perks.ts';
 import { statCount } from '../economy/stats.ts';
 import { enemyDamageA, enemyHittable, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
-import { onBossKilled } from '../enemies/boss.ts';
+import { clearBossEffects, onBossKilled } from '../enemies/boss.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { COMBAT, ELEMENT, ENEMY, RUSH, ticks } from '../tuning.ts';
+import { BOSS, COMBAT, ELEMENT, ENEMY, RUSH, ticks } from '../tuning.ts';
 import { playerHitDamage } from './damage.ts';
 import { applyEnemyKnockback, applyLaunch, applyPull, controlOrPoise, damagePoise, isCommitted } from './enemyReactions.ts';
 import { afterHit, guaranteedCrit, hitBonus, kbDir, onLanding, targetMult } from './hitMods.ts';
@@ -42,9 +42,10 @@ function hittable(e: EnemyState): boolean {
 export function killEnemy(w: GameWorld, e: EnemyState): void {
   e.hp = 0;
   e.dead = true;
-  e.deathTicks = ENEMY.DEATH_ANIM_TICKS;
+  e.deathTicks = e.def.boss ? BOSS.DEATH_ANIM_TICKS : ENEMY.DEATH_ANIM_TICKS;
   cancelEnemyAttack(w, e);
   removeEnemyGroups(w, e);
+  if(e.boss)clearBossEffects(w,e); // 02 §2.1: player-first ties remove every owned attack before7b.
   w.pendingDeaths.push(e);
 }
 

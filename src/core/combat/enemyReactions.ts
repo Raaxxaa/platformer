@@ -35,6 +35,7 @@ export function damagePoise(w: GameWorld, e: EnemyState, amount: number, heavy: 
   // Iron Will (03 §5.3) doubles the heavy stagger.
   const heavyMult = w.classState.bond === 'iron_will' ? BOND.IRON_WILL_STAGGER_MULT : 1;
   const n = e.def.boss ? ticks(e.def.boss.breakTime) : heavy ? Math.round(COMBAT.STAGGER_HEAVY_TICKS * heavyMult) : COMBAT.STAGGER_TICKS;
+  if(e.def.boss && !e.grounded)e.vy=Math.max(0,e.vy); // 04 §9.1: airborne Break falls instead of continuing its leap upward.
   e.control = { type: 'stagger', ticks: n };
   return true;
 }

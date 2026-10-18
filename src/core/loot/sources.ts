@@ -8,6 +8,7 @@ import { addGoldTenths } from '../economy/gold.ts';
 import { dropKey } from '../economy/keys.ts';
 import { deriveSeed, Rng } from '../rng.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
+import { GUARDIANS2 } from '../../data/guardians2.ts';
 import { CHEST_GOLD } from '../../data/economy.ts';
 import { ANY_ABILITY_CHANCE, CURSE_KILLS, GRADE_ODDS, KEY_CHEST_ABILITY_CHANCE, KEY_CHEST_ITEM_DX, type StageIndex } from '../../data/loot.ts';
 import { sourceRng, type Rng as RngFn } from './pick.ts';
@@ -109,7 +110,9 @@ export function lootOnKill(w: GameWorld, e: EnemyState): void {
   }
   if (e.boss) {
     const rng = sourceRng(w.runSeed, 'loot', levelId(w), e.def.id);
-    dropItem(w, e.x, y, weaponItem(w, rng, 'key'));
+    const arena=w.arenas.get(e.boss.arenaId)?.rect;
+    const x=arena?Math.max(arena.x+GUARDIANS2.lootInset,Math.min(arena.x+arena.w-GUARDIANS2.lootInset,e.x)):e.x;
+    dropItem(w, x, y, weaponItem(w, rng, 'key'));
   }
 }
 

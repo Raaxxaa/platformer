@@ -52,6 +52,7 @@ import { attackHooks } from '../enemies/special.ts';
 import { removeProjectile, stepProjectiles, type EnemyProjectile } from '../enemies/projectiles.ts';
 import { stepEnemyReactions } from '../combat/enemyReactions.ts';
 import { processDeaths, resolveEnemyHits, resolvePlayerHits } from '../combat/resolve.ts';
+import { stepGuardianSpecial, afterGuardianBody } from '../enemies/guardians2.ts';
 import { endDive, onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
 import type { EnemySpawn } from '../enemies/types.ts';
 import { buildWorldParts, type LevelData, type LevelEnemySpawn, type LevelObject } from '../level/loadLevel.ts';
@@ -671,7 +672,7 @@ export class GameWorld {
     if (tier === 'elite') this.run.stats.eliteKills += 1;
     // Bosses refill charges in onBossKilled; their banked fill stays unchanged (02 §7.3).
     if (e.def.tier !== 'boss') onKillFill(this, tier, vampireTenths(this));
-    addRush(this, tier === 'elite' ? RUSH.KILL_ELITE : RUSH.KILL_REGULAR);
+    addRush(this, e.def.tier==='boss'?RUSH.KILL_BOSS:tier === 'elite' ? RUSH.KILL_ELITE : RUSH.KILL_REGULAR);
   }
 
   /** Drinking the flask (filled in by the flask task). */
@@ -730,7 +731,7 @@ export class GameWorld {
       if (!e.knockback && e.grounded) e.vx = 0;
     } else if (!e.knockback) {
       const sparring = e.def.id === 'sparring_dummy';
-      if (stepSwampSpecial(this,e)||stepMountainReaction(this,e)) { /* Waiting states and reactions own movement. */ }
+      if (stepGuardianSpecial(this,e)||stepSwampSpecial(this,e)||stepMountainReaction(this,e)) { /* Waiting states and reactions own movement. */ }
       else if (e.ai.attack) {
         stepEnemyAttack(this, e, attackHooks(e));
         if (sparring && !e.ai.attack) stepSparring(this, e);   // the next swing starts as the last ends (every 2.0 s)
@@ -740,6 +741,7 @@ export class GameWorld {
     stepAwareness(this, e);
     e.hitWall = false;
     stepEnemyBody(this, e);
+    afterGuardianBody(this,e);
   }
 
   /** One 120 Hz tick in 02 §2.1 order. */

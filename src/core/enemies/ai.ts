@@ -10,11 +10,14 @@ import { enemyCenter, type EnemyState } from './enemy.ts';
 import type { EnemyAttackDef } from './types.ts';
 import { stepMountainAi, wardCandidates } from './mountains.ts';
 import { stepSwampFlight } from './swamps.ts';
+import { GUARDIANS2 } from '../../data/guardians2.ts';
+import { queenBroodEligible } from './guardians2.ts';
 
 export function facePlayer(w: GameWorld, e: EnemyState): void {
   const dir = w.body.x > e.x ? 1 : -1;
   if (Math.abs(w.body.x - e.x) < 2 || dir === e.facing) { e.ai.turnTicks = 0; return; }
-  if (e.ai.state !== 'alert' && e.def.turnDelay > 0 && ++e.ai.turnTicks < ticks(e.def.turnDelay)) return;
+  const delay=e.def.id==='stone_colossus'&&e.boss?.enraged?GUARDIANS2.colossusTurnEnraged:e.def.turnDelay;
+  if (e.ai.state !== 'alert' && delay > 0 && ++e.ai.turnTicks < ticks(delay)) return;
   e.facing = dir; e.ai.turnTicks = 0;
 }
 
@@ -27,6 +30,7 @@ export function eligibleAttacks(w: GameWorld, e: EnemyState): EnemyAttackDef[] {
   const distX = Math.abs(w.body.x - e.x), dY = playerDY(w, e);
   const out: EnemyAttackDef[] = [];
   for (const a of e.def.attacks) {
+    if(e.def.id==='spider_queen'&&a.id==='brood'&&!queenBroodEligible(w,e))continue;
     if(a.id==='rise_swipe'||a.id==='drop')continue; // These attacks run only from their level-state trigger.
     if(e.def.id==='wisp'&&a.id==='detonate'&&Math.hypot(w.body.x-e.x,dY)>a.use.maxX)continue;
     if (a.id === 'stone_ward' && e.def.id === 'goblin_shaman') {
@@ -56,7 +60,8 @@ export function eligibleAttacks(w: GameWorld, e: EnemyState): EnemyAttackDef[] {
 }
 
 function chooseAttack(w: GameWorld, e: EnemyState): EnemyAttackDef | null {
-  const list = eligibleAttacks(w, e);
+  let list = eligibleAttacks(w, e);
+  if(e.boss&&list.length>1)list=list.filter(a=>a.id!==e.boss!.lastAttack);
   if (list.length === 0) return null;
   if (list.length === 1) return list[0];
   return w.rng.enemyAI.pickWeighted(list.map((a) => ({ item: a, weight: a.weight ?? 1 })));
@@ -89,7 +94,7 @@ function stepEngage(w: GameWorld, e: EnemyState): void {
   const distX = Math.abs(w.body.x - e.x);
   const loseRange = Math.max(ENEMY.LOSE_RANGE_MIN, 2 * e.def.notice.range);
   e.ai.lostTicks = distX > loseRange ? e.ai.lostTicks + 1 : 0;
-  if (e.ai.lostTicks >= ENEMY.RETURN_AFTER_TICKS && e.waveArena === null) {   // waves never return home (04 §2.2)
+  if (e.ai.lostTicks >= ENEMY.RETURN_AFTER_TICKS && e.waveArena === null && e.def.tier!=='summon' && !e.boss) {   // waves and summons never return home (04 §2.2)
     e.ai.state = 'return';
     e.aware = false;
     e.noticeT = 0;

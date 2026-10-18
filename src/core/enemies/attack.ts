@@ -5,6 +5,7 @@ import { ticks } from '../tuning.ts';
 import type { EnemyState } from './enemy.ts';
 import type { EnemyAttackDef } from './types.ts';
 import { bossAttackGapTicks } from './boss.ts';
+import { guardianTeleStart, cancelGuardianAttack } from './guardians2.ts';
 
 function setCooldown(e: EnemyState, def: EnemyAttackDef): void {
   e.ai.cooldowns.set(def.id, ticks(def.cooldown));
@@ -21,6 +22,7 @@ export function removeEnemyGroups(w: GameWorld, e: EnemyState): void {
 
 /** Starts an attack's telegraph: holds a token, locks facing, emits `enemyTelegraph`. */
 export function startEnemyAttack(w: GameWorld, e: EnemyState, def: EnemyAttackDef): void {
+  if(e.boss)e.boss.lastAttack=def.id;
   e.ai.attack = { def, phase: 'tele', t: 0, len: ticks(def.telegraph), groupId: null, moved: 0, hitDone: false };
   e.ai.state = 'attack';
   e.ai.t = 0;
@@ -28,6 +30,7 @@ export function startEnemyAttack(w: GameWorld, e: EnemyState, def: EnemyAttackDe
   e.token = def.token === 'none' ? null : def.token;
   if(e.def.id==='treant'&&def.id==='root_snare')e.swamp!.marker={x:w.body.x,y:w.body.y};
   else if(e.def.id==='treant')e.swamp!.marker=null;
+  guardianTeleStart(w,e);
   w.events.push({ t: 'enemyTelegraph', enemyId: e.id, attackId: def.id, duration: def.telegraph });
 }
 
@@ -35,6 +38,7 @@ export function startEnemyAttack(w: GameWorld, e: EnemyState, def: EnemyAttackDe
 export function cancelEnemyAttack(w: GameWorld, e: EnemyState): void {
   const a = e.ai.attack;
   if (!a) return;
+  cancelGuardianAttack(w,e);
   if(a.def.id==='root_snare'&&e.swamp)e.swamp.marker=null;
   removeEnemyGroups(w, e);
   setCooldown(e, a.def);
@@ -46,7 +50,7 @@ export function cancelEnemyAttack(w: GameWorld, e: EnemyState): void {
   if (e.knockback === false) e.vx = 0;
 }
 
-function spawnAttackGroup(w: GameWorld, e: EnemyState): void {
+export function spawnAttackGroup(w: GameWorld, e: EnemyState): void {
   const a = e.ai.attack!;
   const hit = a.def.hit;
   if (!hit) return;
@@ -62,6 +66,8 @@ function spawnAttackGroup(w: GameWorld, e: EnemyState): void {
 
 /** Hooks called by specials (moves, leaps, shots) at phase changes. */
 export interface AttackHooks {
+  deferHit?: boolean;
+  untilLanding?: boolean;
   onActStart?(w: GameWorld, e: EnemyState): void;
   onActTick?(w: GameWorld, e: EnemyState): boolean;   // return true to end Act now
   onRecStart?(w: GameWorld, e: EnemyState): void;
@@ -77,20 +83,15 @@ export function stepEnemyAttack(w: GameWorld, e: EnemyState, hooks: AttackHooks 
     a.phase = 'act';
     a.t = 0;
     a.len = ticks(a.def.active);
-    spawnAttackGroup(w, e);
+    if(!hooks.deferHit)spawnAttackGroup(w, e);
     hooks.onActStart?.(w, e);
     if (a.len > 0) return false;
   }
   if (a.phase === 'act') {
     const endNow = hooks.onActTick?.(w, e) ?? false;
     if (!e.ai.attack) return true;                       // the hook ended the attack (e.g. the Boar's wall daze)
-    if (!endNow && a.t < a.len) return false;
-    removeEnemyGroups(w, e);
-    e.token = null;
-    a.phase = 'rec';
-    a.t = 0;
-    a.len = ticks(a.def.recovery);
-    hooks.onRecStart?.(w, e);
+    if (!endNow && (hooks.untilLanding || a.t < a.len)) return false;
+    finishEnemyAct(w,e,hooks);
     return false;
   }
   hooks.onRecTick?.(w, e);
@@ -101,6 +102,13 @@ export function stepEnemyAttack(w: GameWorld, e: EnemyState, hooks: AttackHooks 
   e.ai.t = 0;
   e.ai.gapTicks = gapTicks(e, a.def);
   return true;
+}
+
+/** Landing attacks finish after collision, so their impact is present on the landing tick. */
+export function finishEnemyAct(w:GameWorld,e:EnemyState,hooks:AttackHooks):void {
+  const a=e.ai.attack!;
+  removeEnemyGroups(w,e);e.token=null;a.phase='rec';a.t=0;a.len=ticks(a.def.recovery);
+  hooks.onRecStart?.(w,e);
 }
 
 /** Attached enemy melee boxes follow their owner (02 §2.2). */

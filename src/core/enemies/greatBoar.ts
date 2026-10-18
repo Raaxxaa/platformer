@@ -6,7 +6,7 @@ import { removeEnemyGroups, type AttackHooks } from './attack.ts';
 import type { EnemyState } from './enemy.ts';
 import { spawnEnemyProjectile } from './projectiles.ts';
 
-export interface RockMarker { x: number; ticks: number; topY: number; owner: number }
+export interface RockMarker { x: number; ticks: number; topY: number; owner: number; damage?: number; attack?: 'rock_rain' }
 
 function chargeSpeed(e: EnemyState): number {
   return e.boss?.enraged ? GREAT_BOAR.CHARGE_SPEED_ENRAGED : GREAT_BOAR.CHARGE_SPEED;
@@ -43,15 +43,26 @@ function wallCrash(w: GameWorld, e: EnemyState): void {
 export function stepRockfall(w: GameWorld): void {
   const def = ENEMY_PROJECTILES.falling_rock;
   if (!def) return;
-  for (const r of w.rockMarkers) r.ticks -= 1;
-  for (const r of w.rockMarkers.filter((m) => m.ticks <= 0)) {
+  for (const r of w.rockMarkers) {
+    if(r.attack){const attack=w.enemies.find(e=>e.id===r.owner)?.ai.attack;r.ticks=attack?Math.max(0,attack.len-attack.t):0;}
+    else r.ticks -= w.worldTimeScale;
+  }
+  dropMarkedRocks(w,r=>!r.attack&&r.ticks<=0);
+}
+
+/** Attack-held markers release on their owner's Act tick, even while Chilled or in hit-stop. */
+export function dropMarkedRocks(w:GameWorld,ready:(marker:RockMarker)=>boolean):void {
+  const def=ENEMY_PROJECTILES.falling_rock;if(!def)return;
+  const dropping=w.rockMarkers.filter(ready);
+  for (const r of dropping) {
     const owner = w.enemies.find((e) => e.id === r.owner);
-    if (!owner) continue;
-    const p = spawnEnemyProjectile(w, owner, def, 'facing', 0, { x: r.x, y: r.topY + def.h / 2 });
+    if (!owner || owner.dead) continue;
+    const shot=r.damage===undefined?def:{...def,hit:{...def.hit,damage:r.damage}};
+    const p = spawnEnemyProjectile(w, owner, shot, 'facing', 0, { x: r.x, y: r.topY + def.h / 2 });
     p.vx = 0;
     p.vy = def.speed ?? 0;
   }
-  w.rockMarkers = w.rockMarkers.filter((m) => m.ticks > 0);
+  w.rockMarkers = w.rockMarkers.filter(r=>!dropping.includes(r));
 }
 
 export function greatBoarHooks(e: EnemyState): AttackHooks {

@@ -9,6 +9,7 @@ import { spawnEnemyProjectile } from './projectiles.ts';
 import { greatBoarHooks } from './greatBoar.ts';
 import { mountainAttackHooks } from './mountains.ts';
 import { swampAttackHooks } from './swamps.ts';
+import { guardianAttackHooks } from './guardians2.ts';
 
 
 function fireShots(w: GameWorld, e: EnemyState): void {
@@ -37,6 +38,7 @@ export function attackHooks(e: EnemyState): AttackHooks {
   const def = e.ai.attack?.def;
   if (!def) return {};
   if (e.def.id === 'great_boar') return greatBoarHooks(e);
+  const guardian=guardianAttackHooks(e);if(guardian)return guardian;
   const mountain = mountainAttackHooks(e);
   if (mountain) return mountain;
   const swamp=swampAttackHooks(e);if(swamp)return swamp;

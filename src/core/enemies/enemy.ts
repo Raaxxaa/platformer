@@ -6,6 +6,7 @@ import { ENEMY, STAGE_SCALING, TILE_SIZE, VIEW_H, VIEW_W } from '../tuning.ts';
 import { ENEMIES } from '../../data/enemies.ts';
 import type { EnemyAttackDef, EnemyDef, EnemySpawn } from './types.ts';
 import type { BossState } from './boss.ts';
+import type { GuardianState } from './guardians2.ts';
 
 export type AiStateId = 'idle' | 'patrol' | 'alert' | 'engage' | 'attack' | 'return' | 'dazed';
 
@@ -81,6 +82,8 @@ export interface EnemyState {
   mountain?: { waypoint?: { x:number; y:number }; waypointTicks: number; blinkTicks: number };
   swamp?: { submerged: boolean; hanging: boolean; harmlessDrop: boolean; reactionTicks: number; hopActive: boolean; marker: { x:number; y:number } | null; detonating: boolean; explosionId: number | null };
   noRewards: boolean;
+  summonOwner?: number;
+  guardian?: GuardianState;
 }
 
 /** Stage-scaled attack damage A (a float; 02 §3.3 rounds it). */
@@ -100,7 +103,7 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
     ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false, turnTicks: 0 },
     hitStopTicks: 0, frozenAtTickStart: false, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,
-    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0, boss: null, status: newStatus(), ward: null, noRewards: false,
+    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0, boss: null, status: newStatus(), ward: null, noRewards: def.tier==='summon',
     swamp: ['bog_zombie','giant_spider','wisp','swamp_witch','treant'].includes(def.id) ? {
       submerged: def.id==='bog_zombie' && (s.submerged ?? w.grid.kindAt(Math.floor(s.x/TILE_SIZE),Math.floor((s.y-1)/TILE_SIZE))==='water'),
       hanging: def.id==='giant_spider' && s.hang===true, harmlessDrop:false,reactionTicks:0,hopActive:false,marker:null,detonating:false,explosionId:null,

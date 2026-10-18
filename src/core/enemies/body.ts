@@ -6,6 +6,8 @@ import { TERRAIN } from '../tuning.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, ENEMY, TICK, TILE_SIZE } from '../tuning.ts';
 import type { EnemyState } from './enemy.ts';
+import { GUARDIANS2 } from '../../data/guardians2.ts';
+import { stepGuardianBody } from './guardians2.ts';
 
 function asBox(e: EnemyState): AABBBody {
   return { x: e.x, y: e.y, w: e.def.hurtbox.w, h: e.def.hurtbox.h, remX: e.remX, remY: e.remY };
@@ -30,6 +32,7 @@ function mayDrop(w: GameWorld, e: EnemyState): boolean {
 /** One enemy-time tick of movement. AI and attacks set `vx` before this; knockback owns it while active. */
 export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
   if (e.def.stationary) return;
+  if(stepGuardianBody(w,e))return;
   if(e.swamp?.submerged||e.swamp?.hanging)return;
   const c = e.control;
   if (c?.type === 'pin') { e.vx = 0; e.vy = 0; return; }                // held flush, no gravity (02 §4.4)
@@ -44,8 +47,12 @@ export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
   // Flyers retain their AI's vertical velocity and pass through one-way platforms (04 §2.1).
   const vyStart = e.vy;
   const dropping=e.swamp?.harmlessDrop||(e.ai.attack?.def.id==='drop'&&e.ai.attack.phase==='act');
-  if(dropping)e.vy=SWAMP.spiderFall;
-  else if (!e.def.flying && (!e.grounded || e.vy < 0)) e.vy = Math.min(ENEMY.MAX_FALL, e.vy + ENEMY.GRAVITY * TICK);
+  if(e.ai.attack?.def.id==='ceiling_drop'&&e.ai.attack.phase==='act')e.vy=GUARDIANS2.queenFallSpeed;
+  else if(dropping)e.vy=SWAMP.spiderFall;
+  else if (!e.def.flying && (!e.grounded || e.vy < 0)) {
+    const next=e.vy+ENEMY.GRAVITY*TICK;
+    e.vy=e.ai.attack?.phase==='act'&&e.ai.attack.def.leap&&'jumpToX' in e.ai.attack.def.leap?next:Math.min(ENEMY.MAX_FALL,next);
+  }
   const box = asBox(e);
   const inWater=w.grid.kindAt(Math.floor(e.x/TILE_SIZE),Math.floor((e.y-1)/TILE_SIZE))==='water';
   const surface=!e.def.flying&&!e.def.waterWalker&&!e.knockback&&inWater?TERRAIN.WATER_SPEED_MULT:1;

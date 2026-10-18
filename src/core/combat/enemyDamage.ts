@@ -15,6 +15,7 @@ export function applyEnemyDamage(e: EnemyState, damage: number): void {
 }
 export function enemyGuarded(w: GameWorld, g: HitGroup, e: EnemyState): boolean {
   const guard = e.def.guard;
+  if(e.def.id==='stone_colossus'&&e.control?.type==='stagger')return false;
   if (!guard || e.def.noFacing || (guard.when === 'notAttacking' && (e.ai.attack || e.control || e.status.frozen)) || guard.when === 'stance')
     return false;
   if (w.dive && (w.dive.descentId === g.id || w.dive.impactId === g.id))

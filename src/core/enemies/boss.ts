@@ -5,11 +5,14 @@ import { ENEMIES } from '../../data/enemies.ts';
 import { spawnEnemy, type EnemyState } from './enemy.ts';
 import type { EnemyId } from './types.ts';
 import type { ArenaRt } from '../run/arenas.ts';
+import { queueQueenBroods } from './guardians2.ts';
+import { cancelEnemyAttack } from './attack.ts';
 
 export interface BossState {
   arenaId: string;
   introTicks: number;                 // 1.0 s intro after the lock: no attacks
   enraged: boolean;
+  lastAttack?: string;
 }
 
 export interface BossBar { name: string; title: string; marks: number[]; hp: number; maxHp: number }
@@ -35,6 +38,7 @@ export function wakeBoss(e: EnemyState): void {
 /** After step 9: enrage at ≤ 50% HP, at once and with no pause (04 §9.3). */
 export function stepBossPhases(w: GameWorld): void {
   for (const e of w.enemies) {
+    queueQueenBroods(e);
     if (!e.boss || e.dead || e.boss.enraged) continue;
     const b = e.def.boss;
     if (b && e.hp <= e.maxHp * b.enrageAt) e.boss.enraged = true;
@@ -57,10 +61,20 @@ export function bossBar(w: GameWorld): BossBar | null {
 }
 
 /** 04 §9.5–9.6 on the killing tick: bossDefeated, boss groups and projectiles go, flask to max, exit door opens. */
+export function clearBossEffects(w: GameWorld, e: EnemyState): void {
+  const owners=new Set([e.id]);
+  for(const child of w.enemies.filter(child=>child.summonOwner===e.id)){
+    owners.add(child.id);child.noRewards=true;child.hp=0;child.dead=true;child.token=null;cancelEnemyAttack(w,child);
+  }
+  w.hitGroups = w.hitGroups.filter((g) => !owners.has(Number(g.owner)));
+  w.projectiles = w.projectiles.filter((p) => !owners.has(p.owner));
+  w.puddles=w.puddles.filter(p=>!owners.has(p.owner));
+  w.rockMarkers = w.rockMarkers.filter(r=>!owners.has(r.owner));
+  if(e.guardian)e.guardian.marker=null;
+}
+
 export function onBossKilled(w: GameWorld, e: EnemyState): void {
-  w.hitGroups = w.hitGroups.filter((g) => g.owner !== e.id);
-  w.projectiles = w.projectiles.filter((p) => p.owner !== e.id);
-  w.rockMarkers = [];
+  clearBossEffects(w,e);
   w.flask.charges = w.flask.maxCharges;
   w.events.push({ t: 'bossDefeated', bossId: e.def.id, stage: w.stage });
   w.onStageBossDefeated();

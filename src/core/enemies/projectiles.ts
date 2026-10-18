@@ -1,6 +1,7 @@
 // Enemy projectiles: straight/homing shots, arc bombs and floor waves (04 §2.7, §8).
 import { ENEMY_ARC } from '../../data/mountainProjectiles.ts';
 import { ENEMY_PUDDLE } from '../../data/swampProjectiles.ts';
+import { VENOM_GLOB, VENOM_SPIT_OFFSETS } from '../../data/venomProjectiles.ts';
 import { boxToWorld, overlaps, sweep, type Rect } from '../combat/hitGroups.ts';
 import { applyPlayerStatus } from '../combat/playerStatus.ts';
 import { playerRect } from '../combat/resolve.ts';
@@ -32,7 +33,7 @@ function rectOf(p: EnemyProjectile): Rect {
 
 /** Spawns a projectile for enemy `e`. Straight shots start at the 04 §2.7 spawn point; floor waves at `at` (feet). */
 export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProjectileDef, aim: 'player' | 'facing' | 'arc', angleDeg: number,
-  at?: { x: number; y: number }): EnemyProjectile {
+  at?: { x: number; y: number }, target?: { x: number; y: number }): EnemyProjectile {
   const speed = def.speed ?? 0;
   let x: number, y: number, vx: number, vy: number;
   if (def.motion === 'floorWave') {
@@ -45,8 +46,9 @@ export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProj
     let ang = (angleDeg * Math.PI) / 180;
     if (def.motion === 'arc') {
       const time = def.arcTime!;
-      vx = Math.max(-ENEMY_ARC.maxVx, Math.min(ENEMY_ARC.maxVx, (w.body.x - x) / time));
-      vy = (w.body.y - y - 0.5 * ENEMY_ARC.gravity * time * time) / time;
+      const feet = target ?? w.body;
+      vx = Math.max(-ENEMY_ARC.maxVx, Math.min(ENEMY_ARC.maxVx, (feet.x - x) / time));
+      vy = (feet.y - y - 0.5 * ENEMY_ARC.gravity * time * time) / time;
     } else {
       if (aim === 'player') {
         const tx = w.body.x, ty = w.body.y - w.body.h / 2;
@@ -64,9 +66,15 @@ export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProj
   w.projectiles.push(p);
   w.hitGroups.push({
     id, owner: e.id, kind: 'shot', rect: rectOf(p), spec: { damage: def.hit.damage, kb: [0, 0], poise: 0, hitStop: 0, kind: 'shot' },
-    enemyHit: def.hit, active: def.id !== 'bomb' && def.id !== 'potion', lastHitTick: new Map(), hitCount: new Map(), attackInstance: id, dir: p.dir,
+    enemyHit: def.hit, active: def.motion !== 'arc', lastHitTick: new Map(), hitCount: new Map(), attackInstance: id, dir: p.dir,
   });
   return p;
+}
+
+export function spawnVenomSpit(w: GameWorld, e: EnemyState): EnemyProjectile[] {
+  const feet = { x: w.body.x, y: w.body.y };
+  // SPEC-GAP: May Queen Venom Spit exceed the shared 260px/s arc cap to reach its named targets?
+  return VENOM_SPIT_OFFSETS.map((offset) => spawnEnemyProjectile(w, e, VENOM_GLOB, 'arc', 0, undefined, { x: feet.x + offset, y: feet.y }));
 }
 
 export function removeProjectile(w: GameWorld, p: EnemyProjectile): void {
@@ -91,7 +99,7 @@ function explodeArc(w: GameWorld, p: EnemyProjectile): void {
   w.blasts.push(id);
 }
 
-function shatterPotion(w: GameWorld, p: EnemyProjectile, ground: boolean): void {
+function shatterPuddleArc(w: GameWorld, p: EnemyProjectile, ground: boolean): void {
   explodeArc(w, p);
   const puddle = p.def.puddle;
   if (ground && puddle) w.puddles.push({ id: w.newId(), owner: p.owner,
@@ -192,9 +200,9 @@ export function stepProjectiles(w: GameWorld): void {
       }
       moveArc(w, p, dt);
       if (overlaps(sweep(prev, rectOf(p)), playerRect(w))) {
-        if (p.def.id === 'potion') shatterPotion(w, p, false);
+        if (p.def.puddle) shatterPuddleArc(w, p, false);
         else explodeArc(w, p);
-      } else if (p.arc.landed && p.def.id === 'potion') shatterPotion(w, p, true);
+      } else if (p.arc.landed && p.def.puddle) shatterPuddleArc(w, p, true);
       continue;
     }
     home(w, p, dt);
