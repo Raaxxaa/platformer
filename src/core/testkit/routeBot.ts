@@ -35,7 +35,8 @@ export function runRouteBot(w: GameWorld, opts: { maxTicksPerVertex?: number; cl
         if (inLockedArena && !e.dead && e.spawnInTicks === 0 && !(e.boss && e.boss.introTicks > 0)) killEnemy(w, e);
       }
     }
-    if (w.run.phase === 'stageClear') break;
+    if (w.run.phase === 'statPick' && opts.clearFights !== false) w.confirmStatPick();
+    if (w.run.phase === 'transition' || w.run.phase === 'loading' || w.run.phase === 'village') break;
     const dx = tgt.x - b.x;
     const above = b.y - tgt.feet;                          // > 0: the target is higher
     const grounded = isGrounded(b, w.grid, b.vy);

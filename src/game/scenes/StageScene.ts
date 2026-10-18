@@ -24,6 +24,8 @@ import { newWeapon } from '../../core/abilities/runtime.ts';
 import type { ElementId, Grade, WeaponId } from '../../core/combat/types.ts';
 import { parseKit } from '../../ui/popups/classPickModel.ts';
 import { CLASS_IDS } from '../../data/classes.ts';
+import { RANDOM_SEED } from '../../data/run.ts';
+import { debugSeed } from '../seed.ts';
 
 /** Hint text with the M1 key names (07 shows real button prompts later). */
 const HINT_TEXT: Record<HintAction, string> = {
@@ -40,8 +42,8 @@ const CENTER_MARKERS = new Set(['lucky_block', 'key']);
 
 /** A random 8-character seed (06 §7.1), made here so the core never sees `Math.random`. */
 function randomSeed(): string {
-  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = new Uint8Array(8);
+  const abc = RANDOM_SEED.alphabet;
+  const bytes = new Uint8Array(RANDOM_SEED.length);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => abc[b % abc.length]).join('');
 }
@@ -62,8 +64,6 @@ export class StageScene extends WorldScene {
   private bossTitle!: Phaser.GameObjects.BitmapText;
   private segmentText!: Phaser.GameObjects.BitmapText;
   private infoText!: Phaser.GameObjects.BitmapText;
-  private clearOverlay!: Phaser.GameObjects.Graphics;
-  private clearText!: Phaser.GameObjects.BitmapText;
   private yard: YardView | null = null;
 
   constructor() {
@@ -88,8 +88,8 @@ export class StageScene extends WorldScene {
   protected makeWorld(): GameWorld {
     this.level = loadLevel(this.cache.json.get(`level_${this.levelId}`));
     const q = new URLSearchParams(window.location.search);
-    const seed = (q.get('debug') === '1' && q.get('seed')?.toUpperCase()) || randomSeed();
-    const w = GameWorld.fromLevel(this.level, { seedText: seed });
+    const typedSeed = debugSeed(q);
+    const w = GameWorld.fromLevel(this.level, { seedText: typedSeed ?? randomSeed(), seeded: typedSeed !== null, nextRandomSeed: randomSeed });
     const section = q.get('debug') === '1' ? Number(q.get('section') ?? 0) : 0;
     if (section > 0) {
       // 06 §16: the player goes to the first main_path vertex inside section n.
@@ -118,10 +118,6 @@ export class StageScene extends WorldScene {
     this.bossBarGfx = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud);
     this.bossText = this.add.bitmapText(U.bossName[0], U.bossName[1], FONTS.small, '').setScrollFactor(0).setDepth(DEPTH.hud);
     this.bossTitle = this.add.bitmapText(U.bossTitleRight, U.bossName[1], FONTS.small, '').setOrigin(1, 0).setTint(UI_COLOR.textDim).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.clearOverlay = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 5);
-    this.clearOverlay.fillStyle(0x000000, 0.6).fillRect(0, 0, width, height);
-    this.clearText = this.add.bitmapText(width / 2, height / 2, FONTS.large, '').setCenterAlign()
-      .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
     if (this.level.kind === 'training') this.yard = new YardView(this, this.level);
     this.installStageDebug();
     // Before the run, pick a class and weapon (M4 plan Task 13). `?kit=archer:bow` skips the panel; debug runs keep
@@ -137,6 +133,8 @@ export class StageScene extends WorldScene {
     const api = window.__game as unknown as Record<string, unknown> | undefined;
     if (!api) return;
     api.runState = () => structuredClone(this.world.run);
+    api.confirmStatPick = () => this.world.confirmStatPick();
+    api.completeLoading = () => this.world.completeLoading();
     api.killAll = () => { for (const e of this.world.enemies) if (!e.dead && !e.dormant && e.spawnInTicks === 0) killEnemy(this.world, e); };
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.levelId = () => this.level.id;
@@ -249,8 +247,5 @@ export class StageScene extends WorldScene {
       this.bossText.setText(bar.name);
       this.bossTitle.setText(bar.title);
     } else { this.bossText.setText(''); this.bossTitle.setText(''); }
-    const clear = w.run.phase === 'stageClear';
-    this.clearOverlay.setVisible(clear);
-    this.clearText.setVisible(clear).setText(`Stage 1 clear — ${formatTime(w.run.runTicks)}\n\nPress R to run again`);
   }
 }

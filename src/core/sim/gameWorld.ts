@@ -20,7 +20,7 @@ import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { ElementId, FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
 import { addFlaskFill, cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
-import { CAMERA, COMBAT, FLASK, RESTART, RUSH } from '../tuning.ts';
+import { CAMERA, COMBAT, FLASK, RESTART, RUN, RUSH } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { isGrounded, pushOut } from '../physics/collide.ts';
@@ -63,6 +63,7 @@ import { stepZones, type HintAction } from '../run/zones.ts';
 import { stepClocks } from '../run/runState.ts';
 import { bossBar, stepBossPhases, type BossBar } from '../enemies/boss.ts';
 import { stepRockfall, type RockMarker } from '../enemies/greatBoar.ts';
+import { beginTransition, canHoldRestart, completeLoading, simulatesWorld, stepTransition } from '../run/phases.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -110,13 +111,19 @@ export type WorldEvent =
   | { t: 'luckyBroken'; objectId: number }
   | { t: 'purchase'; what: string; price: number }
   | { t: 'cantAfford' }
-  | { t: 'chestLocked' };
+  | { t: 'chestLocked' }
+  | { t: 'loadLevel'; levelId: LevelData['id']; stage: RunState['stage'] }
+  | { t: 'enterVillage'; villageId: LevelData['id'] }
+  | { t: 'stageStarted'; levelId: LevelData['id']; stage: RunState['stage'] };
 
 export interface GameWorldOptions {
   grid: TileGrid;
   spawn: { x: number; y: number };
   facing?: 1 | -1;
   seedText?: string;
+  /** Typed seeds survive restart. The Phaser layer supplies fresh random seed text otherwise. */
+  seeded?: boolean;
+  nextRandomSeed?: () => string;
   level?: LevelData;
   /** Arena wave spawns, spawned by the arena logic (06 §9.2). */
   waveSpawns?: LevelEnemySpawn[];
@@ -137,7 +144,7 @@ export class GameWorld {
   readonly opts: GameWorldOptions;
   readonly grid: TileGrid;
   readonly stage: Stage;
-  readonly runSeed: number;
+  runSeed: number;
   body!: PlayerBody;
   mods!: MoveModifiers;
   ctx!: MoveContext;
@@ -221,6 +228,8 @@ export class GameWorld {
   phase: WorldPhase = 'stage';
   deathTick = 0;
   private nextId = 1;
+  private villageEntryPending = false;
+  private loadRequestPending = false;
 
   constructor(opts: GameWorldOptions) {
     this.opts = opts;
@@ -234,7 +243,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -243,7 +252,7 @@ export class GameWorld {
     }));
     return new GameWorld({
       grid: parts.grid, spawn: { x: start.x, y: start.y }, facing: Number(start.props.facing ?? 1) < 0 ? -1 : 1,
-      stage: (d.stage || 1) as Stage, seedText: opts.seedText, level: d, bodies,
+      stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
       markers: d.objects.filter((o) => MARKER_TYPES.has(o.type)),
@@ -264,10 +273,15 @@ export class GameWorld {
     this.body.facing = this.opts.facing ?? 1;
     // The restart hold survives a restart (06 §6.2: holding through one never restarts twice).
     const hold = this.run ? { h: this.run.restartHoldTicks, n: this.run.restartNeedsRelease } : { h: 0, n: false };
-    this.run = createRunState(this.opts.seedText ?? '');
+    this.run = createRunState(this.opts.seedText ?? '', this.opts.seeded ?? false);
     this.run.runSeed = this.runSeed;
+    this.run.stage = this.level?.stage ?? this.stage;
+    this.run.levelId = this.level?.id ?? 'plains';
+    if (this.level?.kind === 'village') this.run.phase = this.level.id === 'home' ? 'homeVillage' : 'village';
     this.run.restartHoldTicks = hold.h;
     this.run.restartNeedsRelease = hold.n;
+    this.villageEntryPending = this.level?.kind === 'village';
+    this.loadRequestPending = false;
     if (!isGrounded(this.body, grid, 0)) {
       this.body.state = 'air';
       this.body.grounded = false;
@@ -332,7 +346,31 @@ export class GameWorld {
   }
 
   restart(): void {
+    if (!this.run.seeded && this.opts.nextRandomSeed) {
+      this.opts.seedText = this.opts.nextRandomSeed();
+      this.runSeed = fnv1a32(this.opts.seedText);
+    }
     this.reset();
+    // Same-Plains reload is synchronous. Other scenes must really load Plains before acknowledging it.
+    beginTransition(this.run, 'restart', { phase: 'stage', levelId: 'plains', stage: 1 });
+    if (!this.level || this.level.id === 'plains') this.completeLoading();
+    else this.loadRequestPending = true;
+  }
+
+  /** The scene calls this after loading the requested next world. */
+  completeLoading(): void {
+    const target = this.run.phase === 'loading' ? this.run.transition?.target : null;
+    completeLoading(this.run);
+    this.loadRequestPending = false;
+    if (target?.phase === 'village' || target?.phase === 'homeVillage') this.villageEntryPending = true;
+  }
+
+  /** Task 2 applies the selected upgrade, then acknowledges the compulsory choice here. */
+  confirmStatPick(): boolean {
+    if (this.run.phase !== 'statPick') return false;
+    this.run.statPickDone = true;
+    this.run.phase = 'stage';
+    return true;
   }
 
   /** Replace the loadout now and for every restart (kit pick, debug). */
@@ -380,10 +418,14 @@ export class GameWorld {
   onStageBossDefeated(): void {
     const r = this.run;
     if (r.phase === 'dead' && r.deathTick !== this.tick) return;
-    if (r.splits[0] !== null) return;
-    r.splits[0] = r.runTicks;
+    const index = this.stage - 1;
+    if (r.splits[index] !== null) return;
+    r.splits[index] = r.runTicks;
+    r.bossDefeatedTick = this.tick;
+    r.statPickDone = false;
+    const previous = index > 0 ? r.splits[index - 1] ?? 0 : 0;
     // PB comparison (deltaTicks, bestSegment) arrives with save data in M7.
-    this.events.push({ t: 'split', index: 1, runTicks: r.runTicks, segmentTicks: r.runTicks, deltaTicks: null, bestSegment: false });
+    this.events.push({ t: 'split', index: index + 1, runTicks: r.runTicks, segmentTicks: r.runTicks - previous, deltaTicks: null, bestSegment: false });
   }
 
   /** The boss bar while a boss arena is locked (04 §9.4). */
@@ -497,11 +539,7 @@ export class GameWorld {
   /** Restart rules (06 §6.1–6.2). Returns true when the world restarted this tick. */
   private handleRestart(input: InputState): boolean {
     const r = input.restart;
-    if (this.run.phase === 'stageClear') {          // M3's temporary stage-clear screen: a fresh press runs again
-      if (r.pressed) { this.run.restartNeedsRelease = r.held; this.run.restartHoldTicks = 0; this.restart(); return true; }
-      return false;
-    }
-    if (this.phase === 'deathScreen' || this.phase === 'dead') {
+    if (this.run.phase === 'dead') {
       if (r.pressed && this.tick + 1 - this.deathTick >= RESTART.PRESS_AFTER_TICKS) {
         this.run.restartNeedsRelease = r.held;
         this.run.restartHoldTicks = 0;
@@ -510,6 +548,7 @@ export class GameWorld {
       }
       return false;                               // while dead only a press counts (06 §6.2)
     }
+    if (!canHoldRestart(this.run.phase)) return false;
     if (!r.held) {
       this.run.restartHoldTicks = 0;
       this.run.restartNeedsRelease = false;
@@ -603,13 +642,33 @@ export class GameWorld {
   /** One 120 Hz tick in 02 §2.1 order. */
   step(rawInput: InputState): void {
     this.events = [];
+    if (this.loadRequestPending && this.run.phase === 'loading' && this.run.transition) {
+      const { target } = this.run.transition;
+      this.events.push({ t: 'loadLevel', levelId: target.levelId, stage: target.stage });
+      this.loadRequestPending = false;
+    }
+    if (this.villageEntryPending && this.run.phase !== 'loading' && this.run.phase !== 'paused') {
+      this.events.push({ t: 'enterVillage', villageId: this.run.levelId });
+      this.villageEntryPending = false;
+    }
     if (this.handleRestart(rawInput)) return;
-    if (this.phase === 'deathScreen' || this.run.phase === 'stageClear') return;   // frozen; clocks stopped
+    if (this.phase === 'deathScreen') return;
+    if (this.level?.kind !== 'training') stepClocks(this.run);
+    if (!simulatesWorld(this.run.phase)) {
+      const transition = this.run.transition;
+      const action = stepTransition(this.run);
+      if (action === 'load' && transition) {
+        if (transition.kind === 'sleep') this.health.hp = this.health.maxHp;
+        this.events.push({ t: 'loadLevel', levelId: transition.target.levelId, stage: transition.target.stage });
+      } else if (action === 'arrive') {
+        if (this.run.phase === 'stage') this.events.push({ t: 'stageStarted', levelId: this.run.levelId, stage: this.run.stage });
+      }
+      return;
+    }
     // A dead player takes no input; the world keeps running around them.
     let input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
     clearSpentGroups(this);
-    if (this.level?.kind !== 'training') stepClocks(this.run);   // the Training Yard has no run timer (06 §12.4)
     this.playerFrozenAtTickStart = this.body.hitStopTicks > 0;
     for (const e of this.enemies) e.frozenAtTickStart = e.hitStopTicks > 0;
     // Wall-clock timers.
@@ -677,6 +736,9 @@ export class GameWorld {
     stepArenas(this);
     stepTraining(this);
     stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());
+    // Phase changes take effect on the following tick (06 §2.8).
+    if (this.run.phase === 'stage' && this.stage < 4 && this.run.bossDefeatedTick !== null
+      && !this.run.statPickDone && this.tick - this.run.bossDefeatedTick >= RUN.STAT_PICK_DELAY_TICKS) this.run.phase = 'statPick';
     if (this.phase === 'dead' && this.tick - this.deathTick >= RESTART.DEATH_SIM_TICKS) this.phase = 'deathScreen';
   }
 }

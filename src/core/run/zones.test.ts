@@ -79,13 +79,17 @@ describe('hints, sections and exit (06 §13.4)', () => {
     expect(w.body.x).toBeLessThan(20 * 16);
     expect(w.run.sectionReached).toBe(2);
   });
-  it('the exit is ignored before the boss is dead, and clears the stage after split 1', () => {
+  it('the exit is ignored before the boss and choice, then starts the village transition', () => {
     const w = world();
     w.bodies.setActive('td1', false);
     walkTo(w, 57 * 16);
     expect(w.run.phase).toBe('stage');
     w.run.splits[0] = 1234;
     stepSpec(w, {});
-    expect(w.run.phase).toBe('stageClear');
+    expect(w.run.phase).toBe('stage');
+    w.run.statPickDone = true;
+    stepSpec(w, {});
+    expect(w.run.phase).toBe('transition');
+    expect(w.run.transition?.target.levelId).toBe('crossroads');
   });
 });

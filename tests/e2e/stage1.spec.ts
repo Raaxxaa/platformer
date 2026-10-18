@@ -25,6 +25,23 @@ test('boots into Plains with no errors', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('losing focus pauses the exact run phase and freezes its clocks', async ({ page }) => {
+  const errors = await boot(page);
+  const paused = await page.evaluate(() => {
+    const g = (window as any).__game;
+    g.step(5, {});
+    window.dispatchEvent(new Event('blur'));
+    const before = g.runState().runTicks;
+    g.step(120, { moveX: 1 });
+    return { phase: g.runState().phase, before, after: g.runState().runTicks };
+  });
+  expect(paused.phase).toBe('paused');
+  expect(paused.after).toBe(paused.before);
+  await page.evaluate(() => (window as any).__game.pauseAction('back'));
+  expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('stage');
+  expect(errors).toEqual([]);
+});
+
 test('every section loads', async ({ page }) => {
   for (let n = 1; n <= 8; n++) {
     const errors = await boot(page, `&section=${n}`);
@@ -70,7 +87,7 @@ test('the arena locks and waves spawn', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('the boss fight ends in a split, and the exit clears the stage', async ({ page }) => {
+test('the boss fight ends in a split, a compulsory stat pick, and the village transition', async ({ page }) => {
   const errors = await boot(page, '&section=8');
   await page.evaluate(() => {
     const g = (window as any).__game;
@@ -101,12 +118,18 @@ test('the boss fight ends in a split, and the exit clears the stage', async ({ p
   expect(res.split).toBe(res.runTicks);
   await nextFrames(page);
   await page.screenshot({ path: 'test-results/plains-boss.png' });
+  expect(await page.evaluate(() => {
+    const g = (window as any).__game;
+    g.step(120, {});
+    return g.runState().phase;
+  })).toBe('statPick');
   const phase = await page.evaluate(() => {
     const g = (window as any).__game;
+    g.confirmStatPick();
     for (let i = 0; i < 2400 && g.runState().phase === 'stage'; i++) g.step(1, { moveX: 1 });
     return g.runState().phase;
   });
-  expect(phase).toBe('stageClear');
+  expect(phase).toBe('transition');
   await nextFrames(page);
   await page.screenshot({ path: 'test-results/plains-clear.png' });
   expect(errors).toEqual([]);

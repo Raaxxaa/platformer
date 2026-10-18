@@ -35,6 +35,8 @@ describe('death and restart (06 §6, checklist 39)', () => {
     stepSpec(w, {}, 10);
     stepSpec(w, { restart: true });
     expect(w.health.dead).toBe(false);
+    expect(w.run.phase).toBe('transition');
+    stepSpec(w, {}, 30);
     expect(w.phase).toBe('stage');
   });
   it('holding R for 59 ticks does nothing, 60 restarts, and holding on does not restart twice', () => {
@@ -84,6 +86,7 @@ describe('death and restart (06 §6, checklist 39)', () => {
     const first: string[] = [];
     for (const input of rec) { w.step(input); first.push(snap()); }
     w.restart();
+    stepSpec(w, {}, 30);               // the untimed restart fade does not consume simulation ticks
     for (let i = 0; i < rec.length; i++) {
       w.step(rec[i]);
       const s = snap();

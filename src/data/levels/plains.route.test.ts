@@ -11,6 +11,7 @@ describe('Plains route bot (M3 Review Focus 1: no unbeatable geometry)', () => {
     const r = runRouteBot(w);
     console.log(`route bot: ${r.reached}/${r.total} vertices, ${formatTime(r.ticks)}`, r.log.join('\n'));
     expect(r.log).toEqual([]);
-    expect(w.run.phase).toBe('stageClear');
+    expect(w.run.phase).toBe('transition');
+    expect(w.run.transition?.target.levelId).toBe('crossroads');
   });
 });

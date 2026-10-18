@@ -9,7 +9,7 @@ describe('run clocks (06 §5.1)', () => {
     r.phase = 'dead';
     stepClocks(r);
     expect([r.runTicks, r.stageTicks]).toEqual([2, 2]);
-    r.phase = 'stageClear';
+    r.phase = 'paused';
     stepClocks(r);
     expect(r.runTicks).toBe(2);
   });

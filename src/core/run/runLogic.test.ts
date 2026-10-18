@@ -55,16 +55,18 @@ describe('run logic (06 §2.5, §5, §6; tests 7, 9, 30, 32)', () => {
     stepSpec(w, {});
     expect(w.run.splits[0]).toBeNull();
   });
-  it('the exit after the split clears the stage: the world freezes and a fresh R press restarts', () => {
+  it('stat pick freezes simulation while counting time; holding restart loads a fresh run', () => {
     const w = world();
     walkIn(w);
     killEnemy(w, boss(w));
     stepSpec(w, {});
-    w.run.phase = 'stageClear';
+    w.run.phase = 'statPick';
     const t = w.run.runTicks, tick = w.tick, x = w.body.x;
     stepSpec(w, { moveX: 1 }, 60);
-    expect([w.run.runTicks, w.tick, w.body.x]).toEqual([t, tick, x]);
-    stepSpec(w, { restart: true });
+    expect([w.run.runTicks, w.tick, w.body.x]).toEqual([t + 60, tick, x]);
+    stepSpec(w, { restart: true }, 60);
+    expect(w.run.phase).toBe('transition');
+    stepSpec(w, {}, 30);
     expect(w.run.phase).toBe('stage');
     expect(w.run.runTicks).toBe(0);
     expect(w.run.splits[0]).toBeNull();

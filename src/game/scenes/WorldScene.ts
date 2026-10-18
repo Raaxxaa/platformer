@@ -40,6 +40,7 @@ import { loadAssets } from '../assets/loadAssets.ts';
 import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../debug.ts';
 import { COLOR, STATE_COLOR } from '../greybox.ts';
 import { Devices } from '../input/devices.ts';
+import { pauseRun, resumeRun } from '../../core/run/phases.ts';
 
 /** Grey-box enemy colors (plan M2, Task 17). */
 const ENEMY_COLOR: Partial<Record<EnemyId, number>> = {
@@ -111,7 +112,14 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   create(): void {
     this.world = this.makeWorld();
     this.devices = new Devices();
-    this.events.once('shutdown', () => { this.devices.destroy(); window.removeEventListener('keydown', this.onPauseKey); });
+    window.addEventListener('blur', this.onFocusLost);
+    document.addEventListener('visibilitychange', this.onVisibilityChanged);
+    this.events.once('shutdown', () => {
+      this.devices.destroy();
+      window.removeEventListener('keydown', this.onPauseKey);
+      window.removeEventListener('blur', this.onFocusLost);
+      document.removeEventListener('visibilitychange', this.onVisibilityChanged);
+    });
     this.bank = new AnimBank(this.cache.json.get('anims') as AnimDef[]);
     this.boxesMode = new URLSearchParams(window.location.search).get('boxes') === '1';
     this.parallax = new Parallax(this, this.world.grid.heightPx);
@@ -265,6 +273,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected onPauseQuit(): void {}
 
   pause: { model: PauseModel; view: PauseView } | null = null;
+  private readonly onFocusLost = () => this.openPause();
+  private readonly onVisibilityChanged = () => { if (document.hidden) this.openPause(); };
   private readonly onPauseKey = (e: KeyboardEvent) => {
     if (!this.pause || e.repeat) return;
     const map: Record<string, PauseAction> = {
@@ -287,12 +297,14 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   openPause(): void {
     if (this.pause) return;
+    pauseRun(this.world.run);
     this.pause = { model: new PauseModel(this.pausePlace()), view: new PauseView(this) };
     window.addEventListener('keydown', this.onPauseKey);
   }
 
   closePause(): void {
     if (!this.pause) return;
+    resumeRun(this.world.run);
     this.pause.view.destroy();
     this.pause = null;
     window.removeEventListener('keydown', this.onPauseKey);
