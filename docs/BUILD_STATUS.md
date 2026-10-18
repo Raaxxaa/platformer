@@ -131,9 +131,16 @@ No later milestone is authorized.
 - Final checks: 1079 unit tests in 139 files; standalone typecheck/build; diff and protected-path checks passed. Independent review is clear.
 - No new SPEC-GAP. This task is committed locally; the complete M7.1 milestone gate still comes before deployment.
 
+### M7.1 Task 3 — `cceb400`
+
+- Added all five Swamp enemies, potion splashes and puddles, player poison/root rules, and shared status handling.
+- Real failing regressions covered hidden secondary targets, ghost notice through walls, Wisp self-death rewards, stale root markers, and Rooted movement in existing actions.
+- Root's ten world tests verify wake timing, harmless Spider drops, both Wisp reward paths, fixed root markers/gaps, flask sip/cancel cleanup, and stopping an existing dash. Test-fixture corrections were separated from source defects.
+- Final checks: 1116 unit tests in 144 files; typecheck/build; diff and protected-path checks passed. Independent review is clear. No new SPEC-GAP.
+
 ## Active task
 
-M7 is delivered. M7.1 Tasks 1–2 are committed. Task 3 is active: Swamp enemies and their projectiles, followed by Tasks 4–7 in order.
+M7 is delivered. M7.1 Tasks 1–3 are committed. Task 4 is active: Stone Colossus and Spider Queen, followed by Tasks 5–7 in order.
 Root owns this handoff. Source partitions require clear file ownership and tested commits. No later milestone is authorized.
 
 ## Remaining integration notes
