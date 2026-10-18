@@ -25,4 +25,7 @@ describe('temporary run-so-far summary', () => {
     const before = structuredClone(data), m = new RunSoFarModel(data);
     expect(m.action('back')).toBeNull(); expect(m.cursor).toBe(0); m.action('confirm'); expect(data).toEqual(before);
   });
+  it('the Border ending includes the actual second cumulative split',()=>{
+    const m=new RunSoFarModel({...data,split2:14400});expect(m.lines).toContain('Split 2 2:00.00');
+  });
 });

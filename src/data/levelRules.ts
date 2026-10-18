@@ -29,6 +29,15 @@ export const LEVEL_RULES: Record<StageLevelId, LevelRule> = {
 
 /** 06 §9.2 combat arena: inner size range (tiles) and par time per stage (s). */
 export const COMBAT_ARENA = { minW: 34, maxW: 40, minH: 14, maxH: 20, doors: 2, parTime: { 1: 20, 2: 24, 3: 29, 4: 32 } } as const;
+// SPEC-GAP: Should the M7.1 Mountain arena be 20 tiles wide, or use 06 §9.2's 34–40 tile range?
+// Use the exact world spec's 38 × 18 inner arena, matching validation and the shared three-wave layout.
+
+/** Stage2 road differences and gimmicks (06 §8.2–8.5, §9.4). */
+export const STAGE2_LEVEL = {
+  regulars: { mountains:[0,10,2,8,9,3,4,0], swamps:[0,12,4,8,9,7,4,0] },
+  climb:60, cartRun:120, waterFraction:.30,waterSections:[2,3,6],darkSections:[3,6],
+  sideWidth:40,sideHeight:20,warningDistance:640,
+} as const;
 
 /** 06 §8.4 / §13.4 exact object counts for a stage level. */
 export const STAGE_OBJECT_COUNTS: Record<string, number> = {

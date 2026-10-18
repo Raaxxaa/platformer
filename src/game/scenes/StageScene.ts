@@ -259,7 +259,7 @@ export class StageScene extends WorldScene {
       });
     if (w.run.phase !== 'runSoFar') { this.runSoFar?.destroy(); this.runSoFar = null; }
     if (w.run.phase === 'runSoFar' && !this.runSoFar) this.runSoFar = new RunSoFarView(this, {
-      runTicks: w.run.runTicks, split1: w.run.splits[0], gold: w.gold, kills: w.run.stats.kills,
+      runTicks: w.run.runTicks, split1: w.run.splits[0], split2:w.run.splits[1], gold: w.gold, kills: w.run.stats.kills,
       kit: { weapons: structuredClone(w.combat.slots), abilities: w.abilities.slots.map((s) => s ? { id: s.id, level: s.level } : null), displayName: w.classState.displayName },
     }, { onRestart: () => { this.runSoFar?.destroy(); this.runSoFar = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
   }

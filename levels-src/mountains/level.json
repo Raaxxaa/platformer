@@ -1,0 +1,1231 @@
+{
+  "levelId": "mountains",
+  "kind": "stage",
+  "stage": 2,
+  "biome": "mountains",
+  "width": 552,
+  "height": 176,
+  "chunks": [
+    {
+      "file": "s1.txt",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "file": "s2.txt",
+      "x": 32,
+      "y": 0
+    },
+    {
+      "file": "s3.txt",
+      "x": 132,
+      "y": 0
+    },
+    {
+      "file": "s4.txt",
+      "x": 156,
+      "y": 0
+    },
+    {
+      "file": "s5.txt",
+      "x": 246,
+      "y": 0
+    },
+    {
+      "file": "s6.txt",
+      "x": 286,
+      "y": 0
+    },
+    {
+      "file": "s7.txt",
+      "x": 416,
+      "y": 0
+    },
+    {
+      "file": "s8.txt",
+      "x": 496,
+      "y": 0
+    }
+  ],
+  "legend": {},
+  "objects": [
+    {
+      "type": "player_start",
+      "x": 2,
+      "y": 163,
+      "props": {
+        "facing": 1
+      }
+    },
+    {
+      "type": "loot_stand",
+      "x": 18,
+      "y": 163,
+      "props": {
+        "kind": "weapon"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 43,
+      "y": 160,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 47,
+      "y": 160,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 51,
+      "y": 161,
+      "props": {
+        "enemy": "ram",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 65,
+      "y": 155,
+      "props": {
+        "enemy": "bat_swarm",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 69,
+      "y": 163,
+      "props": {
+        "enemy": "ram",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 84,
+      "y": 160,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 91,
+      "y": 163,
+      "props": {
+        "enemy": "rock_golem",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 94,
+      "y": 155,
+      "props": {
+        "enemy": "bat_swarm",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 108,
+      "y": 160,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 113,
+      "y": 163,
+      "props": {
+        "enemy": "ram",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 126,
+      "y": 163,
+      "props": {
+        "enemy": "goblin_shaman",
+        "facing": -1
+      }
+    },
+    {
+      "type": "lucky_block",
+      "x": 60,
+      "y": 161,
+      "props": {}
+    },
+    {
+      "type": "enemy",
+      "x": 144,
+      "y": 137,
+      "props": {
+        "enemy": "bat_swarm",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 144,
+      "y": 113,
+      "props": {
+        "enemy": "bat_swarm",
+        "facing": -1
+      }
+    },
+    {
+      "type": "lucky_block",
+      "x": 143,
+      "y": 126,
+      "props": {}
+    },
+    {
+      "type": "key",
+      "x": 150,
+      "y": 85,
+      "props": {}
+    },
+    {
+      "type": "falling_rocks",
+      "x": 145,
+      "y": 140,
+      "w": 4,
+      "h": 12,
+      "props": {
+        "interval": 2
+      }
+    },
+    {
+      "type": "falling_rocks",
+      "x": 137,
+      "y": 116,
+      "w": 4,
+      "h": 12,
+      "props": {
+        "interval": 2
+      }
+    },
+    {
+      "type": "falling_rocks",
+      "x": 145,
+      "y": 92,
+      "w": 4,
+      "h": 12,
+      "props": {
+        "interval": 2
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 181,
+      "y": 103,
+      "props": {
+        "enemy": "rock_golem",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 188,
+      "y": 103,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 199,
+      "y": 103,
+      "props": {
+        "enemy": "rock_golem",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 207,
+      "y": 97,
+      "props": {
+        "enemy": "bat_swarm",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 217,
+      "y": 103,
+      "props": {
+        "enemy": "rock_golem",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 226,
+      "y": 103,
+      "props": {
+        "enemy": "ram",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 186,
+      "y": 111,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 202,
+      "y": 111,
+      "props": {
+        "enemy": "rock_golem",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 214,
+      "y": 111,
+      "props": {
+        "enemy": "goblin_shaman",
+        "facing": -1
+      }
+    },
+    {
+      "type": "key_chest",
+      "x": 220,
+      "y": 111,
+      "props": {}
+    },
+    {
+      "type": "cursed_chest",
+      "x": 224,
+      "y": 111,
+      "props": {}
+    },
+    {
+      "type": "loot_stand",
+      "x": 228,
+      "y": 111,
+      "props": {
+        "kind": "ability"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 256,
+      "y": 85,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1,
+        "wave": 1,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 268,
+      "y": 91,
+      "props": {
+        "enemy": "rock_golem",
+        "facing": -1,
+        "wave": 1,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 279,
+      "y": 91,
+      "props": {
+        "enemy": "ram",
+        "facing": -1,
+        "wave": 1,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 263,
+      "y": 81,
+      "props": {
+        "enemy": "bat_swarm",
+        "facing": -1,
+        "wave": 2,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 252,
+      "y": 91,
+      "props": {
+        "enemy": "ram",
+        "facing": -1,
+        "wave": 2,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 278,
+      "y": 91,
+      "props": {
+        "enemy": "ram",
+        "facing": -1,
+        "wave": 2,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 276,
+      "y": 85,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1,
+        "wave": 3,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 257,
+      "y": 91,
+      "props": {
+        "enemy": "rock_golem",
+        "facing": -1,
+        "wave": 3,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 271,
+      "y": 91,
+      "props": {
+        "enemy": "ram",
+        "facing": -1,
+        "wave": 3,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 265,
+      "y": 91,
+      "props": {
+        "enemy": "goblin_shaman",
+        "facing": -1,
+        "wave": 3,
+        "arena": "mountain_combat"
+      }
+    },
+    {
+      "type": "arena",
+      "x": 247,
+      "y": 74,
+      "w": 38,
+      "h": 18,
+      "props": {
+        "id": "mountain_combat",
+        "kind": "combat",
+        "parTime": 24
+      }
+    },
+    {
+      "type": "arena_door",
+      "x": 246,
+      "y": 89,
+      "w": 1,
+      "h": 3,
+      "props": {
+        "arena": "mountain_combat",
+        "role": "entry"
+      }
+    },
+    {
+      "type": "arena_door",
+      "x": 285,
+      "y": 89,
+      "w": 1,
+      "h": 3,
+      "props": {
+        "arena": "mountain_combat",
+        "role": "entry"
+      }
+    },
+    {
+      "type": "lucky_block",
+      "x": 289,
+      "y": 85,
+      "props": {}
+    },
+    {
+      "type": "key",
+      "x": 290,
+      "y": 77,
+      "props": {}
+    },
+    {
+      "type": "merchant_spot",
+      "x": 287,
+      "y": 91,
+      "props": {}
+    },
+    {
+      "type": "dragon_warning",
+      "x": 290,
+      "y": 82,
+      "w": 1,
+      "h": 10,
+      "props": {}
+    },
+    {
+      "type": "arena",
+      "x": 335,
+      "y": 68,
+      "w": 40,
+      "h": 20,
+      "props": {
+        "id": "mountain_side",
+        "kind": "side"
+      }
+    },
+    {
+      "type": "minecart",
+      "x": 293,
+      "y": 91,
+      "props": {
+        "dir": 1
+      }
+    },
+    {
+      "type": "minecart_stop",
+      "x": 415,
+      "y": 140,
+      "w": 1,
+      "h": 4,
+      "props": {}
+    },
+    {
+      "type": "enemy",
+      "x": 308,
+      "y": 87,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 350,
+      "y": 104,
+      "props": {
+        "enemy": "ram",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 390,
+      "y": 123,
+      "props": {
+        "enemy": "bat_swarm",
+        "facing": -1
+      }
+    },
+    {
+      "type": "lucky_block",
+      "x": 420,
+      "y": 140,
+      "props": {}
+    },
+    {
+      "type": "key_chest",
+      "x": 425,
+      "y": 143,
+      "props": {}
+    },
+    {
+      "type": "key_chest",
+      "x": 435,
+      "y": 143,
+      "props": {}
+    },
+    {
+      "type": "timed_chest",
+      "x": 447,
+      "y": 137,
+      "props": {
+        "door": "mountain_timed"
+      }
+    },
+    {
+      "type": "timed_door",
+      "x": 442,
+      "y": 135,
+      "w": 1,
+      "h": 3,
+      "props": {
+        "id": "mountain_timed",
+        "side": "left",
+        "timeLimit": 125
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 430,
+      "y": 143,
+      "props": {
+        "enemy": "goblin_miner",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 460,
+      "y": 143,
+      "props": {
+        "enemy": "rock_golem",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 473,
+      "y": 143,
+      "props": {
+        "enemy": "ram",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 481,
+      "y": 135,
+      "props": {
+        "enemy": "bat_swarm",
+        "facing": -1
+      }
+    },
+    {
+      "type": "enemy",
+      "x": 490,
+      "y": 143,
+      "props": {
+        "enemy": "goblin_shaman",
+        "facing": -1
+      }
+    },
+    {
+      "type": "arena",
+      "x": 497,
+      "y": 126,
+      "w": 36,
+      "h": 18,
+      "props": {
+        "id": "mountain_boss",
+        "kind": "boss",
+        "boss": "stone_colossus",
+        "entry": "left"
+      }
+    },
+    {
+      "type": "arena_door",
+      "x": 496,
+      "y": 141,
+      "w": 1,
+      "h": 3,
+      "props": {
+        "arena": "mountain_boss",
+        "role": "entry"
+      }
+    },
+    {
+      "type": "arena_door",
+      "x": 533,
+      "y": 141,
+      "w": 1,
+      "h": 3,
+      "props": {
+        "arena": "mountain_boss",
+        "role": "exit"
+      }
+    },
+    {
+      "type": "exit",
+      "x": 550,
+      "y": 141,
+      "w": 2,
+      "h": 3,
+      "props": {}
+    },
+    {
+      "type": "guide_arrow",
+      "x": 28,
+      "y": 160,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 130,
+      "y": 160,
+      "props": {
+        "angle": -90
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 139,
+      "y": 151,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 147,
+      "y": 139,
+      "props": {
+        "angle": 180
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 139,
+      "y": 127,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 147,
+      "y": 115,
+      "props": {
+        "angle": 180
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 139,
+      "y": 103,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 154,
+      "y": 89,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 158,
+      "y": 88,
+      "props": {
+        "angle": 90
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 175,
+      "y": 101,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 229,
+      "y": 101,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 240,
+      "y": 90,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 291,
+      "y": 87,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 294,
+      "y": 89,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 321,
+      "y": 88,
+      "props": {
+        "angle": -30
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 331,
+      "y": 89,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 395,
+      "y": 129,
+      "props": {
+        "angle": -30
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 414,
+      "y": 140,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 439,
+      "y": 140,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 493,
+      "y": 140,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "guide_arrow",
+      "x": 543,
+      "y": 140,
+      "props": {
+        "angle": 0
+      }
+    },
+    {
+      "type": "section",
+      "x": 0,
+      "y": 0,
+      "w": 32,
+      "h": 176,
+      "props": {
+        "index": 1
+      }
+    },
+    {
+      "type": "section",
+      "x": 32,
+      "y": 0,
+      "w": 100,
+      "h": 176,
+      "props": {
+        "index": 2
+      }
+    },
+    {
+      "type": "section",
+      "x": 132,
+      "y": 0,
+      "w": 24,
+      "h": 176,
+      "props": {
+        "index": 3
+      }
+    },
+    {
+      "type": "section",
+      "x": 156,
+      "y": 0,
+      "w": 90,
+      "h": 176,
+      "props": {
+        "index": 4
+      }
+    },
+    {
+      "type": "section",
+      "x": 246,
+      "y": 0,
+      "w": 40,
+      "h": 176,
+      "props": {
+        "index": 5
+      }
+    },
+    {
+      "type": "section",
+      "x": 286,
+      "y": 0,
+      "w": 130,
+      "h": 176,
+      "props": {
+        "index": 6
+      }
+    },
+    {
+      "type": "section",
+      "x": 416,
+      "y": 0,
+      "w": 80,
+      "h": 176,
+      "props": {
+        "index": 7
+      }
+    },
+    {
+      "type": "section",
+      "x": 496,
+      "y": 0,
+      "w": 56,
+      "h": 176,
+      "props": {
+        "index": 8
+      }
+    }
+  ],
+  "mainPath": [
+    [
+      2,
+      163
+    ],
+    [
+      18,
+      163
+    ],
+    [
+      31,
+      163
+    ],
+    [
+      32,
+      163
+    ],
+    [
+      48,
+      163
+    ],
+    [
+      51,
+      161
+    ],
+    [
+      55,
+      161
+    ],
+    [
+      58,
+      163
+    ],
+    [
+      80,
+      163
+    ],
+    [
+      83,
+      160
+    ],
+    [
+      87,
+      160
+    ],
+    [
+      90,
+      163
+    ],
+    [
+      131,
+      163
+    ],
+    [
+      132,
+      163
+    ],
+    [
+      138,
+      163
+    ],
+    [
+      142,
+      151
+    ],
+    [
+      146,
+      151
+    ],
+    [
+      143,
+      139
+    ],
+    [
+      138,
+      139
+    ],
+    [
+      142,
+      127
+    ],
+    [
+      146,
+      127
+    ],
+    [
+      143,
+      115
+    ],
+    [
+      138,
+      115
+    ],
+    [
+      142,
+      103
+    ],
+    [
+      146,
+      103
+    ],
+    [
+      143,
+      91
+    ],
+    [
+      155,
+      91
+    ],
+    [
+      156,
+      91
+    ],
+    [
+      160,
+      103
+    ],
+    [
+      175,
+      103
+    ],
+    [
+      180,
+      103
+    ],
+    [
+      200,
+      103
+    ],
+    [
+      220,
+      103
+    ],
+    [
+      230,
+      103
+    ],
+    [
+      235,
+      103
+    ],
+    [
+      238,
+      103
+    ],
+    [
+      242,
+      91
+    ],
+    [
+      245,
+      91
+    ],
+    [
+      246,
+      91
+    ],
+    [
+      247,
+      91
+    ],
+    [
+      266,
+      91
+    ],
+    [
+      284,
+      91
+    ],
+    [
+      286,
+      91
+    ],
+    [
+      294,
+      91
+    ],
+    [
+      311,
+      91
+    ],
+    [
+      312,
+      91
+    ],
+    [
+      319,
+      91
+    ],
+    [
+      324,
+      91
+    ],
+    [
+      327,
+      91
+    ],
+    [
+      334,
+      91
+    ],
+    [
+      335,
+      91
+    ],
+    [
+      356,
+      110
+    ],
+    [
+      357,
+      111
+    ],
+    [
+      365,
+      111
+    ],
+    [
+      385,
+      131
+    ],
+    [
+      393,
+      131
+    ],
+    [
+      396,
+      132
+    ],
+    [
+      399,
+      134
+    ],
+    [
+      414,
+      143
+    ],
+    [
+      415,
+      143
+    ],
+    [
+      416,
+      143
+    ],
+    [
+      425,
+      143
+    ],
+    [
+      435,
+      143
+    ],
+    [
+      439,
+      143
+    ],
+    [
+      452,
+      143
+    ],
+    [
+      460,
+      143
+    ],
+    [
+      478,
+      143
+    ],
+    [
+      495,
+      143
+    ],
+    [
+      496,
+      143
+    ],
+    [
+      497,
+      143
+    ],
+    [
+      515,
+      143
+    ],
+    [
+      532,
+      143
+    ],
+    [
+      534,
+      143
+    ],
+    [
+      550,
+      143
+    ]
+  ]
+}

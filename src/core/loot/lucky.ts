@@ -1,7 +1,7 @@
 // Lucky Blocks (05 §7) and curses (05 §8): the roll, every buff and debuff, timers, Ambush packs, the curse counter.
 import { dropItem } from '../abilities/items.ts';
 import { overlaps, type Rect } from '../combat/hitGroups.ts';
-import { isGrounded } from '../physics/collide.ts';
+import { boxFree, isGrounded } from '../physics/collide.ts';
 import type { EnemyId } from '../enemies/types.ts';
 import { enemyRect } from '../enemies/enemy.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
@@ -63,21 +63,22 @@ function spawnAmbush(w: GameWorld): void {
   pack.forEach((id: EnemyId, i: number) => {
     const def = ENEMIES[id];
     if (!def) return;
+    const clampX = (dx: number) => Math.min(cam.x + cam.w - AMBUSH.inset, Math.max(cam.x + AMBUSH.inset, b.x + dx));
     const place = (dx: number): number | null => {
-      const x = Math.min(cam.x + cam.w - AMBUSH.inset, Math.max(cam.x + AMBUSH.inset, b.x + dx));
+      const x = clampX(dx);
+      if (def.flying) return AMBUSH.flyerY.map(dy => b.y - dy).find(y => boxFree(w.grid, x, y, def.hurtbox.w, def.hurtbox.h)) ?? null;
       for (let y = b.y - AMBUSH.above; y <= b.y + AMBUSH.below; y++) {
         const box = { x, y, w: def.hurtbox.w, h: def.hurtbox.h, remX: 0, remY: 0 };
-        const free = !w.grid.isSolidPx(Math.floor(x), y - 1) && !w.grid.isSolidPx(Math.floor(x - def.hurtbox.w / 2), y - def.hurtbox.h)
-          && !w.grid.isSolidPx(Math.floor(x + def.hurtbox.w / 2 - 1), y - def.hurtbox.h);
+        const free = boxFree(w.grid, x, y, def.hurtbox.w, def.hurtbox.h);
         if (free && isGrounded(box, w.grid, 0)) return y;
       }
       return null;
     };
     let dx: number = AMBUSH.dx[i], y = place(dx);
-    if (y === null) { dx = -dx; y = place(dx); }
+    if (y === null && !def.flying) { dx = -dx; y = place(dx); }
     if (y === null) return;
     const x = Math.min(cam.x + cam.w - AMBUSH.inset, Math.max(cam.x + AMBUSH.inset, b.x + dx));
-    const e = w.spawnExtra({ enemy: id, x, y, facing: x > b.x ? -1 : 1 });
+    const e = w.spawnExtra({ enemy: id, x, y, facing: x > b.x ? -1 : 1, submerged: false, hang: false });
     e.spawnInTicks = ENEMY.SPAWN_IN_TICKS;
     e.aware = true;
   });

@@ -1,4 +1,4 @@
-// SPEC-GAP: placeholder end until Stage 2 (M7.1)
+// Authorized temporary ending at the Border inn until Stage 3 arrives in M9.
 import type Phaser from 'phaser';
 import type { KitSummary } from '../../core/save/schema.ts';
 import { formatTime } from '../../core/time.ts';
@@ -10,7 +10,7 @@ import { activeHomePad, HomePanelInput, type HomePanelAction, type HomePanelPad 
 import { menuGlyphs, noteInputDevice } from '../inputSettings.ts';
 import { promptLine } from '../promptLine.ts';
 
-export interface RunSoFarData { runTicks: number; split1: number | null; kit: KitSummary; gold: number; kills: number }
+export interface RunSoFarData { runTicks: number; split1: number | null; split2?: number | null; kit: KitSummary; gold: number; kills: number }
 export interface RunSoFarCallbacks { onRestart(): void; onHomeVillage(): void; onTitle(): void }
 export type RunSoFarCommand = typeof U.summary.commands[number];
 
@@ -22,7 +22,8 @@ export class RunSoFarModel {
     const weapons = data.kit.weapons.map((weapon) => weapon ? `${WEAPON_NAME(weapon.weaponId)} ${weapon.grade}` : 'Empty');
     const abilities = data.kit.abilities.map((ability) => ability ? `${ABILITY_INFO[ability.id].name} Lv ${ability.level}` : 'Empty');
     this.lines = [
-      `Time ${formatTime(data.runTicks)}`, `Split 1 ${data.split1 === null ? '—' : formatTime(data.split1)}`, `Class: ${data.kit.displayName}`,
+      `Time ${formatTime(data.runTicks)}`, `Split 1 ${data.split1 === null ? '—' : formatTime(data.split1)}`,
+      ...(data.split2 === undefined ? [] : [`Split 2 ${data.split2 === null ? '—' : formatTime(data.split2)}`]), `Class: ${data.kit.displayName}`,
       `Weapons: ${weapons.join(' / ') || 'Empty'}`, `Abilities: ${abilities.join(' / ') || 'Empty'}`, `Gold: ${data.gold}`, `Kills: ${data.kills}`,
     ];
   }
