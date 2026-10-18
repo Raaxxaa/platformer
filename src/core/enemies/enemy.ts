@@ -2,7 +2,7 @@
 import { newStatus, type EnemyStatus } from '../combat/status.ts';
 import { roundHalfUp } from '../math.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { ENEMY, STAGE_SCALING, VIEW_H, VIEW_W } from '../tuning.ts';
+import { ENEMY, STAGE_SCALING, TILE_SIZE, VIEW_H, VIEW_W } from '../tuning.ts';
 import { ENEMIES } from '../../data/enemies.ts';
 import type { EnemyAttackDef, EnemyDef, EnemySpawn } from './types.ts';
 import type { BossState } from './boss.ts';
@@ -79,6 +79,8 @@ export interface EnemyState {
   drop?: 'key' | 'ability' | null;
   ward: { hp: number; ticks: number; sourceId: number } | null;
   mountain?: { waypoint?: { x:number; y:number }; waypointTicks: number; blinkTicks: number };
+  swamp?: { submerged: boolean; hanging: boolean; harmlessDrop: boolean; reactionTicks: number; hopActive: boolean; marker: { x:number; y:number } | null; detonating: boolean; explosionId: number | null };
+  noRewards: boolean;
 }
 
 /** Stage-scaled attack damage A (a float; 02 §3.3 rounds it). */
@@ -98,7 +100,11 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
     ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false, turnTicks: 0 },
     hitStopTicks: 0, frozenAtTickStart: false, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,
-    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0, boss: null, status: newStatus(), ward: null,
+    damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0, boss: null, status: newStatus(), ward: null, noRewards: false,
+    swamp: ['bog_zombie','giant_spider','wisp','swamp_witch','treant'].includes(def.id) ? {
+      submerged: def.id==='bog_zombie' && (s.submerged ?? w.grid.kindAt(Math.floor(s.x/TILE_SIZE),Math.floor((s.y-1)/TILE_SIZE))==='water'),
+      hanging: def.id==='giant_spider' && s.hang===true, harmlessDrop:false,reactionTicks:0,hopActive:false,marker:null,detonating:false,explosionId:null,
+    } : undefined,
   };
 }
 
@@ -120,4 +126,9 @@ export function enemyRect(e: EnemyState): { x: number; y: number; w: number; h: 
 
 export function enemyCenter(e: EnemyState): { x: number; y: number } {
   return { x: e.x, y: e.y - e.def.hurtbox.h / 2 };
+}
+
+/** Invisible submerged enemies and irreversible explosions cannot be selected or damaged (04 §5). */
+export function enemyHittable(e: EnemyState): boolean {
+  return !e.dead && !e.dormant && e.spawnInTicks===0 && !e.swamp?.submerged && !e.swamp?.detonating;
 }

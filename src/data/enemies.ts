@@ -4,7 +4,7 @@ import { ENEMY } from '../core/tuning.ts';
 
 const REGULAR = { tier: 'regular', elite: false, attackGap: ENEMY.ATTACK_GAP_REGULAR, turnDelay: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged' } as const;
 
-export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'great_boar' | 'bat_swarm' | 'goblin_miner' | 'rock_golem' | 'ram' | 'goblin_shaman', EnemyDef> = {
+export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'great_boar' | 'bat_swarm' | 'goblin_miner' | 'rock_golem' | 'ram' | 'goblin_shaman' | 'bog_zombie' | 'giant_spider' | 'wisp' | 'swamp_witch' | 'treant', EnemyDef> = {
   wolf: {
     ...REGULAR, id: 'wolf', size: 'small', hurtbox: { w: 28, h: 16 }, hp: 30, poiseMax: 10, kbResist: 0,
     walk: 60, chase: 150, notice: { range: 176, rangeY: ENEMY.NOTICE_RANGE_Y, time: 0.35 }, preferred: [72, 112], gold: 3, dropsLedges: true,
@@ -105,6 +105,45 @@ export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'band
         shots: [{ projectile: 'hex_bolt', angles: [0], aim: 'player' }] },
       { id: 'stone_spikes', use: { minX: 0, maxX: 64 }, cooldown: 4, token: 'melee', telegraph: .70, active: .20, recovery: .60,
         hit: { box: { dx: 36, dy: -12, w: 64, h: 24 }, damage: 20, playerKb: [200, -300] } },
+    ],
+  },
+  bog_zombie: {
+    ...REGULAR, id:'bog_zombie',size:'medium',hurtbox:{w:14,h:28},hp:45,poiseMax:20,kbResist:.2,walk:40,chase:40,
+    notice:{range:128,rangeY:ENEMY.NOTICE_RANGE_Y,time:.60},preferred:[16,32],gold:4,waterWalker:true,
+    attacks:[
+      {id:'rise_swipe',use:{minX:0,maxX:0},cooldown:0,token:'none',telegraph:.80,active:.10,recovery:.40,hit:{box:{dx:0,dy:-14,w:24,h:28},damage:10}},
+      {id:'claw',use:{minX:0,maxX:36},cooldown:1.4,token:'melee',telegraph:.50,active:.10,recovery:.50,hit:{box:{dx:18,dy:-16,w:28,h:24},damage:11}},
+      {id:'grab_lunge',use:{minX:0,maxX:56},cooldown:3.5,token:'melee',telegraph:.60,active:.20,recovery:.70,move:{dist:40,time:.2},hit:{box:{dx:20,dy:-16,w:24,h:20},damage:13,status:{id:'poisoned',stacks:1}}},
+    ],
+  },
+  giant_spider: {
+    ...REGULAR,id:'giant_spider',size:'medium',hurtbox:{w:26,h:16},hp:35,poiseMax:15,kbResist:.2,walk:70,chase:110,
+    notice:{range:160,rangeY:ENEMY.NOTICE_RANGE_Y,time:.40},preferred:[24,96],gold:4,
+    attacks:[
+      {id:'drop',use:{minX:0,maxX:0},cooldown:0,token:'none',telegraph:.35,active:0,recovery:.40,hit:{box:{dx:0,dy:-8,w:24,h:16},damage:12}},
+      {id:'bite',use:{minX:0,maxX:32},cooldown:1.2,token:'melee',telegraph:.40,active:.10,recovery:.40,hit:{box:{dx:16,dy:-8,w:20,h:14},damage:9}},
+      {id:'pounce',use:{minX:48,maxX:128},cooldown:2.5,token:'melee',telegraph:.50,active:ENEMY.LEAP_MAX,recovery:.50,leap:{vx:280,vy:-260},hit:{box:{dx:12,dy:-8,w:22,h:14},damage:11}},
+    ],
+  },
+  wisp: {
+    ...REGULAR,id:'wisp',size:'small',hurtbox:{w:14,h:14},hp:25,poiseMax:0,kbResist:0,walk:0,chase:0,fly:70,flying:true,ghost:true,noFacing:true,
+    notice:{range:192,rangeY:128,time:.30},preferred:[0,0],gold:3,
+    attacks:[{id:'detonate',use:{minX:0,maxX:40,minDY:-40,maxDY:40},cooldown:0,token:'melee',telegraph:.70,active:.10,recovery:0,hit:{box:{dx:0,dy:-7,w:72,h:72},damage:14,playerKb:[260,-200]}}],
+  },
+  swamp_witch: {
+    ...REGULAR,id:'swamp_witch',size:'medium',hurtbox:{w:14,h:28},hp:32,poiseMax:10,kbResist:.1,walk:45,chase:60,
+    notice:{range:224,rangeY:ENEMY.NOTICE_RANGE_Y,time:.50},preferred:[120,200],gold:4,
+    attacks:[
+      {id:'poison_potion',use:{minX:64,maxX:224},cooldown:2.6,token:'ranged',telegraph:.60,active:0,recovery:.50,shots:[{projectile:'potion',angles:[0],aim:'arc'}]},
+      {id:'claw',use:{minX:0,maxX:28},cooldown:1.5,token:'melee',telegraph:.40,active:.10,recovery:.40,hit:{box:{dx:14,dy:-14,w:20,h:20},damage:8}},
+    ],
+  },
+  treant: {
+    id:'treant',tier:'elite',elite:true,size:'large',hurtbox:{w:30,h:52},hp:170,poiseMax:80,kbResist:.8,walk:30,chase:30,
+    notice:{range:160,rangeY:ENEMY.NOTICE_RANGE_Y,time:.60},preferred:[32,64],gold:20,attackGap:ENEMY.ATTACK_GAP_ELITE,turnDelay:.6,itemRoll:'elite',blueprintRoll:true,hpBar:'always',
+    attacks:[
+      {id:'root_snare',use:{minX:0,maxX:224,minDY:-64,maxDY:64},cooldown:4,token:'none',telegraph:.80,active:.25,recovery:.60,gapAfter:1.2,hit:{box:{dx:0,dy:-20,w:40,h:40},damage:12,status:{id:'rooted',duration:1}}},
+      {id:'branch_slam',use:{minX:0,maxX:64},cooldown:1.6,token:'melee',telegraph:.65,active:.12,recovery:.70,hit:{box:{dx:34,dy:-20,w:52,h:40},damage:20,playerKb:[280,-200]}},
     ],
   },
   // 04 §9.1, §10.1. Bosses: always aware, no tokens, kbResist 1.0.

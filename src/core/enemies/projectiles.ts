@@ -1,12 +1,14 @@
 // Enemy projectiles: straight/homing shots, arc bombs and floor waves (04 §2.7, §8).
 import { ENEMY_ARC } from '../../data/mountainProjectiles.ts';
+import { ENEMY_PUDDLE } from '../../data/swampProjectiles.ts';
 import { boxToWorld, overlaps, sweep, type Rect } from '../combat/hitGroups.ts';
+import { applyPlayerStatus } from '../combat/playerStatus.ts';
 import { playerRect } from '../combat/resolve.ts';
 import { boxFree } from '../physics/collide.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { ENEMY, TICK, TILE_SIZE, ticks } from '../tuning.ts';
 import type { EnemyState } from './enemy.ts';
-import type { EnemyProjectileDef } from './types.ts';
+import type { EnemyProjectileDef, PlayerStatusId } from './types.ts';
 
 
 export interface EnemyProjectile {
@@ -18,6 +20,10 @@ export interface EnemyProjectile {
   traveled: number;
   groupId: number;
   arc?: { landed: boolean; fuseTicks: number };
+}
+
+export interface EnemyPuddle extends Rect {
+  id: number; owner: number; left: number; next: number; status: PlayerStatusId;
 }
 
 function rectOf(p: EnemyProjectile): Rect {
@@ -58,7 +64,7 @@ export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProj
   w.projectiles.push(p);
   w.hitGroups.push({
     id, owner: e.id, kind: 'shot', rect: rectOf(p), spec: { damage: def.hit.damage, kb: [0, 0], poise: 0, hitStop: 0, kind: 'shot' },
-    enemyHit: def.hit, active: def.id !== 'bomb', lastHitTick: new Map(), hitCount: new Map(), attackInstance: id, dir: p.dir,
+    enemyHit: def.hit, active: def.id !== 'bomb' && def.id !== 'potion', lastHitTick: new Map(), hitCount: new Map(), attackInstance: id, dir: p.dir,
   });
   return p;
 }
@@ -72,8 +78,8 @@ function hasSupport(w: GameWorld, px: number, feetY: number): boolean {
   return w.grid.isSolidPx(px, feetY) || (feetY % TILE_SIZE === 0 && w.grid.kindAt(Math.floor(px / TILE_SIZE), feetY / TILE_SIZE) === 'oneway');
 }
 
-/** Replace the bomb with one one-tick enemy blast. Damage remains in normal hit resolution. */
-function explodeBomb(w: GameWorld, p: EnemyProjectile): void {
+/** Replace the arc projectile with one one-tick enemy blast/splash, using normal hit resolution. */
+function explodeArc(w: GameWorld, p: EnemyProjectile): void {
   const blast = p.def.blast!;
   removeProjectile(w, p);
   const id = w.newId();
@@ -83,6 +89,30 @@ function explodeBomb(w: GameWorld, p: EnemyProjectile): void {
     active: true, lastHitTick: new Map(), hitCount: new Map(), attackInstance: p.id, dir: p.dir,
   });
   w.blasts.push(id);
+}
+
+function shatterPotion(w: GameWorld, p: EnemyProjectile, ground: boolean): void {
+  explodeArc(w, p);
+  const puddle = p.def.puddle;
+  if (ground && puddle) w.puddles.push({ id: w.newId(), owner: p.owner,
+    x: p.x - puddle.w / 2, y: p.y + p.def.h / 2 - puddle.h, w: puddle.w, h: puddle.h,
+    left: ticks(puddle.life), next: ENEMY_PUDDLE.intervalTicks, status: puddle.status });
+}
+
+/** Existing puddles only; call before moving projectiles so a new puddle keeps all of its first interval. */
+export function stepPuddles(w: GameWorld): void {
+  const scale = w.worldTimeScale;
+  if (scale <= 0) return;
+  const player = playerRect(w), alive: EnemyPuddle[] = [];
+  for (const puddle of w.puddles) {
+    puddle.left -= scale; puddle.next -= scale;
+    while (puddle.next <= 0 && puddle.left - puddle.next >= 0) {
+      if (overlaps(puddle, player)) applyPlayerStatus(w, puddle.status);
+      puddle.next += ENEMY_PUDDLE.intervalTicks;
+    }
+    if (puddle.left > 0) alive.push(puddle);
+  }
+  w.puddles = alive;
 }
 
 function solidBox(w: GameWorld, x: number, y: number, width: number, height: number): boolean {
@@ -157,11 +187,14 @@ export function stepProjectiles(w: GameWorld): void {
       syncDirection(w, p);
       if (p.arc.landed) {
         p.arc.fuseTicks -= scale;
-        if (p.arc.fuseTicks <= 0) explodeBomb(w, p);
+        if (p.arc.fuseTicks <= 0) explodeArc(w, p);
         continue;
       }
       moveArc(w, p, dt);
-      if (overlaps(sweep(prev, rectOf(p)), playerRect(w))) explodeBomb(w, p);
+      if (overlaps(sweep(prev, rectOf(p)), playerRect(w))) {
+        if (p.def.id === 'potion') shatterPotion(w, p, false);
+        else explodeArc(w, p);
+      } else if (p.arc.landed && p.def.id === 'potion') shatterPotion(w, p, true);
       continue;
     }
     home(w, p, dt);

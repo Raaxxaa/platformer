@@ -28,7 +28,7 @@ export function canSee(w: GameWorld, e: EnemyState): boolean {
   const range = n.range * w.noticeRangeMult * (behind ? 0.5 : 1);
   if (Math.abs(dx) > range) return false;
   if (Math.abs(playerDY(w, e)) > n.rangeY * w.noticeRangeMult) return false;
-  return lineOfSight(w, e.x, e.y - e.def.hurtbox.h + 6, b.x, b.y - b.h / 2);
+  return e.def.ghost === true || lineOfSight(w, e.x, e.y - e.def.hurtbox.h + 6, b.x, b.y - b.h / 2);
 }
 
 /** Becomes aware: shares with its group, spreads to unaware enemies within 128 px after 0.3 s. */
@@ -57,6 +57,7 @@ export function becomeAware(w: GameWorld, e: EnemyState, byHit: boolean): void {
 
 /** One enemy-time tick of noticing. */
 export function stepAwareness(w: GameWorld, e: EnemyState): void {
+  if(e.swamp?.submerged||e.swamp?.hanging||e.ai.attack?.def.id==='rise_swipe'||e.ai.attack?.def.id==='drop')return;
   if (e.aware || e.def.tier === 'dummy' || e.def.tier === 'target') return;
   if (e.ai.pendingAwareAt >= 0 && w.tick >= e.ai.pendingAwareAt) { becomeAware(w, e, false); return; }
   if (canSee(w, e)) e.noticeT += 1;

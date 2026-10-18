@@ -1,7 +1,7 @@
 // Whirlwind (03 §8.2): spin forward at 120 px/s hitting every 0.15 s; Lv5 pulls small and medium enemies in.
 import { applyPull } from '../../combat/enemyReactions.ts';
 import { boxToWorld } from '../../combat/hitGroups.ts';
-import { enemyCenter } from '../../enemies/enemy.ts';
+import { enemyCenter, enemyHittable } from '../../enemies/enemy.ts';
 import { startForcedMove } from '../../player/forcedMove.ts';
 import { ABILITY } from '../../../data/abilities.ts';
 import { registerAbility } from '../abilitySystem.ts';
@@ -23,7 +23,7 @@ registerAbility('whirlwind', {
         if (!pull || !g.active) return;
         const bb = ww.body, cx = bb.x, cy = bb.y - bb.h / 2;
         for (const e of ww.enemies) {
-          if (e.dead || e.dormant) continue;
+          if (!enemyHittable(e)) continue;
           const ec = enemyCenter(e);
           if (Math.hypot(ec.x - cx, ec.y - cy) <= A.pullRadius) applyPull(ww, e, { x: cx, y: cy, speed: A.pullSpeed });
         }

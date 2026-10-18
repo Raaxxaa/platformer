@@ -1,5 +1,5 @@
 // Elements on weapon hits (02 §6). M4 has Lightning level 1 only (Storm Caller, Arcane Archer); the rest come with loot.
-import { enemyCenter, type EnemyState } from '../enemies/enemy.ts';
+import { enemyCenter, enemyHittable, type EnemyState } from '../enemies/enemy.ts';
 import { roundHalfUp } from '../math.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT } from '../tuning.ts';
@@ -43,7 +43,7 @@ export function lightningChain(w: GameWorld, target: EnemyState, level: 1 | 2 | 
   const L = COMBAT.LIGHTNING[level - 1];
   const c = enemyCenter(target);
   const list = w.enemies
-    .filter((e) => e !== target && !e.dead && !e.dormant && e.spawnInTicks === 0)
+    .filter((e) => e !== target && enemyHittable(e))
     .map((e) => ({ e, d: Math.hypot(enemyCenter(e).x - c.x, enemyCenter(e).y - c.y) }))
     .filter((x) => x.d <= L.range)
     .sort((a, b) => a.d - b.d || a.e.id - b.e.id)
@@ -54,6 +54,7 @@ export function lightningChain(w: GameWorld, target: EnemyState, level: 1 | 2 | 
     applyEnemyDamage(e,dmg);
     e.damagedTicks = 0;
     e.everDamaged = true;
+    if(e.hp>0)w.onEnemyHitByPlayer(e);
     w.events.push({ t: 'hit', target: e.id, amount: dmg, crit: false, heavy: false, chainFrom: target.id });
     if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
     else if (e.hp <= 0) onKill(e);

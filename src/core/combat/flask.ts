@@ -7,6 +7,7 @@ import { LUCKY_FX } from '../../data/loot.ts';
 import { statValue } from '../economy/stats.ts';
 import { cancelAttack } from './playerCombat.ts';
 import type { FlaskState } from './types.ts';
+import { clearPlayerDamageStatus } from './playerStatus.ts';
 
 export interface DrinkState { t: number; sipped: boolean }
 
@@ -67,6 +68,7 @@ export function stepDrink(w: GameWorld): void {
     w.flask.charges -= 1;
     w.run.stats.flasksDrunk += 1;
     w.health.hp = Math.min(w.health.maxHp, w.health.hp + roundHalfUp(FLASK.HEAL_FRACTION * w.health.maxHp));
+    clearPlayerDamageStatus(w);
     convert(w.flask);
     w.events.push({ t: 'drink' });
   }

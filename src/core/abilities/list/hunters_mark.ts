@@ -1,5 +1,5 @@
 // Hunter's Mark (03 §10.4): mark the highest-HP enemies in range; player damage to them ×1.30 (linked ×1.45).
-import { enemyCenter } from '../../enemies/enemy.ts';
+import { enemyCenter, enemyHittable } from '../../enemies/enemy.ts';
 import { addHitMod } from '../../combat/hitMods.ts';
 import type { GameWorld } from '../../sim/gameWorld.ts';
 import { ticks } from '../../tuning.ts';
@@ -21,7 +21,7 @@ registerAbility('hunters_mark', {
   start(w, c) {
     const b = w.body, cx = b.x, cy = b.y - b.h / 2, r = c.row.radiusPx as number;
     const list = w.enemies
-      .filter((e) => !e.dead && !e.dormant && Math.hypot(enemyCenter(e).x - cx, enemyCenter(e).y - cy) <= r)
+      .filter((e) => enemyHittable(e) && Math.hypot(enemyCenter(e).x - cx, enemyCenter(e).y - cy) <= r)
       .map((e) => ({ e, d: Math.hypot(enemyCenter(e).x - cx, enemyCenter(e).y - cy) }))
       .sort((a, z) => z.e.hp - a.e.hp || a.d - z.d || a.e.id - z.e.id);
     if (!list.length) return false;                           // fizzle: nothing spent

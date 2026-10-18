@@ -10,8 +10,8 @@ function setCooldown(e: EnemyState, def: EnemyAttackDef): void {
   e.ai.cooldowns.set(def.id, ticks(def.cooldown));
 }
 
-function gapTicks(e: EnemyState): number {
-  return bossAttackGapTicks(e) ?? ticks(e.def.attackGap);
+function gapTicks(e: EnemyState, def: EnemyAttackDef): number {
+  return def.gapAfter !== undefined ? ticks(def.gapAfter) : bossAttackGapTicks(e) ?? ticks(e.def.attackGap);
 }
 
 export function removeEnemyGroups(w: GameWorld, e: EnemyState): void {
@@ -26,6 +26,8 @@ export function startEnemyAttack(w: GameWorld, e: EnemyState, def: EnemyAttackDe
   e.ai.t = 0;
   e.vx = 0;
   e.token = def.token === 'none' ? null : def.token;
+  if(e.def.id==='treant'&&def.id==='root_snare')e.swamp!.marker={x:w.body.x,y:w.body.y};
+  else if(e.def.id==='treant')e.swamp!.marker=null;
   w.events.push({ t: 'enemyTelegraph', enemyId: e.id, attackId: def.id, duration: def.telegraph });
 }
 
@@ -33,6 +35,7 @@ export function startEnemyAttack(w: GameWorld, e: EnemyState, def: EnemyAttackDe
 export function cancelEnemyAttack(w: GameWorld, e: EnemyState): void {
   const a = e.ai.attack;
   if (!a) return;
+  if(a.def.id==='root_snare'&&e.swamp)e.swamp.marker=null;
   removeEnemyGroups(w, e);
   setCooldown(e, a.def);
   e.ai.attack = null;
@@ -47,12 +50,13 @@ function spawnAttackGroup(w: GameWorld, e: EnemyState): void {
   const a = e.ai.attack!;
   const hit = a.def.hit;
   if (!hit) return;
+  const marker=a.def.id==='root_snare'?e.swamp?.marker:null;
   const id = w.newId();
   a.groupId = id;
   w.hitGroups.push({
-    id, owner: e.id, kind: 'melee', rect: boxToWorld(hit.box, e.x, e.y, e.facing),
+    id, owner: e.id, kind: 'melee', rect: boxToWorld(hit.box, marker?.x??e.x, marker?.y??e.y, e.facing),
     spec: { damage: hit.damage, kb: [0, 0], poise: 0, hitStop: 0, kind: 'melee', rehit: hit.rehit, maxHits: hit.maxHits },
-    enemyHit: hit, box: hit.box, active: true, lastHitTick: new Map(), hitCount: new Map(), attackInstance: id,
+    enemyHit: hit, box: marker ? undefined : hit.box, active: true, lastHitTick: new Map(), hitCount: new Map(), attackInstance: id,
   });
 }
 
@@ -95,7 +99,7 @@ export function stepEnemyAttack(w: GameWorld, e: EnemyState, hooks: AttackHooks 
   e.ai.attack = null;
   e.ai.state = 'engage';
   e.ai.t = 0;
-  e.ai.gapTicks = gapTicks(e);
+  e.ai.gapTicks = gapTicks(e, a.def);
   return true;
 }
 

@@ -1,6 +1,8 @@
 // Enemy body: gravity, collision, ledges, knockback motion and separation (04 §2.1, 02 §4.2).
 import { approach } from '../math.ts';
-import { isGrounded, moveX, moveY, type AABBBody } from '../physics/collide.ts';
+import { isGrounded, moveX, moveY, roundHalfAwayFromZero, type AABBBody } from '../physics/collide.ts';
+import { SWAMP } from '../../data/swamps.ts';
+import { TERRAIN } from '../tuning.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, ENEMY, TICK, TILE_SIZE } from '../tuning.ts';
 import type { EnemyState } from './enemy.ts';
@@ -28,6 +30,7 @@ function mayDrop(w: GameWorld, e: EnemyState): boolean {
 /** One enemy-time tick of movement. AI and attacks set `vx` before this; knockback owns it while active. */
 export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
   if (e.def.stationary) return;
+  if(e.swamp?.submerged||e.swamp?.hanging)return;
   const c = e.control;
   if (c?.type === 'pin') { e.vx = 0; e.vy = 0; return; }                // held flush, no gravity (02 §4.4)
   if (c?.type === 'pull' && c.to) { stepPull(w, e); return; }
@@ -40,9 +43,17 @@ export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
   }
   // Flyers retain their AI's vertical velocity and pass through one-way platforms (04 §2.1).
   const vyStart = e.vy;
-  if (!e.def.flying && (!e.grounded || e.vy < 0)) e.vy = Math.min(ENEMY.MAX_FALL, e.vy + ENEMY.GRAVITY * TICK);
+  const dropping=e.swamp?.harmlessDrop||(e.ai.attack?.def.id==='drop'&&e.ai.attack.phase==='act');
+  if(dropping)e.vy=SWAMP.spiderFall;
+  else if (!e.def.flying && (!e.grounded || e.vy < 0)) e.vy = Math.min(ENEMY.MAX_FALL, e.vy + ENEMY.GRAVITY * TICK);
   const box = asBox(e);
-  if (moveX(box, w.grid, e.vx * TICK, true) === 'wall') {
+  const inWater=w.grid.kindAt(Math.floor(e.x/TILE_SIZE),Math.floor((e.y-1)/TILE_SIZE))==='water';
+  const surface=!e.def.flying&&!e.def.waterWalker&&!e.knockback&&inWater?TERRAIN.WATER_SPEED_MULT:1;
+  if(e.def.ghost){
+    box.remX+=e.vx*TICK;box.remY+=e.vy*TICK;const dx=roundHalfAwayFromZero(box.remX),dy=roundHalfAwayFromZero(box.remY);box.x+=dx;box.y+=dy;box.remX-=dx;box.remY-=dy;copyBack(e,box);e.grounded=false;
+    if(e.knockback&&!e.control&&Math.abs(e.vx)<COMBAT.ENEMY_KB_CONTROL_SPEED){e.knockback=false;e.vx=0;}return;
+  }
+  if (moveX(box, w.grid, e.vx * TICK * surface, true) === 'wall') {
     e.vx = 0;
     e.hitWall = true;
   }

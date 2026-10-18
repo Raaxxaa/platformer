@@ -1,7 +1,7 @@
 // S-grade signature moves (02 §13) for the 8 built weapons. Their hits go through the normal pipeline
 // (base × S 2.0 × match, the weapon's element) and belong to the attack instance that spawned them.
 import type { EnemyState } from '../enemies/enemy.ts';
-import { enemyCenter } from '../enemies/enemy.ts';
+import { enemyCenter, enemyHittable } from '../enemies/enemy.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { TICK, ticks } from '../tuning.ts';
 import { SIGNATURE as SG } from '../../data/weapons.ts';
@@ -137,7 +137,7 @@ export function stepSignatures(w: GameWorld): void {
   for (const p of w.playerProjectiles) {
     if (!p.opts.singularity) continue;
     for (const e of w.enemies) {
-      if (e.dead || e.dormant || (e.def.size !== 'small' && e.def.size !== 'medium')) continue;
+      if (!enemyHittable(e) || (e.def.size !== 'small' && e.def.size !== 'medium')) continue;
       const c = enemyCenter(e), d = Math.hypot(c.x - p.x, c.y - p.y);
       if (d > SG.singularity.radius || d < 1) continue;
       e.x += ((p.x - c.x) / d) * SG.singularity.pull * TICK;

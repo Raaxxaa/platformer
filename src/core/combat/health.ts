@@ -22,6 +22,18 @@ export function createHealth(): PlayerHealth {
   return { hp: COMBAT.MAX_HP, maxHp: COMBAT.MAX_HP, iframeTicks: 0, hitstunTicks: 0, abilityIframeTicks: 0, dead: false, deathCause: null };
 }
 
+/** DOT runs only damage and lethal-hit handling, bypassing i-frames and all hurt reactions (02 §5.4). */
+export function hurtPlayerDot(w:GameWorld,damageA:number,cause:'burning'|'poisoned'):number {
+  const h=w.health;if(h.dead)return 0;
+  const dealt=enemyHitDamage(damageA,incomingMult(w),w.econ.curse?.id==='one_hit'?h.hp:null);
+  w.run.stats.damageTaken+=Math.min(Math.max(0,h.hp),dealt);h.hp-=dealt;
+  if(h.hp<=0&&w.level?.kind==='training')h.hp=1;
+  const saved=h.hp<=0&&trySecondWind(w);
+  if(saved)h.iframeTicks=ticks(LUCKY_FX.secondWindIframeS);
+  else if(h.hp<=0){h.hp=0;h.dead=true;h.deathCause=cause;setDead(w.body);w.onPlayerDied(cause);}
+  return dealt;
+}
+
 export type HurtSource =
   | { kind: 'enemyHit'; enemyId: number; enemyDefId: string; damageA: number; attackerCx: number; melee: boolean; playerKb?: [number, number]; travelDir?: 1 | -1 }
   | { kind: 'hazard'; cause: 'spikes' | 'hazard'; damageA: number };

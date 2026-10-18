@@ -119,6 +119,8 @@ export const slot2Locked = (w: GameWorld) => hasDebuff(w, 'butterfingers');
 export function trySecondWind(w: GameWorld): boolean {
   if (!hasBuff(w, 'second_wind')) return false;
   w.econ.buffs = w.econ.buffs.filter((b) => b !== 'second_wind');
+  w.econ.secondWindUsed=true;
+  w.playerStatus.burning=null;w.playerStatus.poisoned=null;
   w.health.hp = Math.round(LUCKY_FX.secondWindHpFrac * w.health.maxHp);
   return true;
 }

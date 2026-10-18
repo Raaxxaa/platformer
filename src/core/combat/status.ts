@@ -1,5 +1,5 @@
 // Enemy element statuses (02 §6.2–6.7): Burn, Chill / Freeze / Shatter, Poison, Wind kill refund. Lightning is in elements.ts.
-import { enemyCenter, type EnemyState } from '../enemies/enemy.ts';
+import { enemyCenter, enemyHittable, type EnemyState } from '../enemies/enemy.ts';
 import { roundHalfUp } from '../math.ts';
 import { refundDash } from '../player/dash.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
@@ -94,6 +94,7 @@ function dot(w: GameWorld, e: EnemyState, amount: number, src: WeaponInstance | 
   applyEnemyDamage(e,dmg);
   e.damagedTicks = 0;
   e.everDamaged = true;
+  if(e.hp>0)w.onEnemyHitByPlayer(e);
   w.events.push({ t: 'hit', target: e.id, amount: dmg, crit: false, heavy: false, dot: true });
   if (e.def.tier === 'dummy' && e.hp < 1) e.hp = 1;
   else if (e.hp <= 0 && !e.dead) { killEnemy(w, e); creditKillSource(w, src, e); }
@@ -105,7 +106,7 @@ export function spreadBurn(w: GameWorld, dead: EnemyState): void {
   if (!b) return;
   const c = enemyCenter(dead);
   for (const e of w.enemies) {
-    if (e === dead || e.dead || e.dormant) continue;
+    if (e === dead || !enemyHittable(e)) continue;
     const ec = enemyCenter(e);
     if (Math.hypot(ec.x - c.x, ec.y - c.y) <= b.spread) {
       e.status.burn = { perTick: b.perTick, left: ticks(ELEMENT.BURN.durationS), next: ticks(ELEMENT.BURN.intervalS), spread: b.spread, src: b.src };
@@ -116,7 +117,7 @@ export function spreadBurn(w: GameWorld, dead: EnemyState): void {
 /** Status timers and damage-over-time, once per tick before enemies act. */
 export function stepStatuses(w: GameWorld): void {
   for (const e of [...w.enemies].sort((a, b) => a.id - b.id)) {
-    if (e.dead || e.dormant) continue;
+    if (!enemyHittable(e)) continue;
     const s = e.status;
     if (s.burn) {
       s.burn.left -= 1;

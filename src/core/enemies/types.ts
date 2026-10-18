@@ -25,6 +25,7 @@ export interface EnemyAttackDef {
   use: { minX: number; maxX: number; minDY?: number; maxDY?: number; behind?: boolean };
   weight?: number; cooldown: number; token: 'melee' | 'ranged' | 'none';
   telegraph: number; active: number; recovery: number;
+  gapAfter?: number;
   hit?: EnemyHit;
   move?: { dist: number; time: number };
   leap?: { vx: number; vy: number } | { jumpToX: number };
@@ -63,4 +64,4 @@ export interface EnemyProjectileDef {
   puddle?: { w: number; h: number; life: number; status: PlayerStatusId };
 }
 /** A level spawn (06 objects; M2 levels write these directly). */
-export interface EnemySpawn { enemy: EnemyId; x: number; y: number; facing: 1 | -1; patrol?: number; group?: string; objectId?: number }
+export interface EnemySpawn { enemy: EnemyId; x: number; y: number; facing: 1 | -1; patrol?: number; group?: string; objectId?: number; submerged?: boolean; hang?: boolean }

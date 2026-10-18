@@ -11,7 +11,7 @@ import { dashCooldownMult, extraSpeed } from '../loot/perks.ts';
 import { cancelEnemyAttack } from '../enemies/attack.ts';
 import { enemyActs, stepStatuses } from '../combat/status.ts';
 import { createCamera, shake, snapCamera, stepCamera, type CameraState } from '../camera.ts';
-import { createHealth, hurtPlayer, type PlayerHealth } from '../combat/health.ts';
+import { createHealth, hurtPlayer, hurtPlayerDot, type PlayerHealth } from '../combat/health.ts';
 import type { HitGroup } from '../combat/hitGroups.ts';
 import { addRush, createRush, rushLevel, rushSpeedPercent, stepRush } from '../combat/rush.ts';
 import { enemyRect } from '../enemies/enemy.ts';
@@ -81,6 +81,10 @@ import { buildLevelFeatures, type DarkZone, type Firefly, type GrapplePoint } fr
 import { createFallingRocks, stepFallingRocks, type FallingRocksState } from '../hazards/fallingRocks.ts';
 import { FALLING_ROCKS } from '../../data/hazards.ts';
 import { stepMountainReaction } from '../enemies/mountains.ts';
+import { onSwampDamaged, stepSwampSpecial } from '../enemies/swamps.ts';
+import { createPlayerStatus, stepPlayerStatus, type PlayerStatuses } from '../combat/playerStatus.ts';
+import { PLAYER_STATUS } from '../../data/playerStatus.ts';
+import { stepPuddles, type EnemyPuddle } from '../enemies/projectiles.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -179,6 +183,8 @@ export class GameWorld {
   mods!: MoveModifiers;
   ctx!: MoveContext;
   health!: PlayerHealth;
+  playerStatus: PlayerStatuses=createPlayerStatus();
+  puddles: EnemyPuddle[]=[];
   rush!: RushState;
   combat!: PlayerCombat;
   abilities!: AbilityRuntime;
@@ -347,6 +353,7 @@ export class GameWorld {
     this.mods = defaultModifiers();
     this.ctx = { slotUsable: [true, true] };
     this.health = createHealth();
+    this.playerStatus=createPlayerStatus();this.puddles=[];
     this.rush = createRush();
     this.flask = createFlask();
     this.drinking = null;
@@ -553,6 +560,7 @@ export class GameWorld {
 
   /** Hurt pipeline hook: the player died this tick (06 §6.1). */
   onPlayerDied(cause: string): void {
+    this.playerStatus=createPlayerStatus();
     this.phase = 'dead';
     this.deathTick = this.tick;
     this.run.phase = 'dead';
@@ -604,8 +612,11 @@ export class GameWorld {
 
   /** An enemy took player damage: instant awareness (04 §2.4). */
   onEnemyHitByPlayer(e: EnemyState): void {
+    onSwampDamaged(this,e);
     becomeAware(this, e, true);
   }
+
+  onPlayerStatusDot(damageA:number,cause:'burning'|'poisoned'):void { hurtPlayerDot(this,damageA,cause); }
 
   /** An enemy shot hit the player (projectiles stop). */
   onEnemyShotLanded(g: HitGroup): void {
@@ -696,7 +707,7 @@ export class GameWorld {
       stepEnemyBody(this, e);
       return;
     }
-    if (e.control || e.status.frozen || e.knockback) stepMountainReaction(this,e); // cancel even when its final control tick ends below
+    if (e.control || e.status.frozen || e.knockback) {stepMountainReaction(this,e);if(e.def.id==='swamp_witch')stepSwampSpecial(this,e);} // cancel even when its final control tick ends below
     stepEnemyReactions(e);
     // Frozen: no action (its attack is cancelled); Chilled: acts on a fraction of ticks (02 §6.3). Gravity always.
     if (!enemyActs(e)) {
@@ -719,7 +730,7 @@ export class GameWorld {
       if (!e.knockback && e.grounded) e.vx = 0;
     } else if (!e.knockback) {
       const sparring = e.def.id === 'sparring_dummy';
-      if (stepMountainReaction(this,e)) { /* Hittable Blink Away fade; no attack or walking. */ }
+      if (stepSwampSpecial(this,e)||stepMountainReaction(this,e)) { /* Waiting states and reactions own movement. */ }
       else if (e.ai.attack) {
         stepEnemyAttack(this, e, attackHooks(e));
         if (sparring && !e.ai.attack) stepSparring(this, e);   // the next swing starts as the last ends (every 2.0 s)
@@ -771,6 +782,8 @@ export class GameWorld {
     if (this.health.iframeTicks > 0) this.health.iframeTicks -= 1;
     if (this.health.hitstunTicks > 0 && this.body.hitStopTicks === 0) this.health.hitstunTicks -= 1;
     if (this.health.abilityIframeTicks > 0 && this.body.hitStopTicks === 0) this.health.abilityIframeTicks -= 1;
+    stepPlayerStatus(this);this.mods.rooted=this.playerStatus.rooted>0;this.mods.statusMult=this.playerStatus.chilled>0?PLAYER_STATUS.chilledMult:1;
+    if(this.health.dead)input=emptyInput();
     // 3. Player actions.
     // A slot whose Storm Hammer is out cannot dive (02 §11).
     this.ctx.slotUsable = [this.combat.slots[0] !== null && !hammerOutIn(this, 0), this.combat.slots[1] !== null && !hammerOutIn(this, 1)];
@@ -820,6 +833,7 @@ export class GameWorld {
     // 6. Moving hit groups and ability entities (world ticks).
     stepPlayerProjectiles(this);
     stepHammer(this);
+    stepPuddles(this);
     stepProjectiles(this);
     stepAbilityEntities(this);
     stepGroundItems(this);

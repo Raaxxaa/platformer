@@ -1,5 +1,5 @@
 // Thunder Strike (03 §11.1): bolts every 0.1 s on enemies ahead (nearest first), or on fixed columns.
-import { enemyCenter, enemyRect, type EnemyState } from '../../enemies/enemy.ts';
+import { enemyCenter, enemyHittable, enemyRect, type EnemyState } from '../../enemies/enemy.ts';
 import { ABILITY } from '../../../data/abilities.ts';
 import { registerAbility } from '../abilitySystem.ts';
 import { abilityHit, addAbilityGroup, lineOfSight, newInstance, oneTick } from '../helpers.ts';
@@ -9,7 +9,7 @@ const A = ABILITY.thunderStrike;
 registerAbility('thunder_strike', {
   effect(w, c) {
     const b = w.body, f = b.facing, x = b.x, feet = b.y, cy = b.y - b.h / 2;
-    const live = (e: EnemyState) => !e.dead && !e.dormant;
+    const live = (e: EnemyState) => enemyHittable(e);
     const cands = w.enemies.filter((e) => {
       if (!live(e)) return false;
       const ec = enemyCenter(e), ahead = (ec.x - x) * f;

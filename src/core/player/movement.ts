@@ -11,7 +11,7 @@ import { defaultModifiers, runMaxEff, type MoveContext, type MoveModifiers } fro
 import { leaveWall, updateWallSlide } from './wall.ts';
 import { checkLedgeGrab, stepLedgeClimb } from './ledge.ts';
 import { stepDivePhases, tryStartDive } from './dive.ts';
-import { forcedAfterMove, forcedTimeAndCancels, forcedVelocity } from './forcedMove.ts';
+import { endForcedMove, forcedAfterMove, forcedTimeAndCancels, forcedVelocity } from './forcedMove.ts';
 import { updateSurfaces } from './surfaces.ts';
 
 interface Rates { accel: number; decel: number; turn: number; overspeed: number }
@@ -104,7 +104,7 @@ function verticalVelocity(b: PlayerBody, input: InputState, mods: MoveModifiers)
     case 'diveFall': b.vy = MOVE.DIVE_SPEED; break;
     case 'air': {
       const cap = b.inWater ? TERRAIN.WATER_MAX_FALL : mods.maxFallOverride ?? (input.moveY === 1 ? MOVE.MAX_FALL_DOWN_HELD : MOVE.MAX_FALL);
-      b.vy = fall(b.vy, MOVE.GRAVITY * mods.gravityMult, cap);
+      b.vy = fall(b.vy, MOVE.GRAVITY * (mods.rooted ? 1 : mods.gravityMult), cap);
       break;
     }
     case 'wallSlide':
@@ -213,6 +213,12 @@ export function stepPlayer(b: PlayerBody, input: InputState, g: TileGrid, mods: 
   // 2. Advance; end timed states.
   b.pt += 1;
   b.stateTicks += 1;
+  if(mods.rooted){
+    if(b.state==='forced')endForcedMove(b,g,mods,'rooted');
+    if(b.state==='dash'||b.state==='slide'){ev.push(endDashOrSlide(b,mods));setState(b,b.grounded?'ground':'air',0);}
+    if(b.state==='ledgeClimb')setState(b,'air',0);
+    b.vx=0;b.remX=0;
+  }
   if (b.state === 'hurt' && b.stateTicks > b.hurtTicks) setState(b, b.grounded ? 'ground' : 'air', 1);
   const ended = stepDashOrSlide(b, g, mods);
   if (ended) ev.push(ended);

@@ -117,6 +117,7 @@ export function buildWorldParts(d: LevelData): { grid: TileGrid; bodies: SolidBo
         enemy: String(o.props.enemy) as EnemyId, x: o.x, y: o.y, facing: Number(o.props.facing ?? 1) >= 0 ? 1 : -1,
         patrol: Number(o.props.patrol ?? 0), group: String(o.props.group ?? '') || undefined,
         objectId: o.id, wave: Number(o.props.wave ?? 0), arena: String(o.props.arena ?? ''),
+        submerged: typeof o.props.submerged === 'boolean' ? o.props.submerged : undefined, hang: o.props.hang === true,
       });
     }
   }

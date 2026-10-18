@@ -4,7 +4,7 @@ import { addGoldTenths, killGoldTenths } from '../economy/gold.ts';
 import { blueprintOnKill, grantKingUnlocks } from '../loot/blueprintItems.ts';
 import { critChance } from '../loot/perks.ts';
 import { statCount } from '../economy/stats.ts';
-import { enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
+import { enemyDamageA, enemyHittable, enemyRect, type EnemyState } from '../enemies/enemy.ts';
 import { removeEnemyGroups, cancelEnemyAttack } from '../enemies/attack.ts';
 import { onBossKilled } from '../enemies/boss.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
@@ -26,6 +26,7 @@ import { TRAINING } from '../../data/enemies.ts';
 import { applyEnemyDamage, enemyGuarded } from './enemyDamage.ts';
 import { MOUNTAIN } from '../../data/mountains.ts';
 import { removePlayerProjectile } from './playerProjectiles.ts';
+import { applyPlayerStatus } from './playerStatus.ts';
 
 /** The player hurtbox as a rect. */
 export function playerRect(w: GameWorld): Rect {
@@ -34,7 +35,7 @@ export function playerRect(w: GameWorld): Rect {
 }
 
 function hittable(e: EnemyState): boolean {
-  return !e.dead && !e.dormant && e.spawnInTicks === 0;
+  return enemyHittable(e);
 }
 
 /** An enemy reaches 0 HP: it dies, its attack and boxes go, and step 9 runs its on-kill effects. */
@@ -153,6 +154,7 @@ export function resolveEnemyHits(w: GameWorld): void {
       attackerCx, melee: g.kind === 'melee', playerKb: g.enemyHit.playerKb, travelDir: g.dir,
     });
     if (dealt === 0) continue;                                  // invulnerable: not marked, may hit later
+    if(g.enemyHit.status)applyPlayerStatus(w,g.enemyHit.status.id,g.enemyHit.status.stacks??1,g.enemyHit.status.duration);
     markHit(g, 0, w.tick);
     w.events.push({ t: 'hit', target: 'player', amount: dealt, crit: false, heavy: false });
     w.shakeLevel('small');
@@ -165,6 +167,7 @@ export function resolveEnemyHits(w: GameWorld): void {
 export function processDeaths(w: GameWorld): void {
   for (const e of w.pendingDeaths) {
     spreadBurn(w, e);                                           // 02 §6.2: a burning enemy that dies (any cause) spreads it
+    if(e.noRewards)continue;
     if (e.def.tier === 'target') {
       // Straw target (04 §2.12): Rush only (a regular kill), no gold or flask; back in 3.0 s.
       addRush(w, RUSH.KILL_REGULAR);
@@ -186,6 +189,6 @@ export function processDeaths(w: GameWorld): void {
     if (e.boss) onBossKilled(w, e);
   }
   // Blademaster (03 §5.2): kills reset the dash; several kills on one tick = one call.
-  if (w.pendingDeaths.some((e) => e.def.tier !== 'target') && w.classState.bond === 'blademaster') refundDash(w.body);
+  if (w.pendingDeaths.some((e) => !e.noRewards && e.def.tier !== 'target') && w.classState.bond === 'blademaster') refundDash(w.body);
   w.pendingDeaths = [];
 }

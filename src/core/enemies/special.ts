@@ -8,6 +8,7 @@ import type { EnemyState } from './enemy.ts';
 import { spawnEnemyProjectile } from './projectiles.ts';
 import { greatBoarHooks } from './greatBoar.ts';
 import { mountainAttackHooks } from './mountains.ts';
+import { swampAttackHooks } from './swamps.ts';
 
 
 function fireShots(w: GameWorld, e: EnemyState): void {
@@ -38,6 +39,7 @@ export function attackHooks(e: EnemyState): AttackHooks {
   if (e.def.id === 'great_boar') return greatBoarHooks(e);
   const mountain = mountainAttackHooks(e);
   if (mountain) return mountain;
+  const swamp=swampAttackHooks(e);if(swamp)return swamp;
   return {
     onActStart(w, en) {
       if (def.leap && 'vx' in def.leap) {
