@@ -124,9 +124,16 @@ No later milestone is authorized.
 - Final checks: 1041 unit tests in 136 files; typecheck/build; eight movement/combat browser checks passed. Root inspected all nine browser screenshots.
 - Independent review is clear. No new SPEC-GAP. Task 1 is committed locally; M7.1 remains undeployed until its final milestone gate.
 
+### M7.1 Task 2 — `6c9427f`
+
+- Added all five Mountain enemies, seeded Bat flight, golem armor and delayed turning, Shaman wards and Blink Away, bombs, and homing Hex Bolts.
+- Real failing regressions covered guard and Ward damage, Bat collision/recovery, guarded Orb contact, and signed projectile knockback. Root owns the real-world Bat hit recovery test.
+- Final checks: 1079 unit tests in 139 files; standalone typecheck/build; diff and protected-path checks passed. Independent review is clear.
+- No new SPEC-GAP. This task is committed locally; the complete M7.1 milestone gate still comes before deployment.
+
 ## Active task
 
-M7 is delivered. M7.1 Task 1 is committed. Task 2 is active: Mountain enemies and their projectiles, followed by Tasks 3–7 in order.
+M7 is delivered. M7.1 Tasks 1–2 are committed. Task 3 is active: Swamp enemies and their projectiles, followed by Tasks 4–7 in order.
 Root owns this handoff. Source partitions require clear file ownership and tested commits. No later milestone is authorized.
 
 ## Remaining integration notes
