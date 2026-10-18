@@ -70,10 +70,10 @@ test('start screen: Training Yard, then leave it and come back', async ({ page }
   // Pause → Leave Training Yard (confirm twice).
   await page.evaluate(() => { const g = (window as any).__game; g.openPause(); g.pauseAction('down'); g.pauseAction('confirm'); g.pauseAction('confirm'); });
   await page.waitForFunction(() => (window as any).__game?.title === true);
-  // Play opens Stage 1 with the class pick.
+  // Play opens Home Village; class statues handle the kit pick there.
   await page.keyboard.press('Enter');
-  await page.waitForFunction(() => (window as any).__game?.levelId?.() === 'plains');
-  expect(await page.evaluate(() => (window as any).__game.classPickOpen())).toBe(true);
+  await page.waitForFunction(() => (window as any).__game?.levelId?.() === 'home');
+  expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('homeVillage');
   await frames(page);
   await page.screenshot({ path: 'test-results/title-play.png' });
   expect(errors).toEqual([]);

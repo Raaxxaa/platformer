@@ -10,17 +10,17 @@ import { DEPTH, DOOR, PARALLAX, TILESET, VIEW } from '../../data/art.ts';
 import { BIOME } from '../assets/loadAssets.ts';
 
 /** Terrain (blob autotiles) at depth 20 and auto-deco at depth 10 (08 §9.2–9.4). */
-export function drawTerrain(scene: Phaser.Scene, grid: TileGrid): void {
+export function drawTerrain(scene: Phaser.Scene, grid: TileGrid, biome: string = BIOME, autoDeco = true): void {
   const terrain: number[][] = [], deco: number[][] = [];
   for (let ty = 0; ty < grid.h; ty++) {
     const t: number[] = [], d: number[] = [];
     for (let tx = 0; tx < grid.w; tx++) {
       t.push(terrainTile(grid, tx, ty)?.index ?? -1);
-      d.push(decoTile(grid, tx, ty) ?? -1);
+      d.push(autoDeco ? decoTile(grid, tx, ty) ?? -1 : -1);
     }
     terrain.push(t); deco.push(d);
   }
-  const key = `tiles_${BIOME}`;
+  const key = `tiles_${biome}`;
   for (const [data, depth] of [[deco, DEPTH.deco], [terrain, DEPTH.terrain]] as const) {
     const map = scene.make.tilemap({ data: data as number[][], tileWidth: TILESET.tile, tileHeight: TILESET.tile });
     const set = map.addTilesetImage(key, key, TILESET.tile, TILESET.tile, TILESET.margin, TILESET.spacing)!;
@@ -32,12 +32,14 @@ export function drawTerrain(scene: Phaser.Scene, grid: TileGrid): void {
 export class Parallax {
   private readonly layers: Phaser.GameObjects.TileSprite[] = [];
   private readonly levelHeightPx: number;
-  constructor(scene: Phaser.Scene, levelHeightPx: number) {
+  private readonly biome: keyof typeof PARALLAX;
+  constructor(scene: Phaser.Scene, levelHeightPx: number, biome: keyof typeof PARALLAX = BIOME) {
     this.levelHeightPx = levelHeightPx;
-    const set = PARALLAX[BIOME];
+    this.biome = biome;
+    const set = PARALLAX[biome];
     scene.cameras.main.setBackgroundColor(set.skyTop);
     for (let i = 0; i < 3; i++) {
-      this.layers.push(scene.add.tileSprite(0, 0, VIEW.w, VIEW.h, `bg_${BIOME}_${i}`).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.parallax[i]));
+      this.layers.push(scene.add.tileSprite(0, 0, VIEW.w, VIEW.h, `bg_${biome}_${i}`).setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH.parallax[i]));
     }
   }
   setVisible(on: boolean): void {
@@ -45,7 +47,7 @@ export class Parallax {
   }
 
   update(camX: number, camY: number): void {
-    const set = PARALLAX[BIOME];
+    const set = PARALLAX[this.biome];
     this.layers.forEach((s, i) => {
       s.tilePositionX = Math.round(camX * set.layers[i].fx);
       s.y = Math.round((this.levelHeightPx - VIEW.h - camY) * set.layers[i].fy);

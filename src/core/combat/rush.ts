@@ -14,6 +14,7 @@ export function addRushValue(r: RushState, amount: number): void {
 }
 
 export function addRush(w: GameWorld, amount: number): void {
+  if (w.level?.kind === 'village') return;
   addRushValue(w.rush, amount);
 }
 
@@ -37,6 +38,7 @@ export function rushSpeedPercent(level: 0 | 1 | 2 | 3): number {
 /** Step 10: passive gain from moving fast, the standing-still drain and the no-gain drain (02 §8.2). */
 export function stepRush(w: GameWorld): void {
   const r = w.rush, b = w.body;
+  if (w.level?.kind === 'village') { r.value = 0; return; }
   if (w.health.dead) return;
   r.noGainTime += 1;
   if (Math.abs(b.vx) >= RUSH.MOVE_FRACTION * MOVE.RUN_MAX) addRushValue(r, RUSH.MOVE_GAIN * TICK);

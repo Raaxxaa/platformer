@@ -20,6 +20,8 @@ export const TILESET = {
 /** 08 §10.1 parallax factors; sky top = first `pl_sky` band. */
 export const PARALLAX = {
   plains: { skyTop: 0x78bfe6, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
+  village_home: { skyTop: 0xf2b48a, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
+  village_crossroads: { skyTop: 0xe0785a, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
 } as const;
 export const VIEW = { w: 640, h: 360 } as const;
 

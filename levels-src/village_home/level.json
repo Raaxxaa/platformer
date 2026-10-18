@@ -1,0 +1,17 @@
+{
+ "levelId": "home", "kind": "village", "stage": 0, "biome": "village_home", "width": 48, "height": 23,
+ "chunks": [{ "file": "home.txt", "x": 0, "y": 0 }],
+ "objects": [
+  { "type": "player_start", "x": 3, "y": 19, "props": { "facing": 1 } },
+  { "type": "training_gate", "x": 1, "y": 16, "w": 2, "h": 4 },
+  { "type": "class_statue", "x": 9, "y": 19, "props": { "cls": "swordsman" } },
+  { "type": "class_statue", "x": 13, "y": 19, "props": { "cls": "tank" } },
+  { "type": "class_statue", "x": 17, "y": 19, "props": { "cls": "archer" } },
+  { "type": "class_statue", "x": 21, "y": 19, "props": { "cls": "wizard" } },
+  { "type": "mirror_spot", "x": 25, "y": 19, "w": 1, "h": 1 },
+  { "type": "enemy", "x": 28, "y": 19, "props": { "enemy": "training_dummy", "facing": -1 } },
+  { "type": "unlocks_board", "x": 34, "y": 19 },
+  { "type": "seed_board", "x": 37, "y": 19 },
+  { "type": "exit", "x": 45, "y": 16, "w": 2, "h": 4 }
+ ]
+}

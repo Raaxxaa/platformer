@@ -22,4 +22,11 @@ describe('class pick (07 §6.7)', () => {
     expect(parseKit('archer:bow')).toEqual({ cls: 'archer', weapon: 'bow' });
     expect(parseKit('archer:staff')).toBeNull();
   });
+  it('direct menu actions do not wrap and gameplay Attack/Dash never confirm or close', () => {
+    const m = new ClassPickModel(['tank'], { cls: 'tank', weapon: 'war_maul' });
+    m.action('up'); expect(m.wi).toBe(0);
+    m.action('down'); m.action('down'); expect(m.wi).toBe(1);
+    expect(m.step(press((i) => { i.attack1.pressed = true; i.dash.pressed = true; }))).toBeNull();
+    expect(m.action('back')).toBe('close');
+  });
 });

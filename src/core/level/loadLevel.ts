@@ -3,7 +3,7 @@ import { TileGrid, type TileKind } from './tiles.ts';
 import { TILE_SIZE } from '../tuning.ts';
 import type { EnemyId, EnemySpawn } from '../enemies/types.ts';
 
-export type LevelId = 'plains' | 'mountains' | 'swamps' | 'kingdom' | 'castle' | 'home' | 'crossroads' | 'border' | 'rebel_camp';
+export type LevelId = 'plains' | 'mountains' | 'swamps' | 'kingdom' | 'castle' | 'home' | 'crossroads' | 'border' | 'rebel_camp' | 'training_yard';
 
 export interface LevelObject {
   id: number; type: string; x: number; y: number; w: number; h: number;

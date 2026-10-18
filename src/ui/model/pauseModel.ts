@@ -12,11 +12,11 @@ export class PauseModel {
   private armedUntil = -Infinity;
   private readonly base: Item[];
 
-  constructor(place: 'run' | 'training') {
-    // SPEC-GAP: no Settings screen or Home Village yet: Settings is shown disabled and quitting goes to the start screen.
+  constructor(place: 'run' | 'training' | 'home') {
+    // Settings is enabled when its screen arrives in M7 Task 9.
     this.base = place === 'run'
-      ? [{ id: 'resume', label: 'Resume' }, { id: 'restart', label: 'Restart run' }, { id: 'settings', label: 'Settings', disabled: true }, { id: 'quit', label: 'Quit to title' }]
-      : [{ id: 'resume', label: 'Resume' }, { id: 'settings', label: 'Settings', disabled: true }, { id: 'quit', label: 'Leave Training Yard' }];
+      ? [{ id: 'resume', label: 'Resume' }, { id: 'restart', label: 'Restart run' }, { id: 'settings', label: 'Settings', disabled: true }, { id: 'quit', label: 'Quit to Home Village' }]
+      : [{ id: 'resume', label: 'Resume' }, { id: 'settings', label: 'Settings', disabled: true }, { id: 'quit', label: place === 'training' ? 'Leave Training Yard' : 'Quit to title' }];
   }
 
   get tab(): PauseTab { return PAUSE.tabs[this.tabIndex]; }

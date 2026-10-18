@@ -27,7 +27,7 @@ import { isGrounded, pushOut } from '../physics/collide.ts';
 import { Bodies, type SolidBody } from '../physics/bodies.ts';
 import { checkSpikes } from '../hazards/spikes.ts';
 import { createPlayerBody, type MoveEvent, type PlayerBody } from '../player/body.ts';
-import { cloneLoadout, createAbilityRuntime, defaultLoadout, type Loadout } from '../abilities/runtime.ts';
+import { cloneLoadout, createAbilityRuntime, defaultLoadout, kitLoadout, type Loadout } from '../abilities/runtime.ts';
 import type { AbilityId, AbilityRuntime, BondId, ClassId, ClassState, HybridId } from '../abilities/types.ts';
 import { clearAbilityEffects, fillAbilities, onCastCancelMove, onCastHurt, stepAbilities } from '../abilities/abilitySystem.ts';
 import { stepAbilityEntities, type AbilityEntity } from '../abilities/entities.ts';
@@ -64,7 +64,10 @@ import { stepClocks } from '../run/runState.ts';
 import { bossBar, stepBossPhases, type BossBar } from '../enemies/boss.ts';
 import { stepRockfall, type RockMarker } from '../enemies/greatBoar.ts';
 import { beginTransition, canHoldRestart, completeLoading, simulatesWorld, stepTransition } from '../run/phases.ts';
-import { applyStatUpgrade, offerStatUpgrades } from '../economy/stats.ts';
+import type { StartKit } from '../save/schema.ts';
+import type { WorldCarry } from '../run/session.ts';
+import { setupVillage, stepVillage } from '../run/villages.ts';
+import { applyStatUpgrade, maxPlayerHp, offerStatUpgrades } from '../economy/stats.ts';
 import { STAT_PICK_DEFAULT_INDEX, type StatUpgradeId } from '../../data/economy.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
@@ -116,7 +119,9 @@ export type WorldEvent =
   | { t: 'chestLocked' }
   | { t: 'loadLevel'; levelId: LevelData['id']; stage: RunState['stage'] }
   | { t: 'enterVillage'; villageId: LevelData['id'] }
-  | { t: 'stageStarted'; levelId: LevelData['id']; stage: RunState['stage'] };
+  | { t: 'stageStarted'; levelId: LevelData['id']; stage: RunState['stage'] }
+  | { t: 'runStarted' }
+  | { t: 'openHomePanel'; panel: 'training' | 'seed' | 'records' };
 
 export interface GameWorldOptions {
   grid: TileGrid;
@@ -126,6 +131,8 @@ export interface GameWorldOptions {
   /** Typed seeds survive restart. The Phaser layer supplies fresh random seed text otherwise. */
   seeded?: boolean;
   nextRandomSeed?: () => string;
+  startKit?: StartKit | null;
+  carry?: WorldCarry;
   level?: LevelData;
   /** Arena wave spawns, spawned by the arena logic (06 §9.2). */
   waveSpawns?: LevelEnemySpawn[];
@@ -233,6 +240,7 @@ export class GameWorld {
   private nextId = 1;
   private villageEntryPending = false;
   private loadRequestPending = false;
+  villageMessage: string | null = null;
 
   constructor(opts: GameWorldOptions) {
     this.opts = opts;
@@ -246,7 +254,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -256,6 +264,8 @@ export class GameWorld {
     return new GameWorld({
       grid: parts.grid, spawn: { x: start.x, y: start.y }, facing: Number(start.props.facing ?? 1) < 0 ? -1 : 1,
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
+      startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
+      loadout: (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
       markers: d.objects.filter((o) => MARKER_TYPES.has(o.type)),
@@ -269,6 +279,9 @@ export class GameWorld {
 
   private reset(): void {
     const { grid, spawn } = this.opts;
+    const carry = this.opts.carry;
+    const carriedState = carry && carry.run.transition?.kind !== 'homeGate' ? carry : null;
+    this.opts.carry = undefined; // consumed once: resetting must never replay an old shop/gear snapshot
     this.bodies = new Bodies(grid.w, grid.h);
     for (const b of this.opts.bodies ?? []) this.bodies.add({ ...b });
     grid.bodies = this.bodies;
@@ -276,13 +289,17 @@ export class GameWorld {
     this.body.facing = this.opts.facing ?? 1;
     // The restart hold survives a restart (06 §6.2: holding through one never restarts twice).
     const hold = this.run ? { h: this.run.restartHoldTicks, n: this.run.restartNeedsRelease } : { h: 0, n: false };
-    this.run = createRunState(this.opts.seedText ?? '', this.opts.seeded ?? false);
+    this.run = carry ? structuredClone(carry.run) : createRunState(this.opts.seedText ?? '', this.opts.seeded ?? false);
+    this.opts.seeded = this.run.seeded;
+    this.run.startKit = this.opts.startKit ?? null;
     this.run.runSeed = this.runSeed;
-    this.run.stage = this.level?.stage ?? this.stage;
-    this.run.levelId = this.level?.id ?? 'plains';
-    if (this.level?.kind === 'village') this.run.phase = this.level.id === 'home' ? 'homeVillage' : 'village';
-    this.run.restartHoldTicks = hold.h;
-    this.run.restartNeedsRelease = hold.n;
+    if (!carry) {
+      this.run.stage = this.level?.stage ?? this.stage;
+      this.run.levelId = this.level?.id ?? 'plains';
+      if (this.level?.kind === 'village') this.run.phase = this.level.id === 'home' ? 'homeVillage' : 'village';
+      this.run.restartHoldTicks = hold.h;
+      this.run.restartNeedsRelease = hold.n;
+    }
     this.villageEntryPending = this.level?.kind === 'village';
     this.loadRequestPending = false;
     if (!isGrounded(this.body, grid, 0)) {
@@ -296,7 +313,7 @@ export class GameWorld {
     this.flask = createFlask();
     this.drinking = null;
     this.drinkBufferTicks = 0;
-    const lo = cloneLoadout(this.opts.loadout ?? defaultLoadout());
+    const lo = cloneLoadout(carriedState?.loadout ?? this.opts.loadout ?? (this.level?.kind === 'village' || this.level?.kind === 'training' ? { weapons: [null, null], abilities: [null, null] } : defaultLoadout()));
     this.combat = createPlayerCombat(lo.weapons);
     this.abilities = createAbilityRuntime(lo.abilities);
     this.classState = computeClassState([null, null], [null, null]);
@@ -308,18 +325,23 @@ export class GameWorld {
     this.instanceBonus = new Map();
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
-    this.econ = newEconomy();
+    this.econ = carriedState ? structuredClone(carriedState.econ) : newEconomy();
+    if (this.level?.kind === 'village') { this.econ.buffs = []; this.econ.debuffs = []; }
     this.statPick = null;
     this.coins = [];
     this.rng = {
       enemyAI: new Rng(deriveSeed(this.runSeed, 'enemyAI', this.stage)),
-      combat: new Rng(deriveSeed(this.runSeed, 'combat', this.stage)),
-      cosmetic: new Rng(deriveSeed(this.runSeed, 'cosmetic', this.stage)),
+      combat: new Rng(deriveSeed(this.runSeed, 'combat', this.level?.kind === 'village' ? this.level.id : this.stage)),
+      cosmetic: new Rng(deriveSeed(this.runSeed, 'cosmetic', this.level?.kind === 'village' ? this.level.id : this.stage)),
     };
     this.hitGroups = [];
     this.events = [];
     this.nextId = 1;
     this.refreshClassState();
+    if (carriedState) {
+      this.health.hp = carriedState.hp; this.health.maxHp = carriedState.maxHp; this.flask = { ...carriedState.flask };
+      this.ironWillAddedHP = this.classState.bond === 'iron_will' ? carriedState.maxHp - maxPlayerHp(this, false) : 0;
+    }
     this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
     this.pendingDeaths = [];
     this.projectiles = [];
@@ -344,9 +366,11 @@ export class GameWorld {
     this.respawns = [];
     this.training = null;
     this.interactables = [];
+    this.villageMessage = null;
     if (this.level?.kind === 'training') setupTraining(this);
-    if (this.level) this.rollStageLoot();
-    fillAbilities(this);
+    if (this.level?.kind === 'village') setupVillage(this);
+    if (this.level?.kind !== 'village' && this.level) this.rollStageLoot();
+    if (!carry || this.level?.kind === 'stage') fillAbilities(this);
   }
 
   restart(): void {
@@ -359,6 +383,11 @@ export class GameWorld {
     beginTransition(this.run, 'restart', { phase: 'stage', levelId: 'plains', stage: 1 });
     if (!this.level || this.level.id === 'plains') this.completeLoading();
     else this.loadRequestPending = true;
+  }
+
+  setStartingKit(kit: StartKit): void {
+    this.opts.startKit = { ...kit }; this.run.startKit = { ...kit };
+    this.setLoadout(kitLoadout(kit.cls, kit.weapon));
   }
 
   /** The scene calls this after loading the requested next world. */
@@ -673,6 +702,9 @@ export class GameWorld {
       return;
     }
     // A dead player takes no input; the world keeps running around them.
+    if (this.level?.kind === 'stage' && this.run.stage === 1 && !this.run.started) {
+      this.run.started = true; this.events.push({ t: 'runStarted' });
+    }
     let input = this.health.dead ? emptyInput() : rawInput;
     this.tick += 1;
     clearSpentGroups(this);
@@ -740,6 +772,7 @@ export class GameWorld {
     // 10. Rush and flask. 11. Level logic (06 §2.8).
     stepTimedDoors(this);
     stepZones(this);
+    stepVillage(this);
     stepArenas(this);
     stepTraining(this);
     stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());

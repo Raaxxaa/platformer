@@ -21,14 +21,23 @@ export class ClassPickModel {
   get weapons(): WeaponId[] { return STARTING_KITS[this.cls].weapons; }
   get kit(): Kit { return { cls: this.cls, weapon: this.weapons[this.wi] }; }
 
+  action(action: 'up' | 'down' | 'left' | 'right' | 'confirm' | 'back'): 'confirm' | 'close' | null {
+    if (action === 'up') this.wi = Math.max(0, this.wi - 1);
+    if (action === 'down') this.wi = Math.min(this.weapons.length - 1, this.wi + 1);
+    if ((action === 'left' || action === 'right') && this.classes.length > 1) {
+      this.ci = Math.max(0, Math.min(this.classes.length - 1, this.ci + (action === 'left' ? -1 : 1))); this.wi = 0;
+    }
+    return action === 'confirm' ? 'confirm' : action === 'back' ? 'close' : null;
+  }
+
   /** One frame of input: arrows move, confirm (jump, interact, attack 1) picks, back (pause, dash) closes. */
   step(input: InputState): 'confirm' | 'close' | null {
     const y = input.moveY, x = input.moveX;
-    if (y !== 0 && y !== this.prevY) this.wi = (this.wi + y + this.weapons.length) % this.weapons.length;
-    if (x !== 0 && x !== this.prevX && this.classes.length > 1) { this.ci = (this.ci + x + this.classes.length) % this.classes.length; this.wi = 0; }
+    if (y !== 0 && y !== this.prevY) this.action(y < 0 ? 'up' : 'down');
+    if (x !== 0 && x !== this.prevX) this.action(x < 0 ? 'left' : 'right');
     this.prevY = y; this.prevX = x;
-    if (input.jump.pressed || input.interact.pressed || input.attack1.pressed) return 'confirm';
-    if (input.pause.pressed || input.dash.pressed) return 'close';
+    if (input.jump.pressed || input.interact.pressed) return 'confirm';
+    if (input.pause.pressed) return 'close';
     return null;
   }
 }

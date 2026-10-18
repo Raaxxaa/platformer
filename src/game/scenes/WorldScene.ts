@@ -7,7 +7,7 @@ import { FixedStepper } from '../../core/sim/fixedStep.ts';
 import { BUTTON_IDS, emptyButton, emptyInput, type InputState } from '../../core/input.ts';
 import { PauseModel, type PauseAction } from '../../ui/model/pauseModel.ts';
 import { PauseView } from '../../ui/popups/pause.ts';
-import { kitLoadout, newAbility, newWeapon } from '../../core/abilities/runtime.ts';
+import { newAbility, newWeapon } from '../../core/abilities/runtime.ts';
 import type { AbilityId, AbilityLevel, ClassId } from '../../core/abilities/types.ts';
 import type { WeaponId } from '../../core/combat/types.ts';
 import { ClassPickModel, type Kit } from '../../ui/popups/classPickModel.ts';
@@ -41,6 +41,12 @@ import { debugEnabled, installCombatDebugApi, type CombatDebugHost } from '../de
 import { COLOR, STATE_COLOR } from '../greybox.ts';
 import { Devices } from '../input/devices.ts';
 import { pauseRun, resumeRun } from '../../core/run/phases.ts';
+import { activeHomePad, HomePanelInput } from '../../ui/home/homePanels.ts';
+import { gameSession } from '../session.ts';
+import { PARALLAX } from '../../data/art.ts';
+import { saveStore } from '../save/storage.ts';
+import { SAVE_RULES } from '../../data/save.ts';
+import { UI_COLOR } from '../../data/uiText.ts';
 import { StatPickView } from '../../ui/popups/statPick.ts';
 import { StatPickModel, type StatPickAction } from '../../ui/popups/statPickModel.ts';
 import { StatPickInput } from '../input/statPickInput.ts';
@@ -101,6 +107,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected pickedKit: Kit | null = null;
   private statPopup: { model: StatPickModel; view: StatPickView; lastRunTick: number } | null = null;
   private readonly statMenu = new StatPickInput();
+  private readonly classMenu = new HomePanelInput('training');
   /** `?boxes=1`: the old grey boxes instead of sprites (debugging). */
   protected boxesMode = false;
   /** Debug overview: the camera zooms out to show this world rect (screenshots of whole sections). */
@@ -110,6 +117,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected abstract makeWorld(): GameWorld;
   /** Extra drawing after the shared pass (doors, markers, timer...). */
   protected renderExtra(): void {}
+  protected extraMenuOpen(): boolean { return false; }
+  protected onKitEquipped(_kit: Kit): void {}
 
   preload(): void {
     loadAssets(this);
@@ -117,6 +126,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   create(): void {
     this.world = this.makeWorld();
+    this.pickedKit = this.world.run.startKit;
+    this.prevSpec = {}; this.manual = false; this.frameEvents = []; this.classPick = null; this.pause = null;
     this.devices = new Devices();
     this.statPopup = null;
     this.statMenu.clear();
@@ -137,10 +148,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     });
     this.bank = new AnimBank(this.cache.json.get('anims') as AnimDef[]);
     this.boxesMode = new URLSearchParams(window.location.search).get('boxes') === '1';
-    this.parallax = new Parallax(this, this.world.grid.heightPx);
-    drawTerrain(this, this.world.grid);
+    const bg = this.world.level?.kind === 'training' ? 'village_home' : this.world.level?.biome ?? 'plains';
+    this.parallax = new Parallax(this, this.world.grid.heightPx, bg in PARALLAX ? bg as keyof typeof PARALLAX : 'plains');
+    drawTerrain(this, this.world.grid, 'plains', this.world.level?.kind !== 'village');
     this.boxes = this.add.graphics().setDepth(DEPTH.enemies);
     this.playerView = new PlayerSprite(this, this.bank);
+    if (this.pickedKit) this.playerView.setOutfit(this.pickedKit.cls);
     this.projViews = new ProjectileSprites(this, this.bank);
     this.playerProjViews = new ProjectileSprites(this, this.bank);
     this.hammerSprite = this.add.sprite(0, 0, 'projectiles').setDepth(DEPTH.playerProjectiles).setVisible(false);
@@ -181,6 +194,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       api.giveWeapon = (slot: 0 | 1, id: WeaponId) => { this.world.combat.slots[slot] = newWeapon(id); this.world.refreshClassState(); };
       api.spawnDummy = (x: number, y: number) => this.world.spawnExtra({ enemy: 'training_dummy', x, y, facing: -1 }).id;
       api.classPickOpen = () => this.classPick !== null;
+      api.classPickAction = (action: Parameters<ClassPickModel['action']>[0]) => this.classAction(action);
       api.openPause = () => this.openPause();
       api.pauseAction = (a: PauseAction) => this.pauseAction(a);
       api.pauseState = () => (this.pause ? { tab: this.pause.model.tab, cursor: this.pause.model.cursor } : null);
@@ -213,6 +227,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   /** Opens the class pick for these classes (07 §6.7). */
   openClassPick(classes: ClassId[], pauseWorld: boolean): void {
+    this.classMenu.blockHeldPad(activeHomePad());
     this.classPick?.view.destroy();
     const model = new ClassPickModel(classes, this.pickedKit);
     const view = new ClassPickView(this);
@@ -224,14 +239,16 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   equipKit(kit: Kit): void {
     this.pickedKit = kit;
     this.playerView?.setOutfit(kit.cls);
-    this.world.setLoadout(kitLoadout(kit.cls, kit.weapon));
+    this.world.setStartingKit(kit);
+    this.onKitEquipped(kit);
   }
 
-  private stepClassPick(input: InputState): void {
+  private classAction(action: Parameters<ClassPickModel['action']>[0]): void {
+    if (!this.classPick || this.pause) return;
     const cp = this.classPick!;
-    const r = cp.model.step(input);
+    const r = cp.model.action(action);
     if (r === 'confirm') this.equipKit(cp.model.kit);
-    if (r) { cp.view.destroy(); this.classPick = null; return; }
+    if (r) { cp.view.destroy(); this.classPick = null; this.clearMenuInput(); return; }
     cp.view.draw(cp.model, this.pickedKit);
   }
 
@@ -239,6 +256,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected stepWorld(input: Parameters<GameWorld['step']>[0]): void {
     const before = this.world.tick, feet = { x: this.world.body.x, y: this.world.body.y };
     this.world.step(input);
+    gameSession.events(this.world);
     if (this.world.tick < before) { this.sfxWatch.reset(); this.sfxQueue = []; }
     const evs = this.world.events.map((e) => ({ tick: this.world.tick, e }));
     this.frameEvents.push(...evs);
@@ -286,11 +304,12 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.syncStatPick();
   }
   private readonly onStatKeyDown = (e: KeyboardEvent) => {
+    if (this.classPick && !this.pause) { if (this.classMenu.key(e.code, true, e.repeat)) e.preventDefault(); return; }
     if (this.pause || this.world.run.phase !== 'statPick') return;
     if ((e.code === 'Escape' || e.code === 'KeyP') && !e.repeat) { e.preventDefault(); this.openPause(); return; }
     if (this.statMenu.key(e.code, true, e.repeat)) e.preventDefault();
   };
-  private readonly onStatKeyUp = (e: KeyboardEvent) => { this.statMenu.key(e.code, false, false); };
+  private readonly onStatKeyUp = (e: KeyboardEvent) => { this.statMenu.key(e.code, false, false); this.classMenu.key(e.code, false, false); };
   private pollStatMenu(seconds: number): void {
     if (this.world.run.phase !== 'statPick') return;
     const pads = (navigator.getGamepads?.() ?? []).filter((p): p is Gamepad => p !== null && p.connected);
@@ -309,13 +328,18 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       return;
     }
     this.pollStatMenu(delta / 1000);
+    if (this.classPick) {
+      const pads = navigator.getGamepads?.() ?? [];
+      const pad = Array.from(pads).find((p) => p?.connected && p.mapping === 'standard') ?? Array.from(pads).find((p) => p?.connected);
+      for (const action of this.classMenu.poll(delta / 1000, pad)) if (typeof action === 'string' && action !== 'backspace') this.classAction(action);
+    }
     if (!this.manual) {
       const n = this.stepper.advance(delta / 1000);
       for (let i = 0; i < n; i++) {
         const input = this.swallowHeld(this.devices.builder.build());
+        if (this.extraMenuOpen()) { this.stepWorld(emptyInput()); continue; }
         if (input.pause.pressed && !this.classPick) { this.openPause(); break; }
         if (this.classPick) {
-          this.stepClassPick(input);
           if (this.classPick?.pauseWorld) continue;
           this.stepWorld(emptyInput());                       // the world keeps running; the player gets neutral input
         } else this.stepWorld(input);
@@ -326,6 +350,11 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   /** 07 §1.5 input swallow: buttons held when a menu closed count as not held until released. */
   private swallow = new Set<(typeof BUTTON_IDS)[number]>();
+  protected clearMenuInput(): void {
+    const held = this.devices.builder.build();
+    for (const b of BUTTON_IDS) if (held[b].held) this.swallow.add(b);
+    this.classMenu.clear();
+  }
   private swallowHeld(input: InputState): InputState {
     if (!this.swallow.size) return input;
     const out = { ...input };
@@ -337,7 +366,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   }
 
   /** Where the pause menu is opened (its item list). */
-  protected pausePlace(): 'run' | 'training' { return 'run'; }
+  protected pausePlace(): 'run' | 'training' | 'home' { return 'run'; }
   protected pauseInfo(): string { return PauseView.info(1, this.world.run.runTicks, null); }
   /** Pause results the scene acts on: restart and quit. */
   protected onPauseQuit(): void {}
@@ -387,6 +416,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   protected render(): void {
     const w = this.world;
+    const warning = saveStore().takeWarning();
+    if (warning) this.abilityHud.toast(warning, UI_COLOR.bad, this.time.now, SAVE_RULES.warningSeconds);
     const cam = w.camera;
     const main = this.cameras.main;
     if (this.overview) {

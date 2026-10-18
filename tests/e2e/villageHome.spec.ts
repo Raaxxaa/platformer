@@ -1,0 +1,93 @@
+import { test, expect, type Page } from '@playwright/test';
+const ready = async (page: Page, id: string) => {
+  await page.waitForFunction((level) => (window as any).__game?.ready && (window as any).__game.levelId?.() === level, id);
+  await page.evaluate(() => (window as any).__game.setManual(true));
+};
+const frames = async (page: Page) => page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+test('Home is empty first launch, gate needs kit, Tank persists, Training returns and gate starts one run', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?debug=1');
+  await page.waitForFunction(() => (window as any).__game?.title);
+  await page.evaluate(() => (window as any).__game.titleChoose(0)); await ready(page, 'home');
+  expect(await page.evaluate(() => (window as any).__game.save().lastKit)).toBeNull();
+  await page.evaluate(() => { const g = (window as any).__game; g.teleport(730, 320); g.step(120, {}); });
+  expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('homeVillage');
+  expect(await page.evaluate(() => (window as any).__game.runState().runTicks)).toBe(0);
+  await frames(page); await page.screenshot({ path: 'test-results/m7-home-empty.png' });
+  await page.evaluate(() => { const g = (window as any).__game; g.teleport(13 * 16 + 8, 320); g.step(1, { interact: true }); });
+  await page.waitForFunction(() => (window as any).__game.classPickOpen());
+  await page.evaluate(() => (window as any).__game.classPickAction('back'));
+  expect(await page.evaluate(() => (window as any).__game.save().lastKit)).toBeNull();
+  await page.evaluate(() => { const g = (window as any).__game; g.step(1, {}); g.step(1, { interact: true }); });
+  await page.waitForFunction(() => (window as any).__game.classPickOpen());
+  await page.evaluate(() => (window as any).__game.classPickAction('confirm'));
+  await page.waitForFunction(() => (window as any).__game.homePanel() === 'training');
+  await frames(page); await page.screenshot({ path: 'test-results/m7-home-first-kit.png' });
+  await page.evaluate(() => (window as any).__game.homeAction('back'));
+  expect(await page.evaluate(() => (window as any).__game.save().lastKit)).toEqual({ cls: 'tank', weapon: 'war_maul' });
+  await page.evaluate(() => { const g = (window as any).__game; g.teleport(32, 320); g.step(1, {}); g.step(1, { interact: true }); });
+  await ready(page, 'training_yard');
+  await page.evaluate(() => {
+    const g = (window as any).__game; g.toStation(1); g.step(2, {});
+    const goal = g.levelObjects('station_goal').find((o: any) => o.props.station === 1);
+    g.teleport(goal.x + goal.w / 2, goal.y + goal.h); g.step(2, {});
+  });
+  expect(await page.evaluate(() => (window as any).__game.save().training)).toContain(1);
+  await page.evaluate(() => { const g = (window as any).__game; g.giveWeapon(0, 'katana'); g.teleport(8, 544); g.step(2, {}); });
+  await ready(page, 'home');
+  expect(await page.evaluate(() => (window as any).__game.groundItems().length)).toBe(0);
+  expect(await page.evaluate(() => (window as any).__game.runState().startKit.weapon)).toBe('war_maul');
+  expect(await page.evaluate(() => (window as any).__game.loadout().weapons[0].weaponId)).toBe('war_maul');
+  await page.reload(); await page.waitForFunction(() => (window as any).__game?.title); await page.evaluate(() => (window as any).__game.titleChoose(0)); await ready(page, 'home');
+  expect(await page.evaluate(() => (window as any).__game.save().lastKit.weapon)).toBe('war_maul');
+  await page.evaluate(() => { const g = (window as any).__game; g.teleport(730, 320); g.step(61, {}); });
+  await ready(page, 'plains');
+  await page.evaluate(() => (window as any).__game.step(61, {}));
+  expect(await page.evaluate(() => (window as any).__game.save().stats.runsStarted)).toBe(1);
+  await page.evaluate(() => (window as any).__game.step(120, {}));
+  expect(await page.evaluate(() => (window as any).__game.save().stats.runsStarted)).toBe(1);
+  await frames(page); await page.screenshot({ path: 'test-results/m7-home-to-plains.png' });
+  expect(errors).toEqual([]);
+});
+test('a real cross-level restart loads Plains and restores the original kit', async ({ page }) => {
+  await page.goto('/?debug=1&start=training'); await ready(page, 'training_yard');
+  await page.evaluate(() => { const g = (window as any).__game; g.setKit('tank', 'war_maul'); g.giveWeapon(0, 'katana'); g.setGold(500); g.restartRun(); g.step(1, {}); });
+  await ready(page, 'plains'); await page.evaluate(() => (window as any).__game.step(30, {}));
+  expect(await page.evaluate(() => (window as any).__game.loadout().weapons[0].weaponId)).toBe('war_maul');
+  expect(await page.evaluate(() => (window as any).__game.world().gold)).toBe(0);
+});
+test('seed board and records board work, and Home dummy gives no Rush', async ({ page }) => {
+  await page.goto('/?debug=1&start=home'); await ready(page, 'home');
+  await page.evaluate(() => (window as any).__game.openHomePanel('seed'));
+  await page.keyboard.type('abc123'); await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => (window as any).__game.save().typedSeed)).toBe('ABC123');
+  await page.evaluate(() => (window as any).__game.openHomePanel('records')); await frames(page);
+  await page.screenshot({ path: 'test-results/m7-home-records.png' });
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => { const g = (window as any).__game; g.setKit('tank', 'war_maul'); g.homeAction('back'); g.teleport(28 * 16 - 20, 320); g.step(160, { attack1: true }); });
+  expect(await page.evaluate(() => (window as any).__game.world().rush)).toBe(0);
+});
+test('held pad B cannot close its statue and held pad A cannot auto-enter Training', async ({ page }) => {
+  await page.addInitScript(() => {
+    const pad = { connected: true, mapping: 'standard', axes: [0, 0], buttons: Array.from({ length: 16 }, () => ({ pressed: false, value: 0 })) };
+    (window as any).__testPad = pad; Object.defineProperty(navigator, 'getGamepads', { value: () => [pad] });
+  });
+  await page.goto('/?debug=1&start=home'); await ready(page, 'home');
+  await page.evaluate(() => { const g = (window as any).__game; (window as any).__testPad.buttons[1].pressed = true; g.teleport(13 * 16 + 8, 320); g.step(1, { interact: true }); });
+  await frames(page); await frames(page);
+  expect(await page.evaluate(() => (window as any).__game.classPickOpen())).toBe(true);
+  await page.evaluate(() => { (window as any).__testPad.buttons[1].pressed = false; }); await frames(page);
+  await page.evaluate(() => { (window as any).__testPad.buttons[0].pressed = true; }); await frames(page); await frames(page);
+  expect(await page.evaluate(() => (window as any).__game.homePanel())).toBe('training');
+  expect(await page.evaluate(() => (window as any).__game.levelId())).toBe('home');
+});
+test('every Training entry records its source even after a previous Home visit', async ({ page }) => {
+  await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.title);
+  await page.evaluate(() => (window as any).__game.titleChoose(0)); await ready(page, 'home');
+  await page.evaluate(() => { const g = (window as any).__game; g.teleport(32, 320); g.step(1, { interact: true }); }); await ready(page, 'training_yard');
+  const leave = () => page.evaluate(() => { const g = (window as any).__game; g.openPause(); g.pauseAction('down'); g.pauseAction('confirm'); g.pauseAction('confirm'); });
+  await leave(); await ready(page, 'home');
+  await page.evaluate(() => { const g = (window as any).__game; g.openPause(); g.pauseAction('down'); g.pauseAction('down'); g.pauseAction('confirm'); g.pauseAction('confirm'); });
+  await page.waitForFunction(() => (window as any).__game?.title); await page.evaluate(() => (window as any).__game.titleChoose(1)); await ready(page, 'training_yard');
+  await leave(); await page.waitForFunction(() => (window as any).__game?.title);
+});

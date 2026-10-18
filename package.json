@@ -11,7 +11,7 @@
     "preview": "vite preview --port 4173 --strictPort",
     "test:e2e": "npm run build && playwright test",
     "assets": "python3 tools/build_assets.py",
-    "levels": "python3 tools/build_levels.py"
+    "levels": "node scripts/build-levels.mjs"
   },
   "dependencies": { "phaser": "4.2.1" },
   "devDependencies": {

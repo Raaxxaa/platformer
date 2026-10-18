@@ -24,8 +24,16 @@ import { newWeapon } from '../../core/abilities/runtime.ts';
 import type { ElementId, Grade, WeaponId } from '../../core/combat/types.ts';
 import { parseKit } from '../../ui/popups/classPickModel.ts';
 import { CLASS_IDS } from '../../data/classes.ts';
-import { RANDOM_SEED } from '../../data/run.ts';
-import { debugSeed } from '../seed.ts';
+import { LEVEL_FILE } from '../../data/run.ts';
+import { debugSeed, randomSeed } from '../seed.ts';
+import { captureWorld, type WorldCarry } from '../../core/run/session.ts';
+import { gameSession } from '../session.ts';
+import { saveStore } from '../save/storage.ts';
+import { HomePanels, type HomePanelKind } from '../../ui/home/homePanels.ts';
+import type { Kit } from '../../ui/popups/classPickModel.ts';
+import { VillageView } from '../view/villageView.ts';
+import { RUN } from '../../core/tuning.ts';
+import { interactTarget } from '../../core/abilities/items.ts';
 
 /** Hint text with the M1 key names (07 shows real button prompts later). */
 const HINT_TEXT: Record<HintAction, string> = {
@@ -39,14 +47,6 @@ const MARKER_LETTER: Record<string, string> = {
   lucky_block: 'L', loot_stand: 'S', key: 'K', key_chest: 'C', cursed_chest: 'Q', timed_chest: 'T', merchant_spot: 'M',
 };
 const CENTER_MARKERS = new Set(['lucky_block', 'key']);
-
-/** A random 8-character seed (06 §7.1), made here so the core never sees `Math.random`. */
-function randomSeed(): string {
-  const abc = RANDOM_SEED.alphabet;
-  const bytes = new Uint8Array(RANDOM_SEED.length);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => abc[b % abc.length]).join('');
-}
 
 export class StageScene extends WorldScene {
   private levelId = 'plains';
@@ -65,15 +65,21 @@ export class StageScene extends WorldScene {
   private segmentText!: Phaser.GameObjects.BitmapText;
   private infoText!: Phaser.GameObjects.BitmapText;
   private yard: YardView | null = null;
+  private homePanel: HomePanels | null = null;
+  private carry: WorldCarry | undefined;
+  private leaving = false;
+  private fade!: Phaser.GameObjects.Graphics;
+  private villageView: VillageView | null = null;
 
-  constructor() {
-    super('Stage');
+  constructor(key = 'Stage') {
+    super(key);
   }
 
   /** The level the start screen chose (else the URL decides). */
   private chosen: string | null = null;
-  init(data?: { level?: string }): void {
+  init(data?: { level?: string; carry?: WorldCarry }): void {
     this.chosen = data?.level ?? null;
+    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.labels = []; this.doorText.clear(); this.splitUntil = -1;
   }
 
   preload(): void {
@@ -82,14 +88,14 @@ export class StageScene extends WorldScene {
     // `?start=training` opens the Training Yard (06 §12.4: until the Home Village gate exists); other levels need ?debug=1.
     const start = q.get('start');
     this.levelId = this.chosen ?? (start === 'training' ? 'training_yard' : (q.get('debug') === '1' && start) || 'plains');
-    this.load.json(`level_${this.levelId}`, `levels/${this.levelId}.json`);
+    this.load.json(`level_${this.levelId}`, `levels/${LEVEL_FILE[this.levelId] ?? this.levelId}.json`);
   }
 
   protected makeWorld(): GameWorld {
     this.level = loadLevel(this.cache.json.get(`level_${this.levelId}`));
     const q = new URLSearchParams(window.location.search);
     const typedSeed = debugSeed(q);
-    const w = GameWorld.fromLevel(this.level, { seedText: typedSeed ?? randomSeed(), seeded: typedSeed !== null, nextRandomSeed: randomSeed });
+    const w = gameSession.makeWorld(this.level, this.carry, typedSeed);
     const section = q.get('debug') === '1' ? Number(q.get('section') ?? 0) : 0;
     if (section > 0) {
       // 06 §16: the player goes to the first main_path vertex inside section n.
@@ -119,6 +125,8 @@ export class StageScene extends WorldScene {
     this.bossText = this.add.bitmapText(U.bossName[0], U.bossName[1], FONTS.small, '').setScrollFactor(0).setDepth(DEPTH.hud);
     this.bossTitle = this.add.bitmapText(U.bossTitleRight, U.bossName[1], FONTS.small, '').setOrigin(1, 0).setTint(UI_COLOR.textDim).setScrollFactor(0).setDepth(DEPTH.hud);
     if (this.level.kind === 'training') this.yard = new YardView(this, this.level);
+    if (this.level.kind === 'village') this.villageView = new VillageView(this, this.level);
+    this.fade = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 30).fillStyle(UI_COLOR.ink).fillRect(0, 0, width, height).setVisible(false);
     this.installStageDebug();
     // Before the run, pick a class and weapon (M4 plan Task 13). `?kit=archer:bow` skips the panel; debug runs keep
     // the M2 loadout unless a kit is given.
@@ -126,7 +134,7 @@ export class StageScene extends WorldScene {
     const kit = parseKit(q.get('kit'));
     if (kit) this.equipKit(kit);
     // In the Training Yard the class statues at the start do the picking (06 §12.4).
-    else if (this.level.kind !== 'training' && (q.get('debug') !== '1' || q.get('picker') === '1' || this.chosen)) this.openClassPick([...CLASS_IDS], true);
+    else if (this.level.kind === 'stage' && !this.world.run.startKit && (q.get('debug') !== '1' || q.get('picker') === '1')) this.openClassPick([...CLASS_IDS], true);
   }
 
   private installStageDebug(): void {
@@ -138,6 +146,12 @@ export class StageScene extends WorldScene {
     api.killAll = () => { for (const e of this.world.enemies) if (!e.dead && !e.dormant && e.spawnInTicks === 0) killEnemy(this.world, e); };
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.levelId = () => this.level.id;
+    api.save = () => structuredClone(saveStore().data);
+    api.restartRun = () => this.world.restart();
+    api.loadout = () => structuredClone({ weapons: this.world.combat.slots, abilities: this.world.abilities.slots });
+    api.homePanel = () => this.homePanel?.model.kind ?? null;
+    api.homeAction = (action: Parameters<HomePanels['action']>[0]) => this.homePanel?.action(action);
+    api.openHomePanel = (kind: HomePanelKind) => this.openHomePanel(kind);
     api.levelObjects = (type: string) => this.level.objects.filter((o) => o.type === type).map((o) => ({ x: o.x, y: o.y, w: o.w, h: o.h, props: o.props }));
     // Training Yard: progress, and a jump to a station's checkpoint.
     api.training = () => {
@@ -182,13 +196,42 @@ export class StageScene extends WorldScene {
     api.arenas = () => [...this.world.arenas.values()].map((a) => ({ id: a.id, kind: a.kind, rect: a.rect }));
   }
 
-  protected pausePlace(): 'run' | 'training' { return this.level.kind === 'training' ? 'training' : 'run'; }
+  protected pausePlace(): 'run' | 'training' | 'home' { return this.level.kind === 'training' ? 'training' : this.level.id === 'home' ? 'home' : 'run'; }
   protected pauseInfo(): string {
     if (this.level.kind === 'training') return 'Training Yard';
     return PauseView.info(this.level.stage, this.world.run.runTicks, null);
   }
   /** Quitting, or leaving the Training Yard: back to the start screen (M4.1 Task 2). */
-  protected onPauseQuit(): void { this.toTitle(); }
+  protected onPauseQuit(): void {
+    if (this.level.kind === 'training' && gameSession.trainingReturn === 'home') this.goLevel('home');
+    else if (this.level.kind === 'stage') this.goLevel('home');
+    else this.toTitle();
+  }
+  protected onKitEquipped(kit: Kit): void {
+    if (this.level.kind === 'stage') return;
+    const first = saveStore().data.lastKit === null;
+    saveStore().update((s) => { s.lastKit = { ...kit }; });
+    if (first && this.level.id === 'home') this.openHomePanel('training');
+  }
+  protected extraMenuOpen(): boolean { return !!this.homePanel?.active; }
+  private openHomePanel(kind: HomePanelKind): void {
+    this.homePanel?.destroy();
+    this.homePanel = new HomePanels(this, kind, saveStore().data, {
+      onSeedChange: (seed) => { saveStore().update((s) => { s.typedSeed = seed; }); this.world.opts.seeded = seed !== null; this.world.opts.seedText = seed ?? randomSeed(); this.world.run.seeded = seed !== null; this.world.run.seedText = this.world.opts.seedText; },
+      onTraining: () => this.enterTraining(), onClose: () => { this.homePanel?.destroy(); this.homePanel = null; this.clearMenuInput(); },
+    }, randomSeed);
+  }
+  private enterTraining(): void { gameSession.trainingReturn = this.level.id === 'home' ? 'home' : 'title'; this.goLevel('training_yard'); }
+  private goLevel(level: string, carry?: WorldCarry): void {
+    if (this.leaving) return; this.leaving = true;
+    this.homePanel?.destroy();
+    if (window.__game) window.__game.ready = false;
+    this.scene.start(['home', 'crossroads', 'border', 'rebel_camp'].includes(level) ? 'Village' : 'Stage', { level, carry });
+  }
+  update(time: number, delta: number): void {
+    if (this.homePanel?.active) { this.homePanel.setEnabled(!this.pause); this.homePanel.update(delta / 1000); }
+    super.update(time, delta);
+  }
   private toTitle(): void {
     if (this.scene.get('Title')) this.scene.start('Title');
   }
@@ -199,6 +242,13 @@ export class StageScene extends WorldScene {
 
   protected renderExtra(): void {
     const w = this.world, U = STAGE_UI;
+    this.villageView?.update(w, saveStore().data.typedSeed);
+    if (w.run.phase === 'loading' && w.run.transition) { this.goLevel(w.run.transition.target.levelId, captureWorld(w)); return; }
+    for (const { e } of this.frameEvents) if (e.t === 'openHomePanel') {
+      if (e.panel === 'training') this.enterTraining(); else this.openHomePanel(e.panel);
+    }
+    const transition = w.run.transition;
+    this.fade?.setVisible(w.run.phase === 'transition').setAlpha(transition ? (transition.part === 'out' ? 1 - transition.left / RUN.FADE_TICKS : transition.left / (transition.kind === 'restart' ? RUN.RESTART_FADE_TICKS : RUN.FADE_TICKS)) : 0);
     const g = this.props.clear();
     // Doors (sprites) and the timed door's countdown.
     this.doorViews.update(w);
@@ -216,11 +266,12 @@ export class StageScene extends WorldScene {
       g.fillStyle(U.markerColor, 1).fillRect(m.x - U.marker / 2, cy - U.marker / 2, U.marker, U.marker);
     }
     // Hint, timer, split popup, boss bar, stage clear.
-    const sign = w.training?.sign ?? (w.activeHint ? HINT_TEXT[w.activeHint] : '');
+    const target = this.level.kind === 'village' ? interactTarget(w) : null;
+    const sign = w.villageMessage ?? w.training?.sign ?? (target && 'use' in target ? `[E] ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label}` : w.activeHint ? HINT_TEXT[w.activeHint] : '');
     this.hintText.setText(!this.overview ? sign : '');
     this.yard?.update(w);
-    if (this.frameEvents.some(({ e }) => e.t === 'leftTraining') && !new URLSearchParams(window.location.search).get('start')) { this.toTitle(); return; }
-    const timerOn = !this.overview && !this.yard;
+    if (this.frameEvents.some(({ e }) => e.t === 'leftTraining')) { if (gameSession.trainingReturn === 'home') this.goLevel('home'); else this.toTitle(); return; }
+    const timerOn = !this.overview && !this.yard && w.run.phase !== 'homeVillage';
     this.timerText.setVisible(timerOn).setText(formatTime(w.run.runTicks));
     this.segmentText.setVisible(timerOn).setText(`STAGE ${this.level.stage}  ${formatTime(w.run.stageTicks ?? w.run.runTicks)}`);
     // Info line: a pending timed door within 640 px (07 §4.11).

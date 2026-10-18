@@ -7,9 +7,9 @@ import { UI_COLOR } from '../../data/uiText.ts';
 import { box, hasFrame, SKIN } from '../../ui/skin.ts';
 import { loadAssets } from '../assets/loadAssets.ts';
 import { debugEnabled } from '../debug.ts';
-import { StageScene } from './StageScene.ts';
+import { gameSession } from '../session.ts';
 
-export const TITLE_CHOICES = [{ label: 'Play', level: 'plains' }, { label: 'Training Yard', level: 'training_yard' }] as const;
+export const TITLE_CHOICES = [{ label: 'Play', level: 'home' }, { label: 'Training Yard', level: 'training_yard' }] as const;
 
 export class TitleScene extends Phaser.Scene {
   private cursor = 0;
@@ -61,8 +61,9 @@ export class TitleScene extends Phaser.Scene {
   /** Starts the chosen level in a fresh Stage scene. */
   choose(i: number): void {
     const level = TITLE_CHOICES[i].level;
-    if (this.scene.get('Stage')) this.scene.remove('Stage');
-    this.scene.add('Stage', StageScene, true, { level });
+    if (level === 'training_yard') gameSession.trainingReturn = 'title';
+    if (level === 'home') this.scene.start('Village', { level });
+    else this.scene.start('Stage', { level });
     this.scene.stop();
   }
 }
