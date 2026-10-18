@@ -8,10 +8,13 @@ export const gameSession = {
   trainingReturn: 'title' as 'home' | 'title',
   makeWorld(level: LevelData, carry?: WorldCarry, debugSeed?: string | null): GameWorld {
     const save = saveStore().data;
+    const homeTransition = carry?.run.transition?.target.phase === 'homeVillage' ? structuredClone(carry.run.transition) : null;
+    if (homeTransition) carry = undefined;
     const seed = carry?.run.seedText ?? debugSeed ?? save.typedSeed;
     const w = GameWorld.fromLevel(level, { seedText: seed ?? randomSeed(), seeded: carry?.run.seeded ?? seed !== null,
       startKit: carry?.run.startKit ?? (level.kind !== 'stage' ? save.lastKit : null), carry, nextRandomSeed: randomSeed });
     if (carry?.run.phase === 'loading') w.completeLoading();
+    if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
     return w;
   },

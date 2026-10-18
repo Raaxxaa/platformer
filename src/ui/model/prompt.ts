@@ -11,6 +11,7 @@ export interface Prompt { l1: string; l2?: string; tone: 'text' | 'textDim' | 't
 
 export function interactPrompt(w: GameWorld, t: Interactable): Prompt | null {
   switch (t.kind) {
+    case 'inn': return { l1: 'Choose road and sleep', l2: 'Restores all HP (not the flask)', tone: 'text', glyph: true };
     case 'ability_altar': {
       const s = w.abilities.slots[Number(t.label)];
       if (!s) return { l1: 'No ability', tone: 'textOff', glyph: false };

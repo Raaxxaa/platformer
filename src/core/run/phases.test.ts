@@ -3,7 +3,7 @@ import { createRunState, stepClocks, type RunPhase } from './runState.ts';
 import { beginTransition, completeLoading, pauseRun, resumeRun, simulatesWorld, stepTransition } from './phases.ts';
 
 describe('full run phases (06 §2.1–2.2, checklist 7–8)', () => {
-  it.each<RunPhase>(['title', 'homeVillage', 'loading', 'paused', 'dead', 'runComplete'])('%s does not count run time', (phase) => {
+  it.each<RunPhase>(['title', 'homeVillage', 'loading', 'paused', 'dead', 'runComplete', 'runSoFar'])('%s does not count run time', (phase) => {
     const r = createRunState('A'); r.phase = phase;
     stepClocks(r);
     expect([r.runTicks, r.stageTicks]).toEqual([0, 0]);
@@ -14,7 +14,7 @@ describe('full run phases (06 §2.1–2.2, checklist 7–8)', () => {
     expect(r.runTicks).toBe(1);
     expect(r.stageTicks).toBe(phase === 'stage' || phase === 'statPick' ? 1 : 0);
   });
-  it.each<RunPhase>(['title', 'transition', 'loading', 'statPick', 'routeChoice', 'paused', 'runComplete'])('%s freezes the world', (phase) => {
+  it.each<RunPhase>(['title', 'transition', 'loading', 'statPick', 'routeChoice', 'paused', 'runComplete', 'runSoFar'])('%s freezes the world', (phase) => {
     expect(simulatesWorld(phase)).toBe(false);
   });
   it.each<RunPhase>(['homeVillage', 'stage', 'village', 'dead'])('%s permits world simulation', (phase) => {

@@ -383,6 +383,8 @@ export class GameWorld {
       this.runSeed = fnv1a32(this.opts.seedText);
     }
     this.reset();
+    // Every restart entry point requires release, including summary and pause buttons.
+    this.run.restartNeedsRelease = true;
     // Same-Plains reload is synchronous. Other scenes must really load Plains before acknowledging it.
     beginTransition(this.run, 'restart', { phase: 'stage', levelId: 'plains', stage: 1 });
     if (!this.level || this.level.id === 'plains') this.completeLoading();
@@ -608,6 +610,8 @@ export class GameWorld {
 
   /** On-kill effects that belong to other systems (flask, Rush). */
   onPlayerKill(e: EnemyState, tier: 'regular' | 'elite'): void {
+    this.run.stats.kills += 1;
+    if (tier === 'elite') this.run.stats.eliteKills += 1;
     // Bosses refill charges in onBossKilled; their banked fill stays unchanged (02 §7.3).
     if (e.def.tier !== 'boss') onKillFill(this, tier, vampireTenths(this));
     addRush(this, tier === 'elite' ? RUSH.KILL_ELITE : RUSH.KILL_REGULAR);

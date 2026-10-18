@@ -14,6 +14,15 @@ const level = (id: 'plains' | 'crossroads' | 'home') => {
   return d;
 };
 describe('fresh-world run transfer (06 §2.7, M7 Task3)', () => {
+  it('summary restart stays latched through a fresh world until restart is released', () => {
+    let seeds = 0;
+    const w = GameWorld.fromLevel(level('crossroads'), { seedText: 'END', nextRandomSeed: () => `NEW${++seeds}` });
+    w.setStartingKit({ cls: 'tank', weapon: 'war_maul' }); w.run.phase = 'runSoFar'; w.restart();
+    const fresh = GameWorld.fromLevel(level('plains'), { seedText: w.run.seedText, carry: captureWorld(w), nextRandomSeed: () => `NEW${++seeds}` });
+    fresh.completeLoading(); stepSpec(fresh, { restart: true }, 120);
+    expect(seeds).toBe(1); expect(fresh.run.phase).toBe('stage'); expect(fresh.run.restartNeedsRelease).toBe(true);
+    stepSpec(fresh, {}); stepSpec(fresh, { restart: true }, 60); expect(seeds).toBe(2);
+  });
   it('preserves run counters and exact Iron Will removal after transfer', () => {
     const w = GameWorld.fromLevel(level('plains'), { seedText: 'IRON' });
     w.setStartingKit({ cls: 'tank', weapon: 'war_maul' }); w.abilities.slots[1] = newAbility('shoulder_charge'); w.refreshClassState();

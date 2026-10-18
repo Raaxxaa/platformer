@@ -36,6 +36,10 @@ import { RUN } from '../../core/tuning.ts';
 import { interactTarget } from '../../core/abilities/items.ts';
 import { ShopView } from '../../ui/popups/shop.ts';
 import { interactPrompt } from '../../ui/model/prompt.ts';
+import { RouteChoiceView } from '../../ui/popups/routeChoice.ts';
+import { RunSoFarView } from '../../ui/screens/runSoFar.ts';
+import { cancelRoad, chooseRoad } from '../../core/run/roads.ts';
+import { beginTransition } from '../../core/run/phases.ts';
 
 /** Hint text with the M1 key names (07 shows real button prompts later). */
 const HINT_TEXT: Record<HintAction, string> = {
@@ -73,6 +77,8 @@ export class StageScene extends WorldScene {
   private fade!: Phaser.GameObjects.Graphics;
   private villageView: VillageView | null = null;
   private shopView: ShopView | null = null;
+  private routeChoice: RouteChoiceView | null = null;
+  private runSoFar: RunSoFarView | null = null;
 
   constructor(key = 'Stage') {
     super(key);
@@ -82,7 +88,7 @@ export class StageScene extends WorldScene {
   private chosen: string | null = null;
   init(data?: { level?: string; carry?: WorldCarry }): void {
     this.chosen = data?.level ?? null;
-    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.labels = []; this.doorText.clear(); this.splitUntil = -1;
+    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.labels = []; this.doorText.clear(); this.splitUntil = -1;
   }
 
   preload(): void {
@@ -152,6 +158,9 @@ export class StageScene extends WorldScene {
     api.levelId = () => this.level.id;
     api.save = () => structuredClone(saveStore().data);
     api.shop = () => structuredClone(this.world.shop);
+    api.routeChoice = () => this.routeChoice ? { cursor: this.routeChoice.model.cursor, road: this.routeChoice.model.road } : null;
+    api.routeAction = (action: Parameters<RouteChoiceView['action']>[0]) => this.routeChoice?.action(action);
+    api.summaryAction = (action: Parameters<RunSoFarView['action']>[0]) => this.runSoFar?.action(action);
     api.restartRun = () => this.world.restart();
     api.loadout = () => structuredClone({ weapons: this.world.combat.slots, abilities: this.world.abilities.slots });
     api.homePanel = () => this.homePanel?.model.kind ?? null;
@@ -209,7 +218,7 @@ export class StageScene extends WorldScene {
   /** Quitting, or leaving the Training Yard: back to the start screen (M4.1 Task 2). */
   protected onPauseQuit(): void {
     if (this.level.kind === 'training' && gameSession.trainingReturn === 'home') this.goLevel('home');
-    else if (this.level.kind === 'stage') this.goLevel('home');
+    else if (this.level.kind === 'stage' || this.world.run.started) this.requestHome();
     else this.toTitle();
   }
   protected onKitEquipped(kit: Kit): void {
@@ -218,7 +227,25 @@ export class StageScene extends WorldScene {
     saveStore().update((s) => { s.lastKit = { ...kit }; });
     if (first && this.level.id === 'home') this.openHomePanel('training');
   }
-  protected extraMenuOpen(): boolean { return !!this.homePanel?.active; }
+  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar; }
+  private requestHome(): void {
+    this.runSoFar?.destroy(); this.runSoFar = null;
+    beginTransition(this.world.run, 'toHome', { phase: 'homeVillage', levelId: 'home', stage: 0 });
+  }
+  private syncRunPanels(): void {
+    const w = this.world;
+    if (w.run.phase !== 'routeChoice' && !(w.run.phase === 'paused' && w.run.pausedFrom === 'routeChoice')) { this.routeChoice?.destroy(); this.routeChoice = null; }
+    if (w.run.phase === 'routeChoice' && !this.routeChoice) this.routeChoice = new RouteChoiceView(this,
+      { lastRoad: saveStore().data.lastRoad, startClass: w.run.startKit?.cls ?? null, pbs: saveStore().data.pbs }, {
+        onConfirm: (road) => { if (chooseRoad(w, road)) saveStore().update((s) => { s.lastRoad = road; }); this.routeChoice?.destroy(); this.routeChoice = null; this.clearMenuInput(); },
+        onCancel: () => { cancelRoad(w); this.routeChoice?.destroy(); this.routeChoice = null; this.clearMenuInput(); },
+      });
+    if (w.run.phase !== 'runSoFar') { this.runSoFar?.destroy(); this.runSoFar = null; }
+    if (w.run.phase === 'runSoFar' && !this.runSoFar) this.runSoFar = new RunSoFarView(this, {
+      runTicks: w.run.runTicks, split1: w.run.splits[0], gold: w.gold, kills: w.run.stats.kills,
+      kit: { weapons: structuredClone(w.combat.slots), abilities: w.abilities.slots.map((s) => s ? { id: s.id, level: s.level } : null), displayName: w.classState.displayName },
+    }, { onRestart: () => { this.runSoFar?.destroy(); this.runSoFar = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
+  }
   private openHomePanel(kind: HomePanelKind): void {
     this.homePanel?.destroy();
     this.homePanel = new HomePanels(this, kind, saveStore().data, {
@@ -235,6 +262,8 @@ export class StageScene extends WorldScene {
   }
   update(time: number, delta: number): void {
     if (this.homePanel?.active) { this.homePanel.setEnabled(!this.pause); this.homePanel.update(delta / 1000); }
+    this.routeChoice?.setEnabled(!this.pause); this.routeChoice?.update(delta / 1000);
+    this.runSoFar?.update(delta / 1000);
     super.update(time, delta);
   }
   private toTitle(): void {
@@ -247,9 +276,13 @@ export class StageScene extends WorldScene {
 
   protected renderExtra(): void {
     const w = this.world, U = STAGE_UI;
+    this.syncRunPanels();
     this.villageView?.update(w, saveStore().data.typedSeed);
     this.shopView?.update(w, this.frameEvents.some(({ e }) => e.t === 'cantAfford'));
-    if (w.run.phase === 'loading' && w.run.transition) { this.goLevel(w.run.transition.target.levelId, captureWorld(w)); return; }
+    if (w.run.phase === 'loading' && w.run.transition) {
+      if (w.run.transition.target.phase === 'runSoFar') w.completeLoading();
+      else { this.goLevel(w.run.transition.target.levelId, captureWorld(w)); return; }
+    }
     for (const { e } of this.frameEvents) if (e.t === 'openHomePanel') {
       if (e.panel === 'training') this.enterTraining(); else this.openHomePanel(e.panel);
     }

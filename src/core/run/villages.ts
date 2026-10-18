@@ -5,11 +5,13 @@ import { createRunState } from './runState.ts';
 import { beginTransition } from './phases.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { buyFlaskUpgrade, buyKey, refill, rerollShop } from '../economy/shop.ts';
+import { openInn } from './roads.ts';
 
 const SERVICES: Record<string, (w: GameWorld) => boolean> = { shop_flask: buyFlaskUpgrade, shop_refill: refill, shop_key: buyKey, shop_reroll: rerollShop };
 
 export function setupVillage(w: GameWorld): void {
   for (const o of w.level?.objects ?? []) {
+    if (o.type === 'inn') w.interactables.push({ id: w.newId(), kind: o.type, label: 'Inn', x: o.x + o.w / 2, y: o.y + o.h, w: o.w, h: o.h, use: (ww) => { openInn(ww); } });
     if (o.type === 'ability_altar') w.interactables.push({ id: w.newId(), kind: o.type, label: String(Number(o.props.slot) - 1), x: o.x, y: o.y, use: () => {} });
     if (SERVICES[o.type]) w.interactables.push({ id: w.newId(), kind: o.type, label: o.type, x: o.x, y: o.y,
       use: (ww) => { const before = ww.events.length; if (!SERVICES[o.type](ww) && !ww.events.slice(before).some((e) => e.t === 'cantAfford')) ww.events.push({ t: 'cantAfford' }); } });

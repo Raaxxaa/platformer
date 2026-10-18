@@ -337,8 +337,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       const n = this.stepper.advance(delta / 1000);
       for (let i = 0; i < n; i++) {
         const input = this.swallowHeld(this.devices.builder.build());
-        if (this.extraMenuOpen()) { this.stepWorld(emptyInput()); continue; }
-        if (input.pause.pressed && !this.classPick) { this.openPause(); break; }
+        if (input.pause.pressed && !this.classPick) { this.openPause(); if (this.pause) break; }
+        if (this.extraMenuOpen()) { this.stepWorld({ ...emptyInput(), restart: input.restart }); continue; }
         if (this.classPick) {
           if (this.classPick?.pauseWorld) continue;
           this.stepWorld(emptyInput());                       // the world keeps running; the player gets neutral input
@@ -372,8 +372,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected onPauseQuit(): void {}
 
   pause: { model: PauseModel; view: PauseView } | null = null;
-  private readonly onFocusLost = () => this.openPause();
-  private readonly onVisibilityChanged = () => { if (document.hidden) this.openPause(); };
+  private readonly onFocusLost = () => this.openPause(true);
+  private readonly onVisibilityChanged = () => { if (document.hidden) this.openPause(true); };
   private readonly onPauseKey = (e: KeyboardEvent) => {
     if (!this.pause || e.repeat) return;
     const map: Record<string, PauseAction> = {
@@ -394,8 +394,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     else if (r === 'quit') { this.closePause(); this.onPauseQuit(); }
   }
 
-  openPause(): void {
-    if (this.pause) return;
+  openPause(focusLost = false): void {
+    if (this.pause || this.world.run.phase === 'runSoFar') return;
+    if (!focusLost && (this.world.run.phase === 'transition' || this.world.run.phase === 'loading')) return;
     this.statMenu.clear();
     pauseRun(this.world.run);
     this.pause = { model: new PauseModel(this.pausePlace()), view: new PauseView(this) };

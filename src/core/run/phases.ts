@@ -4,7 +4,7 @@ import type { LevelId } from '../level/loadLevel.ts';
 import type { RunPhase, RunState } from './runState.ts';
 
 export type TransitionKind = 'homeGate' | 'stageExit' | 'sleep' | 'restart' | 'toHome';
-export interface PhaseTarget { phase: 'stage' | 'village' | 'homeVillage'; levelId: LevelId; stage: RunState['stage'] }
+export interface PhaseTarget { phase: 'stage' | 'village' | 'homeVillage' | 'runSoFar'; levelId: LevelId; stage: RunState['stage'] }
 export interface RunTransition {
   kind: TransitionKind; target: PhaseTarget; part: 'out' | 'in'; left: number; timed: boolean;
 }
@@ -53,7 +53,7 @@ export function stepTransition(r: RunState): 'load' | 'arrive' | null {
 }
 
 export function pauseRun(r: RunState): void {
-  if (r.phase === 'paused') return;
+  if (r.phase === 'paused' || r.phase === 'runSoFar') return;
   r.pausedFrom = r.phase;
   r.phase = 'paused';
 }

@@ -2,11 +2,11 @@
 import { fnv1a32 } from '../rng.ts';
 import type { LevelId } from '../level/loadLevel.ts';
 import type { RunTransition } from './phases.ts';
-import type { RunStats, StartKit } from '../save/schema.ts';
+import type { Road, RunStats, StartKit } from '../save/schema.ts';
 import { defaultRunStats } from '../../data/save.ts';
 
 export type RunPhase = 'title' | 'homeVillage' | 'transition' | 'loading' | 'stage' | 'statPick'
-  | 'village' | 'routeChoice' | 'dead' | 'runComplete' | 'paused';
+  | 'village' | 'routeChoice' | 'dead' | 'runComplete' | 'runSoFar' | 'paused';
 
 export interface ArenaRunState { locked: boolean; wave: number; lockTick: number; cleared: boolean; clearTick: number | null }
 
@@ -19,6 +19,7 @@ export interface RunState {
   startKit: StartKit | null;
   started: boolean;
   stats: RunStats;
+  road: Road | null;
   stage: 0 | 1 | 2 | 3 | 4; levelId: LevelId;
   runTicks: number; stageTicks: number;
   splits: [number | null, number | null, number | null, number | null];
@@ -34,7 +35,7 @@ export interface RunState {
 
 export function createRunState(seedText: string, seeded = false): RunState {
   return {
-    phase: 'stage', pausedFrom: null, transition: null, seedText, runSeed: fnv1a32(seedText), seeded, startKit: null, started: false, stats: defaultRunStats(), stage: 1, levelId: 'plains',
+    phase: 'stage', pausedFrom: null, transition: null, seedText, runSeed: fnv1a32(seedText), seeded, startKit: null, started: false, stats: defaultRunStats(), road: null, stage: 1, levelId: 'plains',
     runTicks: 0, stageTicks: 0, splits: [null, null, null, null], deathTick: null, sectionReached: 0,
     arenas: {}, timedDoors: {}, restartHoldTicks: 0, restartNeedsRelease: false,
     bossDefeatedTick: null, statPickDone: false,
