@@ -12,7 +12,7 @@ No later milestone is authorized.
 
 - Design branch `claude/great-dijkstra-g00pcj` was fast-forwarded into `main` at `b95aa41` and pushed.
 - Its GitHub Pages deployment succeeded: run `39085481312`.
-- Local feature commits after that point have not been pushed yet.
+- M7 feature work through `c492149` was pushed to `main` after its complete local gate. The main-branch Pages workflow is the deployment evidence.
 - No open GitHub issues were found at initial inspection; the current plans and specs govern this work.
 
 ## Verified milestones
@@ -107,11 +107,20 @@ No later milestone is authorized.
 - Final checks: 987 unit tests in 128 files; typecheck/build/diff checks; seventeen browser cases plus the zero-tick regression and three affected import reruns passed.
 - Root inspected all fifteen UI screenshots and saved stable copies. Independent review is clear; no new SPEC-GAP.
 
+### M7 Task 10 — `c492149`
+
+- Added the full Title-to-inn browser run, reload checks, and real-level stat/shop determinism tests.
+- The run verifies saved Tank kit, Forest road, both Stage 1 segment keys, and no fabricated completed-run PB.
+- Updated legacy Title/Home tests for the required first gesture, new Pause rows, and real intro fade.
+- Final gate: typecheck; 989 unit tests in 129 files; production build; all 91 browser tests passed. The first full browser run found one old-menu test; its corrected rerun passed in full.
+- Root reviewed all 46 M7 screenshots across the task checks and saved the final set; independent review checked 32 legacy UI images with no visible regressions.
+- Gaps 12/13 are resolved. New gap 14 remains documented; no other M7 gap was added.
+
 ## Active task
 
-M7 Task 10: full-run E2E, determinism, final milestone checks, and delivery.
-The M7 writer is authorized to continue Tasks 3–10 strictly in order, with a tested commit per task and checkpoint reports.
-Root owns this handoff. Review agents stay read-only. No feature push before M7 checks and screenshot review.
+M7 implementation and local checks are complete. Verify the exact Pages delivery and live game before starting M7.1.
+The next authorized engineering task is M7.1 Task 1: surfaces and hazards, followed by Tasks 2–7 in order.
+Root owns this handoff. Source partitions require clear file ownership and tested commits. No later milestone is authorized.
 
 ## Remaining integration notes
 
@@ -124,7 +133,7 @@ Root owns this handoff. Review agents stay read-only. No feature push before M7 
 
 ## Delivery checks still required
 
-- All remaining M7 tasks, then all M7.1 tasks.
+- Verify M7 Pages delivery, then complete all M7.1 tasks.
 - `npm run typecheck`, `npm test`, `npm run build`, `npm run test:e2e` on the final milestone state.
 - Inspect all required milestone screenshots and share the useful screens with the designer.
 - Fetch current GitHub state before pushing; preserve concurrent art work.

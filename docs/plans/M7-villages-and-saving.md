@@ -121,7 +121,7 @@
 
 - [x] **E2E** `tests/e2e/run.spec.ts`: title → Home Village → pick Tank at the statue → gate → Stage 1 (`?debug=1` helpers to skip to the boss and kill it) → stat pick → Crossroads → buy an item, upgrade an ability, sell one → inn → Forest road → "To be continued". Reload the page and check `lastKit`, `lastRoad` and the PB/best segment were saved. Screenshots of every screen; **read them**.
 - [x] **Determinism:** same seed + same inputs give the same shop stock and stat offer.
-- [ ] **Run everything; push to `main`.** All checks passed. The controller will push this completed milestone and verify its deployment after the final commit.
+- [x] **Run everything; push to `main`.** Typecheck, 989 unit tests, build, and 91 browser tests passed. Milestone `c492149` was pushed to `main`; Pages deployment is verified separately before the next milestone starts.
 - [x] **Hand-off:** "You can now play a real run: start in the Home Village, beat Stage 1, pick an upgrade, shop in the Crossroads and choose your road at the inn. Your best times and settings are saved." Ask: is the village too slow to walk through? Are prices fair for the gold you have? Which stat upgrade did you pick?
 
 ## Done when
