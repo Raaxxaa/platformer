@@ -90,9 +90,18 @@ No later milestone is authorized.
 - Final checks: 915 unit tests in 116 files; typecheck/build; seven real save browser tests passed. Independent review reran 100 focused tests with no remaining finding.
 - Root inspected storage-warning and future-weapon-notice screenshots. New SPEC-GAP #14 records the unspecified older-build kit fallback.
 
+### M7 Task 8 — `a419d07`
+
+- Added seeded elite/Guardian blueprint drops, touch pickup and immediate saving, candidate exclusion, and directly tested King unlock helpers.
+- Every loot source uses the run's frozen catalog intersected with implemented gear. New runs refresh from the save; stage/village loads keep the current snapshot.
+- Tests failed first for static placed-enemy source IDs and both Home seed-board directions; the gate now builds a fresh catalog from the current seed mode and saved unlocks.
+- Third starting-weapon unlocks remain saved but unavailable as picker choices until their combat exists. No M9 combat was added.
+- Final checks: 940 unit tests in 118 files; typecheck/build; sixteen related browser tests and five final blueprint browser checks passed. Independent review reran 42 focused tests with no findings.
+- Root inspected the blueprint toast. No new SPEC-GAP.
+
 ## Active task
 
-M7 Task 8: blueprint drops, frozen run loot pools, and persistent unlocks.
+M7 Task 9: title, death, records, settings, export/import, and live settings application.
 The M7 writer is authorized to continue Tasks 3–10 strictly in order, with a tested commit per task and checkpoint reports.
 Root owns this handoff. Review agents stay read-only. No feature push before M7 checks and screenshot review.
 
