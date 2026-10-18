@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 const ready = async (page: Page, id: string) => {
   await page.waitForFunction((level) => (window as any).__game?.ready && (window as any).__game.levelId?.() === level, id);
   await page.evaluate(() => (window as any).__game.setManual(true));
+  if (id === 'home') await page.waitForFunction(() => (window as any).PHASER_GAME.scene.getScene('Village').titleFadeLeft === 0);
 };
 const frames = async (page: Page) => page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
 test('Home is empty first launch, gate needs kit, Tank persists, Training returns and gate starts one run', async ({ page }) => {
@@ -64,6 +65,7 @@ test('seed board and records board work, and Home dummy gives no Rush', async ({
   await page.evaluate(() => (window as any).__game.openHomePanel('records')); await frames(page);
   await page.screenshot({ path: 'test-results/m7-home-records.png' });
   await page.keyboard.press('Escape');
+  await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().screen)).toBeNull();
   await page.evaluate(() => { const g = (window as any).__game; g.setKit('tank', 'war_maul'); g.homeAction('back'); g.teleport(28 * 16 - 20, 320); g.step(160, { attack1: true }); });
   expect(await page.evaluate(() => (window as any).__game.world().rush)).toBe(0);
 });

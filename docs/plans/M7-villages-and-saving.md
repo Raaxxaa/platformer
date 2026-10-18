@@ -51,78 +51,78 @@
 
 **Files:** `src/core/run/runState.ts` (extend), `src/core/run/phases.ts`, tests.
 
-- [ ] **Tests:** 06 checklist 5, 6, 7, 8, 13 (King part later), 14, 32 (Guardian part); phases and transitions of 06 §2.1–2.2 (fade lengths, which ones the timer counts); after the Great Boar dies, `statPick` opens 1.0 s later; dying in that 1.0 s is a normal death; touching `exit` loads the Crossroads.
-- [ ] **Implement** 06 §2. **Commit.**
+- [x] **Tests:** 06 checklist 5, 6, 7, 8, 13 (King part later), 14, 32 (Guardian part); phases and transitions of 06 §2.1–2.2 (fade lengths, which ones the timer counts); after the Great Boar dies, `statPick` opens 1.0 s later; dying in that 1.0 s is a normal death; touching `exit` loads the Crossroads.
+- [x] **Implement** 06 §2. **Commit.**
 
 ### Task 2: Stat upgrades
 
 **Files:** `src/data/economy.ts` (stat table), `src/core/economy/stats.ts`, `src/ui/popups/statPick.ts`, tests.
 
-- [ ] **Tests:** 05 checklist 25, 26; each of the 12 upgrades hooks into the right system (02, 01, 03, 05) with its exact value; max stacks.
-- [ ] **UI:** 07 §6.11. Confirms during the first 0.30 s are ignored; no skip.
-- [ ] **Commit.**
+- [x] **Tests:** 05 checklist 25, 26; each of the 12 upgrades hooks into the right system (02, 01, 03, 05) with its exact value; max stacks.
+- [x] **UI:** 07 §6.11. Confirms during the first 0.30 s are ignored; no skip.
+- [x] **Commit.**
 
 ### Task 3: Home Village
 
 **Files:** `levels-src/village_home/` (generated JSON), `src/game/scenes/VillageScene.ts`, tests.
 
-- [ ] **Level** from 06 §12.1 and §12.3: 48 × 23 tiles, floor at row 20; class statues at 9, 13, 17, 21; mirror spot at 25 (decoration only); training dummy at 28; unlocks board at 34; seed board at 37; gate `exit` at 45–46; `training_gate` at 1–2.
-- [ ] **Behaviour:** spawn with `save.lastKit` (empty-handed on first launch); statues open the class pick and save `lastKit`; the gate refuses without a kit (`Choose a class at a statue first`); the first time a class is confirmed, ask "Try the Training Yard first?" (06 §12.3); the training gate enters the yard, and leaving it returns here; the unlocks board opens records; the seed board opens seed entry (07 §6.12).
-- [ ] **Art:** ART3's Home Village background, cottages, well, statues, gate, mirror frame, villagers, dummy.
-- [ ] **Tests:** the gate starts a run only with a kit; `lastKit` persists across a reload; the timer doesn't run here.
-- [ ] **Commit.**
+- [x] **Level** from 06 §12.1 and §12.3: 48 × 23 tiles, floor at row 20; class statues at 9, 13, 17, 21; mirror spot at 25 (decoration only); training dummy at 28; unlocks board at 34; seed board at 37; gate `exit` at 45–46; `training_gate` at 1–2.
+- [x] **Behaviour:** spawn with `save.lastKit` (empty-handed on first launch); statues open the class pick and save `lastKit`; the gate refuses without a kit (`Choose a class at a statue first`); the first time a class is confirmed, ask "Try the Training Yard first?" (06 §12.3); the training gate enters the yard, and leaving it returns here; the unlocks board opens records; the seed board opens seed entry (07 §6.12).
+- [x] **Art:** ART3's Home Village background, cottages, well, statues, gate, mirror frame, villagers, dummy.
+- [x] **Tests:** the gate starts a run only with a kit; `lastKit` persists across a reload; the timer doesn't run here.
+- [x] **Commit.**
 
 ### Task 4: Crossroads Village and the shop
 
 **Files:** `levels-src/village_crossroads/`, `src/core/economy/shop.ts`, `src/ui/popups/shop.ts`, tests.
 
-- [ ] **Level** from 06 §12.2: shop items at 9, 12, 15; ability altars at 19, 22; flask upgrade 26; refill 29; key 32; reroll 35; inn at tiles 41–43, rows 16–19.
-- [ ] **Shop** (05 §10–11): stock on `enterVillage` (slot 1 B or better; slots 2–3 40% ability; no duplicate ids; key 50%); buying through the pickup and swap rules (gold taken only when taken); `Owned`; altar **tap** upgrades, **hold 0.75 s** sells (06 checklist 23); flask upgrade up to 4; refill only when not full; key up to 3; reroll 50, 100, 150 … refilling SOLD slots.
-- [ ] **Tests:** 05 checklist 4, 21, 22, 23, 24, 28; 06 checklist 22, 23.
-- [ ] **Art:** ART3's Crossroads background, market roof, inn, props, shopkeeper, innkeeper, merchant.
-- [ ] **Commit.**
+- [x] **Level** from 06 §12.2: shop items at 9, 12, 15; ability altars at 19, 22; flask upgrade 26; refill 29; key 32; reroll 35; inn at tiles 41–43, rows 16–19.
+- [x] **Shop** (05 §10–11): stock on `enterVillage` (slot 1 B or better; slots 2–3 40% ability; no duplicate ids; key 50%); buying through the pickup and swap rules (gold taken only when taken); `Owned`; altar **tap** upgrades, **hold 0.75 s** sells (06 checklist 23); flask upgrade up to 4; refill only when not full; key up to 3; reroll 50, 100, 150 … refilling SOLD slots.
+- [x] **Tests:** 05 checklist 4, 21, 22, 23, 24, 28; 06 checklist 22, 23.
+- [x] **Art:** ART3's Crossroads background, market roof, inn, props, shopkeeper, innkeeper, merchant.
+- [x] **Commit.**
 
 ### Task 5: Inn, route choice and "To be continued"
 
-- [ ] **Inn** (06 §12.2, §3): interact opens the route choice (07 §6.6) with the cursor on `save.lastRoad`; confirm sets `road`, saves `lastRoad`, sleeps (fade out 0.5 s, HP = max at the end of the fade out, fade in 0.5 s; the timer counts both).
-- [ ] **Until M7.1:** after the sleep, show a **"To be continued"** screen with the run so far (time, split 1, kit, gold, kills) and buttons Restart / Home Village / Title. Mark it `// SPEC-GAP: placeholder end until Stage 2 (M7.1)`; design chat's choice, no `SPEC-GAPS.md` entry.
-- [ ] **Tests:** 06 checklist 8 (inn adds exactly 120 ticks), 35 (road key, not level id).
-- [ ] **Commit.**
+- [x] **Inn** (06 §12.2, §3): interact opens the route choice (07 §6.6) with the cursor on `save.lastRoad`; confirm sets `road`, saves `lastRoad`, sleeps (fade out 0.5 s, HP = max at the end of the fade out, fade in 0.5 s; the timer counts both).
+- [x] **Until M7.1:** after the sleep, show a **"To be continued"** screen with the run so far (time, split 1, kit, gold, kills) and buttons Restart / Home Village / Title. Mark it `// SPEC-GAP: placeholder end until Stage 2 (M7.1)`; design chat's choice, no `SPEC-GAPS.md` entry.
+- [x] **Tests:** 06 checklist 8 (inn adds exactly 120 ticks), 35 (road key, not level id).
+- [x] **Commit.**
 
 ### Task 6: Timer, splits and PBs
 
 **Files:** `src/core/run/splits.ts`, `src/ui/hud/timerBlock.ts`, tests.
 
-- [ ] **Tests:** 06 checklist 1, 9, 10, 11, 12; the split popup and timer block (07 §4.11) show the delta in green/red.
-- [ ] **Implement** 06 §5.2–5.3. **Commit.**
+- [x] **Tests:** 06 checklist 1, 9, 10, 11, 12; the split popup and timer block (07 §4.11) show the delta in green/red.
+- [x] **Implement** 06 §5.2–5.3. **Commit.**
 
 ### Task 7: Save data
 
 **Files:** `src/core/save/schema.ts`, `migrate.ts`, `validate.ts`, `codec.ts`, `src/game/save/storage.ts`, tests.
 
-- [ ] **Tests:** 06 checklist 27, 28; validation fills defaults and drops bad entries one by one; history keeps max 20, newest first, and skips short restarts/quits; write moments of 06 §15.1; `.bak` and `.corrupt` handling; `save.training` holds Training Yard progress (06 §12.4); `classesDiscovered` from M4's event.
-- [ ] **Implement** 06 §15. **Commit.**
+- [x] **Tests:** 06 checklist 27, 28; validation fills defaults and drops bad entries one by one; history keeps max 20, newest first, and skips short restarts/quits; write moments of 06 §15.1; `.bak` and `.corrupt` handling; `save.training` holds Training Yard progress (06 §12.4); `classesDiscovered` from M4's event.
+- [x] **Implement** 06 §15. **Commit.**
 
 ### Task 8: Blueprints and unlocks
 
-- [ ] **Tests:** 05 checklist 27, 30 (the King part becomes testable in M9; test the unlock function directly now); elites 2%, Guardians 25%; a collected blueprint joins the pool from the next random-seed run; typed-seed runs use the full pool and drop none.
-- [ ] **Note:** most locked items (Scythe, Flail, Hand Cannon, Javelin, Spell Tome, Riposte, Boulder Toss, Turret, Time Slow) aren't built until M9. A blueprint for an unbuilt item is still saved, but the pool stays `unlocked ∩ implemented` (M5).
-- [ ] **Commit.**
+- [x] **Tests:** 05 checklist 27, 30 (the King part becomes testable in M9; test the unlock function directly now); elites 2%, Guardians 25%; a collected blueprint joins the pool from the next random-seed run; typed-seed runs use the full pool and drop none.
+- [x] **Note:** most locked items (Scythe, Flail, Hand Cannon, Javelin, Spell Tome, Riposte, Boulder Toss, Turret, Time Slow) aren't built until M9. A blueprint for an unbuilt item is still saved, but the pool stays `unlocked ∩ implemented` (M5).
+- [x] **Commit.**
 
 ### Task 9: Title, death screen, records, settings, export/import
 
-- [ ] **Title** (07 §7.3): `Play` (→ Home Village), `Training Yard`, `Records`, `Settings`. Replaces M4.1's start screen. The boot screen (07 §7.2).
-- [ ] **Death screen** (07 §7.10, 06 §6.1): time, stage and section, cause, seed; Restart / Change class / Title; restart allowed from 0.25 s.
-- [ ] **Records** (07 §7.5): tabs `BEST RUNS`, `CLASSES`, `UNLOCKS`.
-- [ ] **Settings** (07 §7.7): every setting there whose feature exists today; leave out the rest. **Export/import** (07 §7.9, 06 §15.3).
-- [ ] **Commit.**
+- [x] **Title** (07 §7.3): `Play` (→ Home Village), `Training Yard`, `Records`, `Settings`. Replaces M4.1's start screen. The boot screen (07 §7.2).
+- [x] **Death screen** (07 §7.10, 06 §6.1): time, stage and section, cause, seed; Restart / Change class / Title; restart allowed from 0.25 s.
+- [x] **Records** (07 §7.5): tabs `BEST RUNS`, `CLASSES`, `UNLOCKS`.
+- [x] **Settings** (07 §7.7): every setting there whose feature exists today; leave out the rest. **Export/import** (07 §7.9, 06 §15.3).
+- [x] **Commit.**
 
 ### Task 10: E2E and hand-off
 
-- [ ] **E2E** `tests/e2e/run.spec.ts`: title → Home Village → pick Tank at the statue → gate → Stage 1 (`?debug=1` helpers to skip to the boss and kill it) → stat pick → Crossroads → buy an item, upgrade an ability, sell one → inn → Forest road → "To be continued". Reload the page and check `lastKit`, `lastRoad` and the PB/best segment were saved. Screenshots of every screen; **read them**.
-- [ ] **Determinism:** same seed + same inputs give the same shop stock and stat offer.
-- [ ] **Run everything; push to `main`.**
-- [ ] **Hand-off:** "You can now play a real run: start in the Home Village, beat Stage 1, pick an upgrade, shop in the Crossroads and choose your road at the inn. Your best times and settings are saved." Ask: is the village too slow to walk through? Are prices fair for the gold you have? Which stat upgrade did you pick?
+- [x] **E2E** `tests/e2e/run.spec.ts`: title → Home Village → pick Tank at the statue → gate → Stage 1 (`?debug=1` helpers to skip to the boss and kill it) → stat pick → Crossroads → buy an item, upgrade an ability, sell one → inn → Forest road → "To be continued". Reload the page and check `lastKit`, `lastRoad` and the PB/best segment were saved. Screenshots of every screen; **read them**.
+- [x] **Determinism:** same seed + same inputs give the same shop stock and stat offer.
+- [ ] **Run everything; push to `main`.** All checks passed. The controller will push this completed milestone and verify its deployment after the final commit.
+- [x] **Hand-off:** "You can now play a real run: start in the Home Village, beat Stage 1, pick an upgrade, shop in the Crossroads and choose your road at the inn. Your best times and settings are saved." Ask: is the village too slow to walk through? Are prices fair for the gold you have? Which stat upgrade did you pick?
 
 ## Done when
 

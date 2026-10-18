@@ -62,17 +62,22 @@ test('start screen: Training Yard, then leave it and come back', async ({ page }
   expect(await page.evaluate(() => (window as any).__game.title)).toBe(true);
   await frames(page);
   await page.screenshot({ path: 'test-results/title.png' });
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().model.step)).toBe(2);
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   await page.waitForFunction(() => (window as any).__game?.levelId?.() === 'training_yard');
   await frames(page);
   await page.screenshot({ path: 'test-results/title-yard.png' });
   // Pause → Leave Training Yard (confirm twice).
-  await page.evaluate(() => { const g = (window as any).__game; g.openPause(); g.pauseAction('down'); g.pauseAction('confirm'); g.pauseAction('confirm'); });
+  await page.evaluate(() => { const g = (window as any).__game; g.openPause(); g.pauseAction('down'); g.pauseAction('down'); g.pauseAction('confirm'); g.pauseAction('confirm'); });
   await page.waitForFunction(() => (window as any).__game?.title === true);
   // Play opens Home Village; class statues handle the kit pick there.
   await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().model.step)).toBe(2);
+  await page.keyboard.press('Enter');
   await page.waitForFunction(() => (window as any).__game?.levelId?.() === 'home');
+  await page.waitForFunction(() => (window as any).PHASER_GAME.scene.getScene('Village').titleFadeLeft === 0);
   expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('homeVillage');
   await frames(page);
   await page.screenshot({ path: 'test-results/title-play.png' });
