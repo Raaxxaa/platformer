@@ -7,6 +7,7 @@ import { beginTransition } from './phases.ts';
 import { newAbility, newWeapon } from '../abilities/runtime.ts';
 import { deriveSeed, Rng } from '../rng.ts';
 import { applyStatUpgrade } from '../economy/stats.ts';
+import { hurtPlayer } from '../combat/health.ts';
 
 const level = (id: 'plains' | 'crossroads' | 'home') => {
   const d = levelFrom(['#........#', '#........#', '##########'], [feet('player_start', 2, 1)], id);
@@ -14,6 +15,12 @@ const level = (id: 'plains' | 'crossroads' | 'home') => {
   return d;
 };
 describe('fresh-world run transfer (06 §2.7, M7 Task3)', () => {
+  it('death clears the curse and all stage effects while preserving permanent stat stacks', () => {
+    const w = GameWorld.fromLevel(level('plains'), { seedText: 'DEATH' });
+    w.econ.curse = { id: 'no_heal', killsLeft: 7 }; w.econ.buffs = ['swift']; w.econ.debuffs = [{ id: 'jammed', ticksLeft: 90 }]; w.econ.statStacks.vitality = 1;
+    w.health.hp = 1; hurtPlayer(w, { kind: 'enemyHit', enemyId: 1, enemyDefId: 'great_boar', damageA: 20, attackerCx: 999, melee: true });
+    expect(w.health.dead).toBe(true); expect(w.econ).toMatchObject({ curse: null, buffs: [], debuffs: [], statStacks: { vitality: 1 } });
+  });
   it('summary restart stays latched through a fresh world until restart is released', () => {
     let seeds = 0;
     const w = GameWorld.fromLevel(level('crossroads'), { seedText: 'END', nextRandomSeed: () => `NEW${++seeds}` });
@@ -61,7 +68,7 @@ describe('fresh-world run transfer (06 §2.7, M7 Task3)', () => {
     expect(next.combat.slots[0]?.weaponId).toBe('katana');
     expect(next.run.startKit).toEqual({ cls: 'tank', weapon: 'war_maul' });
     expect(next.health.hp).toBe(49);
-    expect(next.econ).toMatchObject({ goldTenths: 4450, keys: 2, statStacks: { vitality: 1 }, curse: { killsLeft: 3 }, buffs: [], debuffs: [] });
+    expect(next.econ).toMatchObject({ goldTenths: 4450, keys: 2, statStacks: { vitality: 1 }, curse: null, buffs: [], debuffs: [] });
     expect(next.flask).toMatchObject({ charges: 1, fillTenths: 333 });
     next.restart();
     expect(next.run.phase).toBe('loading');

@@ -4,6 +4,8 @@ import { STARTING_KITS } from '../../data/classes.ts';
 import { SAVE_RULES } from '../../data/save.ts';
 export interface SaveStorage { getItem(key: string): string | null; setItem(key: string, value: string): void }
 export const SAVE_KEY = 'rushblade.save';
+/** Dates belong to the browser save layer, never the deterministic core. */
+export const saveDate = (): string => new Date().toISOString();
 export class SaveStore {
   data = defaultSave();
   readOnly = false;

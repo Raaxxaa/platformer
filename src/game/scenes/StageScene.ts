@@ -7,8 +7,6 @@ import { sectionAt } from '../../core/level/routeLint.ts';
 import { timedDoorTimeLeft } from '../../core/run/timedDoors.ts';
 import type { HintAction } from '../../core/run/zones.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
-import { formatTime } from '../../core/time.ts';
-import { TICK_RATE } from '../../core/tuning.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
 import { DoorViews, drawGuideArrows } from '../view/levelView.ts';
@@ -40,6 +38,7 @@ import { RouteChoiceView } from '../../ui/popups/routeChoice.ts';
 import { RunSoFarView } from '../../ui/screens/runSoFar.ts';
 import { cancelRoad, chooseRoad } from '../../core/run/roads.ts';
 import { beginTransition } from '../../core/run/phases.ts';
+import { TimerBlock } from '../../ui/hud/timerBlock.ts';
 
 /** Hint text with the M1 key names (07 shows real button prompts later). */
 const HINT_TEXT: Record<HintAction, string> = {
@@ -62,14 +61,10 @@ export class StageScene extends WorldScene {
   private doorText = new Map<string, Phaser.GameObjects.BitmapText>();
   private doorViews!: DoorViews;
   private hintText!: Phaser.GameObjects.BitmapText;
-  private timerText!: Phaser.GameObjects.BitmapText;
-  private splitText!: Phaser.GameObjects.BitmapText;
-  private splitUntil = -1;
+  private timerBlock!: TimerBlock;
   private bossBarGfx!: Phaser.GameObjects.Graphics;
   private bossText!: Phaser.GameObjects.BitmapText;
   private bossTitle!: Phaser.GameObjects.BitmapText;
-  private segmentText!: Phaser.GameObjects.BitmapText;
-  private infoText!: Phaser.GameObjects.BitmapText;
   private yard: YardView | null = null;
   private homePanel: HomePanels | null = null;
   private carry: WorldCarry | undefined;
@@ -88,7 +83,7 @@ export class StageScene extends WorldScene {
   private chosen: string | null = null;
   init(data?: { level?: string; carry?: WorldCarry }): void {
     this.chosen = data?.level ?? null;
-    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.labels = []; this.doorText.clear(); this.splitUntil = -1;
+    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.labels = []; this.doorText.clear();
   }
 
   preload(): void {
@@ -126,10 +121,7 @@ export class StageScene extends WorldScene {
     this.doorViews = new DoorViews(this);
     drawGuideArrows(this, this.level.objects);
     this.hintText = this.add.bitmapText(width / 2, height - U.hintBottom, FONTS.small, '').setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.timerText = this.add.bitmapText(U.timer[0], U.timer[1], FONTS.large, '').setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.segmentText = this.add.bitmapText(U.segment[0], U.segment[1], FONTS.small, '').setTint(UI_COLOR.textDim).setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.infoText = this.add.bitmapText(U.info[0], U.info[1], FONTS.small, '').setOrigin(1, 0).setScrollFactor(0).setDepth(DEPTH.hud);
-    this.splitText = this.add.bitmapText(U.alert[0], U.alert[1], FONTS.small, '').setTint(UI_COLOR.highlight).setOrigin(0.5, 0).setScrollFactor(0).setDepth(DEPTH.hud);
+    this.timerBlock = new TimerBlock(this);
     this.bossBarGfx = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud);
     this.bossText = this.add.bitmapText(U.bossName[0], U.bossName[1], FONTS.small, '').setScrollFactor(0).setDepth(DEPTH.hud);
     this.bossTitle = this.add.bitmapText(U.bossTitleRight, U.bossName[1], FONTS.small, '').setOrigin(1, 0).setTint(UI_COLOR.textDim).setScrollFactor(0).setDepth(DEPTH.hud);
@@ -157,6 +149,7 @@ export class StageScene extends WorldScene {
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.levelId = () => this.level.id;
     api.save = () => structuredClone(saveStore().data);
+    api.timerBlock = () => this.timerBlock.snapshot();
     api.shop = () => structuredClone(this.world.shop);
     api.routeChoice = () => this.routeChoice ? { cursor: this.routeChoice.model.cursor, road: this.routeChoice.model.road } : null;
     api.routeAction = (action: Parameters<RouteChoiceView['action']>[0]) => this.routeChoice?.action(action);
@@ -261,6 +254,7 @@ export class StageScene extends WorldScene {
     this.scene.start(['home', 'crossroads', 'border', 'rebel_camp'].includes(level) ? 'Village' : 'Stage', { level, carry });
   }
   update(time: number, delta: number): void {
+    this.timerBlock?.advance(delta / 1000, !!this.pause);
     if (this.homePanel?.active) { this.homePanel.setEnabled(!this.pause); this.homePanel.update(delta / 1000); }
     this.routeChoice?.setEnabled(!this.pause); this.routeChoice?.update(delta / 1000);
     this.runSoFar?.update(delta / 1000);
@@ -310,21 +304,7 @@ export class StageScene extends WorldScene {
     this.hintText.setText(!this.overview ? sign : '');
     this.yard?.update(w);
     if (this.frameEvents.some(({ e }) => e.t === 'leftTraining')) { if (gameSession.trainingReturn === 'home') this.goLevel('home'); else this.toTitle(); return; }
-    const timerOn = !this.overview && !this.yard && w.run.phase !== 'homeVillage';
-    this.timerText.setVisible(timerOn).setText(formatTime(w.run.runTicks));
-    this.segmentText.setVisible(timerOn && this.level.kind === 'stage').setText(`STAGE ${this.level.stage}  ${formatTime(w.run.stageTicks ?? w.run.runTicks)}`);
-    // Info line: a pending timed door within 640 px (07 §4.11).
-    let info = '', infoBad = false;
-    for (const d of w.timedDoors) {
-      const b = w.bodies.list.find((x) => x.id === d.id);
-      if (!b || w.run.timedDoors[d.id] !== 'pending' || Math.abs(b.x - w.body.x) > U.doorInfoRange) continue;
-      const left = Math.max(0, timedDoorTimeLeft(w, d.id));
-      info = `DOOR ${formatTime(Math.round(left * TICK_RATE))}`; infoBad = left < U.doorInfoBadS;
-      break;
-    }
-    this.infoText.setVisible(timerOn).setText(info).setTint(infoBad ? UI_COLOR.bad : UI_COLOR.text);
-    for (const { e } of this.frameEvents) if (e.t === 'split') { this.splitUntil = w.tick + U.splitSeconds * TICK_RATE; this.splitText.setText(`Split ${e.index}  ${formatTime(e.runTicks)}`); }
-    this.splitText.setVisible(w.tick < this.splitUntil);
+    this.timerBlock.draw(w, saveStore().data.settings.showTimer, !!this.overview, this.frameEvents.map(({ e }) => e));
     const bar = w.bossBar;
     const bg = this.bossBarGfx.clear();
     if (bar && !this.overview) {

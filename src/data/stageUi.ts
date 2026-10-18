@@ -1,3 +1,5 @@
+/** UI animation frame cap (07 §1.3). */
+export const UI_FRAME_SECONDS = 0.1;
 // Stage scene drawing numbers (M3 placeholders until the real HUD, 07).
 export const STAGE_UI = {
   marker: 12,                       // px, grey loot marker box
@@ -10,6 +12,7 @@ export const STAGE_UI = {
   // 07 §4.11 timer block, §4.12 boss bar (bottom center), §6.9 alert line for splits.
   doorInfoRange: 640, doorInfoBadS: 5,
   timer: [632, 8], segment: [632, 27], info: [632, 38], alert: [320, 10],
+  alertLineY: 28, alertMaxWidth: 248, alertGap: 4,
   bossName: [160, 321], bossTitleRight: 480, bossHp: [160, 332, 320, 10], bossPoise: [160, 343, 320, 4],
   overviewAbove: 18, overviewBelow: 4,      // tiles above / below the main path in a section overview
 } as const;

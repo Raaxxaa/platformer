@@ -70,6 +70,7 @@ import { setupVillage, stepVillage } from '../run/villages.ts';
 import { setupShop, stepAltarInteraction, type AltarHold, type ShopState } from '../economy/shop.ts';
 import { applyStatUpgrade, maxPlayerHp, offerStatUpgrades } from '../economy/stats.ts';
 import { STAT_PICK_DEFAULT_INDEX, type StatUpgradeId } from '../../data/economy.ts';
+import { recordSplit, type RunRecords } from '../run/splits.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -122,6 +123,7 @@ export type WorldEvent =
   | { t: 'enterVillage'; villageId: LevelData['id'] }
   | { t: 'stageStarted'; levelId: LevelData['id']; stage: RunState['stage'] }
   | { t: 'runStarted' }
+  | { t: 'pbSaved' }
   | { t: 'openHomePanel'; panel: 'training' | 'seed' | 'records' };
 
 export interface GameWorldOptions {
@@ -134,6 +136,8 @@ export interface GameWorldOptions {
   nextRandomSeed?: () => string;
   startKit?: StartKit | null;
   carry?: WorldCarry;
+  records?: RunRecords;
+  practice?: boolean;
   level?: LevelData;
   /** Arena wave spawns, spawned by the arena logic (06 §9.2). */
   waveSpawns?: LevelEnemySpawn[];
@@ -204,6 +208,7 @@ export class GameWorld {
   rng!: { enemyAI: Rng; combat: Rng; cosmetic: Rng };
   bodies!: Bodies;
   run!: RunState;
+  readonly records: RunRecords;
   arenas = new Map<string, ArenaRt>();
   timedDoors: TimedDoorRt[] = [];
   activeHint: HintAction | null = null;
@@ -247,6 +252,7 @@ export class GameWorld {
 
   constructor(opts: GameWorldOptions) {
     this.opts = opts;
+    this.records = { pbs: structuredClone(opts.records?.pbs ?? {}), bestSegments: structuredClone(opts.records?.bestSegments ?? {}) };
     this.grid = opts.grid;
     this.stage = opts.stage ?? 1;
     this.runSeed = opts.seedText !== undefined ? fnv1a32(opts.seedText) : opts.runSeed ?? 1;
@@ -257,7 +263,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -268,6 +274,7 @@ export class GameWorld {
       grid: parts.grid, spawn: { x: start.x, y: start.y }, facing: Number(start.props.facing ?? 1) < 0 ? -1 : 1,
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
+      records: opts.records, practice: opts.practice,
       loadout: (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
@@ -329,7 +336,7 @@ export class GameWorld {
     this.camera = createCamera({ x: 0, y: 0, w: grid.widthPx, h: grid.heightPx }, this.body);
     this.tick = 0;
     this.econ = carriedState ? structuredClone(carriedState.econ) : newEconomy();
-    if (this.level?.kind === 'village') { this.econ.buffs = []; this.econ.debuffs = []; }
+    if (this.level?.kind === 'village') this.clearStageEffects();
     this.statPick = null;
     this.coins = [];
     this.rng = {
@@ -401,8 +408,11 @@ export class GameWorld {
     const target = this.run.phase === 'loading' ? this.run.transition?.target : null;
     completeLoading(this.run);
     this.loadRequestPending = false;
-    if (target?.phase === 'village' || target?.phase === 'homeVillage') this.villageEntryPending = true;
+    if (target?.phase === 'village' || target?.phase === 'homeVillage') { this.clearStageEffects(); this.villageEntryPending = true; }
   }
+
+  /** Lucky effects and curse last for this stage only (05 §7.4, §8). */
+  private clearStageEffects(): void { this.econ.buffs = []; this.econ.debuffs = []; this.econ.curse = null; }
 
   /** Compulsory choice (07 §6.11): the core owns the guard, offered IDs and apply-once rule. */
   confirmStatPick(index = STAT_PICK_DEFAULT_INDEX): boolean {
@@ -461,14 +471,11 @@ export class GameWorld {
   onStageBossDefeated(): void {
     const r = this.run;
     if (r.phase === 'dead' && r.deathTick !== this.tick) return;
-    const index = this.stage - 1;
-    if (r.splits[index] !== null) return;
-    r.splits[index] = r.runTicks;
+    const split = recordSplit(r, this.stage, this.records, this.opts.practice);
+    if (!split) return;
     r.bossDefeatedTick = this.tick;
     r.statPickDone = false;
-    const previous = index > 0 ? r.splits[index - 1] ?? 0 : 0;
-    // PB comparison (deltaTicks, bestSegment) arrives with save data in M7.
-    this.events.push({ t: 'split', index: index + 1, runTicks: r.runTicks, segmentTicks: r.runTicks - previous, deltaTicks: null, bestSegment: false });
+    this.events.push({ t: 'split', ...split });
   }
 
   /** The boss bar while a boss arena is locked (04 §9.4). */
@@ -512,6 +519,7 @@ export class GameWorld {
     this.deathTick = this.tick;
     this.run.phase = 'dead';
     this.run.deathTick = this.tick;
+    this.clearStageEffects();
     // No ghost hits: every player hit group goes now; Rush resets at death (02 §8.1).
     cancelAttack(this, 'hurt');
     endDive(this);

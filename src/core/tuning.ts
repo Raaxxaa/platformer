@@ -12,6 +12,7 @@ export function ticks(seconds: number): number {
 
 /** Full-run phase timings (06 §2.2, §2.5, §6). */
 export const RUN = {
+  STAGE_COUNT: 4,
   FADE_TICKS: ticks(0.5), RESTART_FADE_TICKS: ticks(0.25), STAT_PICK_DELAY_TICKS: ticks(1.0),
   STAT_PICK_CONFIRM_TICKS: ticks(0.30),
 } as const;
