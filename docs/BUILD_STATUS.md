@@ -155,9 +155,18 @@ No later milestone is authorized.
 - New gap 16 uses the shared 38 × 18 combat room instead of the plan's conflicting 20-tile width. The warning-placement issue was resolved within the spec, without a new gap.
 - Added the required isolated three-draw Dragon roll. The Dragon remains deferred to M9, as authorized by the plan.
 
+### M7.1 Task 6 — `276c1d3`
+
+- Added grey terrain, background and enemy fallbacks for missing ART7 files; available files are discovered at build time. Added the Mountain cave fade and cart riding pose.
+- Added exact darkness lights/edges, fireflies, water/splashes/ripples, rails/cart, hazard and attack markers, hidden Zombie bubbles, hanging threads, Ward shields, and above-fog warnings/glints.
+- Added current status HUD icons, available Stage 2 sound triggers and a guarded cart loop. Missing sounds are neither requested nor reported as played.
+- Genuine regressions covered missing view modules, actual darkness pixels, real dive splashes versus stale landing speed, Ward removal, hazard-rock audio, correct biome lookup and a real browser audio-unlock gesture.
+- Final checks: 1222 unit tests in 161 files; standalone typecheck/build; three Stage 2 view and five legacy sprite browser cases passed. Root inspected all nine resulting screenshots. Independent review is clear.
+- Diff and protected-path checks passed. No new SPEC-GAP. The existing large-bundle warning remains.
+
 ## Active task
 
-M7 is delivered. M7.1 Tasks 1–5 are committed. Task 6 is active: terrain and entity views, darkness, visible hazards, and available art/audio fallbacks. Task 7 covers final browser evidence and delivery.
+M7 is delivered. M7.1 Tasks 1–6 are committed. Task 7 is active: both roads' complete browser runs, all section screenshots, final checks, push and Pages deployment. Human play of at least one road remains the owner's acceptance step.
 Root owns this handoff. Source partitions require clear file ownership and tested commits. No later milestone is authorized.
 
 ## Remaining integration notes
