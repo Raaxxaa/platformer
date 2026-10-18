@@ -35,10 +35,20 @@ No later milestone is authorized.
 - Stage 1, boss, and transition screenshots were inspected. Two independent review findings were fixed and rechecked.
 - No new SPEC-GAP.
 
+### M7 Task 2 — `9e522e0`
+
+- Added all twelve run-long stat upgrades, their caps, deterministic offers, live effect hooks, and the actual choice cards.
+- The core enforces the 36-tick guard and one accepted choice. Keyboard, gamepad, mouse, pause, restart, and held input are covered.
+- Tests failed before implementation. Regression tests also failed first for a stale release gate, non-left mouse confirmation, and Guardian flask-fill banking.
+- Final checks: 56 focused unit tests; 739 total unit tests in 97 files; typecheck/build; eleven stat-pick and Stage 1 browser tests passed.
+- Both stat-card screenshots were inspected by the writer and root. Independent review findings were fixed and rechecked.
+- No new SPEC-GAP.
+
 ## Active task
 
-M7 Task 2: stat upgrades and the real stat-pick popup.
-The Task 2 writer owns code. Other agents must remain read-only except for this handoff.
+M7 Task 3: Home Village, fresh-world carry, shared save/session scaffold, and Home/Training/Stage loading.
+The M7 writer is authorized to continue Tasks 3–10 strictly in order, with a tested commit per task and checkpoint reports.
+Root owns this handoff. Review agents stay read-only. No feature push before M7 checks and screenshot review.
 
 ## Required integration after Task 2
 
