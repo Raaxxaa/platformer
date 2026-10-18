@@ -13,6 +13,7 @@ No later milestone is authorized.
 - Design branch `claude/great-dijkstra-g00pcj` was fast-forwarded into `main` at `b95aa41` and pushed.
 - Its GitHub Pages deployment succeeded: run `39085481312`.
 - M7 feature work through `c492149` was pushed to `main` after its complete local gate. The main-branch Pages workflow is the deployment evidence.
+- Final M7 delivery commit `4bae25b` deployed successfully in Pages run `39093614763`. A fresh live browser loaded `index-CYagWFUO.js`, entered Home from the native Title menu, found all four statues, and reported no page errors. The live screenshot was inspected.
 - No open GitHub issues were found at initial inspection; the current plans and specs govern this work.
 
 ## Verified milestones
@@ -118,8 +119,7 @@ No later milestone is authorized.
 
 ## Active task
 
-M7 implementation and local checks are complete. Verify the exact Pages delivery and live game before starting M7.1.
-The next authorized engineering task is M7.1 Task 1: surfaces and hazards, followed by Tasks 2–7 in order.
+M7 is delivered. M7.1 Task 1 is active: surfaces and hazards, followed by Tasks 2–7 in order.
 Root owns this handoff. Source partitions require clear file ownership and tested commits. No later milestone is authorized.
 
 ## Remaining integration notes
@@ -129,11 +129,13 @@ Root owns this handoff. Source partitions require clear file ownership and teste
 - Save schema section 15.2 omits `training`, but section 12.4 and Task 7 require it; add it with default `[]`.
 - Capture end-history snapshots before restart/reset; village history uses the last played stage.
 - A collected blueprint joins the next run's pool, not the current run's later worlds.
+- Falling rocks first mark the floor 36 ticks after zone entry; the warning then lasts 72 ticks. Their 18 damage is unscaled. The earlier helper note saying an 18-tick entry delay was incorrect.
+- Minecarts require real boarding, jumps/exits, death detachment, collision, stop/crash, respawn, and nearest-interaction coverage. Water/ice affect existing movement and clamp rules; body-supported ice must retain its surface.
 - Python is installed as `python` on Windows; `python3` is a WindowsApps alias. Keep the protected builder scripts unchanged.
 
 ## Delivery checks still required
 
-- Verify M7 Pages delivery, then complete all M7.1 tasks.
+- Complete all M7.1 tasks.
 - `npm run typecheck`, `npm test`, `npm run build`, `npm run test:e2e` on the final milestone state.
 - Inspect all required milestone screenshots and share the useful screens with the designer.
 - Fetch current GitHub state before pushing; preserve concurrent art work.
