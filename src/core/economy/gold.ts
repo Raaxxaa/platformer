@@ -23,7 +23,10 @@ export const COIN_SIZE = 6;
 /** §9.1: shown gold = floor(tenths / 10), at most 9999 (the rest is lost). */
 export function addGoldTenths(w: GameWorld, tenths: number, reason: string): void {
   if (tenths === 0) return;
+  const before = w.econ.goldTenths;
   w.econ.goldTenths = Math.max(0, Math.min(GOLD.maxShown * 10 + 9, w.econ.goldTenths + tenths));
+  w.run.goldEarnedTenths += Math.max(0, w.econ.goldTenths - before);
+  w.run.stats.goldEarned = Math.floor(w.run.goldEarnedTenths / 10);
   w.events.push({ t: 'goldChanged', tenths, reason });
 }
 

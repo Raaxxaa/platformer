@@ -57,6 +57,7 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   const practice = src.kind === 'enemyHit' && src.damageA === 0;
   // 05 §8 one_hit: every damage equals current HP.
   const dealt = practice ? 0 : enemyHitDamage(src.damageA, incomingMult(w), w.econ.curse?.id === 'one_hit' ? h.hp : null);
+  w.run.stats.damageTaken += Math.min(Math.max(0, h.hp), dealt);
   h.hp -= dealt;
   if (practice) w.events.push({ t: 'sparringHit' });
   w.onPlayerDamaged();                                       // the hit streak resets (02 §1); a swap choice closes

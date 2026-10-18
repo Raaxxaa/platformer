@@ -2,6 +2,7 @@
 import type { KitSummary, PbKey, PbRecord, SaveData } from '../save/schema.ts';
 import { RUN } from '../tuning.ts';
 import type { RunState } from './runState.ts';
+import { snapshotKit } from '../save/snapshot.ts';
 
 export type RunRecords = Pick<SaveData, 'pbs' | 'bestSegments'>;
 export interface SplitResult { index: number; runTicks: number; segmentTicks: number; deltaTicks: number | null; bestSegment: boolean }
@@ -52,7 +53,7 @@ export function savePersonalBest(run: RunState, records: RunRecords, date: strin
   if (old && ticks >= old.ticks) return false;
   records.pbs[key] = {
     ticks, splits: [...splits], date, seedText: run.seedText,
-    kit: { displayName: kit.displayName, weapons: kit.weapons.map((weapon) => weapon ? { ...weapon } : null), abilities: kit.abilities.map((ability) => ability ? { ...ability } : null) },
+    kit: snapshotKit(kit),
   };
   return true;
 }

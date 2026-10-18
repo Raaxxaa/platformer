@@ -1,11 +1,13 @@
-// The one save repository. Task 7 adds full entry validation/recovery and the portable code.
+// The only localStorage boundary (06 §15). Pure validation and portable codes live in core/save.
 import { defaultSave, type SaveData } from '../../core/save/schema.ts';
-import { STARTING_KITS } from '../../data/classes.ts';
-import { SAVE_RULES } from '../../data/save.ts';
+import { migrateSave, NewerSaveVersionError } from '../../core/save/migrate.ts';
+import { validateSave } from '../../core/save/validate.ts';
+import { decodeSave, encodeSave } from '../../core/save/codec.ts';
 export interface SaveStorage { getItem(key: string): string | null; setItem(key: string, value: string): void }
 export const SAVE_KEY = 'rushblade.save';
 /** Dates belong to the browser save layer, never the deterministic core. */
 export const saveDate = (): string => new Date().toISOString();
+const parse = (text: string): SaveData => validateSave(migrateSave(JSON.parse(text)));
 export class SaveStore {
   data = defaultSave();
   readOnly = false;
@@ -16,32 +18,46 @@ export class SaveStore {
     try {
       this.storage = storage ?? window.localStorage;
       const text = this.storage.getItem(SAVE_KEY);
-      if (!text) return;
-      const raw = JSON.parse(text) as Partial<SaveData>;
-      if (Number(raw.v) > this.data.v) { this.readOnly = true; this.warning = 'This save is from a newer version'; return; }
-      if (raw.v !== SAVE_RULES.version) return;
-      const merged = { ...this.data, ...raw };
-      merged.progress = { ...this.data.progress, ...raw.progress };
-      merged.unlocks = { ...this.data.unlocks, ...raw.unlocks };
-      merged.stats = { ...this.data.stats, ...raw.stats };
-      merged.settings = { ...this.data.settings, ...raw.settings };
-      const kit = raw.lastKit;
-      merged.lastKit = kit && STARTING_KITS[kit.cls]?.weapons.includes(kit.weapon) ? kit : null;
-      merged.typedSeed = typeof raw.typedSeed === 'string' && raw.typedSeed.length <= SAVE_RULES.seedMaxLength && /^[A-Z0-9]+$/.test(raw.typedSeed) ? raw.typedSeed : null;
-      merged.lastRoad = raw.lastRoad === 'forest' ? 'forest' : 'mountain';
-      merged.training = Array.isArray(raw.training) ? raw.training.filter((n) => Number.isInteger(n) && n >= 1 && n <= SAVE_RULES.trainingStations) : [];
-      this.data = merged;
+      if (text === null) return;
+      try { this.data = parse(text); return; } catch (error) { if (this.newer(error)) return; }
+      const backup = this.storage.getItem(`${SAVE_KEY}.bak`);
+      if (backup !== null) {
+        try { this.data = parse(backup); return; } catch (error) { if (this.newer(error)) return; }
+      }
+      this.storage.setItem(`${SAVE_KEY}.corrupt`, text);
     } catch { this.fail(); }
+  }
+  private newer(error: unknown): boolean {
+    if (!(error instanceof NewerSaveVersionError)) return false;
+    this.readOnly = true; this.warning = 'This save is from a newer version'; return true;
   }
   private fail(): void { this.storage = null; this.warning = "Can't save — progress won't be kept"; }
   takeWarning(): string | null {
     if (!this.warning || this.warningShown) return null;
     this.warningShown = true; return this.warning;
   }
-  update(change: (save: SaveData) => void): void {
-    change(this.data);
+  private write(): void {
     if (!this.storage || this.readOnly) return;
-    try { this.storage.setItem(SAVE_KEY, JSON.stringify(this.data)); } catch { this.fail(); }
+    try {
+      const previous = this.storage.getItem(SAVE_KEY);
+      if (previous !== null) {
+        let valid = true;
+        try { parse(previous); } catch (error) { if (this.newer(error)) return; valid = false; }
+        // Preserve the last good backup if a recovered malformed main still cannot be replaced.
+        if (valid) this.storage.setItem(`${SAVE_KEY}.bak`, previous);
+      }
+      this.storage.setItem(SAVE_KEY, JSON.stringify(this.data));
+    } catch { this.fail(); }
+  }
+  update(change: (save: SaveData) => void): void { change(this.data); this.write(); }
+  exportCode(): string { return encodeSave(this.data); }
+  previewImport(code: string): SaveData { return decodeSave(code); }
+  /** Called only after the visible replace confirmation. A newer save is never overwritten. */
+  replace(imported: SaveData): boolean {
+    if (this.readOnly) return false;
+    let next: SaveData;
+    try { next = validateSave(migrateSave(imported)); } catch { return false; }
+    this.data = next; this.write(); return true;
   }
 }
 let currentStore: SaveStore | null = null;

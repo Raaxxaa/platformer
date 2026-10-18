@@ -5,15 +5,30 @@ import type { LevelData } from '../core/level/loadLevel.ts';
 import type { WorldCarry } from '../core/run/session.ts';
 import { randomSeed } from './seed.ts';
 import { savePersonalBest } from '../core/run/splits.ts';
+import { appendHistory, captureRunEnd } from '../core/run/history.ts';
+import type { RunRecord } from '../core/save/schema.ts';
+import { WEAPONS } from '../data/weapons.ts';
+import { STARTING_KITS } from '../data/classes.ts';
+import { WEAPON_NAME } from '../data/uiText.ts';
 export const gameSession = {
   trainingReturn: 'title' as 'home' | 'title',
+  kitNotice: null as string | null,
+  takeKitNotice(): string | null { const text = this.kitNotice; this.kitNotice = null; return text; },
   makeWorld(level: LevelData, carry?: WorldCarry, debugSeed?: string | null): GameWorld {
     const save = saveStore().data;
     const homeTransition = carry?.run.transition?.target.phase === 'homeVillage' ? structuredClone(carry.run.transition) : null;
     if (homeTransition) carry = undefined;
     const seed = carry?.run.seedText ?? debugSeed ?? save.typedSeed;
+    let startKit = carry?.run.startKit ?? (level.kind !== 'stage' ? save.lastKit : null);
+    this.kitNotice = null;
+    if (startKit && !WEAPONS[startKit.weapon]) {
+      // SPEC-GAP: How should this build load a valid saved lastKit whose unlocked weapon is not implemented yet?
+      const weapon = STARTING_KITS[startKit.cls].weapons.find((id) => WEAPONS[id])!;
+      this.kitNotice = `${WEAPON_NAME(startKit.weapon)} not ready. Using ${WEAPON_NAME(weapon)}.`;
+      startKit = { cls: startKit.cls, weapon }; // Runtime fallback only: preserve saved kit and unlocks.
+    }
     const w = GameWorld.fromLevel(level, { seedText: seed ?? randomSeed(), seeded: carry?.run.seeded ?? seed !== null,
-      startKit: carry?.run.startKit ?? (level.kind !== 'stage' ? save.lastKit : null), carry, nextRandomSeed: randomSeed, records: save });
+      startKit, carry, nextRandomSeed: randomSeed, records: save });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
@@ -22,7 +37,10 @@ export const gameSession = {
   events(w: GameWorld): void {
     // Practice owns a separate best-time write path (M10); no normal-run save event is allowed.
     if (w.opts.practice) return;
+    this.flushRunEnds(w);
     for (const e of w.events) {
+      if (e.t === 'playerDied') this.endRun(w, 'death', e.cause);
+      if (e.t === 'runCompleted') this.endRun(w, 'complete');
       if (e.t === 'split') saveStore().update((s) => {
         if (e.index === 1) s.progress.stage1Cleared = true;
         if (!w.run.seeded && !w.opts.practice) s.bestSegments = structuredClone(w.records.bestSegments);
@@ -36,5 +54,17 @@ export const gameSession = {
       if (e.t === 'stationDone') saveStore().update((s) => { if (!s.training.includes(e.id)) s.training.push(e.id); });
       if (e.t === 'classDiscovered') saveStore().update((s) => { if (!s.progress.classesDiscovered.includes(e.id)) s.progress.classesDiscovered.push(e.id); });
     }
+  },
+  flushRunEnds(w: GameWorld): void {
+    for (const ended of w.pendingRunEnds.splice(0)) saveStore().update((s) => { appendHistory(s, ended, saveDate()); });
+  },
+  endRun(w: GameWorld, result: RunRecord['result'], cause: string | null = null): void {
+    const ended = captureRunEnd(w, result, cause); if (!ended) return;
+    w.run.endRecorded = true;
+    saveStore().update((s) => {
+      appendHistory(s, ended, saveDate());
+      if (result === 'death') s.stats.deaths++;
+      if (result === 'complete') s.stats.runsCompleted++;
+    });
   },
 };

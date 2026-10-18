@@ -71,6 +71,7 @@ import { setupShop, stepAltarInteraction, type AltarHold, type ShopState } from 
 import { applyStatUpgrade, maxPlayerHp, offerStatUpgrades } from '../economy/stats.ts';
 import { STAT_PICK_DEFAULT_INDEX, type StatUpgradeId } from '../../data/economy.ts';
 import { recordSplit, type RunRecords } from '../run/splits.ts';
+import { captureRunEnd, type RunEndSnapshot } from '../run/history.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -124,6 +125,7 @@ export type WorldEvent =
   | { t: 'stageStarted'; levelId: LevelData['id']; stage: RunState['stage'] }
   | { t: 'runStarted' }
   | { t: 'pbSaved' }
+  | { t: 'runCompleted' }
   | { t: 'openHomePanel'; panel: 'training' | 'seed' | 'records' };
 
 export interface GameWorldOptions {
@@ -209,6 +211,8 @@ export class GameWorld {
   bodies!: Bodies;
   run!: RunState;
   readonly records: RunRecords;
+  /** Outlives reset until the browser session persists each old-run snapshot once. */
+  readonly pendingRunEnds: RunEndSnapshot[] = [];
   arenas = new Map<string, ArenaRt>();
   timedDoors: TimedDoorRt[] = [];
   activeHint: HintAction | null = null;
@@ -385,6 +389,7 @@ export class GameWorld {
   }
 
   restart(): void {
+    const ended = captureRunEnd(this, 'restart'); if (ended) this.pendingRunEnds.push(ended);
     if (!this.run.seeded && this.opts.nextRandomSeed) {
       this.opts.seedText = this.opts.nextRandomSeed();
       this.runSeed = fnv1a32(this.opts.seedText);

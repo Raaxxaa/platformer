@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defaultSave, type SaveData } from '../core/save/schema.ts';
 import { GameWorld } from '../core/sim/gameWorld.ts';
-import { bossLevel } from '../core/testkit/levelData.ts';
+import { bossLevel, feet, levelFrom } from '../core/testkit/levelData.ts';
 import { gameSession } from './session.ts';
 
 const testStore = vi.hoisted(() => ({ current: null as null | { data: SaveData; writes: number; update(change: (save: SaveData) => void): void } }));
@@ -9,6 +9,29 @@ vi.mock('./save/storage.ts', () => ({ saveStore: () => testStore.current, saveDa
 beforeEach(() => { testStore.current = { data: defaultSave(), writes: 0, update(change) { change(this.data); this.writes++; } }; });
 
 describe('session write boundaries (06 §14–15)', () => {
+  it('loads a valid saved unbuilt third starter into playable Home without altering the saved kit', async () => {
+    const { SaveStore } = await vi.importActual<typeof import('./save/storage.ts')>('./save/storage.ts');
+    const raw = JSON.stringify({ v: 1, lastKit: { cls: 'tank', weapon: 'giant_axe' }, unlocks: { startWeapons: { tank: ['giant_axe'] } } });
+    const store = new SaveStore({ getItem: () => raw, setItem: () => { throw Error('must not rewrite the kit'); } });
+    testStore.current!.data = store.data;
+    const home = levelFrom(['#........#', '#........#', '##########'], [feet('player_start', 2, 1)], 'home'); home.kind = 'village'; home.stage = 0;
+    const w = gameSession.makeWorld(home);
+    expect(w.combat.slots[0]?.weaponId).toBe('war_maul'); expect(gameSession.takeKitNotice()).toContain('Giant Axe');
+    expect(testStore.current!.data.lastKit).toEqual({ cls: 'tank', weapon: 'giant_axe' });
+    expect(testStore.current!.data.unlocks.startWeapons.tank).toEqual(['giant_axe']);
+  });
+  it('flushes a pre-reset restart snapshot once, retaining the old time, kit and counters', () => {
+    const w = GameWorld.fromLevel(bossLevel(), { seedText: 'OLD', startKit: { cls: 'tank', weapon: 'war_maul' } });
+    w.run.runTicks = 3600; w.run.stats.kills = 7; w.restart(); gameSession.events(w); gameSession.events(w);
+    expect(testStore.current!.data.history).toHaveLength(1); expect(testStore.current!.data.history[0]).toMatchObject({ result: 'restart', seedText: 'OLD', runTicks: 3600, stats: { kills: 7 } });
+    expect(w.pendingRunEnds).toEqual([]);
+  });
+  it('saves even a short death once, with all same-tick splits, and counts a real completed run only on its event', () => {
+    const w = GameWorld.fromLevel(bossLevel(), { seedText: 'DEAD', startKit: { cls: 'tank', weapon: 'war_maul' } });
+    w.run.runTicks = 2; w.run.splits[0] = 2; w.events = [{ t: 'playerDied', cause: 'spikes' }]; gameSession.events(w); gameSession.events(w);
+    expect(testStore.current!.data.stats.deaths).toBe(1); expect(testStore.current!.data.history[0]).toMatchObject({ result: 'death', cause: 'spikes', splits: [2, null, null, null] });
+    w.restart(); w.events = [{ t: 'runCompleted' }]; gameSession.events(w); expect(testStore.current!.data.stats.runsCompleted).toBe(1);
+  });
   it('practice events cannot write normal progress, stats, class discoveries, PBs or best segments', () => {
     const w = GameWorld.fromLevel(bossLevel(), { seedText: 'PRACTICE', startKit: { cls: 'tank', weapon: 'war_maul' }, practice: true });
     const before = structuredClone(testStore.current!.data);

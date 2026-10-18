@@ -94,6 +94,7 @@ export function openChest(w: GameWorld, c: Chest): boolean {
     addGoldTenths(w, CHEST_GOLD.timed * 10, 'chest');
     dropItem(w, c.x, y, { ...weaponItem(w, rng, 'key'), fromChest: c.objectId });
   }
+  w.run.stats.chestsOpened += 1;
   w.events.push({ t: 'chestOpened', kind: c.kind, objectId: c.objectId });
   return true;
 }

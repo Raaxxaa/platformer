@@ -65,6 +65,7 @@ export function stepDrink(w: GameWorld): void {
   if (d.t === FLASK.SIP_TICKS && !d.sipped) {
     d.sipped = true;
     w.flask.charges -= 1;
+    w.run.stats.flasksDrunk += 1;
     w.health.hp = Math.min(w.health.maxHp, w.health.hp + roundHalfUp(FLASK.HEAL_FRACTION * w.health.maxHp));
     convert(w.flask);
     w.events.push({ t: 'drink' });

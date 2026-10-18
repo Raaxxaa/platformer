@@ -39,6 +39,7 @@ import { RunSoFarView } from '../../ui/screens/runSoFar.ts';
 import { cancelRoad, chooseRoad } from '../../core/run/roads.ts';
 import { beginTransition } from '../../core/run/phases.ts';
 import { TimerBlock } from '../../ui/hud/timerBlock.ts';
+import { SAVE_RULES } from '../../data/save.ts';
 
 /** Hint text with the M1 key names (07 shows real button prompts later). */
 const HINT_TEXT: Record<HintAction, string> = {
@@ -130,6 +131,8 @@ export class StageScene extends WorldScene {
     if (this.level.kind === 'village' && this.level.id !== 'home') this.shopView = new ShopView(this);
     this.fade = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 30).fillStyle(UI_COLOR.ink).fillRect(0, 0, width, height).setVisible(false);
     this.installStageDebug();
+    const kitNotice = gameSession.takeKitNotice();
+    if (kitNotice) this.abilityHud.toast(kitNotice, UI_COLOR.highlight, this.time.now, SAVE_RULES.warningSeconds);
     // Before the run, pick a class and weapon (M4 plan Task 13). `?kit=archer:bow` skips the panel; debug runs keep
     // the M2 loadout unless a kit is given.
     const q = new URLSearchParams(window.location.search);
@@ -222,6 +225,7 @@ export class StageScene extends WorldScene {
   }
   protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar; }
   private requestHome(): void {
+    gameSession.endRun(this.world, 'quit');
     this.runSoFar?.destroy(); this.runSoFar = null;
     beginTransition(this.world.run, 'toHome', { phase: 'homeVillage', levelId: 'home', stage: 0 });
   }
@@ -249,6 +253,7 @@ export class StageScene extends WorldScene {
   private enterTraining(): void { gameSession.trainingReturn = this.level.id === 'home' ? 'home' : 'title'; this.goLevel('training_yard'); }
   private goLevel(level: string, carry?: WorldCarry): void {
     if (this.leaving) return; this.leaving = true;
+    gameSession.flushRunEnds(this.world);
     this.homePanel?.destroy();
     if (window.__game) window.__game.ready = false;
     this.scene.start(['home', 'crossroads', 'border', 'rebel_camp'].includes(level) ? 'Village' : 'Stage', { level, carry });
@@ -261,6 +266,7 @@ export class StageScene extends WorldScene {
     super.update(time, delta);
   }
   private toTitle(): void {
+    gameSession.endRun(this.world, 'quit');
     if (this.scene.get('Title')) this.scene.start('Title');
   }
 

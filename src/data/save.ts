@@ -1,11 +1,17 @@
 // Save defaults and limits (06 §15, §12.4; 07 settings and controls).
 import type { RunStats, SaveData, SettingsData } from '../core/save/schema.ts';
+import type { AbilityId, ClassId } from '../core/abilities/types.ts';
+import type { WeaponId } from '../core/combat/types.ts';
 import { TICK_RATE } from '../core/tuning.ts';
 
 export const SAVE_RULES = {
   version: 1, seedMaxLength: 12, trainingStations: 17, historyLimit: 20,
   historyMinTicks: 30 * TICK_RATE, importMaxLength: 1_000_000, warningSeconds: 5.0,
+  kitSlots: 2, abilityMaxLevel: 5, maxSection: 8, volumeMax: 100, volumeStep: 10, padMax: 15, padDpadStart: 12,
 } as const;
+export const SAVE_STAGE_IDS = ['plains', 'mountains', 'swamps', 'kingdom', 'castle'] as const;
+export const BLUEPRINT_IDS: readonly (WeaponId | AbilityId)[] = ['scythe', 'flail', 'hand_cannon', 'javelin', 'spell_tome', 'riposte', 'boulder_toss', 'turret', 'time_slow'];
+export const THIRD_START_WEAPON: Record<ClassId, WeaponId> = { swordsman: 'spear', tank: 'giant_axe', archer: 'throwing_knives', wizard: 'wand' };
 export const defaultRunStats = (): RunStats => ({ kills: 0, eliteKills: 0, goldEarned: 0, chestsOpened: 0, luckyBlocksBroken: 0, damageTaken: 0, flasksDrunk: 0 });
 
 export function defaultSettings(): SettingsData {

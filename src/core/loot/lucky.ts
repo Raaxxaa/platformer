@@ -89,6 +89,7 @@ export function breakLucky(w: GameWorld, b: LuckyBlock): void {
   b.broken = true;
   const rng = sourceRng(w.runSeed, 'lucky', w.level?.id ?? 'test', b.objectId);
   const r = rollLucky(rng, w.econ.buffs, statCount(w, 'lucky_charm') > 0);
+  w.run.stats.luckyBlocksBroken += 1;
   w.events.push({ t: 'luckyBroken', objectId: b.objectId });
   applyLucky(w, r.id, b.x, b.y, b.objectId);
 }
