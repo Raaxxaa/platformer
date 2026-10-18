@@ -146,9 +146,18 @@ No later milestone is authorized.
 - Final checks: 1152 unit tests in 148 files; standalone typecheck/build; diff and protected-path checks passed. Independent review is clear.
 - New gap 15 preserves the shared projectile speed cap when long-range Queen venom cannot reach its named targets.
 
+### M7.1 Task 5 — `d0bbae3`
+
+- Wrote and reviewed both eight-section level documents before their chunks. Added both complete roads and Border Village with Stage 3 shop odds, real inn travel and biome Ambush packs.
+- The real movement tests walk both entire roads, collect both roads' keys within their detour limits, and ride the Mountain cart through both gaps and tunnels for at least 120 actual tiles.
+- Real failing checks caught duplicate Guardian placement, an exit endpoint, unsupported Mountain route points, an inaccessible key platform, a 1919-pixel cart ride and floating-water validation. Isolated Stage 2 test fixtures were given their required preceding split without changing normal split rules.
+- Final checks: 1187 unit tests in 154 files; typecheck/build; all 24 map/route/carry checks; byte-identical repeated generation; diff and protected-path checks passed. Independent review is clear.
+- New gap 16 uses the shared 38 × 18 combat room instead of the plan's conflicting 20-tile width. The warning-placement issue was resolved within the spec, without a new gap.
+- Added the required isolated three-draw Dragon roll. The Dragon remains deferred to M9, as authorized by the plan.
+
 ## Active task
 
-M7 is delivered. M7.1 Tasks 1–4 are committed. Task 5 is active: both level design documents, then chunks, Border Village and road integration. Tasks 6–7 follow in order.
+M7 is delivered. M7.1 Tasks 1–5 are committed. Task 6 is active: terrain and entity views, darkness, visible hazards, and available art/audio fallbacks. Task 7 covers final browser evidence and delivery.
 Root owns this handoff. Source partitions require clear file ownership and tested commits. No later milestone is authorized.
 
 ## Remaining integration notes
