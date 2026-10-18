@@ -6,6 +6,7 @@ import { beginTransition } from './phases.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { buyFlaskUpgrade, buyKey, refill, rerollShop } from '../economy/shop.ts';
 import { openInn } from './roads.ts';
+import { unlockedCatalog } from '../loot/blueprints.ts';
 
 const SERVICES: Record<string, (w: GameWorld) => boolean> = { shop_flask: buyFlaskUpgrade, shop_refill: refill, shop_key: buyKey, shop_reroll: rerollShop };
 
@@ -33,6 +34,7 @@ export function stepVillage(w: GameWorld): void {
   if (!gate) return;
   if (!w.run.startKit) { w.villageMessage = 'Choose a class at a statue first'; return; }
   const kit = w.run.startKit;
-  w.run = createRunState(w.run.seedText, w.run.seeded); w.run.startKit = kit;
+  const lootUnlocked = unlockedCatalog(w.opts.nextRunUnlocks?.() ?? w.opts.unlockedBlueprints ?? [], w.run.seeded || w.opts.practice);
+  w.run = createRunState(w.run.seedText, w.run.seeded); w.run.startKit = kit; w.run.lootUnlocked = lootUnlocked;
   beginTransition(w.run, 'homeGate', { phase: 'stage', levelId: 'plains', stage: 1 });
 }

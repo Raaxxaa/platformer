@@ -1,6 +1,7 @@
 // 02 §2.1 steps 7a, 7b and 9: hit resolution and deaths.
 import { lootOnKill } from '../loot/sources.ts';
 import { addGoldTenths, killGoldTenths } from '../economy/gold.ts';
+import { blueprintOnKill, grantKingUnlocks } from '../loot/blueprintItems.ts';
 import { critChance } from '../loot/perks.ts';
 import { statCount } from '../economy/stats.ts';
 import { enemyDamageA, enemyRect, type EnemyState } from '../enemies/enemy.ts';
@@ -167,6 +168,8 @@ export function processDeaths(w: GameWorld): void {
     }), 'kill');
     w.events.push({ t: 'kill', enemyId: e.id, tier });
     lootOnKill(w, e);
+    blueprintOnKill(w, e);
+    if (e.def.id === 'enemy_king') grantKingUnlocks(w);
     onCurseKill(w);
     if (e.boss) onBossKilled(w, e);
   }

@@ -14,6 +14,7 @@ import type { GameWorld } from '../sim/gameWorld.ts';
 import { TICK } from '../tuning.ts';
 import { abilityDef, abilityMoveRunning, castRt, cooldownTicks, maxCharges } from './abilitySystem.ts';
 import type { AbilitySlot } from './types.ts';
+import type { BlueprintId } from '../loot/blueprints.ts';
 
 export const ITEM = { box: 16, gravity: 1500, maxFall: 400, interactW: 24, interactH: 32 } as const;
 
@@ -27,6 +28,7 @@ export interface GroundItem {
   label?: string;
   /** A key (05 §6): collected by touch, not by interact. */
   key?: boolean;
+  blueprint?: BlueprintId;
   fullShown?: boolean;
   /** Key-chest pair (05 §5.2): taking one item removes the other. */
   chestGroup?: number;
@@ -60,7 +62,7 @@ const objRect = (o: Interactable): Rect => {
 };
 
 /** Drops an item at a point (05 §5.7): inside a solid it moves straight up to the first free row (06 §11.2), then falls. */
-export function dropItem(w: GameWorld, x: number, y: number, item: Pick<GroundItem, 'weapon' | 'ability' | 'endless' | 'label' | 'key' | 'chestGroup' | 'price' | 'stand' | 'fromChest' | 'merchantSlot' | 'shopSlot'>): GroundItem {
+export function dropItem(w: GameWorld, x: number, y: number, item: Pick<GroundItem, 'weapon' | 'ability' | 'endless' | 'label' | 'key' | 'blueprint' | 'chestGroup' | 'price' | 'stand' | 'fromChest' | 'merchantSlot' | 'shopSlot'>): GroundItem {
   let yy = y;
   while (yy > ITEM.box && w.grid.isSolidPx(Math.floor(x), yy - 1)) yy -= 1;
   const it: GroundItem = { id: w.newId(), x, y: yy, vy: 0, resting: false, ...item };
@@ -136,7 +138,7 @@ function pickUp(w: GameWorld, it: GroundItem): void {
 export function interactTarget(w: GameWorld): GroundItem | Interactable | null {
   const pr = playerRect(w);
   const list: { o: GroundItem | Interactable; cx: number }[] = [];
-  for (const it of w.groundItems) if (!it.key && overlaps(itemRect(it), pr)) list.push({ o: it, cx: it.x });
+  for (const it of w.groundItems) if (!it.key && !it.blueprint && overlaps(itemRect(it), pr)) list.push({ o: it, cx: it.x });
   for (const o of w.interactables) if ((o.kind !== 'shop_key' || w.shop?.keyInStock) && overlaps(objRect(o), pr)) list.push({ o, cx: o.x });
   list.sort((a, b) => Math.abs(a.cx - w.body.x) - Math.abs(b.cx - w.body.x) || a.o.id - b.o.id);
   return list[0]?.o ?? null;

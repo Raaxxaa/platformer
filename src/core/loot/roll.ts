@@ -7,24 +7,25 @@ import { WEAPON_CLASSES } from '../../data/classes.ts';
 import { ELEMENT_WEIGHTS, ELEMENT_WORD, ELEMENTS, LEAN, PERKS, S_PREFIX, S_SUFFIX, type GradeWeights } from '../../data/loot.ts';
 import { WEAPONS } from '../../data/weapons.ts';
 import { pick, pickGrade, type Rng } from './pick.ts';
+import type { BlueprintId } from './blueprints.ts';
 
 /** 02 §14 WeaponId order. */
 export const WEAPON_ORDER = Object.keys(S_SUFFIX) as WeaponId[];
 
 // SPEC-GAP: pool limited to implemented items until M9 (the design chat's choice; not in SPEC-GAPS.md).
 /** §4.2 pool: unlocked ∩ implemented, in WeaponId order, minus exclusions. */
-export const weaponPool = (exclude: readonly WeaponId[] = []): WeaponId[] => WEAPON_ORDER.filter((id) => WEAPONS[id] && !exclude.includes(id));
+export const weaponPool = (exclude: readonly WeaponId[] = [], unlocked?: readonly BlueprintId[]): WeaponId[] => WEAPON_ORDER.filter((id) => WEAPONS[id] && (!unlocked || unlocked.includes(id)) && !exclude.includes(id));
 /** §4.6 pool: unlocked ∩ implemented, in AbilityId order, minus carried and excluded. */
-export const abilityPool = (carried: readonly AbilityId[], exclude: readonly AbilityId[] = []): AbilityId[] =>
-  ABILITY_IDS.filter((id) => ABILITIES[id] && !carried.includes(id) && !exclude.includes(id));
+export const abilityPool = (carried: readonly AbilityId[], exclude: readonly AbilityId[] = [], unlocked?: readonly BlueprintId[]): AbilityId[] =>
+  ABILITY_IDS.filter((id) => ABILITIES[id] && (!unlocked || unlocked.includes(id)) && !carried.includes(id) && !exclude.includes(id));
 
-export interface WeaponRollOpts { exclude?: readonly WeaponId[]; forcedElement?: ElementId }
+export interface WeaponRollOpts { exclude?: readonly WeaponId[]; forcedElement?: ElementId; unlocked?: readonly BlueprintId[] }
 
 /** §4.1: always exactly 5 draws — grade, rLean, rType, element, rPerk. */
 export function rollWeapon(rng: Rng, table: GradeWeights, carried: readonly ClassId[], opts: WeaponRollOpts = {}): WeaponInstance {
   const grade = pickGrade(table, rng);
   const rLean = rng(), rType = rng();
-  const pool = weaponPool(opts.exclude);
+  const pool = weaponPool(opts.exclude, opts.unlocked);
   const lean = pool.filter((id) => WEAPON_CLASSES[id].some((c) => carried.includes(c)));
   const list = carried.length && lean.length && rLean < LEAN ? lean : pool;
   const weaponId = list[Math.floor(rType * list.length)];
@@ -40,9 +41,9 @@ export function rollWeapon(rng: Rng, table: GradeWeights, carried: readonly Clas
 }
 
 /** §4.6: always both draws; null only if the pool is empty (the source then gives a weapon). */
-export function rollAbility(rng: Rng, carriedIds: readonly AbilityId[], carried: readonly ClassId[], exclude: readonly AbilityId[] = []): AbilitySlot | null {
+export function rollAbility(rng: Rng, carriedIds: readonly AbilityId[], carried: readonly ClassId[], exclude: readonly AbilityId[] = [], unlocked?: readonly BlueprintId[]): AbilitySlot | null {
   const rLean = rng(), rType = rng();
-  const pool = abilityPool(carriedIds, exclude);
+  const pool = abilityPool(carriedIds, exclude, unlocked);
   if (!pool.length) return null;
   const lean = pool.filter((id) => { const c = ABILITY_INFO[id].cls; return c !== null && carried.includes(c); });
   const list = carried.length && lean.length && rLean < LEAN ? lean : pool;

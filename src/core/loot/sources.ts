@@ -26,10 +26,10 @@ const carriedIds = (w: GameWorld) => w.abilities.slots.filter((s) => s).map((s) 
 
 /** A weapon (or, when asked, an ability) from one generator, using the carried classes now. */
 function weaponItem(w: GameWorld, rng: RngFn, table: 'free' | 'key' | 'cursed', exclude: string[] = []): Pick<GroundItem, 'weapon'> {
-  return { weapon: rollWeapon(rng, GRADE_ODDS[table][stageOf(w)], w.classState.carriedClasses, { exclude: exclude as never }) };
+  return { weapon: rollWeapon(rng, GRADE_ODDS[table][stageOf(w)], w.classState.carriedClasses, { exclude: exclude as never, unlocked: w.run.lootUnlocked }) };
 }
 function abilityItem(w: GameWorld, rng: RngFn, table: 'free' | 'key'): Pick<GroundItem, 'weapon' | 'ability'> {
-  const a = rollAbility(rng, carriedIds(w), w.classState.carriedClasses);
+  const a = rollAbility(rng, carriedIds(w), w.classState.carriedClasses, [], w.run.lootUnlocked);
   return a ? { ability: a } : weaponItem(w, rng, table);
 }
 

@@ -35,7 +35,7 @@ export function applyLucky(w: GameWorld, id: LuckyId, x: number, y: number, obje
   w.events.push({ t: 'luckyResult', id });
   if (id === 'jackpot') {
     const rng = sourceRng(w.runSeed, 'loot', w.level?.id ?? 'test', objectId);
-    dropItem(w, x, y, { weapon: rollWeapon(rng, FIXED_ODDS.jackpot, w.classState.carriedClasses) });
+    dropItem(w, x, y, { weapon: rollWeapon(rng, FIXED_ODDS.jackpot, w.classState.carriedClasses, { unlocked: w.run.lootUnlocked }) });
     return;
   }
   if (id === 'ambush') { spawnAmbush(w); return; }

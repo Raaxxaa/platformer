@@ -72,6 +72,8 @@ import { applyStatUpgrade, maxPlayerHp, offerStatUpgrades } from '../economy/sta
 import { STAT_PICK_DEFAULT_INDEX, type StatUpgradeId } from '../../data/economy.ts';
 import { recordSplit, type RunRecords } from '../run/splits.ts';
 import { captureRunEnd, type RunEndSnapshot } from '../run/history.ts';
+import { unlockedCatalog, type BlueprintId } from '../loot/blueprints.ts';
+import { stepBlueprints } from '../loot/blueprintItems.ts';
 
 export type Stage = 1 | 2 | 3 | 4;
 
@@ -126,6 +128,8 @@ export type WorldEvent =
   | { t: 'runStarted' }
   | { t: 'pbSaved' }
   | { t: 'runCompleted' }
+  | { t: 'blueprintFound'; id: BlueprintId }
+  | { t: 'startingWeaponUnlocked'; cls: ClassId; weapon: import('../combat/types.ts').WeaponId }
   | { t: 'openHomePanel'; panel: 'training' | 'seed' | 'records' };
 
 export interface GameWorldOptions {
@@ -140,6 +144,9 @@ export interface GameWorldOptions {
   carry?: WorldCarry;
   records?: RunRecords;
   practice?: boolean;
+  unlockedBlueprints?: readonly BlueprintId[];
+  /** Phaser supplies the current in-memory unlock list only when a new run starts. */
+  nextRunUnlocks?: () => readonly BlueprintId[];
   level?: LevelData;
   /** Arena wave spawns, spawned by the arena logic (06 §9.2). */
   waveSpawns?: LevelEnemySpawn[];
@@ -267,7 +274,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[] }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -279,6 +286,7 @@ export class GameWorld {
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
       records: opts.records, practice: opts.practice,
+      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks,
       loadout: (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
@@ -308,6 +316,7 @@ export class GameWorld {
     this.run.startKit = this.opts.startKit ?? null;
     this.run.runSeed = this.runSeed;
     if (!carry) {
+      this.run.lootUnlocked = unlockedCatalog(this.opts.nextRunUnlocks?.() ?? this.opts.unlockedBlueprints ?? [], this.run.seeded || this.opts.practice);
       this.run.stage = this.level?.stage ?? this.stage;
       this.run.levelId = this.level?.id ?? 'plains';
       if (this.level?.kind === 'village') this.run.phase = this.level.id === 'home' ? 'homeVillage' : 'village';
@@ -778,6 +787,7 @@ export class GameWorld {
     stepAbilityEntities(this);
     stepGroundItems(this);
     stepKeys(this);
+    stepBlueprints(this);
     if (this.phase === 'stage') stepLucky(this);
     stepCoins(this);
     for (const r of this.respawns.filter((x) => x.at <= this.tick)) this.spawnExtra(r.spawn);

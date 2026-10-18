@@ -63,4 +63,4 @@ export interface EnemyProjectileDef {
   puddle?: { w: number; h: number; life: number; status: PlayerStatusId };
 }
 /** A level spawn (06 objects; M2 levels write these directly). */
-export interface EnemySpawn { enemy: EnemyId; x: number; y: number; facing: 1 | -1; patrol?: number; group?: string }
+export interface EnemySpawn { enemy: EnemyId; x: number; y: number; facing: 1 | -1; patrol?: number; group?: string; objectId?: number }

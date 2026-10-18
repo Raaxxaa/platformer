@@ -3,12 +3,19 @@ import { defaultSave, type SaveData } from '../core/save/schema.ts';
 import { GameWorld } from '../core/sim/gameWorld.ts';
 import { bossLevel, feet, levelFrom } from '../core/testkit/levelData.ts';
 import { gameSession } from './session.ts';
+import { grantKingUnlocks } from '../core/loot/blueprintItems.ts';
 
 const testStore = vi.hoisted(() => ({ current: null as null | { data: SaveData; writes: number; update(change: (save: SaveData) => void): void } }));
 vi.mock('./save/storage.ts', () => ({ saveStore: () => testStore.current, saveDate: () => '2026-10-18T02:00:00.000Z' }));
 beforeEach(() => { testStore.current = { data: defaultSave(), writes: 0, update(change) { change(this.data); this.writes++; } }; });
 
 describe('session write boundaries (06 §14–15)', () => {
+  it('saves King blueprint and third-starter unlock events immediately and without duplicates', () => {
+    const w = GameWorld.fromLevel(bossLevel(), { seedText: 'KING', startKit: { cls: 'tank', weapon: 'war_maul' } });
+    grantKingUnlocks(w); gameSession.events(w); gameSession.events(w);
+    expect(testStore.current!.data.unlocks.blueprints).toHaveLength(1); expect(testStore.current!.data.unlocks.startWeapons.tank).toEqual(['giant_axe']);
+    expect(w.run.lootUnlocked).not.toContain(testStore.current!.data.unlocks.blueprints[0]);
+  });
   it('loads a valid saved unbuilt third starter into playable Home without altering the saved kit', async () => {
     const { SaveStore } = await vi.importActual<typeof import('./save/storage.ts')>('./save/storage.ts');
     const raw = JSON.stringify({ v: 1, lastKit: { cls: 'tank', weapon: 'giant_axe' }, unlocks: { startWeapons: { tank: ['giant_axe'] } } });

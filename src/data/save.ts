@@ -12,6 +12,7 @@ export const SAVE_RULES = {
 export const SAVE_STAGE_IDS = ['plains', 'mountains', 'swamps', 'kingdom', 'castle'] as const;
 export const BLUEPRINT_IDS: readonly (WeaponId | AbilityId)[] = ['scythe', 'flail', 'hand_cannon', 'javelin', 'spell_tome', 'riposte', 'boulder_toss', 'turret', 'time_slow'];
 export const THIRD_START_WEAPON: Record<ClassId, WeaponId> = { swordsman: 'spear', tank: 'giant_axe', archer: 'throwing_knives', wizard: 'wand' };
+export const BLUEPRINT_RULES = { eliteChance: 0.02, bossChance: 0.25 } as const;
 export const defaultRunStats = (): RunStats => ({ kills: 0, eliteKills: 0, goldEarned: 0, chestsOpened: 0, luckyBlocksBroken: 0, damageTaken: 0, flasksDrunk: 0 });
 
 export function defaultSettings(): SettingsData {

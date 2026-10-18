@@ -81,4 +81,4 @@ export const LOOT_FX = {
 } as const;
 
 /** 07 §5.6 ground item look (px, Hz). */
-export const ITEM_FX = { keyFrame: 'key_00', beamFrame: 'beam_00', bobHz: 0.8, bobPx: 1, glowHz: 1.2, glowMin: 0.6, badge: 9, badgeGap: 2 } as const;
+export const ITEM_FX = { keyFrame: 'key_00', blueprintFrame: 'blueprint_00', beamFrame: 'beam_00', bobHz: 0.8, bobPx: 1, glowHz: 1.2, glowMin: 0.6, badge: 9, badgeGap: 2 } as const;

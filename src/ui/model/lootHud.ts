@@ -3,7 +3,7 @@ import type { EconomyState } from '../../core/economy/gold.ts';
 import type { WorldEvent } from '../../core/sim/gameWorld.ts';
 import { TICK_RATE } from '../../core/tuning.ts';
 import { LUCKY, type CurseId, type LuckyId } from '../../data/loot.ts';
-import { CURSE_LINE, LUCKY_LINE, LOOT_HUD } from '../../data/uiText.ts';
+import { CURSE_LINE, LUCKY_LINE, LOOT_HUD, WEAPON_NAME } from '../../data/uiText.ts';
 
 export type LootTone = 'good' | 'bad' | 'curse' | 'S' | 'text' | 'textDim' | 'highlight';
 export interface EffectBox { icon: string; label: string; tone: 'good' | 'bad' | 'curse'; blink: boolean }
@@ -43,5 +43,6 @@ export function toastFor(ev: WorldEvent): Toast | null {
   if (ev.t === 'keysFull') return { text: 'Keys full (3)', tone: 'textDim', s: S.keysFull };
   if (ev.t === 'lockpickUsed') return { text: 'Lockpick used', tone: 'text', s: S.lockpick };
   if (ev.t === 'purchase') return { text: `−${ev.price}`, tone: 'textDim', s: S.purchase };
+  if (ev.t === 'blueprintFound') return { text: `Blueprint: ${WEAPON_NAME(ev.id as import('../../core/combat/types.ts').WeaponId)}\nUnlocked next run`, tone: 'highlight', s: S.blueprint };
   return null;
 }

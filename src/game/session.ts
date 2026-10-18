@@ -28,7 +28,8 @@ export const gameSession = {
       startKit = { cls: startKit.cls, weapon }; // Runtime fallback only: preserve saved kit and unlocks.
     }
     const w = GameWorld.fromLevel(level, { seedText: seed ?? randomSeed(), seeded: carry?.run.seeded ?? seed !== null,
-      startKit, carry, nextRandomSeed: randomSeed, records: save });
+      startKit, carry, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
+      nextRunUnlocks: () => saveStore().data.unlocks.blueprints });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
@@ -39,6 +40,8 @@ export const gameSession = {
     if (w.opts.practice) return;
     this.flushRunEnds(w);
     for (const e of w.events) {
+      if (e.t === 'blueprintFound') saveStore().update((s) => { if (!s.unlocks.blueprints.includes(e.id)) s.unlocks.blueprints.push(e.id); });
+      if (e.t === 'startingWeaponUnlocked') saveStore().update((s) => { const list = s.unlocks.startWeapons[e.cls] ??= []; if (!list.includes(e.weapon)) list.push(e.weapon); });
       if (e.t === 'playerDied') this.endRun(w, 'death', e.cause);
       if (e.t === 'runCompleted') this.endRun(w, 'complete');
       if (e.t === 'split') saveStore().update((s) => {

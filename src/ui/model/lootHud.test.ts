@@ -28,5 +28,6 @@ describe('loot HUD model (07 §4.7, §6.8, §6.10)', () => {
     expect(toastFor({ t: 'keysFull' })).toEqual({ text: 'Keys full (3)', tone: 'textDim', s: 2.0 });
     expect(toastFor({ t: 'lockpickUsed' })).toEqual({ text: 'Lockpick used', tone: 'text', s: 2.0 });
     expect(toastFor({ t: 'purchase', what: 'x', price: 45 })).toEqual({ text: '−45', tone: 'textDim', s: 1.5 });
+    expect(toastFor({ t: 'blueprintFound', id: 'scythe' })).toEqual({ text: 'Blueprint: Scythe\nUnlocked next run', tone: 'highlight', s: 3.0 });
   });
 });

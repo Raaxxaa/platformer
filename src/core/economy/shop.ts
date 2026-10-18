@@ -29,13 +29,13 @@ function rollStock(w: GameWorld, villageIndex: VillageIndex, rerollCount: number
   const table = GRADE_ODDS.free[(villageIndex + 1) as StageIndex], carried = w.classState.carriedClasses;
   const carriedIds = w.abilities.slots.filter((a): a is AbilitySlot => a !== null).map((a) => a.id);
   const weapons: WeaponId[] = [], abilities: AbilityId[] = [], slots: ShopItem[] = [];
-  const first = rollWeapon(rng, { ...table, F: 0, C: 0 }, carried);
+  const first = rollWeapon(rng, { ...table, F: 0, C: 0 }, carried, { unlocked: w.run.lootUnlocked });
   slots.push({ kind: 'weapon', weapon: first }); weapons.push(first.weaponId);
   for (let i = 1; i < S.slots; i++) {
-    const ability = rng() < S.abilityChance ? rollAbility(rng, carriedIds, carried, abilities) : null;
+    const ability = rng() < S.abilityChance ? rollAbility(rng, carriedIds, carried, abilities, w.run.lootUnlocked) : null;
     if (ability) { slots.push({ kind: 'ability', ability }); abilities.push(ability.id); }
     else {
-      const weapon = rollWeapon(rng, table, carried, { exclude: weapons });
+      const weapon = rollWeapon(rng, table, carried, { exclude: weapons, unlocked: w.run.lootUnlocked });
       slots.push({ kind: 'weapon', weapon }); weapons.push(weapon.weaponId);
     }
   }

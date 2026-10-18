@@ -109,6 +109,7 @@ export class SfxWatch {
         case 'chestOpened': out.push({ id: e.kind === 'cursed' ? 'cursed_open' : 'chest_open' }, { id: 'item_pop' }); break;
         case 'chestLocked': out.push({ id: 'chest_locked' }); break;
         case 'keyTaken': out.push({ id: 'key_pickup' }); break;
+        case 'blueprintFound': out.push({ id: 'blueprint' }); break;
         case 'keysFull': out.push({ id: 'keys_full' }); break;
         case 'goldChanged': if (e.reason === 'coin') out.push({ id: 'coin' }); break;
         case 'itemTaken': out.push({ id: e.kind === 'ability' ? 'pickup_ability' : 'pickup_weapon' }); break;

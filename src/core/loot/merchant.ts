@@ -34,10 +34,10 @@ export function setupMerchant(w: GameWorld, force = false): void {
   w.merchant = m;
   const stage = Math.min(4, Math.max(1, w.stage)) as StageIndex;
   const carried = w.classState.carriedClasses;
-  const a = rollWeapon(rng, GRADE_ODDS.cursed[stage], carried);
-  const b = rollWeapon(rng, GRADE_ODDS.cursed[stage], carried, { exclude: [a.weaponId] });
-  const ab = rollAbility(rng, w.abilities.slots.filter((s) => s).map((s) => s!.id) as AbilityId[], carried);
-  const stock: Pick<GroundItem, 'weapon' | 'ability'>[] = [{ weapon: a }, { weapon: b }, ab ? { ability: ab } : { weapon: rollWeapon(rng, GRADE_ODDS.cursed[stage], carried) }];
+  const a = rollWeapon(rng, GRADE_ODDS.cursed[stage], carried, { unlocked: w.run.lootUnlocked });
+  const b = rollWeapon(rng, GRADE_ODDS.cursed[stage], carried, { exclude: [a.weaponId], unlocked: w.run.lootUnlocked });
+  const ab = rollAbility(rng, w.abilities.slots.filter((s) => s).map((s) => s!.id) as AbilityId[], carried, [], w.run.lootUnlocked);
+  const stock: Pick<GroundItem, 'weapon' | 'ability'>[] = [{ weapon: a }, { weapon: b }, ab ? { ability: ab } : { weapon: rollWeapon(rng, GRADE_ODDS.cursed[stage], carried, { unlocked: w.run.lootUnlocked }) }];
   stock.forEach((s, i) => {
     const price = priceOf(s.weapon ? PRICES.weapon[s.weapon.grade] : PRICES.abilityBuy, true, statCount(w, 'haggler') > 0);
     const it = dropItem(w, spot.x + MERCHANT_LAYOUT.items[i], spot.y, { ...s, price, merchantSlot: i });

@@ -30,6 +30,7 @@ export class ItemViews {
   private make(it: GroundItem): ItemObjs | null {
     const sc = this.scene;
     if (it.key) return { icon: sc.add.image(0, 0, 'items', ITEM_FX.keyFrame).setOrigin(0.5, 1).setDepth(DEPTH.items) };
+    if (it.blueprint) return { icon: sc.add.image(0, 0, 'items', ITEM_FX.blueprintFrame).setDepth(DEPTH.items) };
     const kind = it.weapon ? 'weapon' : 'ability';
     const id = it.weapon?.weaponId ?? it.ability?.id;
     if (!id) return null;

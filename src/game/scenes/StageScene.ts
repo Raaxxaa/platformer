@@ -40,6 +40,9 @@ import { cancelRoad, chooseRoad } from '../../core/run/roads.ts';
 import { beginTransition } from '../../core/run/phases.ts';
 import { TimerBlock } from '../../ui/hud/timerBlock.ts';
 import { SAVE_RULES } from '../../data/save.ts';
+import { dropBlueprint } from '../../core/loot/blueprintItems.ts';
+import type { BlueprintId } from '../../core/loot/blueprints.ts';
+import { abilityPool, weaponPool } from '../../core/loot/roll.ts';
 
 /** Hint text with the M1 key names (07 shows real button prompts later). */
 const HINT_TEXT: Record<HintAction, string> = {
@@ -153,6 +156,9 @@ export class StageScene extends WorldScene {
     api.levelId = () => this.level.id;
     api.save = () => structuredClone(saveStore().data);
     api.timerBlock = () => this.timerBlock.snapshot();
+    api.dropBlueprint = (id: BlueprintId) => dropBlueprint(this.world, id, this.world.body.x, this.world.body.y);
+    api.poolSnapshot = () => ({ unlocked: [...this.world.run.lootUnlocked], dropped: [...this.world.run.blueprintsDropped],
+      weapons: weaponPool([], this.world.run.lootUnlocked), abilities: abilityPool([], [], this.world.run.lootUnlocked) });
     api.shop = () => structuredClone(this.world.shop);
     api.routeChoice = () => this.routeChoice ? { cursor: this.routeChoice.model.cursor, road: this.routeChoice.model.road } : null;
     api.routeAction = (action: Parameters<RouteChoiceView['action']>[0]) => this.routeChoice?.action(action);
@@ -201,7 +207,7 @@ export class StageScene extends WorldScene {
       econ: this.world.econ, gold: this.world.gold,
       chests: this.world.chests, lucky: this.world.luckyBlocks, coins: this.world.coins.length,
       merchant: this.world.merchant,
-      items: this.world.groundItems.map((i) => ({ id: i.id, x: i.x, y: i.y, key: !!i.key, price: i.price, weapon: i.weapon ?? null, ability: i.ability?.id ?? null })),
+      items: this.world.groundItems.map((i) => ({ id: i.id, x: i.x, y: i.y, key: !!i.key, blueprint: i.blueprint ?? null, price: i.price, weapon: i.weapon ?? null, ability: i.ability?.id ?? null })),
     });
     api.arenas = () => [...this.world.arenas.values()].map((a) => ({ id: a.id, kind: a.kind, rect: a.rect }));
   }
