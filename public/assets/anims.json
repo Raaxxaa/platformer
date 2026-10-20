@@ -1990,6 +1990,745 @@
   "mode": "speed"
  },
  {
+  "key": "bog_zombie_atk_claw",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "bog_zombie_atk_claw_00",
+   "bog_zombie_atk_claw_01",
+   "bog_zombie_atk_claw_02",
+   "bog_zombie_atk_claw_03",
+   "bog_zombie_atk_claw_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bog_zombie_atk_grab_lunge",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "bog_zombie_atk_grab_lunge_00",
+   "bog_zombie_atk_grab_lunge_01",
+   "bog_zombie_atk_grab_lunge_02",
+   "bog_zombie_atk_grab_lunge_03",
+   "bog_zombie_atk_grab_lunge_04",
+   "bog_zombie_atk_grab_lunge_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bog_zombie_atk_rise_swipe",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "bog_zombie_atk_rise_swipe_00",
+   "bog_zombie_atk_rise_swipe_01",
+   "bog_zombie_atk_rise_swipe_02",
+   "bog_zombie_atk_rise_swipe_03",
+   "bog_zombie_atk_rise_swipe_04",
+   "bog_zombie_atk_rise_swipe_05",
+   "bog_zombie_atk_rise_swipe_06"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     4
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     5,
+     6
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bog_zombie_death",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "bog_zombie_death_00",
+   "bog_zombie_death_01",
+   "bog_zombie_death_02",
+   "bog_zombie_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bog_zombie_hurt",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "bog_zombie_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "bog_zombie_idle",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "bog_zombie_idle_00",
+   "bog_zombie_idle_01",
+   "bog_zombie_idle_02",
+   "bog_zombie_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "bog_zombie_knockdown",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "bog_zombie_knockdown_00",
+   "bog_zombie_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bog_zombie_stagger",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "bog_zombie_stagger_00",
+   "bog_zombie_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "bog_zombie_walk",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "bog_zombie_walk_00",
+   "bog_zombie_walk_01",
+   "bog_zombie_walk_02",
+   "bog_zombie_walk_03",
+   "bog_zombie_walk_04",
+   "bog_zombie_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "giant_spider_atk_bite",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_atk_bite_00",
+   "giant_spider_atk_bite_01",
+   "giant_spider_atk_bite_02",
+   "giant_spider_atk_bite_03",
+   "giant_spider_atk_bite_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "giant_spider_atk_drop",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_atk_drop_00",
+   "giant_spider_atk_drop_01",
+   "giant_spider_atk_drop_02",
+   "giant_spider_atk_drop_03",
+   "giant_spider_atk_drop_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "giant_spider_atk_pounce",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_atk_pounce_00",
+   "giant_spider_atk_pounce_01",
+   "giant_spider_atk_pounce_02",
+   "giant_spider_atk_pounce_03",
+   "giant_spider_atk_pounce_04",
+   "giant_spider_atk_pounce_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "giant_spider_death",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_death_00",
+   "giant_spider_death_01",
+   "giant_spider_death_02",
+   "giant_spider_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "giant_spider_hang",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_hang_00",
+   "giant_spider_hang_01"
+  ],
+  "mode": "loop",
+  "fps": 4
+ },
+ {
+  "key": "giant_spider_hurt",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "giant_spider_idle",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_idle_00",
+   "giant_spider_idle_01",
+   "giant_spider_idle_02",
+   "giant_spider_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "giant_spider_knockdown",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_knockdown_00",
+   "giant_spider_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "giant_spider_stagger",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_stagger_00",
+   "giant_spider_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "giant_spider_walk",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "giant_spider_walk_00",
+   "giant_spider_walk_01",
+   "giant_spider_walk_02",
+   "giant_spider_walk_03",
+   "giant_spider_walk_04",
+   "giant_spider_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "swamp_witch_atk_claw",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "swamp_witch_atk_claw_00",
+   "swamp_witch_atk_claw_01",
+   "swamp_witch_atk_claw_02",
+   "swamp_witch_atk_claw_03",
+   "swamp_witch_atk_claw_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "swamp_witch_atk_hex_hop",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "swamp_witch_atk_hex_hop_00",
+   "swamp_witch_atk_hex_hop_01",
+   "swamp_witch_atk_hex_hop_02",
+   "swamp_witch_atk_hex_hop_03",
+   "swamp_witch_atk_hex_hop_04",
+   "swamp_witch_atk_hex_hop_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "swamp_witch_atk_poison_potion",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "swamp_witch_atk_poison_potion_00",
+   "swamp_witch_atk_poison_potion_01",
+   "swamp_witch_atk_poison_potion_02",
+   "swamp_witch_atk_poison_potion_03",
+   "swamp_witch_atk_poison_potion_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "swamp_witch_death",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "swamp_witch_death_00",
+   "swamp_witch_death_01",
+   "swamp_witch_death_02",
+   "swamp_witch_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "swamp_witch_hurt",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "swamp_witch_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "swamp_witch_idle",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "swamp_witch_idle_00",
+   "swamp_witch_idle_01",
+   "swamp_witch_idle_02",
+   "swamp_witch_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "swamp_witch_knockdown",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "swamp_witch_knockdown_00",
+   "swamp_witch_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "swamp_witch_stagger",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "swamp_witch_stagger_00",
+   "swamp_witch_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "swamp_witch_walk",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "swamp_witch_walk_00",
+   "swamp_witch_walk_01",
+   "swamp_witch_walk_02",
+   "swamp_witch_walk_03",
+   "swamp_witch_walk_04",
+   "swamp_witch_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "treant_atk_branch_slam",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "treant_atk_branch_slam_00",
+   "treant_atk_branch_slam_01",
+   "treant_atk_branch_slam_02",
+   "treant_atk_branch_slam_03",
+   "treant_atk_branch_slam_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "treant_atk_root_snare",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "treant_atk_root_snare_00",
+   "treant_atk_root_snare_01",
+   "treant_atk_root_snare_02",
+   "treant_atk_root_snare_03",
+   "treant_atk_root_snare_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "treant_death",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "treant_death_00",
+   "treant_death_01",
+   "treant_death_02",
+   "treant_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "treant_hurt",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "treant_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "treant_idle",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "treant_idle_00",
+   "treant_idle_01",
+   "treant_idle_02",
+   "treant_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "treant_knockdown",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "treant_knockdown_00",
+   "treant_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "treant_stagger",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "treant_stagger_00",
+   "treant_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "treant_walk",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "treant_walk_00",
+   "treant_walk_01",
+   "treant_walk_02",
+   "treant_walk_03",
+   "treant_walk_04",
+   "treant_walk_05"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "wisp_atk_detonate",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "wisp_atk_detonate_00",
+   "wisp_atk_detonate_01",
+   "wisp_atk_detonate_02",
+   "wisp_atk_detonate_03",
+   "wisp_atk_detonate_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "wisp_death",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "wisp_death_00",
+   "wisp_death_01",
+   "wisp_death_02",
+   "wisp_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "wisp_float",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "wisp_float_00",
+   "wisp_float_01",
+   "wisp_float_02",
+   "wisp_float_03"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
+  "key": "wisp_hurt",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "wisp_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "wisp_knockdown",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "wisp_knockdown_00",
+   "wisp_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "wisp_stagger",
+  "atlas": "enemies_swamps",
+  "frames": [
+   "wisp_stagger_00",
+   "wisp_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
   "key": "beam",
   "atlas": "items",
   "frames": [
@@ -2228,11 +2967,33 @@
   "mode": "once"
  },
  {
+  "key": "firefly",
+  "atlas": "objects",
+  "frames": [
+   "firefly_00",
+   "firefly_01",
+   "firefly_02",
+   "firefly_03"
+  ],
+  "mode": "loop",
+  "fps": 4
+ },
+ {
   "key": "gate_idle",
   "atlas": "objects",
   "frames": [
    "gate_idle_00",
    "gate_idle_01"
+  ],
+  "mode": "loop",
+  "fps": 2
+ },
+ {
+  "key": "grapple_vine",
+  "atlas": "objects",
+  "frames": [
+   "grapple_vine_00",
+   "grapple_vine_01"
   ],
   "mode": "loop",
   "fps": 2
@@ -6832,6 +7593,17 @@
   "fps": 12
  },
  {
+  "key": "bubble",
+  "atlas": "projectiles",
+  "frames": [
+   "bubble_00",
+   "bubble_01",
+   "bubble_02"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
   "key": "enemy_arrow",
   "atlas": "projectiles",
   "frames": [
@@ -6900,6 +7672,36 @@
   "mode": "once"
  },
  {
+  "key": "potion",
+  "atlas": "projectiles",
+  "frames": [
+   "potion_00",
+   "potion_01"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
+  "key": "puddle",
+  "atlas": "projectiles",
+  "frames": [
+   "puddle_00",
+   "puddle_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "ripple",
+  "atlas": "projectiles",
+  "frames": [
+   "ripple_00",
+   "ripple_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
   "key": "shockwave",
   "atlas": "projectiles",
   "frames": [
@@ -6908,6 +7710,19 @@
   ],
   "mode": "loop",
   "fps": 12
+ },
+ {
+  "key": "splash",
+  "atlas": "projectiles",
+  "frames": [
+   "splash_00",
+   "splash_01",
+   "splash_02",
+   "splash_03",
+   "splash_04"
+  ],
+  "mode": "once",
+  "fps": 20
  },
  {
   "key": "staff_bolt",
@@ -6923,11 +7738,10 @@
   "frames": [
    "stone_spikes_00",
    "stone_spikes_01",
-   "stone_spikes_02",
-   "stone_spikes_03"
+   "stone_spikes_02"
   ],
   "mode": "once",
-  "fps": 12
+  "fps": 24
  },
  {
   "key": "stone_ward",
@@ -6938,6 +7752,18 @@
   ],
   "mode": "loop",
   "fps": 4
+ },
+ {
+  "key": "toxic_cloud",
+  "atlas": "projectiles",
+  "frames": [
+   "toxic_cloud_00",
+   "toxic_cloud_01",
+   "toxic_cloud_02",
+   "toxic_cloud_03"
+  ],
+  "mode": "loop",
+  "fps": 6
  },
  {
   "key": "ab_shockwave_56",

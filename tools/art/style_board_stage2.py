@@ -107,4 +107,99 @@ def build(preview):
     scene = compose_mountains()
     path = os.path.join(preview, 'style_board_mountains.png')
     scene.resize((1280, 720), Image.NEAREST).convert('RGB').save(path)
+    build_swamps(preview)
+    return path
+
+
+# ---------------------------------------------------------------- swamps
+
+DARK = (0x06, 0x07, 0x0a)
+ZONE_ALPHA = 0.82
+
+
+def darkness(scene, zone, lights, zone_alpha=ZONE_ALPHA):
+    """08 §10.2: a dark zone (x0, y0, x1, y1 in px) with a 32 px ramp of 4 steps; lights cut holes.
+    lights: (cx, cy, R). Where lights overlap the lowest alpha wins."""
+    W, H = scene.size
+    ys, xs = np.mgrid[0:H, 0:W]
+    x0, y0, x1, y1 = zone
+    inside = (xs >= x0) & (xs < x1) & (ys >= y0) & (ys < y1)
+    edge = np.minimum.reduce([xs - x0, x1 - 1 - xs, ys - y0, y1 - 1 - ys])
+    ramp = np.select([edge < 8, edge < 16, edge < 24, edge < 32], [0.2, 0.4, 0.6, 0.8], zone_alpha)
+    a = np.where(inside, np.minimum(ramp, zone_alpha), 0.0).astype(np.float32)
+    for cx, cy, r in lights:
+        d = np.hypot(xs - cx, ys - cy)
+        la = np.select([d <= 0.6 * r, d <= 0.85 * r, d <= r], [0.0, 0.4, 0.65], 1.0)
+        a = np.where(inside & (la < 1.0), np.minimum(a, la), a)
+    img = np.array(scene).astype(np.float32)
+    for i in range(3):
+        img[:, :, i] = img[:, :, i] * (1 - a) + DARK[i] * a
+    return Image.fromarray(img.astype(np.uint8), 'RGBA')
+
+
+def compose_swamps():
+    from .enemies import swamps
+    from . import objects
+    W, H = 640, 360
+    scene = Image.new('RGBA', (W, H))
+    for i in range(3):
+        scene.alpha_composite(B.render('swamps', i))
+    sheet = T.build_sheet('swamps')
+    g = np.zeros((23, 40), bool)
+    g[GROUND:, :] = True
+    g[GROUND:GROUND + 2, 12:18] = False          # water pool (ground gap)
+    g[GROUND - 2:GROUND, 33:40] = True
+    idx = T.autotile(g)
+    for y in range(g.shape[0]):
+        for x in range(g.shape[1]):
+            if idx[y, x] >= 0:
+                scene.alpha_composite(T.cell_image(sheet, idx[y, x]), (x * 16, y * 16))
+    water = Image.new('RGBA', (W, H))
+    for x in range(12, 18):
+        water.alpha_composite(_cell(sheet, x % 4, 7), (x * 16, GROUND * 16))
+        water.alpha_composite(_cell(sheet, 4 + x % 4, 7), (x * 16, (GROUND + 1) * 16))
+    wa = np.array(water)
+    wa[:, :, 3] = (wa[:, :, 3] * 0.65).astype(np.uint8)
+    scene.alpha_composite(Image.fromarray(wa, 'RGBA'))
+    for k, x in enumerate(range(22, 27)):        # one-way root
+        scene.alpha_composite(_cell(sheet, 4 if k == 0 else (6 if x == 26 else 5), 3), (x * 16, 14 * 16))
+    gy, ly = GROUND * 16, (GROUND - 2) * 16
+    for x, c in ((3, 8), (6, 12), (9, 10), (20, 9), (24, 13)):
+        scene.alpha_composite(_cell(sheet, c, 7), (x * 16, gy - 16))
+    players_row(scene, gy)
+    frames, _ = swamps.build_frames()
+    fr = objects.stage2_frames()
+
+    def place(img, x, feet_y, anchor):
+        scene.alpha_composite(img, (x - anchor[0], feet_y - anchor[1]))
+    place(frames['bog_zombie_idle_00'], 185, gy, (24, 46))
+    place(frames['giant_spider_idle_00'], 262, gy, (24, 46))
+    place(frames['swamp_witch_idle_00'], 358, 14 * 16, (24, 46))
+    place(frames['wisp_float_00'], 320, gy - 70, (24, 46))
+    place(_fill(frames['swamp_witch_atk_poison_potion_01'], TELE, TELE_ALPHA), 300, gy, (48, 46))
+    place(_fill(frames['bog_zombie_atk_claw_01'], TELE, TELE_ALPHA), 440, gy, (48, 46))
+    place(frames['treant_idle_00'], 600, ly, (64, 78))
+    loot(scene, gy, x0=470)
+    # a dark zone on the right: lit by the player (R 112), three fireflies (R 40) and the Wisp (R 32)
+    px, py = 552, gy - 22
+    tmp = Image.new('RGBA', (W, H))
+    b, ta, tb = render(draw('wizard', POSES['idle'][0]))
+    col = P.CLASS_COLORS['wizard']
+    tmp.alpha_composite(V.compose_player(b, ta, tb, col, col), (px - 24, gy - 46))
+    flies = ((470, 250), (526, 200), (610, 232))
+    lights = [(px, py, 112), (320, gy - 77, 32)] + [(fx, fy, 40) for fx, fy in flies]
+    scene = darkness(scene, (320, 0, 640, 360), lights)
+    scene.alpha_composite(tmp)
+    for k, (fx, fy) in enumerate(flies):
+        scene.alpha_composite(fr[f'firefly_{k:02d}'], (fx - 2, fy - 2))
+    scene.alpha_composite(frames['wisp_float_00'], (320 - 24, gy - 70 - 46))
+    glint = Image.new('RGBA', (2, 1), P.RAMPS['en_glow'][1] + (255,))            # eye glints above the darkness
+    for gx, gy_ in ((600 - 3, ly - 44), (600 + 4, ly - 44)):
+        scene.alpha_composite(glint, (gx, gy_))
+    return scene
+
+
+def build_swamps(preview):
+    path = os.path.join(preview, 'style_board_swamps.png')
+    compose_swamps().resize((1280, 720), Image.NEAREST).convert('RGB').save(path)
     return path

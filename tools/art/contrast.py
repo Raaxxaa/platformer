@@ -116,20 +116,58 @@ def mountains_surfaces():
     return s
 
 
+DARK = (0x06, 0x07, 0x0a)        # 08 §10.2 darkness color; alpha 0.82 in the zone, 0.4 on the lit ring
+
+
+def darkened(img, alpha):
+    """Blend the opaque pixels of an RGBA image toward the darkness color."""
+    from PIL import Image
+    a = np.array(img.convert('RGBA')).astype(np.float64)
+    for i in range(3):
+        a[:, :, i] = a[:, :, i] * (1 - alpha) + DARK[i] * alpha
+    return Image.fromarray(np.round(a).astype(np.uint8), 'RGBA')
+
+
+def swamps_entities():
+    from .enemies import swamps
+    out = {k: v for k, v in entities().items() if k.startswith('player_')}
+    frames, _ = swamps.build_frames()
+    for e in swamps.ENEMIES:
+        out[e] = frames[swamps.idle_key(e)]
+    return out
+
+
+def swamps_surfaces():
+    """Plain surfaces plus `*_night` ones: the same art under the zone's darkness (alpha 0.82)."""
+    from PIL import Image
+    sheet = T.build_sheet('swamps')
+    blobs = Image.new('RGBA', (16 * 47, 16))
+    for i in range(47):
+        blobs.paste(T.cell_image(sheet, i), (16 * i, 0))
+    imgs = {'terrain_swamps': blobs}
+    for i in range(3):
+        imgs[f'bg_swamps_{i}'] = B.render('swamps', i)
+    out = {k: mean_oklab(v) for k, v in imgs.items()}
+    out.update({k + '_night': mean_oklab(darkened(v, 0.82)) for k, v in imgs.items()})
+    return out
+
+
 def _lines(ents, surf):
     ink = P.RAMPS['ink'][0]
     lines = []
     for name, img in ents.items():
         m = mean_oklab(img, skip=[ink])
+        lit = mean_oklab(darkened(img, 0.4), skip=[tuple(int(round(c * 0.6 + d * 0.4)) for c, d in zip(ink, DARK))])
         for sname, sm in surf.items():
-            d = dist(m, sm)
+            d = dist(lit if sname.endswith('_night') else m, sm)
             lines.append(f'{name} {sname} {d:.3f} {"PASS" if d >= THRESHOLD else "FAIL"}')
     return lines
 
 
 def report_lines():
     return (_lines(entities(), surfaces()) + _lines(village_entities(), village_surfaces())
-            + _lines(mountains_entities(), mountains_surfaces()))
+            + _lines(mountains_entities(), mountains_surfaces())
+            + _lines(swamps_entities(), swamps_surfaces()))
 
 
 def write_report(preview):

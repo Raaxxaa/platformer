@@ -28,6 +28,13 @@ THEMES['mountains'] = {
     'cap': [P.RAMPS['mt_rock'][1], P.RAMPS['mt_snow'][0], P.RAMPS['mt_snow'][1], P.RAMPS['mt_snow'][2]],
     'wood': P.RAMPS['mt_rock'][1:4], 'nail': P.RAMPS['mt_snow'][2], 'tuft': P.RAMPS['mt_snow'][2],
     'spike': P.RAMPS['mt_rock'][2:5]}
+_mud, _moss = P.RAMPS['sw_mud'], P.RAMPS['sw_moss']
+THEMES['swamps'] = {
+    'body': [_mud[0], _mud[0], _mud[1], _mud[2], _mud[3]],
+    'cap': [_moss[0], _moss[1], _moss[2], _moss[3]],
+    'wood': [_mud[2], _mud[3], _moss[2]], 'nail': _moss[3], 'tuft': _moss[3],
+    'spike': [_moss[1], _moss[2], _moss[3]]}
+SW_ALLOWED = ['sw_mud', 'sw_moss', 'sw_water']
 _ice = P.RAMPS['mt_ice']
 THEMES['ice'] = {'streaks': True, 'body': [_ice[0], _ice[0], _ice[1], _ice[2], _ice[3]], 'cap': [_ice[0], _ice[1], _ice[3], _ice[3]],
                  'wood': _ice[:3], 'nail': _ice[3], 'tuft': _ice[3]}
@@ -371,6 +378,109 @@ def draw_rail(v):
     return a
 
 
+def draw_water(kind, frame):
+    """Water frames (08 §9.3): a rippling surface and a body with slow dark waves. Opaque; the game draws them at 0.65."""
+    w = P.RAMPS['sw_water']
+    a = np.zeros((TILE, TILE, 4), np.uint8)
+    for x in range(TILE):
+        for y in range(TILE):
+            _px(a, x, y, w[1])
+    if kind == 'surface':
+        for x in range(TILE):
+            crest = int(round(1.4 * math.sin(2 * math.pi * (x + frame * 4) / 16)))
+            _px(a, x, 1 + crest, w[3])
+            if crest <= 0:
+                _px(a, x, 2 + crest, w[2])
+            for y in range(0, 1 + crest):
+                a[y, x, 3] = 0
+        for x in range(0, TILE, 5):
+            _px(a, (x + frame * 3) % 16, 5, w[2])
+    else:
+        for k in range(3):
+            y0 = 3 + k * 5
+            for x in range(TILE):
+                y = y0 + int(round(1.0 * math.sin(2 * math.pi * (x + frame * 4 + k * 5) / 16)))
+                if 0 <= y < TILE:
+                    _px(a, x, y, w[0] if k % 2 == 0 else w[2])
+    return a
+
+
+def top_deco_sw(v):
+    """Swamp top decorations (row 7, cols 8-15): reeds, mushrooms, moss tufts, stones, bones."""
+    a = _empty()
+    g = rng(f'deco_top_sw_{v}')
+    ms, mo, mu = P.RAMPS['sw_moss'], P.RAMPS['sw_mud'], P.RAMPS['sw_mud']
+    wt = P.RAMPS['sw_water']
+    if v in (0, 1):                                       # reeds with cattails
+        for k in range(2 + v):
+            x = 3 + k * 4 + int(g.integers(0, 2))
+            h = int(g.integers(8, 13))
+            for y in range(h):
+                _px(a, x + (1 if y > h - 4 else 0), 15 - y, ms[2] if y < h - 1 else ms[3])
+            for y in range(h - 4, h - 1):
+                _px(a, x + 1, 15 - y, mo[3])
+                _px(a, x + 2, 15 - y, mo[2])
+    elif v in (2, 3):                                     # moss tufts
+        for k in range(4 + v):
+            x = int(g.integers(1, 14))
+            h = int(g.integers(2, 5))
+            for y in range(h):
+                _px(a, x, 15 - y, ms[2] if y < h - 1 else ms[3])
+    elif v == 4:                                          # glowing mushrooms
+        for x0, h in ((4, 4), (10, 3)):
+            for y in range(h):
+                _px(a, x0, 15 - y, mo[3])
+            for dx in (-2, -1, 0, 1, 2):
+                _px(a, x0 + dx, 15 - h, wt[2] if abs(dx) < 2 else wt[1])
+            for dx in (-1, 0, 1):
+                _px(a, x0 + dx, 14 - h, wt[3])
+    elif v == 5:                                          # stones
+        for (x, w_, h) in ((3, 4, 3), (9, 3, 2)):
+            for y in range(h):
+                for dx in range(w_):
+                    _px(a, x + dx, 15 - y, mo[3] if y == h - 1 else mo[2])
+    elif v == 6:                                          # bones
+        for x in range(3, 12):
+            _px(a, x, 15 - (x - 3) // 5, P.RAMPS['sw_water'][3] if False else mo[3])
+        _px(a, 3, 14, mo[3])
+        _px(a, 11, 13, mo[3])
+        _px(a, 11, 15, mo[3])
+    else:                                                 # dead twig
+        for x in range(3, 13):
+            _px(a, x, 15 - (x - 3) // 3, mo[2])
+        _px(a, 8, 12, ms[2])
+    return a
+
+
+def hanging_deco_sw(v):
+    """Swamp hanging decorations (row 8, cols 0-7): vines, roots, dripping moss."""
+    a = _empty()
+    g = rng(f'deco_hang_sw_{v}')
+    ms, mo = P.RAMPS['sw_moss'], P.RAMPS['sw_mud']
+    if v in (0, 1, 2):                                    # vines with leaves
+        for k in range(2):
+            x = 3 + k * 7 + v
+            ln = 8 + v * 2
+            for y in range(ln):
+                _px(a, x + (1 if (y // 3) % 2 else 0), y, ms[1])
+                if y % 3 == 2:
+                    _px(a, x + 2, y, ms[2])
+                    _px(a, x - 1, y + 1, ms[3])
+    elif v in (3, 4):                                     # roots
+        for k in range(3):
+            x = int(g.integers(2, 14))
+            ln = int(g.integers(5, 12))
+            for y in range(ln):
+                _px(a, x + (y // 4) * (1 if k % 2 else -1), y, mo[3] if y < ln - 2 else mo[2])
+    else:                                                 # dripping moss
+        for x in range(1, 15):
+            ln = 1 + int(g.integers(0, 3 + (v - 5) * 2))
+            for y in range(ln):
+                _px(a, x, y, ms[2] if y == 0 else ms[1])
+        _px(a, 5, 7, P.RAMPS['sw_water'][2])
+    return a
+
+
 def tile_cells(set_name):
     """{(col, row): 16×16 RGBA array} for every drawn cell."""
     th = THEMES[set_name]
@@ -383,6 +493,14 @@ def tile_cells(set_name):
         cells[(c, 3)] = draw_oneway(kind, th)
     for c, d in zip(range(8, 12), ('up', 'right', 'down', 'left')):
         cells[(c, 3)] = draw_spikes(d, th)
+    if set_name == 'swamps':
+        for k in range(4):
+            cells[(k, 7)] = draw_water('surface', k)
+            cells[(4 + k, 7)] = draw_water('body', k)
+        for v in range(8):
+            cells[(8 + v, 7)] = top_deco_sw(v)
+            cells[(v, 8)] = hanging_deco_sw(v)
+        return cells
     if set_name == 'mountains':
         cells[(12, 3)] = draw_cracked_wall(th)
         for i, m in enumerate(BLOB_MASKS):               # rows 4-6: ice blob tiles

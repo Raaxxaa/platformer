@@ -10,7 +10,7 @@ from . import raster as R
 
 ATLAS = 'projectiles'
 ALLOWED = ['ink', 'white', 'gray', 'en_red', 'en_slate', 'en_bone', 'w_wood', 'w_steel', 'w_gold', 'w_magic', 'fx_bolt',
-           'en_ochre', 'en_magenta', 'en_olive', 'fx_fire']
+           'en_ochre', 'en_magenta', 'en_olive', 'fx_fire', 'sw_water', 'fx_poison']
 
 
 def _L(w, h):

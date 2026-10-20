@@ -14,6 +14,8 @@ HURTBOX = {
     'bat_swarm': (24, 16), 'goblin_miner': (12, 20), 'rock_golem': (26, 32), 'ram': (26, 22),
     'goblin_shaman': (14, 24),
     'stone_colossus': (56, 72),     # 04 §9
+    'bog_zombie': (14, 28), 'giant_spider': (26, 16), 'wisp': (14, 14), 'swamp_witch': (14, 28),
+    'treant': (30, 52),
 }
 
 # 04 §3: attack boxes (dx, dy, w, h) from the feet, facing right. None = projectile (no melee box).
@@ -32,6 +34,12 @@ ATTACK_BOX = {
     # 04 §10.2 (Rock Rain uses falling_rock projectiles; Leap Slam's 2 shockwaves are projectiles)
     'stone_colossus': {'fist_slam': (44, -16, 56, 32), 'shoulder_ram': (30, -36, 32, 64),
                        'leap_slam': (0, -12, 120, 24), 'rock_rain': None},
+    # 04 §4 Stage 3 (Swamps). Wisp Detonate (explosion_l) and Treant Root Snare (at marker) are skipped by 08 §4.1
+    'bog_zombie': {'rise_swipe': (0, -14, 24, 28), 'claw': (18, -16, 28, 24), 'grab_lunge': (20, -16, 24, 20)},
+    'giant_spider': {'drop': (0, -8, 24, 16), 'bite': (16, -8, 20, 14), 'pounce': (12, -8, 22, 14)},
+    'wisp': {'detonate': None},
+    'swamp_witch': {'poison_potion': None, 'claw': (14, -14, 20, 20), 'hex_hop': None},
+    'treant': {'root_snare': None, 'branch_slam': (34, -20, 52, 40)},
     # 04 §10.1 (Rockfall uses falling_rock projectiles, no melee box)
     'great_boar': {'charge': (28, -20, 40, 36), 'tusk_toss': (36, -24, 48, 48), 'stomp_quake': (0, -8, 96, 16)},
 }

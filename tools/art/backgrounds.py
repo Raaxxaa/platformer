@@ -50,6 +50,8 @@ def _fill_below(img, xs, top, dark, light, rim=3):
 
 
 def render(set_name, layer, width=W):
+    if set_name == 'swamps':
+        return render_swamps(layer, width)
     if set_name in ('mountains', 'mountains_cave'):
         return render_mountains(set_name, layer, width)
     if set_name != 'plains':
@@ -148,6 +150,84 @@ def _hang(xs, g, n, hmin, hmax, wmin, wmax):
         d = np.abs(_wrap(xs - cx))
         bot = np.maximum(bot, np.where(d < w, h * np.clip(1 - d / w, 0, 1) ** 0.8, 0))
     return bot
+
+
+SW_ALLOWED = {0: ['sw_sky', 'sw_bg0'], 1: ['sw_bg1'], 2: ['sw_bg2']}
+
+
+def _disc(img, xs, cx, cy, r, col):
+    y0, y1 = max(0, int(cy - r) - 1), min(img.shape[0], int(cy + r) + 2)
+    if y1 <= y0:
+        return
+    ys = np.arange(y0, y1)[:, None]
+    dx = _wrap(xs[None, :] - cx)
+    sub = img[y0:y1]
+    m = dx * dx + (ys - cy) ** 2 <= r * r
+    sub[m, :3] = col
+    sub[m, 3] = 255
+
+
+def _dead_tree(img, xs, g, cx, base, height, tw, col, light=None):
+    """A dead tree: tapering trunk, bare forked branches; periodic in x."""
+    for y in range(int(base - height), int(base) + 1):
+        t = (y - (base - height)) / height
+        r = max(1.0, tw * (0.25 + 0.75 * t))
+        _disc(img, xs, cx + 2.5 * math.sin(y / 23.0 + cx), y, r, col)
+    for k in range(4 + int(height > 150)):
+        side = 1 if k % 2 == 0 else -1
+        y0 = base - height * g.uniform(0.35, 0.9)
+        ang = g.uniform(0.35, 1.0)
+        ln = g.uniform(height * 0.18, height * 0.42)
+        x, y, r = cx, y0, max(1.2, tw * 0.32)
+        for s in range(int(ln)):
+            x += side * math.cos(ang) * 1.0
+            y -= math.sin(ang) * 1.0 + 0.1
+            ang += g.uniform(-0.06, 0.1) * (1 if s % 9 else 3)
+            _disc(img, xs, x, y, max(0.8, r * (1 - s / ln)), col)
+            if s == int(ln * 0.55):                       # fork
+                x2, y2, a2 = x, y, ang + 0.7
+                for q in range(int(ln * 0.45)):
+                    x2 += side * math.cos(a2)
+                    y2 -= math.sin(a2)
+                    _disc(img, xs, x2, y2, 0.9, col)
+
+
+def _fog(img, xs, y, thick, col, phase=0.0):
+    """A band of fog: a 2 px checker dither that thins out toward its edges."""
+    ys = np.arange(img.shape[0])[:, None]
+    center = y + 5 * np.sin(2 * math.pi * 2 * xs / W + phase)
+    d = np.abs(ys - center[None, :])
+    checker = (ys + xs[None, :]) % 2 == 0
+    _paint(img, (d < thick / 2) & checker & ((d < thick / 4) | (xs[None, :] % 4 == 0)), col)
+
+
+def render_swamps(layer, width=W):
+    xs = np.arange(width)
+    img = np.zeros((H, width, 4), np.uint8)
+    ys = np.arange(H)[:, None]
+    sky, c0, c1, c2 = (P.RAMPS['sw_sky'], P.RAMPS['sw_bg0'], P.RAMPS['sw_bg1'], P.RAMPS['sw_bg2'])
+    g = _rng(f'bg_swamps_{layer}')
+    if layer == 0:
+        for i, col in enumerate(sky):
+            _paint(img, np.broadcast_to((ys >= i * 60), (H, width)), col)
+        for k in range(9):                                # far thin dead trees
+            _dead_tree(img, xs, g, k * W / 9 + g.uniform(-18, 18), 300, g.uniform(150, 210), 3.0, c0[0])
+        _fog(img, xs, 250, 26, c0[1], 0.4)
+        _fill_below(img, xs, 302 + _wave(xs, [(2, 3, 0.4), (5, 2, 1.0)]), c0[0], c0[1], rim=2)
+        return Image.fromarray(img, 'RGBA')
+    if layer == 1:
+        for k in range(6):
+            _dead_tree(img, xs, g, k * W / 6 + g.uniform(-24, 24), 318, g.uniform(170, 250), 5.5, c1[0])
+        _fog(img, xs, 296, 20, c1[1], 1.4)
+        _fill_below(img, xs, 322 + _wave(xs, [(3, 3, 0.2), (7, 2, 0.9)]), c1[0], c1[1], rim=2)
+        return Image.fromarray(img, 'RGBA')
+    dark, lit = c2
+    for k in range(3):
+        cx = k * W / 3 + g.uniform(-30, 30)
+        _dead_tree(img, xs, g, cx, 342, g.uniform(260, 330), 9.0, dark)
+    _fog(img, xs, 316, 18, lit, 2.4)
+    _fill_below(img, xs, 338 + _wave(xs, [(3, 2, 1.0), (8, 1.5, 0.5)]), dark, lit, rim=2)
+    return Image.fromarray(img, 'RGBA')
 
 
 def render_mountains(set_name, layer, width=W):

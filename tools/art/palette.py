@@ -66,6 +66,16 @@ RAMPS = {
     'mtc_bg0': _hex('#0f1119', '#161a26'),
     'mtc_bg1': _hex('#1b2030', '#232a3d'),
     'mtc_bg2': _hex('#2a3247', '#343d55'),
+    # 08 §3.7 swamps (Stage 2, Dark Forest & Swamps)
+    'sw_mud': _hex('#17171b', '#29272a', '#433a36', '#635548'),
+    'sw_moss': _hex('#1c2e27', '#2c4834', '#476842', '#6a8a52'),
+    'sw_water': _hex('#173232', '#24504a', '#4d8878', '#a6d6b6'),
+    'sw_sky': sky_bands((0x12, 0x1a, 0x20), (0x2a, 0x41, 0x40)),
+    'sw_bg0': _hex('#22333a', '#2a3f45'),
+    'sw_bg1': _hex('#19262b', '#213239'),
+    'sw_bg2': _hex('#0f171b', '#162125'),
+    'en_violet': _hex('#2d1e3d', '#4f3469', '#7d599f', '#b389cf'),
+    'en_glow': _hex('#39aebf', '#8cefef', '#e6ffff'),
     'en_ochre': _hex('#4a2d1b', '#7a4926', '#b07335', '#e2a951'),
     'en_magenta': _hex('#3a1736', '#6a2a59', '#a1457d', '#d978a7'),
     'en_olive': _hex('#2d391a', '#4e6526', '#7d9937', '#b5cb59'),
@@ -84,6 +94,8 @@ PLAINS_WORLD_RAMPS = ['pl_soil', 'pl_grass', 'pl_wood', 'pl_sky', 'pl_bg0', 'pl_
 MOUNTAINS_WORLD_RAMPS = ['mt_rock', 'mt_snow', 'mt_ice', 'mt_sky', 'mt_bg0', 'mt_bg1', 'mt_bg2',
                          'mtc_sky', 'mtc_bg0', 'mtc_bg1', 'mtc_bg2']
 MOUNTAINS_ENEMY_RAMPS = ['ink', 'white', 'gray', 'en_ochre', 'en_magenta', 'en_olive', 'en_bone', 'fx_fire']
+SWAMPS_WORLD_RAMPS = ['sw_mud', 'sw_moss', 'sw_water', 'sw_sky', 'sw_bg0', 'sw_bg1', 'sw_bg2']
+SWAMPS_ENEMY_RAMPS = ['ink', 'white', 'gray', 'en_violet', 'en_bone', 'en_glow', 'en_red', 'fx_poison']
 PLAYER_BODY_RAMPS = ['ink', 'skin', 'hair', 'p_cloth', 'p_leather', 'p_steel']
 PLAINS_ENEMY_RAMPS = ['ink', 'white', 'skin', 'hair', 'en_red', 'en_slate', 'en_bone', 'gray']
 

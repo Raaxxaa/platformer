@@ -10,7 +10,8 @@ from . import raster as R
 
 ATLAS = 'objects'
 ALLOWED = ['ink', 'white', 'trim', 'gray', 'npc', 'vl_wood', 'vl_plaster', 'vl_light',
-           'w_steel', 'w_wood', 'w_gold', 'w_magic', 'fx_heal', 'fx_poison']
+           'w_steel', 'w_wood', 'w_gold', 'w_magic', 'fx_heal', 'fx_poison',
+           'en_glow', 'sw_moss', 'sw_mud']
 FLOOR_Y = 320                         # 06 §12.1: floor surface at row 20
 INN_ORIGIN = (39 * 16, 160)           # top-left of the inn frame in the village map
 INN_SIZE = (128, 160)
@@ -661,6 +662,8 @@ def anims():
     out = list(DUMMY_ANIMS) + list(YARD_ENEMY_ANIMS) + [A.anim('ability_altar_idle', ATLAS, 2, 'loop', 1), A.anim('gate_idle', ATLAS, 2, 'loop', 2),
            A.anim('shop_refill_idle', ATLAS, 4, 'loop', 6)]
     out.append(A.anim('minecart_roll', ATLAS, 2, 'loop', 8))
+    out.append(A.anim('firefly', ATLAS, 4, 'loop', 4))
+    out.append(A.anim('grapple_vine', ATLAS, 2, 'loop', 2))
     for k in ('shop_item', 'shop_flask', 'shop_key', 'shop_reroll', 'unlocks_board', 'seed_board', 'loot_stand',
               'mirror_spot', 'class_statue_swordsman', 'class_statue_tank', 'class_statue_archer',
               'class_statue_wizard', 'station_sign', 'station_flag_grey', 'station_flag_green', 'training_gate', 'cottage_a', 'cottage_b', 'well', 'market_roof', 'inn'):

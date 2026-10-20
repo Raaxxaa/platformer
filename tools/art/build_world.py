@@ -72,7 +72,54 @@ def build(assets, preview):
         stack.alpha_composite(l)
     stack.resize((1280, 720), Image.NEAREST).save(os.path.join(preview, 'bg_plains_stack.png'))
     build_mountains(assets, preview)
+    build_swamps(assets, preview)
     return sheet, layers
+
+
+def build_swamps(assets, preview):
+    sheet = T.build_sheet('swamps')
+    P.check_palette_lock(sheet, P.allowed(T.SW_ALLOWED), 'tiles_swamps')
+    sheet.save(os.path.join(assets, 'tiles', 'tiles_swamps.png'))
+    sheet.resize((sheet.width * 4, sheet.height * 4), Image.NEAREST).save(
+        os.path.join(preview, 'tiles_swamps_sheet.png'))
+    layers = []
+    for i in range(3):
+        img = B.render('swamps', i)
+        P.check_palette_lock(img, P.allowed(B.SW_ALLOWED[i]), f'bg_swamps_{i}')
+        img.save(os.path.join(assets, 'bg', f'bg_swamps_{i}.png'))
+        layers.append(img)
+    stack = Image.new('RGBA', (640, 360))
+    for l in layers:
+        stack.alpha_composite(l)
+    stack.resize((1280, 720), Image.NEAREST).save(os.path.join(preview, 'bg_swamps_stack.png'))
+    # demo: mud ground with a water pool, a one-way root and a ledge
+    rows = ['..........................', '..........................', '..........................',
+            '...............######.....', '..###....#................', '..###....#................',
+            '..........................', '##########....############', '##########....############',
+            '##########################']
+    g = np.array([[c == '#' for c in r] for r in rows])
+    h, w = g.shape
+    idx = T.autotile(g)
+    scene = Image.new('RGBA', (w * 16, h * 16))
+    for l in layers:
+        scene.alpha_composite(l.crop((0, 360 - h * 16, w * 16, 360)))
+
+    def cell(c, r):
+        return sheet.crop((1 + c * 18, 1 + r * 18, 17 + c * 18, 17 + r * 18))
+    for y in range(h):
+        for x in range(w):
+            if idx[y, x] >= 0:
+                scene.alpha_composite(T.cell_image(sheet, idx[y, x]), (x * 16, y * 16))
+    water = Image.new('RGBA', scene.size)
+    for x in range(10, 14):
+        water.alpha_composite(cell(x % 4, 7), (x * 16, 7 * 16))
+        water.alpha_composite(cell(4 + x % 4, 7), (x * 16, 8 * 16))
+    a = np.array(water)
+    a[:, :, 3] = (a[:, :, 3] * 0.65).astype(np.uint8)
+    scene.alpha_composite(Image.fromarray(a, 'RGBA'))
+    for x, v in ((2, 0), (4, 4), (7, 2), (16, 1), (20, 6)):
+        scene.alpha_composite(cell(8 + v, 7), (x * 16, 6 * 16 if x < 10 or x > 13 else 99))
+    scene.resize((w * 48, h * 48), Image.NEAREST).save(os.path.join(preview, 'tiles_swamps_demo.png'))
 
 
 def mountains_demo_grid():

@@ -164,5 +164,45 @@ def minecart(frame):
     return c
 
 
+def firefly(frame):
+    """Firefly 5 x 5: a glowing dot that blinks through 4 frames (08 §10.2, §10.3)."""
+    c = R.Canvas(5, 5)
+    cols = P.RAMPS['en_glow']
+    c.a[2, 2] = P.sid(cols[2])
+    if frame in (0, 1, 2):
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            c.a[2 + dy, 2 + dx] = P.sid(cols[1 if frame == 1 else 0])
+    if frame == 1:
+        for dx, dy in ((1, 1), (-1, -1), (1, -1), (-1, 1)):
+            c.a[2 + dy, 2 + dx] = P.sid(cols[0])
+    return c
+
+
+def grapple_vine(frame):
+    """Grapple point on a vine 16 x 16 ring (08 §8): a moss-green ring knotted on a hanging vine."""
+    c = R.Canvas(16, 16)
+    mo, mu = P.RAMPS['sw_moss'], P.RAMPS['sw_mud']
+    for y in range(0, 5):                              # vine from the top edge
+        c.a[y, 8 + (1 if y % 3 == 2 else 0)] = P.sid(mo[1])
+    import math
+    for i in range(40):
+        a = 2 * math.pi * i / 40
+        x, y = 8 + 5.2 * math.cos(a), 10 + 5.2 * math.sin(a)
+        c.a[round(y), round(x)] = P.sid(mo[3] if math.sin(a) < 0 else mo[2])
+        if frame:                                      # the pulse frame: a brighter second ring
+            xo, yo = 8 + 6.4 * math.cos(a), 10 + 6.4 * math.sin(a)
+            if 0 <= round(xo) < 16 and 0 <= round(yo) < 16 and i % 2 == 0:
+                c.a[round(yo), round(xo)] = P.sid(mo[3])
+    for dx, dy in ((0, 4), (1, 4), (-1, 4), (0, 3)):    # knot at the top of the ring
+        c.a[dy + 1, 8 + dx] = P.sid(mu[3])
+    R.outline(c, P.INK)
+    return c
+
+
 def stage2_frames():
-    return {f'minecart_roll_{i:02d}': minecart(i).to_image() for i in range(2)}
+    fr = {f'minecart_roll_{i:02d}': minecart(i).to_image() for i in range(2)}
+    for i in range(4):
+        fr[f'firefly_{i:02d}'] = firefly(i).to_image()
+    for i in range(2):
+        fr[f'grapple_vine_{i:02d}'] = grapple_vine(i).to_image()
+    return fr
