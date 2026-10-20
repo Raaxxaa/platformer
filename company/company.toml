@@ -1,0 +1,95 @@
+# RUSHBLADE "company" settings. Committed defaults.
+# Machine-specific values (chosen models, paths) go in .company/local.toml,
+# which `company setup` writes and which overrides anything here.
+
+[repo]
+main_branch = "main"
+remote = "origin"
+# Worker worktrees live next to the repo, never inside it.
+worktree_dir = "../platformer-work"
+
+[merge]
+# What happens to work the head (Claude) approves:
+#   "auto"  push the branch, open a pull request, squash-merge it once CI is green
+#   "pr"    push the branch and open a pull request, then stop (you or the head merge it)
+#   "local" merge into main and push, without GitHub's CLI (fallback)
+mode = "auto"
+# Tasks marked risk = "high" never merge by themselves.
+high_risk_mode = "pr"
+wait_for_ci = true
+
+[limits]
+max_attempts = 3          # worker attempts before the task is escalated to the head
+worker_rounds = 3         # aider runs per attempt (the next round gets the failing checks)
+worker_timeout_min = 90   # per aider round
+review_timeout_min = 40
+parallel_workers = 1      # one local model at a time: a second one just fights for the GPU
+poll_seconds = 20
+
+[ollama]
+host = "http://127.0.0.1:11434"
+num_ctx = 32768
+
+[models]
+# Overwritten by `company setup` after it checks your GPU/RAM.
+coder = "qwen2.5-coder:14b"
+planner = "qwen2.5-coder:14b"
+summary = "qwen2.5-coder:7b"
+
+[review]
+command = "claude"
+model = "opus"
+
+# Checks the controller itself runs on every attempt. Workers' own claims are never trusted.
+[gate]
+quick = ["npm run typecheck", "npm test"]
+always = ["npm run typecheck", "npm test", "npm run build"]
+
+[[gate.when]]
+paths = ["levels-src/", "scripts/build-levels"]
+before = ["npm run levels"]
+
+[[gate.when]]
+paths = ["src/game/", "src/ui/", "tests/e2e/", "public/", "index.html", "vite.config", "playwright.config"]
+after = ["npm run test:e2e"]
+
+[[gate.when]]
+paths = ["tools/"]
+after = ["{python} -m unittest discover tools/tests"]
+
+# Worker roles. `model` names a key in [models]. `reads` are always given to the worker read-only.
+[roles.core]
+model = "coder"
+about = "Game rules in src/core and data tables in src/data, test-first with Vitest. No Phaser imports in src/core."
+reads = ["CLAUDE.md", "docs/spec/00-README.md"]
+e2e = false
+
+[roles.level]
+model = "coder"
+about = "Level layouts: ASCII chunks and manifests in levels-src/, rebuilt with `npm run levels` and checked by validateLevel/routeLint."
+reads = ["CLAUDE.md", "docs/spec/06-run-levels-save.md", "docs/levels/plains.md"]
+e2e = true
+
+[roles.ui]
+model = "coder"
+about = "Phaser view and UI in src/game and src/ui: scenes, sprites, HUD, menus. Reads core state, never decides rules."
+reads = ["CLAUDE.md", "docs/spec/07-ui-hud-controls.md"]
+e2e = true
+
+[roles.test]
+model = "coder"
+about = "Write or extend unit tests (Vitest) and browser tests (Playwright, tests/e2e) for behaviour the spec already defines."
+reads = ["CLAUDE.md"]
+e2e = true
+
+[roles.debug]
+model = "coder"
+about = "Reproduce a reported bug with a failing test, then fix it with the smallest change."
+reads = ["CLAUDE.md"]
+e2e = true
+
+[roles.planner]
+model = "planner"
+about = "Break a plan, idea or bug report into small worker tasks. Writes no code."
+reads = ["CLAUDE.md", "docs/plans/README.md"]
+e2e = false

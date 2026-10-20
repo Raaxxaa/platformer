@@ -2,3 +2,9 @@ node_modules
 dist
 test-results
 playwright-report
+
+# company: controller state and aider scratch files
+.company/
+.aider*
+WORKER_NOTES.md
+__pycache__/

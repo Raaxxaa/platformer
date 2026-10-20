@@ -10,6 +10,8 @@ There are two kinds of chats:
 - **Build chats** (you) build exactly what those documents say: code, UI, art and sound.
 - **An art chat** may run alongside a code chat. It follows the `ART*` plans in `docs/plans/` and only touches `tools/`, `public/assets/`, `docs/art/` and the `assets` script line in `package.json`. A code chat never edits those art files; it only loads them.
 
+- **Company mode** (`company/README.md`): a Claude Code **head** on the user's computer manages local Ollama **workers** through a controller (`python company/company.py run`). If you are the head, use the `company-head` skill. If you are reviewing a worker's attempt (started by the controller with `claude -p`), follow the review prompt you were given: never commit or touch git yourself.
+
 **Do not change the design.** If the spec is missing something or seems wrong:
 1. Pick the simplest option that matches `docs/GAME_PLAN.md`.
 2. Mark it in code: `// SPEC-GAP: <short question>`.
@@ -29,6 +31,7 @@ There are two kinds of chats:
 | `src/game/`, `src/ui/` | Phaser layer: scenes, sprites, HUD, menus. Draws core state, reads input. Never decides game rules |
 | `tools/` | Python scripts that generate all art and sound into `public/assets/` |
 | `tests/e2e/` | Playwright browser tests |
+| `company/` | The head/worker controller: task queue, workers (Aider + Ollama), checks, reviews. State in `.company/` (not committed) |
 
 ## Rules
 
