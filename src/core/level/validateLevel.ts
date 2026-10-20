@@ -3,6 +3,7 @@ import { TILE_SIZE } from '../tuning.ts';
 import { COMBAT_ARENA, EARLY_SPACING, LEVEL_RULES, MAIN_PATH, MAIN_PATH_BY_LEVEL, MERCHANT_FLOOR, STAGE_OBJECT_COUNTS, type StageLevelId } from '../../data/levelRules.ts';
 import { kindAt, type LevelData, type LevelObject } from './loadLevel.ts';
 import { stage2Errors } from './stage2Rules.ts';
+import { stage3Errors } from './stage3Rules.ts';
 
 export const TRAINING_STATIONS = 17;
 
@@ -104,6 +105,7 @@ export function validateLevel(d: LevelData): string[] {
 
   if (EARLY_SPACING.levels.includes(d.id)) errs.push(...spacingErrors(d, rule.elite));
   errs.push(...stage2Errors(d));
+  errs.push(...stage3Errors(d));
 
   // Arenas (06 §9, 04 §9.2).
   const arenas = of('arena');

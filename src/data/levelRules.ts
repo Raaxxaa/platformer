@@ -62,3 +62,6 @@ export const EARLY_SPACING = {
   minGap: 24,               // edge to edge between two groups
   firstEnemy: 'bandit',
 } as const;
+
+/** Enemy Kingdom (06 §8.2, §8.3): regulars per section (default column), cannons in §3 and §6, rooftops 20+ tiles up in §4. */
+export const STAGE3_LEVEL = { regulars: [0, 10, 4, 8, 9, 5, 4, 0], cannonSections: [3, 6], cannons: 3, roofHeight: 20 } as const;
