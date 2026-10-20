@@ -60,11 +60,11 @@ export function applyLaunch(w: GameWorld, e: EnemyState, kb: [number, number], d
 }
 
 /** 02 §4.4 Pull: small and medium move toward a point and cannot act; ends within 4 px or after 0.3 s. */
-export function applyPull(w: GameWorld, e: EnemyState, to: { x: number; y: number; speed: number }, thenStun = 0): boolean {
+export function applyPull(w: GameWorld, e: EnemyState, to: { x: number; y: number; speed: number }, thenStun = 0, thenType: 'stun' | 'stagger' = 'stun'): boolean {
   if (e.def.boss || e.def.size === 'boss' || e.def.size === 'large') return false;
   cancelEnemyAttack(w, e);
   e.knockback = false;
-  e.control = { type: 'pull', ticks: COMBAT.PULL_MAX_TICKS, to, thenStun };
+  e.control = { type: 'pull', ticks: COMBAT.PULL_MAX_TICKS, to, thenStun, thenType };
   return true;
 }
 
@@ -79,10 +79,10 @@ export function stepEnemyReactions(e: EnemyState): void {
   if (e.control && !(e.control.type === 'launch' && !e.control.landed)) {
     e.control.ticks -= 1;
     if (e.control.type === 'pull' && e.control.ticks <= 0 && e.control.thenStun) {
-      const s = e.control.thenStun;
+      const s = e.control.thenStun, type = e.control.thenType ?? 'stun';
       e.control = null;
       e.vx = 0; e.vy = 0;
-      e.control = { type: 'stun', ticks: s };
+      e.control = { type, ticks: s };
     } else if (e.control.ticks <= 0) {
       const wasStagger = e.control.type === 'stagger';
       e.control = null;

@@ -116,6 +116,8 @@ describe('determinism with every M4 ability and weapon (M4 Task 16)', () => {
       for (const e of worlds[0].events) if (e.t === 'abilityUsed') used.add(e.id);
       const cur = worlds[0].combat.current;
       if (cur) used.add(worlds[0].combat.slots[cur.slot]?.weaponId ?? '');
+      const sh = worlds[0].combat.shield;
+      if (sh) used.add(worlds[0].combat.slots[sh.slot]?.weaponId ?? '');          // the Shield is a stance, not a running step
       if (t % 60 === 0) {
         const snap = (w: GameWorld) => JSON.stringify({ body: w.body, hp: w.health.hp, enemies: w.enemies.map((e) => [e.id, e.x, e.y, e.hp]), abilities: w.abilities.slots, rush: w.rush.value });
         expect(snap(worlds[1])).toBe(snap(worlds[0]));

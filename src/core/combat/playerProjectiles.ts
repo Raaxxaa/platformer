@@ -1,8 +1,10 @@
 // Player projectiles and explosions (02 §9.8, §10.4). Not slowed by the player's hit-stop.
 import { boxFree } from '../physics/collide.ts';
+import { enemyCenter, enemyHittable } from '../enemies/enemy.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { TICK } from '../tuning.ts';
+import { TICK, ticks } from '../tuning.ts';
 import { PLAYER_PROJECTILES, PROJECTILE_SPAWN } from '../../data/playerProjectiles.ts';
+import { WEAPON_SPECIAL } from '../../data/weapons.ts';
 import { sweep, type HitGroup, type Rect } from './hitGroups.ts';
 import type { HitSpec, ProjectileDef, ProjectileId } from './types.ts';
 
@@ -11,6 +13,7 @@ export interface PlayerProjectile {
   x: number; y: number;              // box center
   vx: number; vy: number;
   traveled: number;                  // px flown (Eagle Eye, 03 §5.4)
+  age: number;                       // ticks alive (lifetime)
   hits: number;
   bonus: number;                     // additive bonus fixed at firing (Warden, link)
   groupId: number;
@@ -29,6 +32,16 @@ export interface FireOpts {
   spec?: HitSpec;
   pierce?: number;
   singularity?: boolean;
+  /** Start point (default: the 02 §9.8 spawn point) and a direction vector (default: facing + angle). */
+  origin?: { x: number; y: number };
+  velocity?: { vx: number; vy: number };
+  /** Replaces the def's homing (Seeker Swarm). */
+  homing?: { radius: number; turnRate: number };
+  /** Replaces the def's lifetime, seconds. */
+  lifetimeS?: number;
+  /** Javelin Anchor (02 §13): its platforms last longer and three can exist. */
+  platformLifeS?: number;
+  platformMax?: number;
   /** Called when the projectile ends without exploding (wall or range): x, y of its end. */
   onEnd?: (w: GameWorld, p: PlayerProjectile, x: number, y: number) => void;
 }
@@ -76,8 +89,9 @@ export function firePlayerProjectile(w: GameWorld, slot: 0 | 1, attackInstance: 
   const a = (angleDeg * Math.PI) / 180;
   const pid = w.newId();
   const p: PlayerProjectile = {
-    id: pid, def, slot, attackInstance, x: b.x + f * PROJECTILE_SPAWN.dx, y: b.y + PROJECTILE_SPAWN.dy,
-    vx: f * Math.cos(a) * def.speed, vy: Math.sin(a) * def.speed, traveled: 0, hits: 0, bonus: opts.bonus ?? 0, groupId: pid, opts,
+    id: pid, def, slot, attackInstance, x: opts.origin?.x ?? b.x + f * PROJECTILE_SPAWN.dx, y: opts.origin?.y ?? b.y + PROJECTILE_SPAWN.dy,
+    vx: opts.velocity?.vx ?? f * Math.cos(a) * def.speed, vy: opts.velocity?.vy ?? Math.sin(a) * def.speed,
+    traveled: 0, age: 0, hits: 0, bonus: opts.bonus ?? 0, groupId: pid, opts,
   };
   w.playerProjectiles.push(p);
   const g: HitGroup = {
@@ -102,13 +116,68 @@ export function clearSpentGroups(w: GameWorld): void {
   w.blasts = [];
 }
 
+/** 02 §10.4 homing: the nearest living enemy whose center is inside the radius and ahead; turn toward it by at most turnRate × TICK. */
+function steerHoming(w: GameWorld, p: PlayerProjectile, h: { radius: number; turnRate: number }): void {
+  let best: { x: number; y: number } | null = null, bestD = Infinity;
+  for (const e of w.enemies) {
+    if (!enemyHittable(e)) continue;
+    const c = enemyCenter(e), dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy);
+    if (d > h.radius || dx * p.vx + dy * p.vy <= 0 || d >= bestD) continue;
+    best = c; bestD = d;
+  }
+  if (!best) return;
+  const speed = Math.hypot(p.vx, p.vy);
+  const cur = Math.atan2(p.vy, p.vx), want = Math.atan2(best.y - p.y, best.x - p.x);
+  let diff = want - cur;
+  while (diff > Math.PI) diff -= 2 * Math.PI;
+  while (diff < -Math.PI) diff += 2 * Math.PI;
+  const max = (h.turnRate * Math.PI / 180) * TICK;
+  const a = cur + Math.max(-max, Math.min(max, diff));
+  p.vx = Math.cos(a) * speed; p.vy = Math.sin(a) * speed;
+}
+
+/** 02 §10.5 Javelin: a javelin that hits a solid tile flying more sideways than up or down sticks as a one-way platform. */
+function stickJavelin(w: GameWorld, p: PlayerProjectile): boolean {
+  const J = WEAPON_SPECIAL.javelinPlatform;
+  const s = Math.sign(p.vx);
+  const xBlocked = !boxFree(w.grid, p.x + p.vx * TICK, p.y + p.def.h / 2, p.def.w, p.def.h);     // a wall, not a floor or ceiling
+  if (Math.abs(p.vx) <= Math.abs(p.vy) || s === 0 || !xBlocked) return false;
+  const y = Math.round(p.y);
+  let face = p.x + s * (p.def.w / 2);
+  for (let k = 0; k < 8 && !w.grid.isSolidPx(Math.floor(s > 0 ? face : face - 1), y); k++) face += s;
+  if (!w.grid.isSolidPx(Math.floor(s > 0 ? face : face - 1), y)) return false;
+  face = Math.round(face);
+  const max = p.opts.platformMax ?? J.max;
+  const list = w.grid.pixelPlatforms;
+  while (list.length >= max) list.shift();                                  // a 3rd removes the oldest
+  list.push({ x: s > 0 ? face - J.w : face, y: Math.round(p.y + J.topOffset), w: J.w, h: J.h, born: w.tick, expireTick: w.tick + ticks(p.opts.platformLifeS ?? J.lifeS) });
+  return true;
+}
+
+/** Javelin platforms that ran out go (they blink for their last second: the view reads `expireTick`). */
+export function stepJavelinPlatforms(w: GameWorld): void {
+  const list = w.grid.pixelPlatforms;
+  if (list.length === 0) return;
+  w.grid.pixelPlatforms = list.filter((q) => q.expireTick > w.tick);
+}
+
 /** Step 6: projectiles move, test terrain and range; the hit group becomes the swept box. */
 export function stepPlayerProjectiles(w: GameWorld): void {
+  stepJavelinPlatforms(w);
   for (const p of [...w.playerProjectiles]) {
     const prev = rectOf(p);
+    const homing = p.opts.homing ?? p.def.homing;
+    if (homing) steerHoming(w, p, homing);
     p.vy += p.def.gravity * TICK;
+    p.age += 1;
+    const lifeS = p.opts.lifetimeS ?? p.def.lifetime;
+    if (lifeS !== undefined && p.age > ticks(lifeS)) { removePlayerProjectile(w, p); continue; }
     const nx = p.x + p.vx * TICK, ny = p.y + p.vy * TICK;
-    if (!boxFree(w.grid, nx, ny + p.def.h / 2, p.def.w, p.def.h)) { endProjectile(w, p); continue; }
+    if (!boxFree(w.grid, nx, ny + p.def.h / 2, p.def.w, p.def.h)) {
+      if (p.def.onWall === 'stick' && stickJavelin(w, p)) removePlayerProjectile(w, p);
+      else endProjectile(w, p);
+      continue;
+    }
     p.traveled += Math.hypot(nx - p.x, ny - p.y);
     p.x = nx; p.y = ny;
     if (p.traveled >= p.def.range) { endProjectile(w, p); continue; }

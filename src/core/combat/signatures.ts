@@ -4,7 +4,8 @@ import type { EnemyState } from '../enemies/enemy.ts';
 import { enemyCenter, enemyHittable } from '../enemies/enemy.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { TICK, ticks } from '../tuning.ts';
-import { SIGNATURE as SG } from '../../data/weapons.ts';
+import { SIGNATURE as SG, WEAPON_SPECIAL as S } from '../../data/weapons.ts';
+import { stepM9 } from './weaponsM9.ts';
 import { PLAYER_PROJECTILES } from '../../data/playerProjectiles.ts';
 import type { HitGroup, Rect } from './hitGroups.ts';
 import type { CurrentAttack } from './playerCombat.ts';
@@ -92,7 +93,7 @@ function watchPhantomPath(w: GameWorld, cur: CurrentAttack): void {
 export function signatureOnRecovery(_w: GameWorld, _cur: CurrentAttack): void {}
 
 /** Projectile options for S weapons: Bow Triple Shot extra arrows, Crossbow Impaler pierce + pin blasts, Staff Singularity. */
-export function signatureFire(w: GameWorld, cur: CurrentAttack, opts: FireOpts): { opts: FireOpts; extra: { angle: number; opts: FireOpts }[] } {
+export function signatureFire(w: GameWorld, cur: CurrentAttack, opts: FireOpts, p: { id: string; angle: number } = { id: '', angle: 0 }): { opts: FireOpts; extra: { angle: number; opts: FireOpts }[] } {
   const inst = w.combat.slots[cur.slot];
   if (!inst || inst.grade !== 'S') return { opts, extra: [] };
   if (inst.weaponId === 'bow' && cur.kind === 'charged') {
@@ -103,6 +104,32 @@ export function signatureFire(w: GameWorld, cur: CurrentAttack, opts: FireOpts):
     const slot = cur.slot;
     const onHit = opts.onHit;
     return { opts: { ...opts, pierce: SG.impaler.pierce - 1, onHit: (ww, g, e, info) => { onHit?.(ww, g, e, info); watchPin(ww, e, slot); } }, extra: [] };
+  }
+  if (inst.weaponId === 'throwing_knives') {
+    // Fan of Blades: 5 knives (−12°, −6°, 0°, +6°, +12°), each piercing 1 extra enemy.
+    const pierce = SG.fanOfBlades.extraPierce;
+    return { opts: { ...opts, pierce }, extra: p.angle === 0 ? SG.fanOfBlades.angles.map((angle) => ({ angle, opts: { ...opts, pierce } })) : [] };
+  }
+  if (inst.weaponId === 'wand') {
+    // Seeker Swarm: every 5th shot is 3 shots (−15°, 0°, +15°) with a wider, faster homing.
+    const n = ++w.combat.wandShots[cur.slot];
+    if (n % S.wandSwarmEvery !== 0) return { opts, extra: [] };
+    const homing = { radius: SG.seekerSwarm.radius, turnRate: SG.seekerSwarm.turnRate };
+    return { opts: { ...opts, homing }, extra: SG.seekerSwarm.angles.map((angle) => ({ angle, opts: { ...opts, homing } })) };
+  }
+  if (inst.weaponId === 'hand_cannon') return { opts: { ...opts, blastMult: SG.bigBore.blast.w / 56 }, extra: [] };
+  if (inst.weaponId === 'javelin') {
+    // Anchor: the first enemy hit also explodes in a 64×64 blast; its platforms last 12 s and 3 can exist.
+    const slot = cur.slot, onHit = opts.onHit;
+    let done = false;
+    return { opts: { ...opts, platformLifeS: SG.anchor.lifeS, platformMax: SG.anchor.max, onHit: (ww, g, e, info) => {
+      onHit?.(ww, g, e, info);
+      if (done) return;
+      done = true;
+      const jp = ww.playerProjectiles.find((q) => q.groupId === g.id);
+      const c = jp ? { x: jp.x, y: jp.y } : enemyCenter(e);
+      spawnBlast(ww, c.x, c.y, SG.anchor.blast, SG.anchor.hit, slot, ww.combat.nextAttackInstance++);
+    } }, extra: [] };
   }
   if (inst.weaponId === 'staff' && cur.kind === 'charged') return { opts: { ...opts, singularity: true, blastMult: (opts.blastMult ?? 1) * SG.singularity.blast / 80 }, extra: [] };
   return { opts, extra: [] };
@@ -124,6 +151,7 @@ function watchPin(w: GameWorld, e: EnemyState, slot: 0 | 1): void {
 
 /** Per tick: Storm Hammer Tempest clouds and Staff Singularity pull. */
 export function stepSignatures(w: GameWorld): void {
+  stepM9(w);
   const h = w.hammer;
   if (h && isS(w.combat.slots[h.slot], 'storm_hammer') && w.tick % ticks(SG.tempest.everyS) === 0) {
     const s = SG.tempest.size, g = group(w, { x: h.x - s / 2, y: h.y - s / 2, w: s, h: s }, SG.tempest.hit, h.slot, h.attackInstance);

@@ -4,7 +4,9 @@ export type WeaponId = 'greatsword' | 'katana' | 'twin_daggers' | 'spear' | 'scy
   | 'iron_fists' | 'giant_axe' | 'flail' | 'shield' | 'bow' | 'crossbow' | 'hand_cannon' | 'javelin'
   | 'throwing_knives' | 'storm_hammer' | 'staff' | 'wand' | 'spell_tome';
 export type ProjectileId = 'arrow' | 'arrow_charged' | 'bolt' | 'cannonball' | 'javelin' | 'knife'
-  | 'staff_bolt' | 'orb' | 'wand_shot';
+  | 'staff_bolt' | 'orb' | 'wand_shot'
+  // S-grade signature and parry shots (02 §12, §13): not weapon steps, only fired by their rules.
+  | 'skewer' | 'soul' | 'reflected';
 export type Grade = 'F' | 'C' | 'B' | 'A' | 'S';
 export type ElementId = 'fire' | 'ice' | 'lightning' | 'poison' | 'wind';
 export type Weight = 'light' | 'medium' | 'heavy';
@@ -26,6 +28,8 @@ export interface AttackStep {
 export interface WeaponDef {
   id: WeaponId; weight: Weight; hold: 'repeat' | 'charge' | 'shield';
   combo: AttackStep[]; chargeTime?: number; chargedStep?: AttackStep;
+  /** The weapon's moving special (Spear lunge, Giant Axe spin; 02 §10.5), started by its own trigger. */
+  special?: AttackStep;
   dive: 'standard' | 'war_maul' | 'storm_hammer'; signature: string;
 }
 export interface ProjectileDef {

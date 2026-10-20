@@ -19,7 +19,7 @@ import { LUCKY_FX } from '../../data/loot.ts';
 import { elementBonus } from './elements.ts';
 import { hurtPlayer } from './health.ts';
 import { refundDash } from '../player/dash.ts';
-import { canHit, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
+import { canHit, groupOverlaps, markHit, overlaps, type HitGroup, type Rect } from './hitGroups.ts';
 import { maxStop, meleeHitStopTicks } from './hitStop.ts';
 import { addRush, rushLevel } from './rush.ts';
 import { TRAINING } from '../../data/enemies.ts';
@@ -132,7 +132,7 @@ export function resolvePlayerHits(w: GameWorld): void {
     for (const e of targets) {
       if (!g.active) break;                                 // a projectile that stopped
       if (!hittable(e) || !canHit(g, e.id, w.tick)) continue;
-      if (!overlaps(g.rect, enemyRect(e))) continue;
+      if (!groupOverlaps(g, enemyRect(e))) continue;
       if (!enemyGuarded(w,g,e) && g.contact?.(w, g, e)) continue;
       markHit(g, e.id, w.tick);
       applyPlayerHit(w, g, e);

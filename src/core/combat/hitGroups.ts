@@ -13,6 +13,8 @@ export interface HitGroup {
   owner: 'player' | number;          // number = enemy id
   kind: 'melee' | 'shot';
   rect: Rect;
+  /** A group made of several boxes (the Spell Tome's runes): a target is hit if any of them overlaps; `rect` is their bounds. */
+  rects?: Rect[];
   spec: HitSpec;
   active: boolean;
   lastHitTick: Map<number, number>;
@@ -54,6 +56,11 @@ export function boxToWorld(box: Box, feetX: number, feetY: number, facing: 1 | -
 /** Strict overlap: touching edges do not count. */
 export function overlaps(a: Rect, b: Rect): boolean {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+}
+
+/** Does the group touch `r`: its `rect`, or any of its `rects`. */
+export function groupOverlaps(g: HitGroup, r: Rect): boolean {
+  return g.rects ? g.rects.some((q) => overlaps(q, r)) : overlaps(g.rect, r);
 }
 
 /** The union of two boxes (02 §2.3 swept box). */

@@ -89,7 +89,7 @@ function stepPull(w: GameWorld, e: EnemyState): void {
     moveY(box, w.grid, dy, { dropping: false, preferDir: 0 });
     copyBack(e, box);
     e.vx = 0; e.vy = 0;
-    e.control = c.thenStun ? { type: 'stun', ticks: c.thenStun } : null;
+    e.control = c.thenStun ? { type: c.thenType ?? 'stun', ticks: c.thenStun } : null;
   } else {
     e.vx = (dx / d) * to.speed; e.vy = (dy / d) * to.speed;
     if (moveX(box, w.grid, e.vx * TICK, true) === 'wall') e.vx = 0;

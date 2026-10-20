@@ -20,10 +20,10 @@ describe('frozen unlocked catalog (05 §14.1)', () => {
     expect(first).toEqual([...WEAPON_ORDER, ...ABILITY_IDS].filter((id) => !BLUEPRINT_IDS.includes(id)));
     for (const id of ['greatsword', 'war_maul', 'bow', 'storm_hammer', 'spear', 'giant_axe', 'throwing_knives', 'wand', 'vampire']) expect(first).toContain(id);
   });
-  it('accepts all unbuilt blueprint IDs without inventing a playable definition', () => {
+  it('accepts all blueprint IDs; every weapon has a definition since M9 part 2', () => {
     const all = unlockedCatalog(BLUEPRINT_IDS); expect(all).toEqual(unlockedCatalog([], true));
     expect(all).toContain('time_slow'); expect(all).toContain('scythe');
-    expect(WEAPONS.scythe).toBeUndefined();
+    expect(WEAPONS.scythe).toBeDefined();
   });
   it('takes a detached snapshot: a newly saved blueprint joins the next catalog only', () => {
     const saved: BlueprintId[] = [], current = unlockedCatalog(saved);

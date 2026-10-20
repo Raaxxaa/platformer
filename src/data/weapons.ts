@@ -12,6 +12,11 @@ function shot(id: string, startup: number, recovery: number, projectile: Project
   return { id, startup, active: 0, recovery, moveMult, projectiles: [{ id: projectile, angle: 0 }] };
 }
 
+/** A ranged step firing several projectiles at once (Throwing Knives, 02 §10.3). */
+function volley(id: string, startup: number, recovery: number, projectile: ProjectileId, angles: number[], moveMult: number): AttackStep {
+  return { id, startup, active: 0, recovery, moveMult, projectiles: angles.map((angle) => ({ id: projectile, angle })) };
+}
+
 export const WEAPONS: Partial<Record<WeaponId, WeaponDef>> = {
   greatsword: {
     id: 'greatsword', weight: 'heavy', hold: 'repeat', dive: 'standard', signature: 'Ground Wave',
@@ -70,6 +75,83 @@ export const WEAPONS: Partial<Record<WeaponId, WeaponDef>> = {
     combo: [shot('staff_bolt', 0.10, 0.25, 'staff_bolt', MEDIUM)],
     chargedStep: shot('staff_orb', 0.05, 0.30, 'orb', MEDIUM),
   },
+  twin_daggers: {
+    id: 'twin_daggers', weight: 'light', hold: 'repeat', dive: 'standard', signature: 'Shadow Step',
+    combo: [
+      ...[1, 2, 3].map((n) => step(`twin_daggers_${n}`, 0.075, 0.05, 0.15, { dx: 14, dy: -14, w: 24, h: 20 }, { damage: 10, kb: [40, 0], poise: 6, hitStop: 0.025 }, LIGHT)),
+      step('twin_daggers_4', 0.075, 0.05, 0.225, { dx: 16, dy: -14, w: 28, h: 20 }, { damage: 12, kb: [140, -40], poise: 15, hitStop: 0.05 }, LIGHT),
+    ],
+  },
+  spear: {
+    id: 'spear', weight: 'medium', hold: 'repeat', dive: 'standard', signature: 'Skewer Wave',
+    combo: [
+      step('spear_1', 0.125, 0.075, 0.20, { dx: 34, dy: -16, w: 52, h: 10 }, { damage: 14, kb: [100, -20], poise: 12, hitStop: 0.05 }, MEDIUM),
+      step('spear_2', 0.125, 0.075, 0.20, { dx: 34, dy: -16, w: 52, h: 10 }, { damage: 14, kb: [100, -20], poise: 12, hitStop: 0.05 }, MEDIUM),
+      step('spear_3', 0.15, 0.10, 0.25, { dx: 38, dy: -16, w: 60, h: 12 }, { damage: 18, kb: [180, -40], poise: 20, hitStop: 0.05 }, MEDIUM),
+    ],
+    // The lunge (02 §10.5): its active phase is the 0.16 s move; the hit box is the tip plus the swept body (built by the special).
+    special: { id: 'spear_lunge', startup: 0, active: 0.16, recovery: 0.20, moveMult: 1,
+      hit: { damage: 24, kb: [200, -60], poise: 30, hitStop: 0.05, kind: 'melee' } },
+  },
+  scythe: {
+    id: 'scythe', weight: 'medium', hold: 'repeat', dive: 'standard', signature: 'Soul Reap',
+    combo: [
+      step('scythe_1', 0.15, 0.10, 0.20, { dx: 16, dy: -20, w: 52, h: 40 }, { damage: 15, kb: [120, -40], poise: 14, hitStop: 0.05 }, MEDIUM),
+      step('scythe_2', 0.15, 0.10, 0.20, { dx: 16, dy: -20, w: 52, h: 40 }, { damage: 15, kb: [120, -40], poise: 14, hitStop: 0.05 }, MEDIUM),
+      // Step 3 is centered on the player, so it hits both sides.
+      step('scythe_3', 0.20, 0.125, 0.30, { dx: 0, dy: -20, w: 84, h: 40 }, { damage: 24, kb: [180, -80], poise: 25, hitStop: 0.075 }, MEDIUM),
+    ],
+  },
+  giant_axe: {
+    id: 'giant_axe', weight: 'heavy', hold: 'repeat', dive: 'standard', signature: 'Cyclone',
+    combo: [
+      step('giant_axe_1', 0.30, 0.125, 0.30, { dx: 22, dy: -16, w: 44, h: 32 }, { damage: 26, kb: [220, -60], poise: 35, hitStop: 0.075, heavy: true }),
+      step('giant_axe_2', 0.35, 0.15, 0.375, { dx: 24, dy: -18, w: 52, h: 36 }, { damage: 32, kb: [280, -120], poise: 45, hitStop: 0.10, heavy: true }),
+    ],
+    // The spin (02 §10.5): startup 0.10, a 0.80 s spin (not scaled by attack speed), recovery 0.20.
+    special: { id: 'giant_axe_spin', startup: 0.10, active: 0.80, recovery: 0.20, moveMult: 1, canTurn: true, box: { dx: 0, dy: -16, w: 64, h: 32 },
+      hit: { damage: 10, kb: [120, -40], poise: 10, hitStop: 0.025, kind: 'melee', rehit: 0.20, maxHits: 4, multiHit: true } },
+  },
+  flail: {
+    id: 'flail', weight: 'heavy', hold: 'charge', dive: 'standard', signature: 'Meteor', chargeTime: 0.60,
+    combo: [
+      step('flail_1', 0.20, 0.10, 0.25, { dx: 40, dy: -14, w: 32, h: 24 }, { damage: 20, kb: [140, -40], poise: 18, hitStop: 0.05 }),
+      step('flail_2', 0.20, 0.10, 0.25, { dx: 40, dy: -14, w: 32, h: 24 }, { damage: 20, kb: [140, -40], poise: 18, hitStop: 0.05 }),
+    ],
+    // The release: small and medium targets are Pulled in (by the special); large ones and bosses take this knockback.
+    chargedStep: { id: 'flail_release', startup: 0.05, active: 0.10, recovery: 0.35, moveMult: HEAVY, box: { dx: 48, dy: -16, w: 64, h: 32 },
+      hit: { damage: 55, kb: [300, -80], poise: 60, hitStop: 0.10, kind: 'melee', heavy: true, charged: true } },
+  },
+  shield: {
+    id: 'shield', weight: 'medium', hold: 'shield', dive: 'standard', signature: 'Aegis',
+    // The bash (02 §10.2, §12): starts when the shield is let go inside the parry window.
+    combo: [step('shield_bash', 0.05, 0.10, 0.25, { dx: 14, dy: -14, w: 20, h: 28 }, { damage: 12, kb: [220, -40], poise: 25, hitStop: 0.05 }, MEDIUM)],
+  },
+  hand_cannon: {
+    id: 'hand_cannon', weight: 'heavy', hold: 'repeat', dive: 'standard', signature: 'Big Bore',
+    combo: [{ ...shot('hand_cannon_shot', 0.15, 0.70, 'cannonball', HEAVY), recoveryMoveMult: 1 }],
+  },
+  javelin: {
+    id: 'javelin', weight: 'heavy', hold: 'repeat', dive: 'standard', signature: 'Anchor',
+    combo: [shot('javelin_throw', 0.20, 0.50, 'javelin', HEAVY)],
+  },
+  throwing_knives: {
+    id: 'throwing_knives', weight: 'light', hold: 'repeat', dive: 'standard', signature: 'Fan of Blades',
+    combo: [volley('throwing_knives_throw', 0.05, 0.35, 'knife', [-6, 0, 6], LIGHT)],
+  },
+  wand: {
+    id: 'wand', weight: 'light', hold: 'repeat', dive: 'standard', signature: 'Seeker Swarm',
+    combo: [shot('wand_shot', 0.05, 0.25, 'wand_shot', LIGHT)],
+  },
+  spell_tome: {
+    id: 'spell_tome', weight: 'medium', hold: 'repeat', dive: 'standard', signature: 'Rune Storm',
+    combo: [
+      step('spell_tome_1', 0.10, 0.10, 0.20, { dx: 24, dy: -16, w: 36, h: 28 }, { damage: 12, kb: [90, -20], poise: 10, hitStop: 0.025 }, MEDIUM),
+      step('spell_tome_2', 0.10, 0.10, 0.20, { dx: 24, dy: -16, w: 36, h: 28 }, { damage: 12, kb: [90, -20], poise: 10, hitStop: 0.025 }, MEDIUM),
+      // Step 3 casts the Rune Ring (active 0): no direct hit.
+      { id: 'spell_tome_ring', startup: 0.15, active: 0, recovery: 0.25, moveMult: MEDIUM },
+    ],
+  },
 };
 
 /** Weapon specials (02 §10.5, §11). */
@@ -79,6 +161,16 @@ export const WEAPON_SPECIAL = {
   crossbowPin: { reach: 24, seconds: 1.5 },
   hammerDiveBolt: { delayS: 0.10, box: { dx: 0, dy: -80, w: 32, h: 160 } as Box,
     hit: { damage: 24, kb: [0, -100] as [number, number], poise: 30, hitStop: 0.05, kind: 'shot' as const, heavy: true } },
+  /** Twin Daggers backstab needs nothing numeric. Spear lunge (02 §10.5): 95 px in 0.16 s, the tip box plus the swept body. */
+  spearLunge: { speed: 600, moveS: 0.16, afterTriggerS: 0.10, tip: { dx: 34, dy: -16, w: 52, h: 10 } as Box, bodyH: 32 },
+  scytheFlaskTenths: 30,
+  axeSpin: { minVxFrac: 0.5, speedMult: 0.7, spinS: 0.80, cycloneS: 1.20 },
+  flailPull: { dist: 24, speed: 480, staggerS: 0.6 },
+  handCannonRecoil: { vx: 300, vy: -150 },
+  /** Javelin wall platform (02 §10.5): 24 × 4, top edge at the javelin's center y − 2. */
+  javelinPlatform: { w: 24, h: 4, topOffset: -2, lifeS: 6.0, blinkS: 1.0, max: 2 },
+  runeRing: { runes: 4, size: 10, radius: 28, degPerS: 360, lifeS: 2.0, centerDy: -14 },
+  wandSwarmEvery: 5,
   hammerThrow: {
     startup: 0.10, recovery: 0.20, outSpeed: 520, outTime: 0.30, backSpeed: 600, catchDist: 16, autoCatchS: 2.0, size: 16,
     rechargeS: 5.0, rechargeWizardS: 2.0,
@@ -99,6 +191,24 @@ export const SIGNATURE = {
   impaler: { pierce: 3, blast: { w: 64, h: 64 }, hit: sig(24, [280, -40], 30) },
   tempest: { everyS: 0.10, size: 24, lifeS: 1.0, hit: sig(5, [0, 0], 0, { hitStop: 0, rehit: 0.25, multiHit: true }) },
   singularity: { radius: 64, pull: 150, blast: 112 },
+  shadowStep: { markS: 1.5 },
+  skewerWave: { tip: { dx: 60, dy: -16 } },                                    // the shot starts at the spear tip
+  soulReap: { radius: 160, lifeS: 2.0 },
+  cyclone: { lifeS: 1.20, maxHits: 6, pullRadius: 64, pullSpeed: 120 },
+  meteor: { box: { dx: 48, dy: -16 }, blast: { w: 80, h: 80 }, hit: sig(30, [0, 0], 30) },
+  aegis: { windowS: 0.30, wave: { dx: 32, dy: -20, w: 64, h: 40 }, hit: sig(40, [0, 0], 60) },
+  bigBore: { blast: { w: 96, h: 96 }, recoilVx: 450 },
+  anchor: { blast: { w: 64, h: 64 }, hit: sig(20, [200, -40], 30), lifeS: 12, max: 3 },
+  fanOfBlades: { angles: [-12, 12], extraPierce: 1 },
+  seekerSwarm: { angles: [-15, 15], radius: 160, turnRate: 540 },
+  runeStorm: { runes: 6, radius: 36, lifeS: 3.0 },
+} as const;
+
+/** 02 §12 shield numbers. */
+export const SHIELD = {
+  windowS: 0.20, lowerS: 0.10, moveMult: 0.50, blockMult: 0.25, blockKbVx: 90,
+  parryStunS: 1.5, parryBossPoise: 50, parryIframesS: 0.30, parryRush: 10, parryStopS: 0.075, blockStopS: 0.05,
+  reflect: { speedMult: 1.5, range: 320, hit: { damage: 24, kb: [120, -20] as [number, number], poise: 20, hitStop: 0.05, kind: 'shot' as const } },
 } as const;
 
 export interface DiveDef { descentBox: Box; impactBox: Box; impactTime: number; hit: HitSpec }

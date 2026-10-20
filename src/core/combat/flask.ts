@@ -55,6 +55,7 @@ export function tryStartDrink(w: GameWorld, input: InputState): void {
   const cur = w.combat.current;
   if (cur && cur.phase !== 'recovery') return;            // startup/active: wait (buffered)
   if (cur) cancelAttack(w, 'drink');
+  w.combat.shield = null;                                  // drinking lowers a raised shield (02 §12)
   startDrink(w);
 }
 

@@ -18,6 +18,8 @@ export interface EnemyControl {
   to?: { x: number; y: number; speed: number };
   /** Stun to apply when a pull ends (Grapple Arrow). */
   thenStun?: number;
+  /** What the thenStun time is: a plain stun (default) or a forced stagger that ignores poise (Flail, 02 §10.5). */
+  thenType?: 'stun' | 'stagger';
 }
 
 export interface RunningAttack {

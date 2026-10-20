@@ -3,6 +3,8 @@ import { incomingMult } from '../loot/perks.ts';
 import { applyKnockback, setDead } from '../player/movement.ts';
 import { COMBAT, ticks } from '../tuning.ts';
 import { hasDebuff, trySecondWind } from '../loot/lucky.ts';
+import { blockEffects, shieldGuard } from './shield.ts';
+import { SHIELD } from '../../data/weapons.ts';
 import { dropLeakyCoins } from '../economy/gold.ts';
 import { LUCKY_FX } from '../../data/loot.ts';
 import { enemyHitDamage } from './damage.ts';
@@ -56,8 +58,6 @@ export function setRiposteHook(f: (w: GameWorld, src: HurtSource) => boolean): v
   riposteHook = f;
 }
 const ripostes = (w: GameWorld, src: HurtSource): boolean => !!riposteHook && riposteHook(w, src);
-const parries = (): boolean => false;
-const blocks = (): boolean => false;
 
 /**
  * 02 §5.2 for one enemy direct hit or hazard. Returns the damage dealt (0 = it did not land).
@@ -70,16 +70,20 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   if (h.iframeTicks > 0) return 0;
   if (src.kind === 'enemyHit' && (b.dashIframes || h.abilityIframeTicks > 0)) return 0;
   // 2–4. Riposte, parry, block: hooks.
-  if (src.kind === 'enemyHit' && (ripostes(w, src) || parries() || blocks())) return 0;
+  if (src.kind === 'enemyHit' && ripostes(w, src)) return 0;
+  // 3–4. The Shield: a parry answers the hit fully; a block lets ×0.25 damage through with no hurt reaction (02 §12).
+  const guard = shieldGuard(w, src);
+  if (guard === 'parry') return 0;
+  const blocked = guard === 'block';
   // 5. Damage.
   // A practice hit (Sparring Dummy, 04 §2.11) deals 0 but runs the rest of the pipeline.
   const practice = src.kind === 'enemyHit' && src.damageA === 0;
   // 05 §8 one_hit: every damage equals current HP.
-  const dealt = practice ? 0 : enemyHitDamage(src.damageA, incomingMult(w), w.econ.curse?.id === 'one_hit' ? h.hp : null);
+  const dealt = practice ? 0 : enemyHitDamage(src.damageA, incomingMult(w) * (blocked ? SHIELD.blockMult : 1), w.econ.curse?.id === 'one_hit' ? h.hp : null);
   w.run.stats.damageTaken += Math.min(Math.max(0, h.hp), dealt);
   h.hp -= dealt;
   if (practice) w.events.push({ t: 'sparringHit' });
-  w.onPlayerDamaged();                                       // the hit streak resets (02 §1); a swap choice closes
+  if (!blocked) w.onPlayerDamaged();                         // the hit streak resets (02 §1); a swap choice closes
   // 6. Death.
   if (h.hp <= 0 && w.level?.kind === 'training') h.hp = 1;     // no death in the Training Yard (06 §12.4)
   const saved = h.hp <= 0 && trySecondWind(w);                // 05 §7.2: once, back to half HP
@@ -91,6 +95,7 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
     w.onPlayerDied(h.deathCause);
     return dealt;
   }
+  if (blocked && src.kind === 'enemyHit') { blockEffects(w, src); return dealt; }   // no hitstun, i-frames or Rush loss (02 §12)
   const spikes = src.kind === 'hazard' && src.cause === 'spikes';
   // 7. Hitstun and knockback (cancels the attack, drink and combo) — not under super armor (02 §5.3).
   if (!spikes && !hasSuperArmor(w)) {

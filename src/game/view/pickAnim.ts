@@ -11,7 +11,7 @@ export interface PlayerAnimState {
   state: MoveStateId; stateTicks: number; vx: number; vy: number; facing: 1 | -1; landSpeed: number;
   dead: boolean;
   /** The current weapon step (phaseTicks counts from 1, like core). */
-  attack: { weaponId: string; step: number; phase: 'startup' | 'active' | 'recovery'; phaseTicks: number; lens: Record<'startup' | 'active' | 'recovery', number>; kind?: 'combo' | 'charged' | 'throw' } | null;
+  attack: { weaponId: string; step: number; phase: 'startup' | 'active' | 'recovery'; phaseTicks: number; lens: Record<'startup' | 'active' | 'recovery', number>; kind?: 'combo' | 'charged' | 'throw' | 'lunge' | 'spin' } | null;
   /** A running ability cast (03 §7.6) and the ForcedMove owner tag, for ability poses (08 §6.2). */
   cast?: { id: string; phase: 'startup' | 'recovery'; t: number; len: number } | null;
   forcedOwner?: string | null;

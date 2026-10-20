@@ -5,6 +5,9 @@ import { OVERLAY_ICE, OVERLAY_ONEWAY, OVERLAY_SOLID, type Bodies } from '../phys
 export type TileKind = 'empty' | 'solid' | 'oneway' | 'ice' | 'water'
   | 'spikeUp' | 'spikeDown' | 'spikeLeft' | 'spikeRight';
 
+/** A one-way platform that is not tile-aligned (the Javelin's, 02 §10.5): pixel-exact top row `y`, `w` px wide from `x`. */
+export interface PixelPlatform { x: number; y: number; w: number; h: number; expireTick: number; born: number }
+
 export class TileGrid {
   readonly w: number;
   readonly h: number;
@@ -13,6 +16,8 @@ export class TileGrid {
   private readonly kinds: TileKind[];
   /** Active solid bodies read as tiles: a body cell is 'solid' or 'oneway' (01 §13). */
   bodies: Bodies | null = null;
+  /** Javelin wall platforms (02 §10.5), one-way like a one-way tile; the world adds and removes them. */
+  pixelPlatforms: PixelPlatform[] = [];
 
   constructor(w: number, h: number, kinds: TileKind[]) {
     if (kinds.length !== w * h) throw new Error(`TileGrid: expected ${w * h} tiles, got ${kinds.length}`);
@@ -55,7 +60,14 @@ export class TileGrid {
 
   /** True if the pixel lies on the top pixel row of a one-way tile. */
   isOneWayTopPx(px: number, py: number): boolean {
+    if (this.pixelPlatformTop(px, px + 1, py)) return true;
     if (py % TILE_SIZE !== 0) return false;
     return this.kindAt(Math.floor(px / TILE_SIZE), py / TILE_SIZE) === 'oneway';
+  }
+
+  /** True if a pixel platform has its top pixel row at `row` somewhere across [x0, x1). */
+  pixelPlatformTop(x0: number, x1: number, row: number): boolean {
+    for (const p of this.pixelPlatforms) if (p.y === row && p.x < x1 && x0 < p.x + p.w) return true;
+    return false;
   }
 }

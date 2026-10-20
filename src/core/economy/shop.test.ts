@@ -32,12 +32,12 @@ function altar(w: ShopWorld, slot = 0) { const a = w.interactables.filter((a) =>
 describe('Crossroads shop stock (05 §10.1)', () => {
   it('uses the exact per-village/reroll RNG, draw order and next-stage odds', () => {
     const w = world(), rng = sourceRng(w.runSeed, 'shop', 1, 0), classes = w.classState.carriedClasses;
-    const first = rollWeapon(rng, { ...GRADE_ODDS.free[2], F: 0, C: 0 }, classes), weapons = [first.weaponId], abilities: AbilityId[] = [];
+    const first = rollWeapon(rng, { ...GRADE_ODDS.free[2], F: 0, C: 0 }, classes, { unlocked: w.run.lootUnlocked }), weapons = [first.weaponId], abilities: AbilityId[] = [];
     const expected: ShopState['slots'] = [{ kind: 'weapon', weapon: first }];
     for (let i = 1; i < 3; i++) {
       const ability = rng() < 0.40 ? rollAbility(rng, ['blade_dash'], classes, abilities, w.run.lootUnlocked) : null;
       if (ability) { abilities.push(ability.id); expected.push({ kind: 'ability', ability }); }
-      else { const weapon = rollWeapon(rng, GRADE_ODDS.free[2], classes, { exclude: weapons }); weapons.push(weapon.weaponId); expected.push({ kind: 'weapon', weapon }); }
+      else { const weapon = rollWeapon(rng, GRADE_ODDS.free[2], classes, { exclude: weapons, unlocked: w.run.lootUnlocked }); weapons.push(weapon.weaponId); expected.push({ kind: 'weapon', weapon }); }
     }
     const key = rng() < 0.50; setupShop(w);
     expect(w.shop!.slots).toEqual(expected); expect(w.shop!.keyInStock).toBe(key);

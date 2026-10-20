@@ -33,9 +33,9 @@ describe('weapon and ability rolls (05 §4)', () => {
     expect(Math.abs(bk.B / n - 0.60)).toBeLessThan(0.005);
     expect(Math.abs(bk.A / n - 0.31)).toBeLessThan(0.005);
   });
-  it('6: class lean on the implemented pool: one Swordsman ability → Swordsman weapons ≈ 0.35 + 0.65 × 2/8; Vampire only → uniform', () => {
+  it('6: class lean on the implemented pool: one Swordsman ability → Swordsman weapons ≈ 0.35 + 0.65 × sw/19; Vampire only → uniform', () => {
     const pool = weaponPool();
-    expect(pool.length).toBe(8);
+    expect(pool.length).toBe(19);
     const sw = pool.filter((p) => WEAPON_CLASSES[p].includes('swordsman')).length;
     const n = 100000, rng = mulberry32(6);
     let hits = 0;

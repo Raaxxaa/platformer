@@ -2,6 +2,7 @@
 import type { WeaponInstance } from '../combat/types.ts';
 import { ABILITIES } from '../../data/abilities.ts';
 import { STARTING_KITS } from '../../data/classes.ts';
+import { THIRD_START_WEAPON } from '../../data/save.ts';
 import type { AbilityId, AbilityLevel, AbilityRuntime, AbilitySlot, ClassId } from './types.ts';
 import type { WeaponId } from '../combat/types.ts';
 
@@ -38,7 +39,7 @@ export function defaultLoadout(): Loadout {
 /** 03 §3: the starting ability at Lv1 in slot 1, the picked weapon at C in slot 1. */
 export function kitLoadout(cls: ClassId, weapon: WeaponId): Loadout {
   const kit = STARTING_KITS[cls];
-  if (!kit.weapons.includes(weapon)) throw new Error(`${weapon} is not a ${cls} starting weapon`);
+  if (!kit.weapons.includes(weapon) && THIRD_START_WEAPON[cls] !== weapon) throw new Error(`${weapon} is not a ${cls} starting weapon`);
   return { weapons: [newWeapon(weapon), null], abilities: [newAbility(kit.ability), null] };
 }
 

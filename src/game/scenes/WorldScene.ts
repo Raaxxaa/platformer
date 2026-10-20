@@ -251,7 +251,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   openClassPick(classes: ClassId[], pauseWorld: boolean): void {
     this.classMenu.blockHeldPad(activeHomePad());
     this.classPick?.view.destroy();
-    const model = new ClassPickModel(classes, this.pickedKit);
+    const model = new ClassPickModel(classes, this.pickedKit, saveStore().data.unlocks.startWeapons);
     const view = new ClassPickView(this, () => this.classAction('confirm'));
     view.draw(model, this.pickedKit);
     this.classPick = { model, view, pauseWorld };

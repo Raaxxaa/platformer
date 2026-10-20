@@ -10,7 +10,8 @@ import { fnv1a32 } from '../rng.ts';
 import { killEnemy, processDeaths } from '../combat/resolve.ts';
 describe('blueprint touch and frozen run pools (05 §14)', () => {
   it('intersects implemented definitions with the supplied frozen catalog for weapons and abilities', () => {
-    expect(weaponPool([], ['war_maul', 'scythe'])).toEqual(['war_maul']);
+    expect(weaponPool([], ['war_maul', 'scythe'])).toEqual(['scythe', 'war_maul']);       // both are built since M9 part 2
+    expect(weaponPool([], ['war_maul'])).toEqual(['war_maul']);                         // a weapon not in the frozen catalog is left out
     expect(abilityPool([], [], ['shockwave', 'time_slow'])).toEqual(['shockwave', 'time_slow']);
   });
   it('collects by touch, freezes the pool through a village carry, and refreshes on same-world restart', () => {
@@ -24,7 +25,7 @@ describe('blueprint touch and frozen run pools (05 §14)', () => {
     const village = GameWorld.fromLevel(d, { seedText: 'BP', carry: captureWorld(w), unlockedBlueprints: unlocked });
     expect(village.run.lootUnlocked).not.toContain('scythe'); expect(village.run.blueprintsDropped).toEqual(['scythe']);
     w.restart(); expect(w.run.lootUnlocked).toContain('scythe'); expect(w.run.blueprintsDropped).toEqual([]);
-    expect(weaponPool([], w.run.lootUnlocked)).not.toContain('scythe'); expect(abilityPool([], [], w.run.lootUnlocked)).not.toContain('time_slow');
+    expect(weaponPool([], w.run.lootUnlocked)).toContain('scythe'); expect(abilityPool([], [], w.run.lootUnlocked)).not.toContain('time_slow');
   });
   it.each([true, false])('typed/practice full catalogs never create blueprints (seeded=%s)', (seeded) => {
     const w = GameWorld.fromLevel(bossLevel(), { seedText: 'ALL', seeded, practice: !seeded });

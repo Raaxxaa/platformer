@@ -24,13 +24,13 @@ describe('records menu (07 §7.5)', () => {
     expect(m.classes.find((entry) => entry.id === 'arcane_archer')).toMatchObject({ name: 'Arcane Archer', discovered: true });
     expect(m.classes.find((entry) => entry.id === 'blademaster')).toMatchObject({ name: '???', discovered: false });
   });
-  it('shows9 blueprint silhouettes and real names plus Not ready for unlocked unbuilt items', () => {
+  it('shows9 blueprint silhouettes and real names; every unlocked item is ready since M9 part 2', () => {
     const save = defaultSave(); save.unlocks.blueprints = ['scythe', 'time_slow']; save.unlocks.startWeapons.tank = ['giant_axe'];
     const m = new RecordsModel(() => save); expect(m.unlocks).toHaveLength(9);
-    expect(m.unlocks.find((entry) => entry.id === 'scythe')).toMatchObject({ name: 'Scythe', unlocked: true, ready: false });
+    expect(m.unlocks.find((entry) => entry.id === 'scythe')).toMatchObject({ name: 'Scythe', unlocked: true, ready: true });
     expect(m.unlocks.find((entry) => entry.id === 'time_slow')).toMatchObject({ name: 'Time Slow', unlocked: true, ready: true });
     expect(m.unlocks.find((entry) => entry.id === 'flail')).toMatchObject({ name: '???', unlocked: false });
-    expect(m.starters[1]).toContain('Giant Axe'); expect(m.starters[1]).toContain('Not ready'); expect(m.starters[0]).toBe('Beat the King as Swordsman');
+    expect(m.starters[1]).toContain('Giant Axe'); expect(m.starters[1]).not.toContain('Not ready'); expect(m.starters[0]).toBe('Beat the King as Swordsman');
     save.unlocks.blueprints.push('flail'); expect(m.unlocks.find((entry) => entry.id === 'flail')?.unlocked).toBe(true);
   });
 });

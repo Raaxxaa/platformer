@@ -3,6 +3,7 @@ import type { InputState } from '../../core/input.ts';
 import type { ClassId } from '../../core/abilities/types.ts';
 import type { WeaponId } from '../../core/combat/types.ts';
 import { STARTING_KITS } from '../../data/classes.ts';
+import { THIRD_START_WEAPON } from '../../data/save.ts';
 
 export interface Kit { cls: ClassId; weapon: WeaponId }
 
@@ -12,13 +13,20 @@ export class ClassPickModel {
   wi = 0;
   private prevY = 0;
   private prevX = 0;
-  constructor(classes: ClassId[], equipped: Kit | null) {
+  /** `unlocked` is `save.unlocks.startWeapons`: the third starting weapon joins the list once the King was beaten (05 §14.3). */
+  private readonly unlocked: Partial<Record<ClassId, WeaponId[]>>;
+  constructor(classes: ClassId[], equipped: Kit | null, unlocked: Partial<Record<ClassId, WeaponId[]>> = {}) {
+    this.unlocked = unlocked;
     this.classes = classes;
     const i = equipped ? classes.indexOf(equipped.cls) : -1;
-    if (i >= 0) { this.ci = i; this.wi = Math.max(0, STARTING_KITS[equipped!.cls].weapons.indexOf(equipped!.weapon)); }
+    if (i >= 0) { this.ci = i; this.wi = Math.max(0, this.weaponsOf(equipped!.cls).indexOf(equipped!.weapon)); }
+  }
+  private weaponsOf(cls: ClassId): WeaponId[] {
+    const third = THIRD_START_WEAPON[cls];
+    return this.unlocked[cls]?.includes(third) ? [...STARTING_KITS[cls].weapons, third] : STARTING_KITS[cls].weapons;
   }
   get cls(): ClassId { return this.classes[this.ci]; }
-  get weapons(): WeaponId[] { return STARTING_KITS[this.cls].weapons; }
+  get weapons(): WeaponId[] { return this.weaponsOf(this.cls); }
   get kit(): Kit { return { cls: this.cls, weapon: this.weapons[this.wi] }; }
 
   action(action: 'up' | 'down' | 'left' | 'right' | 'confirm' | 'back'): 'confirm' | 'close' | null {

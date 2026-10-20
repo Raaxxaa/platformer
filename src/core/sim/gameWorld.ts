@@ -7,6 +7,7 @@ import { setupLoot, type Chest } from '../loot/sources.ts';
 import { newEconomy, stepCoins, type Coin, type EconomyState } from '../economy/gold.ts';
 import { stepKeys } from '../economy/keys.ts';
 import { stepSignatures } from '../combat/signatures.ts';
+import { markShadowStep, onScytheKill, scytheFillTenths } from '../combat/weaponsM9.ts';
 import { dashCooldownMult, extraSpeed } from '../loot/perks.ts';
 import { cancelEnemyAttack } from '../enemies/attack.ts';
 import { enemyActs, stepStatuses } from '../combat/status.ts';
@@ -393,6 +394,7 @@ export class GameWorld {
     this.projectiles = [];
     this.playerProjectiles = [];
     this.blasts = [];
+    this.grid.pixelPlatforms = [];                         // Javelin platforms go with the stage (02 §10.5)
     this.hammer = null;
     this.hammerLaunchTick = [-100000, -100000];
     this.dive = null;
@@ -669,9 +671,10 @@ export class GameWorld {
   /** On-kill effects that belong to other systems (flask, Rush). */
   onPlayerKill(e: EnemyState, tier: 'regular' | 'elite'): void {
     this.run.stats.kills += 1;
+    onScytheKill(this, e);
     if (tier === 'elite') this.run.stats.eliteKills += 1;
     // Bosses refill charges in onBossKilled; their banked fill stays unchanged (02 §7.3).
-    if (e.def.tier !== 'boss') onKillFill(this, tier, vampireTenths(this));
+    if (e.def.tier !== 'boss') onKillFill(this, tier, vampireTenths(this) + scytheFillTenths(e));
     addRush(this, e.def.tier==='boss'?RUSH.KILL_BOSS:tier === 'elite' ? RUSH.KILL_ELITE : RUSH.KILL_REGULAR);
   }
 
@@ -688,6 +691,7 @@ export class GameWorld {
       if (e.dead || e.dormant || this.dashThrough.has(e.id) || !overlaps(pr, enemyRect(e))) continue;
       this.dashThrough.add(e.id);
       addRush(this, RUSH.DASH_THROUGH);
+      markShadowStep(this, e);
     }
   }
 

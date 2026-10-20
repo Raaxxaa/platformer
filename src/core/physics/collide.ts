@@ -40,6 +40,7 @@ function rowHasSolid(g: TileGrid, x0: number, x1: number, row: number): boolean 
 
 /** Any one-way tile whose top pixel row is `row`, across [x0, x1) (01 §2.6). */
 function rowHasOneWayTop(g: TileGrid, x0: number, x1: number, row: number): boolean {
+  if (g.pixelPlatformTop(x0, x1, row)) return true;                  // a Javelin platform (02 §10.5)
   if (row % TILE_SIZE !== 0) return false;
   for (let tx = Math.floor(x0 / TILE_SIZE); tx <= Math.floor((x1 - 1) / TILE_SIZE); tx++) {
     if (g.kindAt(tx, row / TILE_SIZE) === 'oneway') return true;

@@ -1,6 +1,6 @@
 // The player's weapon attacks: combo, input buffer, cancels, move caps and facing (02 §9.1–9.3, §9.5–9.6).
 import { slot2Locked } from '../loot/lucky.ts';
-import { chargeTimeOf } from './signatures.ts';
+import { chargeTimeOf, isS } from './signatures.ts';
 import { attackSpeedBonus } from '../loot/perks.ts';
 import type { InputState } from '../input.ts';
 import type { PlayerBody } from '../player/body.ts';
@@ -9,8 +9,9 @@ import type { GameWorld } from '../sim/gameWorld.ts';
 import { COMBAT, ticks, WEIGHT_MOVE_MULT } from '../tuning.ts';
 import { hammerOutIn, recallHammer, throwReady } from './stormHammer.ts';
 import { keepComboOnSwap } from '../classes/hybrids.ts';
-import { WEAPONS, WEAPON_SPECIAL } from '../../data/weapons.ts';
-import { endSpecial, HAMMER_THROW_STEP, onActiveStart, onRecoveryStart } from './weaponSpecials.ts';
+import { SHIELD, WEAPONS, WEAPON_SPECIAL } from '../../data/weapons.ts';
+import { decorateStepGroup, endSpecial, HAMMER_THROW_STEP, lungeReady, onActiveStart, onRecoveryStart, spinReady } from './weaponSpecials.ts';
+import { raiseShield, stepShield, type ShieldState } from './shield.ts';
 import { boxToWorld } from './hitGroups.ts';
 import { phaseTicks } from './phases.ts';
 import { rushAttackSpeed, rushLevel } from './rush.ts';
@@ -23,8 +24,8 @@ export interface CurrentAttack {
   slot: Slot; step: number; phase: AttackPhase; phaseTicks: number; attackInstance: number;
   lens: Record<AttackPhase, number>;     // phase lengths in ticks, fixed when the step starts
   faceAway: boolean;
-  /** A combo step, the charged attack (02 §9.4) or the Storm Hammer throw (§11). */
-  kind: 'combo' | 'charged' | 'throw';
+  /** A combo step, the charged attack (02 §9.4), the Storm Hammer throw (§11), or a weapon's moving special (Spear lunge, Giant Axe spin; §10.5). */
+  kind: 'combo' | 'charged' | 'throw' | 'lunge' | 'spin';
 }
 
 /** A weapon charging after its step (02 §9.4). */
@@ -43,6 +44,8 @@ export interface PlayerCombat {
   charge: ChargeState | null;
   heldSinceStart: boolean;          // the step's button held continuously since the press that started it
   uppercutUsed: boolean;            // Iron Fists uppercut lift, once per airtime (02 §10.5)
+  shield: ShieldState | null;       // the raised Shield (02 §12)
+  wandShots: [number, number];      // shots fired per slot (Seeker Swarm, 02 §13)
   /** The last counted combo step per slot (1-based) and when it counted (Gladiator, 03 §6.2). */
   lastCounted: [{ step: number; tick: number } | null, { step: number; tick: number } | null];
 }
@@ -52,7 +55,7 @@ const NEVER = -100000;
 export function createPlayerCombat(slots: [WeaponInstance | null, WeaponInstance | null]): PlayerCombat {
   return {
     slots, current: null, queued: false, otherPending: null, comboStep: [0, 0], comboEndTick: [NEVER, NEVER],
-    bufferTicks: 0, bufferedSlot: null, nextAttackInstance: 1, charge: null, heldSinceStart: false, uppercutUsed: false, lastCounted: [null, null],
+    bufferTicks: 0, bufferedSlot: null, nextAttackInstance: 1, charge: null, heldSinceStart: false, uppercutUsed: false, shield: null, wandShots: [0, 0], lastCounted: [null, null],
   };
 }
 
@@ -70,6 +73,7 @@ export function stepDef(w: GameWorld, cur: CurrentAttack): AttackStep {
   const weapon = weaponIn(w, cur.slot)!;
   if (cur.kind === 'charged') return weapon.chargedStep!;
   if (cur.kind === 'throw') return HAMMER_THROW_STEP;
+  if (cur.kind === 'lunge' || cur.kind === 'spin') return weapon.special!;
   return weapon.combo[cur.step];
 }
 
@@ -79,14 +83,17 @@ function isDivePress(b: PlayerBody, input: InputState, w: GameWorld, slot: Slot)
 }
 
 /** Whether an attack can start now: yes, hold the press (dash, ledge pull-up: no time limit), or buffer it. */
-function startability(w: GameWorld): 'yes' | 'hold' | 'buffer' {
+function startability(w: GameWorld, slot?: Slot): 'yes' | 'hold' | 'buffer' {
   const s = w.body.state;
+  if (s === 'dash' && slot !== undefined && !w.isDrinking() && lungeReady(w, slot)) return 'yes';   // the Spear lunge ends the dash (02 §10.5)
   if (w.isDrinking()) return 'buffer';
   if ((w.abilities.cast as { phase: string } | null)?.phase === 'startup') return 'buffer';   // 03 §7.6
   if (s === 'ground' || s === 'air' || s === 'crawl' || s === 'slide' || s === 'wallSlide' || s === 'minecart') return 'yes';
   if (s === 'dash' || s === 'ledgeClimb') return 'hold';
   return 'buffer';
 }
+
+const inst0 = (w: GameWorld, slot: Slot) => w.combat.slots[slot];
 
 function removeAttackGroups(w: GameWorld, attackInstance: number): void {
   w.hitGroups = w.hitGroups.filter((g) => !(g.owner === 'player' && g.attackInstance === attackInstance && g.kind === 'melee'));
@@ -100,16 +107,19 @@ function spawnStepGroup(w: GameWorld, cur: CurrentAttack): void {
     id: w.newId(), owner: 'player', kind: 'melee', rect: boxToWorld(st.box, b.x, b.y, b.facing), spec: st.hit,
     active: true, lastHitTick: new Map(), hitCount: new Map(), attackInstance: cur.attackInstance, slot: cur.slot, box: st.box, step: cur.kind === 'combo' ? cur.step : undefined,
   });
+  decorateStepGroup(w, cur, w.hitGroups[w.hitGroups.length - 1]);
 }
 
 function startStep(w: GameWorld, slot: Slot, step: number, input: InputState, kind: CurrentAttack['kind'] = 'combo'): void {
   const c = w.combat, b = w.body;
   const weapon = weaponIn(w, slot)!;
-  let st = kind === 'charged' ? weapon.chargedStep! : kind === 'throw' ? HAMMER_THROW_STEP : weapon.combo[step];
+  let st = kind === 'charged' ? weapon.chargedStep! : kind === 'throw' ? HAMMER_THROW_STEP : kind === 'lunge' || kind === 'spin' ? weapon.special! : weapon.combo[step];
   let faceAway = false;
+  const lungeDir = kind === 'lunge' ? (b.state === 'dash' && b.vx !== 0 ? (Math.sign(b.vx) as 1 | -1) : b.facing) : null;
   if (b.state === 'slide') b.endSlideRequested = true;                 // 01 §9.2: the press ends the slide
   if (b.state === 'wallSlide') { detachFromWall(b); faceAway = true; }  // 02 §9.3: detach, face away
-  if (!faceAway && input.moveX !== 0) b.facing = input.moveX;
+  if (lungeDir) b.facing = lungeDir;                                     // 02 §10.5: in the dash direction
+  else if (!faceAway && input.moveX !== 0) b.facing = input.moveX;
   const atk = attackSpeed(w, weapon.weight, slot);
   const instance = c.nextAttackInstance++;
   if (kind === 'combo') {
@@ -122,6 +132,8 @@ function startStep(w: GameWorld, slot: Slot, step: number, input: InputState, ki
   };
   // Moving specials keep their move time (02 §9.9: not scaled by attack speed).
   if (kind === 'charged' && weapon.id === 'katana') cur.lens.active = ticks(WEAPON_SPECIAL.katanaSlash.moveS);
+  if (kind === 'lunge') cur.lens.active = ticks(WEAPON_SPECIAL.spearLunge.moveS);
+  if (kind === 'spin') cur.lens.active = ticks(isS(inst0(w, slot), 'giant_axe') ? WEAPON_SPECIAL.axeSpin.cycloneS : WEAPON_SPECIAL.axeSpin.spinS);
   c.current = cur;
   c.charge = null;
   c.heldSinceStart = slot === 0 ? input.attack1.held : input.attack2.held;
@@ -130,6 +142,12 @@ function startStep(w: GameWorld, slot: Slot, step: number, input: InputState, ki
   c.otherPending = null;
   c.comboStep[slot === 0 ? 1 : 0] = 0;                                   // switching resets the other weapon's combo
   if (cur.lens.startup === 0) enterPhase(w, cur, 'active');
+}
+
+/** A switch to the other weapon: its step 1, or its raised shield (02 §9.5, §12). */
+function startFresh(w: GameWorld, slot: Slot, input: InputState): void {
+  if (weaponIn(w, slot)!.hold === 'shield') raiseShield(w, slot, input);
+  else startStep(w, slot, 0, input);
 }
 
 function enterPhase(w: GameWorld, cur: CurrentAttack, phase: AttackPhase): void {
@@ -149,7 +167,11 @@ function enterPhase(w: GameWorld, cur: CurrentAttack, phase: AttackPhase): void 
 function startFromPress(w: GameWorld, slot: Slot, input: InputState): void {
   const c = w.combat;
   if (input.moveY === -1 && throwReady(w, slot)) { startStep(w, slot, 0, input, 'throw'); return; }   // 02 §11
-  const len = weaponIn(w, slot)!.combo.length;
+  const weapon = weaponIn(w, slot)!;
+  if (weapon.hold === 'shield') { raiseShield(w, slot, input); return; }                              // 02 §12
+  if (lungeReady(w, slot)) { startStep(w, slot, 0, input, 'lunge'); return; }                         // 02 §10.5
+  if (spinReady(w, slot, input)) { startStep(w, slot, 0, input, 'spin'); return; }
+  const len = weapon.combo.length;
   const step = w.tick - c.comboEndTick[slot] <= COMBAT.COMBO_WINDOW_TICKS ? c.comboStep[slot] % len : 0;
   startStep(w, slot, step, input);
 }
@@ -183,6 +205,7 @@ export function cancelAttack(w: GameWorld, reason: 'dash' | 'jump' | 'dive' | 'h
     }
   }
   if (reason === 'hurt') { c.bufferedSlot = null; c.bufferTicks = 0; }
+  c.shield = null;                                // a dash, jump, dive, drink or real hit lowers the shield (02 §12)
   if (cur) endSpecial(w, cur);
   c.current = null;
   c.charge = null;                                // a dash, jump, dive or hit loses a charge (02 §9.4)
@@ -202,7 +225,7 @@ function advance(w: GameWorld, input: InputState): void {
     if (c.otherPending !== null) {
       const other = c.otherPending;
       cancelAttack(w, 'dash');                    // a recovery cancel: keeps progress, then the switch resets it
-      startStep(w, other, 0, input);
+      startFresh(w, other, input);
     }
     return;
   }
@@ -217,8 +240,9 @@ function advance(w: GameWorld, input: InputState): void {
   }
   const queued = c.queued || (held && weapon.hold === 'repeat'), other = c.otherPending;
   finishStep(w, cur, w.tick - 1);
-  if (queued) startStep(w, cur.slot, c.comboStep[cur.slot], input);
-  else if (other !== null) startStep(w, other, 0, input);
+  if (queued && weapon.hold === 'shield') raiseShield(w, cur.slot, input);                 // a press during the bash raises the shield again
+  else if (queued) startStep(w, cur.slot, c.comboStep[cur.slot], input);
+  else if (other !== null) startFresh(w, other, input);
 }
 
 /** 02 §2.1 step 3 for weapons. */
@@ -246,6 +270,13 @@ export function stepPlayerCombat(w: GameWorld, input: InputState): void {
     return;
   }
 
+  // Shield (02 §12): its timers, the release into a bash, lowering for the other weapon.
+  if (c.shield) {
+    if (press === c.shield.slot && c.shield.phase === 'up') press = null;      // already up
+    const bash = stepShield(w, input, press);
+    if (bash !== null) startStep(w, bash, 0, input);
+  }
+
   // Charge (02 §9.4): count while held; releasing fires the charged attack at full, else the next step.
   let released = false;
   if (c.charge) {
@@ -263,19 +294,22 @@ export function stepPlayerCombat(w: GameWorld, input: InputState): void {
 
   if (c.current && !released) advance(w, input);
 
+  // Raising the shield cancels the other weapon's attack in any phase, like a dash (02 §12).
+  if (press !== null && c.current && c.current.slot !== press && weaponIn(w, press)?.hold === 'shield' && startability(w, press) === 'yes') cancelAttack(w, 'dash');
+
   if (press !== null) {
     const cur = c.current;
     if (cur && cur.slot === press) c.queued = true;
     else if (cur) {
-      if (cur.phase === 'recovery') { cancelAttack(w, 'dash'); startStep(w, press, 0, input); }
+      if (cur.phase === 'recovery') { cancelAttack(w, 'dash'); startFresh(w, press, input); }
       else c.otherPending = press;
     } else {
-      const can = startability(w);
+      const can = startability(w, press);
       if (can === 'yes') startFromPress(w, press, input);
       else { c.bufferedSlot = press; c.bufferTicks = COMBAT.INPUT_BUFFER_TICKS; }
     }
   } else if (c.bufferedSlot !== null && !c.current) {
-    const can = startability(w);
+    const can = startability(w, c.bufferedSlot);
     if (can === 'yes') { const s = c.bufferedSlot; c.bufferedSlot = null; startFromPress(w, s, input); }
     else if (can === 'buffer' && --c.bufferTicks <= 0) c.bufferedSlot = null;
   }
@@ -286,7 +320,7 @@ export function stepPlayerCombat(w: GameWorld, input: InputState): void {
       const held = slot === 0 ? input.attack1.held : input.attack2.held;
       const weapon = weaponIn(w, slot);
       if (!held || !weapon || weapon.hold !== 'repeat') continue;
-      if (startability(w) === 'yes' && !isDivePress(b, input, w, slot)) startFromPress(w, slot, input);
+      if (startability(w, slot) === 'yes' && !isDivePress(b, input, w, slot)) startFromPress(w, slot, input);
       break;
     }
   }
@@ -298,8 +332,10 @@ export function stepPlayerCombat(w: GameWorld, input: InputState): void {
     w.mods.facingLocked = false;
     return;
   }
+  if (c.shield && !cur) { w.mods.actionMoveMult = SHIELD.moveMult; w.mods.facingLocked = true; return; }   // 02 §12
   const st = cur ? stepDef(w, cur) : null;
   w.mods.actionMoveMult = st ? (cur!.phase === 'recovery' && st.recoveryMoveMult !== undefined ? st.recoveryMoveMult : st.moveMult) : 1;
+  if (cur?.kind === 'spin' && cur.phase === 'active') w.mods.actionMoveMult = WEAPON_SPECIAL.axeSpin.speedMult;   // 70% while spinning
   w.mods.facingLocked = st !== null && !st.canTurn;
 }
 

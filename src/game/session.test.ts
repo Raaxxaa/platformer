@@ -31,14 +31,14 @@ describe('session write boundaries (06 §14–15)', () => {
     expect(testStore.current!.data.unlocks.blueprints).toHaveLength(1); expect(testStore.current!.data.unlocks.startWeapons.tank).toEqual(['giant_axe']);
     expect(w.run.lootUnlocked).not.toContain(testStore.current!.data.unlocks.blueprints[0]);
   });
-  it('loads a valid saved unbuilt third starter into playable Home without altering the saved kit', async () => {
+  it('loads a valid saved third starter (all 19 weapons exist since M9) into playable Home without altering the saved kit', async () => {
     const { SaveStore } = await vi.importActual<typeof import('./save/storage.ts')>('./save/storage.ts');
     const raw = JSON.stringify({ v: 1, lastKit: { cls: 'tank', weapon: 'giant_axe' }, unlocks: { startWeapons: { tank: ['giant_axe'] } } });
     const store = new SaveStore({ getItem: () => raw, setItem: () => { throw Error('must not rewrite the kit'); } });
     testStore.current!.data = store.data;
     const home = levelFrom(['#........#', '#........#', '##########'], [feet('player_start', 2, 1)], 'home'); home.kind = 'village'; home.stage = 0;
     const w = gameSession.makeWorld(home);
-    expect(w.combat.slots[0]?.weaponId).toBe('war_maul'); expect(gameSession.takeKitNotice()).toContain('Giant Axe');
+    expect(w.combat.slots[0]?.weaponId).toBe('giant_axe'); expect(gameSession.takeKitNotice()).toBeNull();
     expect(testStore.current!.data.lastKit).toEqual({ cls: 'tank', weapon: 'giant_axe' });
     expect(testStore.current!.data.unlocks.startWeapons.tank).toEqual(['giant_axe']);
   });
