@@ -47,6 +47,15 @@ export const ABILITIES: Partial<Record<AbilityId, AbilityDef>> = {
       { damagePerHit: 14, durationS: 1.20, maxHits: 8, pull: true, charges: 1 },
     ]),
   },
+  blade_flurry: {
+    ...base('blade_flurry'),
+    hits: { blade: { damage: 0, kb: [40, -10], poise: 3, hitStop: 0, kind: 'shot', multiHit: true, rehit: 0.75 } },
+    levels: rows(14, [
+      { blades: 2, durationS: 4.0, damagePerHit: 5, charges: 1 }, { blades: 2, durationS: 5.0, damagePerHit: 5, charges: 1 },
+      { blades: 3, durationS: 5.0, damagePerHit: 5, charges: 1 }, { blades: 3, durationS: 6.0, damagePerHit: 5, charges: 1 },
+      { blades: 4, durationS: 6.0, damagePerHit: 5, charges: 1 },
+    ]),
+  },
   shockwave: {
     ...base('shockwave'), startupS: 0.20, recoveryS: 0.25, groundMoveCap: 0, airGravityMult: 0.5, airHover: true,
     hits: { slam: { damage: 0, kb: [80, -320], poise: 40, hitStop: 0.075, kind: 'shot', control: { type: 'launch', duration: 0 } } },
@@ -113,6 +122,7 @@ export const ABILITY = {
   BUFFER_TICKS: 18,
   bladeDash: { vx: 480, ticks: 24, box: { dx: 0, dy: -14, w: 28, h: 32 } as Box },
   whirlwind: { vx: 120, box: { dx: 0, dy: -16, w: 48, h: 32 } as Box, pullRadius: 64, pullSpeed: 120 },
+  bladeFlurry: { radius: 28, degPerS: 450, size: 10 },
   shockwave: { dy: -18, h: 44 },
   shoulderCharge: { vx: 360, box: { dx: 14, dy: -14, w: 20, h: 28 } as Box, crackedReach: 4 },
   arrowRain: { near: 16, top: 96, bottom: 32, waveTicks: 24, scanDy: -14 },
