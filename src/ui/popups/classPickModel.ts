@@ -54,5 +54,6 @@ export class ClassPickModel {
 export function parseKit(s: string | null): Kit | null {
   if (!s) return null;
   const [cls, weapon] = s.split(':') as [ClassId, WeaponId];
-  return STARTING_KITS[cls]?.weapons.includes(weapon) ? { cls, weapon } : null;
+  if (!STARTING_KITS[cls]) return null;
+  return STARTING_KITS[cls].weapons.includes(weapon) || weapon === THIRD_START_WEAPON[cls] ? { cls, weapon } : null;
 }
