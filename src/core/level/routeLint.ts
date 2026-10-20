@@ -2,7 +2,8 @@
 import { ROUTE, TILE_SIZE } from '../tuning.ts';
 import { kindAt, type LevelData } from './loadLevel.ts';
 
-const standable = (k: string) => k === 'solid' || k === 'ice' || k === 'oneway';
+// Water is wading depth with a solid floor under it (01 §13.2), so it counts as floor for gaps.
+const standable = (k: string) => k === 'solid' || k === 'ice' || k === 'oneway' || k === 'water';
 const solid = (k: string) => k === 'solid' || k === 'ice';
 
 /** True if the climb from A to B goes up a wall-jump shaft: walls 3–5 tiles apart around it. */
