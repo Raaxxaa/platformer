@@ -13,6 +13,7 @@ HURTBOX = {
     # 04 §4 (Stage 2)
     'bat_swarm': (24, 16), 'goblin_miner': (12, 20), 'rock_golem': (26, 32), 'ram': (26, 22),
     'goblin_shaman': (14, 24),
+    'stone_colossus': (56, 72),     # 04 §9
 }
 
 # 04 §3: attack boxes (dx, dy, w, h) from the feet, facing right. None = projectile (no melee box).
@@ -28,6 +29,9 @@ ATTACK_BOX = {
     'rock_golem': {'fist_slam': (24, -10, 36, 20), 'shoulder_ram': (16, -16, 24, 30)},
     'ram': {'headbutt': (16, -11, 22, 20), 'leap_butt': (16, -11, 22, 20)},
     'goblin_shaman': {'stone_ward': None, 'hex_bolt': None, 'stone_spikes': (36, -12, 64, 24)},
+    # 04 §10.2 (Rock Rain uses falling_rock projectiles; Leap Slam's 2 shockwaves are projectiles)
+    'stone_colossus': {'fist_slam': (44, -16, 56, 32), 'shoulder_ram': (30, -36, 32, 64),
+                       'leap_slam': (0, -12, 120, 24), 'rock_rain': None},
     # 04 §10.1 (Rockfall uses falling_rock projectiles, no melee box)
     'great_boar': {'charge': (28, -20, 40, 36), 'tusk_toss': (36, -24, 48, 48), 'stomp_quake': (0, -8, 96, 16)},
 }

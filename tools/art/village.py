@@ -660,6 +660,7 @@ DUMMY_ANIMS = [A.anim('training_dummy_idle', 'enemies_extra', 1, 'once'),
 def anims():
     out = list(DUMMY_ANIMS) + list(YARD_ENEMY_ANIMS) + [A.anim('ability_altar_idle', ATLAS, 2, 'loop', 1), A.anim('gate_idle', ATLAS, 2, 'loop', 2),
            A.anim('shop_refill_idle', ATLAS, 4, 'loop', 6)]
+    out.append(A.anim('minecart_roll', ATLAS, 2, 'loop', 8))
     for k in ('shop_item', 'shop_flask', 'shop_key', 'shop_reroll', 'unlocks_board', 'seed_board', 'loot_stand',
               'mirror_spot', 'class_statue_swordsman', 'class_statue_tank', 'class_statue_archer',
               'class_statue_wizard', 'station_sign', 'station_flag_grey', 'station_flag_green', 'training_gate', 'cottage_a', 'cottage_b', 'well', 'market_roof', 'inn'):

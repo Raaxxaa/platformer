@@ -134,4 +134,35 @@ def frames():
     for st in ('pending', 'open', 'missed'):
         fr[f'timed_door_cap_{st}_00'] = timed_door('cap', st).to_image()
     fr.update(arrows())
+    fr.update(stage2_frames())
     return fr
+
+
+def minecart(frame):
+    """Minecart 32 x 24 (08 §8): a wooden bucket with iron bands on two wheels; `roll` has 2 frames."""
+    import math
+    L = R.PartLayer(32, 24)
+    wood = _part(L, 'wood', 'vl_wood')
+    band = _part(L, 'band', 'gray', 1)
+    wheel = _part(L, 'wheel', 'gray', 1)
+    hub = _part(L, 'hub', 'gray')
+    spoke = _part(L, 'spoke', 'gray', 2)
+    plank = _part(L, 'plank', 'vl_wood', 2)
+    R.fill_polygon(L, [(2, 4), (30, 4), (27, 18), (5, 18)], wood)
+    R.fill_rect(L, 2, 4, 28, 2, band)               # rim
+    R.fill_rect(L, 5, 15, 22, 2, band)              # lower band
+    for x, d in ((10, -1), (16, 0), (22, 1)):       # planks
+        R.line(L, (x, 7), (x + d, 14), plank)
+    for cx in (9, 23):
+        R.ellipse(L, cx, 19, 4.2, 4.2, wheel)
+        R.ellipse(L, cx, 19, 1.4, 1.4, hub)
+        for k in range(2):
+            a = math.radians(frame * 45 + k * 90)
+            R.line(L, (cx, 19), (round(cx + 3 * math.cos(a)), round(19 + 3 * math.sin(a))), spoke)
+    c = R.auto_shade(L)
+    R.outline(c, P.INK)
+    return c
+
+
+def stage2_frames():
+    return {f'minecart_roll_{i:02d}': minecart(i).to_image() for i in range(2)}

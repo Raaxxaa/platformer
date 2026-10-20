@@ -12,7 +12,7 @@ from art import atlas, boards, build_player, build_world, contrast, fonts, items
 from art.enemies import plains as enemies_plains  # noqa: E402
 from art.enemies import mountains as enemies_mountains  # noqa: E402
 from art import style_board_stage2  # noqa: E402
-from art.bosses import great_boar  # noqa: E402
+from art.bosses import great_boar, stone_colossus  # noqa: E402
 from audio import listen_sheet, sfx_defs  # noqa: E402
 
 
@@ -32,6 +32,7 @@ def build(root=ROOT):
     anims += enemies_plains.build(assets, preview)
     anims += great_boar.build(assets, preview)
     anims += enemies_mountains.build(assets, preview)
+    anims += stone_colossus.build(assets, preview)
     build_world.build(assets, preview)
     ui.build(assets, preview)
     fonts.build(os.path.join(assets, 'fonts'))

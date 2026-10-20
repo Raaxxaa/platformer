@@ -257,6 +257,297 @@
   "mode": "speed"
  },
  {
+  "key": "atk_fist_slam",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "atk_fist_slam_00",
+   "atk_fist_slam_01",
+   "atk_fist_slam_02",
+   "atk_fist_slam_03",
+   "atk_fist_slam_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_leap_slam",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "atk_leap_slam_00",
+   "atk_leap_slam_01",
+   "atk_leap_slam_02",
+   "atk_leap_slam_03",
+   "atk_leap_slam_04",
+   "atk_leap_slam_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_rock_rain",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "atk_rock_rain_00",
+   "atk_rock_rain_01",
+   "atk_rock_rain_02",
+   "atk_rock_rain_03",
+   "atk_rock_rain_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_shoulder_ram",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "atk_shoulder_ram_00",
+   "atk_shoulder_ram_01",
+   "atk_shoulder_ram_02",
+   "atk_shoulder_ram_03",
+   "atk_shoulder_ram_04",
+   "atk_shoulder_ram_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "break",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "break_00",
+   "break_01",
+   "break_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0
+    ]
+   },
+   {
+    "phase": "all",
+    "frames": [
+     1,
+     2
+    ],
+    "loopFps": 4
+   }
+  ]
+ },
+ {
+  "key": "death",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "death_00",
+   "death_01",
+   "death_02",
+   "death_03",
+   "death_04",
+   "death_05",
+   "death_06",
+   "death_07",
+   "death_08"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
+  "key": "hurt",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "idle",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "intro",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "intro_00",
+   "intro_01",
+   "intro_02",
+   "intro_03",
+   "intro_04",
+   "intro_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "stagger",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "stagger_00",
+   "stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "transition",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "transition_00",
+   "transition_01",
+   "transition_02",
+   "transition_03",
+   "transition_04",
+   "transition_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "turn",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "turn_00",
+   "turn_01",
+   "turn_02"
+  ],
+  "mode": "once",
+  "fps": 3
+ },
+ {
+  "key": "walk",
+  "atlas": "boss_stone_colossus",
+  "frames": [
+   "walk_00",
+   "walk_01",
+   "walk_02",
+   "walk_03",
+   "walk_04",
+   "walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
   "key": "sparring_dummy_atk_practice_swing",
   "atlas": "enemies_extra",
   "frames": [
@@ -1969,6 +2260,16 @@
    "market_roof_00"
   ],
   "mode": "once"
+ },
+ {
+  "key": "minecart_roll",
+  "atlas": "objects",
+  "frames": [
+   "minecart_roll_00",
+   "minecart_roll_01"
+  ],
+  "mode": "loop",
+  "fps": 8
  },
  {
   "key": "mirror_spot",
