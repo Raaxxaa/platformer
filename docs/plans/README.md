@@ -14,9 +14,9 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | M4 | Classes, 8 abilities + Vampire, 6 new weapons, Training Yard | `M4-classes-abilities-weapons-basics.md` | Done |
 | M4.1 | Full HUD, popups, pause tabs, start screen | `M4.1-full-hud-and-popups.md` | Done |
 | M5 | Loot: grades, elements, perks, S moves, chests, keys, Lucky Blocks, gold, merchant, boss drop | `M5-loot.md` | Done |
-| **M7** | **Full run loop: title, Home Village, stat pick after the boss, Crossroads shop and inn, route choice, saving, death screen, records, settings** | `M7-villages-and-saving.md` | **Next** |
-| M7.1 | Stage 2: both roads (Caves & Mountains, Dark Forest & Swamps), their enemies and Guardians, Border Village | `M7.1-stage2-two-roads.md` | Planned |
-| M9 | Stages 3–4 (Enemy Kingdom, King's Castle), Black Knight, Enemy King, the Dragon, the other 8 abilities and 11 weapons | to write | Planned |
+| M7 | Full run loop: title, Home Village, stat pick after the boss, Crossroads shop and inn, route choice, saving, death screen, records, settings | `M7-villages-and-saving.md` | Done |
+| M7.1 | Stage 2: both roads (Caves & Mountains, Dark Forest & Swamps), their enemies and Guardians, Border Village | `M7.1-stage2-two-roads.md` | Done |
+| **M9** | **Stages 3–4 (Enemy Kingdom, King's Castle), Black Knight, Enemy King, the Dragon, the other 8 abilities and 11 weapons** | Part 1 (abilities): `M9-part1-abilities.md`; rest to write | **Next** (part 1 queued for the company) |
 | M10 | Speedrun extras: seeds, practice mode, ghosts, balance | to write | Planned |
 | M11 | Layout variety: sections change between runs | to write | Planned |
 | M12 | Character customization: looks, colors, cosmetics from mobs and shops | to write | Planned |
@@ -32,7 +32,7 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | ART3 | Home Village and Crossroads | Done |
 | ART4 | Every player move, Greatsword and War Maul, loot items, all icons, fonts, effects, sounds | Done |
 | ART5 | 6 new weapons, ability poses and effects, Training Yard pieces, popup skin | Done |
-| ART6 | Elements, S-grade signature effects, loot effects, element sounds (for M5) | Done or finishing |
+| ART6 | Elements, S-grade signature effects, loot effects, element sounds (for M5) | Done |
 | **ART7** | **Stage 2 biomes: Caves & Mountains and Dark Forest & Swamps (tiles, backgrounds, 8 enemies, 2 elites, 2 Guardians, minecart), Border Village** (`ART7-stage2-biomes.md`) | **Next** (for M7.1) |
 | ART8 | Stages 3–4, the Black Knight, Enemy King, the Dragon (4 colors), the other abilities and weapons | Planned (for M9) |
 | ART9 | Music | Planned |
