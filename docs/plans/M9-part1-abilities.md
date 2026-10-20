@@ -2,6 +2,8 @@
 
 **Goal:** every ability in `docs/spec/03-classes-abilities.md` §8–§11 is playable. M4 built 9 (Blade Dash, Whirlwind, Shockwave, Shoulder Charge, Arrow Rain, Hunter's Mark, Thunder Strike, Blink, Vampire). This part adds the other 8.
 
+**Status: done (2026-10-20).** All 8 built by a build agent after the local workers couldn't handle them on a 16 GB Mac; SPEC-GAPs 17–21.
+
 **How:** one company task per ability, done in order (they all add to `src/data/abilities.ts` and `src/core/abilities/list/index.ts`). Each one: per-level numbers in `src/data/abilities.ts`, behavior in `src/core/abilities/list/<id>.ts`, its own `src/core/abilities/<id>.test.ts` built on the 03 test checklist.
 
 | # | Ability | Spec | Checklist | Who |
