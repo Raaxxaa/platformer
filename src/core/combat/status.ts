@@ -139,9 +139,9 @@ export function stepStatuses(w: GameWorld): void {
 }
 
 /** 02 §6.3: may this enemy act this tick? Frozen: never. Chilled: on a fraction `scale` of ticks. */
-export function enemyActs(e: EnemyState): boolean {
+export function enemyActs(e: EnemyState, worldScale = 1): boolean {
   if (e.status.frozen) return false;
-  const scale = e.status.chill?.scale ?? 1;
+  const scale = (e.status.chill?.scale ?? 1) * worldScale;      // Time Slow multiplies in (03 §11.4)
   if (scale >= 1) { e.status.timeAcc = 0; return true; }
   e.status.timeAcc += scale;
   if (e.status.timeAcc >= 1) { e.status.timeAcc -= 1; return true; }

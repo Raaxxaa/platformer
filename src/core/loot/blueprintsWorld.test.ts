@@ -11,7 +11,7 @@ import { killEnemy, processDeaths } from '../combat/resolve.ts';
 describe('blueprint touch and frozen run pools (05 §14)', () => {
   it('intersects implemented definitions with the supplied frozen catalog for weapons and abilities', () => {
     expect(weaponPool([], ['war_maul', 'scythe'])).toEqual(['war_maul']);
-    expect(abilityPool([], [], ['shockwave', 'time_slow'])).toEqual(['shockwave']);
+    expect(abilityPool([], [], ['shockwave', 'time_slow'])).toEqual(['shockwave', 'time_slow']);
   });
   it('collects by touch, freezes the pool through a village carry, and refreshes on same-world restart', () => {
     let unlocked: ('scythe')[] = [];

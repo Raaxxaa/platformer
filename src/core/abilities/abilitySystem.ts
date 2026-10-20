@@ -268,4 +268,5 @@ export function clearAbilityEffects(w: GameWorld): void {
   w.abilities.link = null;
   w.abilities.pressTick = [NO_PRESS, NO_PRESS];
   w.abilityEntities = [];
+  w.worldTimeScale = 1;                                                  // Time Slow ends with its entity
 }

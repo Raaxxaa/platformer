@@ -711,7 +711,7 @@ export class GameWorld {
     if (e.control || e.status.frozen || e.knockback) {stepMountainReaction(this,e);if(e.def.id==='swamp_witch')stepSwampSpecial(this,e);} // cancel even when its final control tick ends below
     stepEnemyReactions(e);
     // Frozen: no action (its attack is cancelled); Chilled: acts on a fraction of ticks (02 §6.3). Gravity always.
-    if (!enemyActs(e)) {
+    if (!enemyActs(e, this.worldTimeScale)) {
       if (e.status.frozen && e.ai.attack) cancelEnemyAttack(this, e);
       const vx = e.vx;
       if (!e.knockback) e.vx = 0;

@@ -145,6 +145,10 @@ export const ABILITIES: Partial<Record<AbilityId, AbilityDef>> = {
       { damage: 52, radiusPx: 96, freezeS: 3.0, freezeLevel: 3, charges: 1 },
     ]),
   },
+  time_slow: {
+    ...base('time_slow'), hits: {},
+    levels: rows(25, [{ durationS: 3.0, charges: 1 }, { durationS: 3.5, charges: 1 }, { durationS: 4.0, charges: 1 }, { durationS: 4.5, charges: 1 }, { durationS: 5.0, charges: 1 }]),
+  },
   blink: {
     ...base('blink'), hits: {},
     levels: rows(5, [{ distancePx: 64, charges: 1 }, { distancePx: 72, charges: 1 }, { distancePx: 80, charges: 1 }, { distancePx: 88, charges: 1 }, { distancePx: 96, charges: 2 }]),
@@ -181,5 +185,6 @@ export const ABILITY = {
   hunterMark: { mult: 1.30, linkedMult: 1.45 },
   thunderStrike: { reach: 224, vReach: 112, boltTicks: 12, box: { dx: 0, dy: -80, w: 24, h: 160 } as Box, colStart: 48, colStep: 32, colDrop: 160 },
   frostBurst: { dy: -14, chillLevel: 1, eliteMult: 0.5, linkedFreezeMult: 1.5 },
+  timeSlow: { scale: 0.35 },
   blink: { diag: 0.7071, minMove: 8, iframeTicks: 18 },
 } as const;

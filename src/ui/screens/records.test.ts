@@ -28,7 +28,7 @@ describe('records menu (07 §7.5)', () => {
     const save = defaultSave(); save.unlocks.blueprints = ['scythe', 'time_slow']; save.unlocks.startWeapons.tank = ['giant_axe'];
     const m = new RecordsModel(() => save); expect(m.unlocks).toHaveLength(9);
     expect(m.unlocks.find((entry) => entry.id === 'scythe')).toMatchObject({ name: 'Scythe', unlocked: true, ready: false });
-    expect(m.unlocks.find((entry) => entry.id === 'time_slow')).toMatchObject({ name: 'Time Slow', unlocked: true, ready: false });
+    expect(m.unlocks.find((entry) => entry.id === 'time_slow')).toMatchObject({ name: 'Time Slow', unlocked: true, ready: true });
     expect(m.unlocks.find((entry) => entry.id === 'flail')).toMatchObject({ name: '???', unlocked: false });
     expect(m.starters[1]).toContain('Giant Axe'); expect(m.starters[1]).toContain('Not ready'); expect(m.starters[0]).toBe('Beat the King as Swordsman');
     save.unlocks.blueprints.push('flail'); expect(m.unlocks.find((entry) => entry.id === 'flail')?.unlocked).toBe(true);

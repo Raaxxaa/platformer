@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { candidates, kingUnlocks, rollBlueprint, unlockedCatalog, type BlueprintId } from './blueprints.ts';
-import { ABILITIES, ABILITY_IDS } from '../../data/abilities.ts';
+import { ABILITY_IDS } from '../../data/abilities.ts';
 import { BLUEPRINT_IDS } from '../../data/save.ts';
 import { WEAPONS } from '../../data/weapons.ts';
 import { WEAPON_ORDER } from './roll.ts';
@@ -23,7 +23,7 @@ describe('frozen unlocked catalog (05 §14.1)', () => {
   it('accepts all unbuilt blueprint IDs without inventing a playable definition', () => {
     const all = unlockedCatalog(BLUEPRINT_IDS); expect(all).toEqual(unlockedCatalog([], true));
     expect(all).toContain('time_slow'); expect(all).toContain('scythe');
-    expect(ABILITIES.time_slow).toBeUndefined(); expect(WEAPONS.scythe).toBeUndefined();
+    expect(WEAPONS.scythe).toBeUndefined();
   });
   it('takes a detached snapshot: a newly saved blueprint joins the next catalog only', () => {
     const saved: BlueprintId[] = [], current = unlockedCatalog(saved);
