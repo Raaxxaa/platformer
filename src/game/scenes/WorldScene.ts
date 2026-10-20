@@ -14,7 +14,8 @@ import { ClassPickModel, type Kit } from '../../ui/popups/classPickModel.ts';
 import { ClassPickView } from '../../ui/popups/classPick.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { specToInput, type InputSpec } from '../../core/sim/playerSim.ts';
-import { BOSS, ENEMY, TICK_RATE } from '../../core/tuning.ts';
+import { BOSS, ENEMY, TICK_RATE, ticks } from '../../core/tuning.ts';
+import { KINGDOM } from '../../data/kingdom.ts';
 import { formatTime } from '../../core/time.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
@@ -56,10 +57,20 @@ import { applySettings } from '../settings.ts';
 import { BIOME_VIEW as B } from '../../data/biomeView.ts';
 import { DarknessView } from '../view/darkness.ts';
 import { Stage2FeatureView } from '../view/stage2Features.ts';
+import { KingdomFeatureView } from '../view/kingdomFeatures.ts';
 import { enemyDrawing } from '../view/enemyFallback.ts';
+
+/** Battle Mage Teleport (04 §6): fades out for 0.3 s, then fades in for 0.3 s. */
+function fadeAlpha(e: EnemyState): number {
+  const f = e.kingdom;
+  if (!f?.fade) return 1;
+  const k = f.fadeTicks / ticks(KINGDOM.teleportFadeOutS);
+  return f.fade === 'out' ? k : 1 - k;
+}
 
 /** Grey-box enemy colors (plan M2, Task 17). */
 const ENEMY_COLOR: Partial<Record<EnemyId, number>> = {
+  soldier: 0x8e96a8, crossbowman: 0x9c7a4a, war_hound: 0x6a6f7a, battle_mage: 0xb04a8a, knight: 0x5a6070, black_knight: 0x15151c,
   wolf: 0x73809f, bandit: 0xb8443f, bandit_archer: 0xe27b5b, wild_boar: 0x7e2a34, bandit_brute: 0x4a1824, training_dummy: 0x9a6e3e,
 };
 const DRAW = {
@@ -73,6 +84,7 @@ const DRAW = {
 
 export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost {
   world!: GameWorld;
+  private kingdomView!: KingdomFeatureView;
   protected readonly stepper = new FixedStepper();
   protected devices!: Devices;
   protected manual = false;
@@ -166,13 +178,14 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     });
     this.bank = new AnimBank(this.cache.json.get('anims') as AnimDef[]);
     this.boxesMode = new URLSearchParams(window.location.search).get('boxes') === '1';
-    const bg = this.world.level?.kind === 'training' ? 'village_home' : this.world.level?.id === 'border' ? 'village_border' : this.world.level?.biome ?? 'plains';
+    const bg = this.world.level?.kind === 'training' ? 'village_home' : this.world.level?.id === 'border' || this.world.level?.id === 'rebel_camp' ? 'village_border' : this.world.level?.biome ?? 'plains';
     this.parallax = new Parallax(this, this.world.grid.heightPx, bg in PARALLAX ? bg as keyof typeof PARALLAX : 'plains');
     drawTerrain(this, this.world.grid, this.world.level?.biome ?? 'plains', this.world.level?.kind !== 'village');
     this.boxes = this.add.graphics().setDepth(DEPTH.enemies);
     this.bossBoxes = this.add.graphics().setDepth(DEPTH.boss);
     this.playerShots = this.add.graphics().setDepth(DEPTH.playerProjectiles);
     this.features = new Stage2FeatureView(this, this.world);
+    this.kingdomView = new KingdomFeatureView(this);
     this.darkness = new DarknessView(this);
     this.lastViewTime = this.time.now;
     this.events.once('shutdown', () => { this.features.destroy(); this.darkness.destroy(); });
@@ -539,6 +552,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.vfx.pool.update(w.tick);
     drawMarkers(this.markersGfx.clear(), w);
     this.features.update(w, [], w.tick / TICK_RATE);
+    this.kingdomView.update(w);
     this.darkness.setVisible(!this.overview);
     this.darkness.update(w, w.tick / TICK_RATE);
     this.itemViews.update(w.groundItems, w.tick);
@@ -581,6 +595,13 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.syncStatPick();
     this.classPick?.view.draw(this.classPick.model, this.pickedKit);
     this.frameEvents = [];
+  }
+
+  /** For the browser tests: how an enemy is drawn right now. Enemies without art are always a grey body, never invisible. */
+  enemyDrawMode(id: number): 'sprite' | 'box' | null {
+    const e = this.world.enemies.find((x) => x.id === id);
+    const view = e && this.enemyViews.get(e);
+    return view ? (this.boxesMode || !view.hasArt ? 'box' : 'sprite') : null;
   }
 
   /** One view per enemy; a restart makes new enemies, so stale views go. */
@@ -640,7 +661,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     if (a && a.phase === 'tele') color = a.len - a.t <= ENEMY.TELEGRAPH_FLASH_LAST_TICKS ? DRAW.telegraphLast : DRAW.telegraph;
     if (e.control && e.control.type !== 'dazed') color = DRAW.controlled;
     if (e.hurtFlashTicks > 0) color = DRAW.hurtFlash;
-    g.fillStyle(color, alpha).fillRect(r.x, r.y, r.w, r.h);
+    g.fillStyle(color, alpha * fadeAlpha(e)).fillRect(r.x, r.y, r.w, r.h);
     // The eye on the facing side.
     const ex = e.facing > 0 ? r.x + r.w - DRAW.eye - 1 : r.x + 1;
     g.fillStyle(0x000000, alpha).fillRect(ex, r.y + 2, DRAW.eye, DRAW.eye);

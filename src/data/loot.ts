@@ -94,5 +94,6 @@ export const AMBUSH_PACKS: Record<string, EnemyId[]> = {
   plains: ['wolf', 'wolf', 'bandit'],
   mountains: ['goblin_miner','ram','bat_swarm'],
   swamps: ['bog_zombie','giant_spider','swamp_witch'],
+  kingdom: ['war_hound', 'war_hound', 'soldier'],
 } as Record<string, EnemyId[]>;
 export const AMBUSH = { dx: [-96, 96, 160], above: 64, below: 128, inset: 16, flyerY: [72, 32] } as const;

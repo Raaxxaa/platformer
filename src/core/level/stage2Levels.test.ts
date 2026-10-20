@@ -48,8 +48,8 @@ describe('both Stage2 road maps and Border Village (06 §8–13)',()=>{
     expect(stepSpec(stage,{},RUN.FADE_TICKS)).toContainEqual({t:'loadLevel',levelId:'border',stage:0});
     const border=GameWorld.fromLevel(read('village_border'),{seedText:'CARRY',carry:captureWorld(stage)});border.completeLoading();stepSpec(border,{},RUN.FADE_TICKS);
     expect(border.run.splits[1]).toBe(splitAt);expect(border.econ.statStacks[stat]).toBe(1);expect(border.shop?.villageIndex).toBe(2);
-    expect(openInn(border)).toBe(true);stepSpec(border,{},RUN.FADE_TICKS);border.completeLoading();stepSpec(border,{},RUN.FADE_TICKS);
-    expect(border.run.phase).toBe('runSoFar');expect(border.run.stage).toBe(0);expect(border.run.splits.slice(2)).toEqual([null,null]);
+    expect(openInn(border)).toBe(true);expect(stepSpec(border,{},RUN.FADE_TICKS)).toContainEqual({t:'loadLevel',levelId:'kingdom',stage:3});
+    expect(border.run.splits.slice(2)).toEqual([null,null]);
     expect(border.records.pbs).toEqual({});expect(border.events.some(e=>e.t==='runCompleted')).toBe(false);
   });
 });

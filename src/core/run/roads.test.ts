@@ -24,13 +24,20 @@ describe('Crossroads and Border inns (06 §3, §12.2)', () => {
     expect(w.flask).toMatchObject({ charges: 0, fillTenths: 321 });
     const x=w.body.x;stepSpec(w,{moveX:1},200);expect(w.body.x).toBe(x);expect(w.run.runTicks).toBe(60);
   });
-  it('Border sleeps directly into the authorized ending without reaching an unbuilt Stage3',()=>{
+  it('Border sleeps into Stage 3 (the kingdom level)',()=>{
     const data=loadLevel(json);data.id='border';const w=GameWorld.fromLevel(data,{seedText:'BORDER'});
     w.run.splits=[100,300,null,null];w.run.road='forest';w.health.hp=10;
     expect(openInn(w)).toBe(true);expect(w.run.phase).toBe('transition');expect(chooseRoad(w,'mountain')).toBe(false);
-    stepSpec(w,{},60);expect(w.health.hp).toBe(100);expect(w.run.transition?.target.phase).toBe('runSoFar');
-    w.completeLoading();stepSpec(w,{},60);expect(w.run.phase).toBe('runSoFar');expect(w.run.levelId).toBe('border');expect(w.run.stage).toBe(0);
+    const events=stepSpec(w,{},60);expect(w.health.hp).toBe(100);expect(w.run.transition?.target).toEqual({phase:'stage',levelId:'kingdom',stage:3});
+    expect(events).toContainEqual({t:'loadLevel',levelId:'kingdom',stage:3});
     expect(w.run.splits).toEqual([100,300,null,null]);expect(w.records.pbs).toEqual({});
+  });
+  it('the Rebel Camp inn ends the run for now at Run so far (Stage 4 is the next part)',()=>{
+    const data=loadLevel(json);data.id='rebel_camp';const w=GameWorld.fromLevel(data,{seedText:'REBEL'});
+    w.run.splits=[100,300,500,null];w.run.road='forest';
+    expect(openInn(w)).toBe(true);stepSpec(w,{},60);expect(w.run.transition?.target.phase).toBe('runSoFar');
+    w.completeLoading();stepSpec(w,{},60);expect(w.run.phase).toBe('runSoFar');expect(w.run.levelId).toBe('rebel_camp');expect(w.run.stage).toBe(0);
+    expect(w.records.pbs).toEqual({});
   });
   it('run kill counters survive a village boundary for the run-so-far screen', () => {
     const w = world(), enemy = w.spawnExtra({ enemy: 'bandit', x: 64, y: 320, facing: 1 }); w.onPlayerKill(enemy, 'regular'); w.onPlayerKill(enemy, 'elite');

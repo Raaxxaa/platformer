@@ -12,6 +12,7 @@ export interface WorldSnapshot {
   hp: number; maxHp: number; dead: boolean;
   flask: { charges: number; maxCharges: number; fillTenths: number };
   rush: number; gold: number;
+  cannonBalls: number;
   /** Weapon in slot 1 and what the player is doing with it (M9 part 2 tests): the running step kind, the raised shield, shots and platforms. */
   weapon: { id: string | null; grade: string | null; attack: string | null; shield: 'up' | 'lower' | null; shots: number; platforms: number; runes: number };
   enemies: { id: number; def: string; x: number; y: number; hp: number; maxHp: number; aware: boolean; state: string; attack: string | null; dead: boolean }[];
@@ -73,6 +74,7 @@ export function snapshotWorld(w: GameWorld): WorldSnapshot {
       shield: w.combat.shield?.phase ?? null, shots: w.playerProjectiles.length, platforms: w.grid.pixelPlatforms.length,
       runes: w.abilityEntities.filter((e) => e.kind === 'rune_ring').length,
     },
+    cannonBalls: w.cannons?.balls.length ?? 0,
     enemies: w.enemies.map((e) => ({
       id: e.id, def: e.def.id, x: e.x, y: e.y, hp: e.hp, maxHp: e.maxHp, aware: e.aware,
       state: e.ai.state, attack: e.ai.attack ? `${e.ai.attack.def.id}:${e.ai.attack.phase}` : null, dead: e.dead,

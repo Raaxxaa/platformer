@@ -11,7 +11,7 @@ async function level(page: Page, id: string) {
 }
 async function finishFade(page: Page) { await page.evaluate(() => { const g = (window as any).__game, t = g.runState().transition; if (t?.part === 'in') g.step(t.left, {}); }); }
 
-test('a full saved run: Title, Tank, Plains, Crossroads services, Forest Guardian, Border and continuation', async ({ page }) => {
+test('a full saved run: Title, Tank, Plains, Crossroads services, Forest Guardian, Border, Black Knight, Rebel Camp and Run so far', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.title);
   await page.keyboard.press('Enter'); await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().model.step)).toBe(2);
@@ -76,6 +76,22 @@ test('a full saved run: Title, Tank, Plains, Crossroads services, Forest Guardia
   await level(page, 'border'); await finishFade(page); await shot(page, 'border');
   expect(await page.evaluate(() => (window as any).__game.shop().villageIndex)).toBe(2);
   await page.evaluate(() => { const g = (window as any).__game; g.teleport(680, 320); g.step(1, { interact: true }); g.step(60, {}); });
+  await level(page, 'kingdom'); await finishFade(page);
+  expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('stage');
+  expect(await page.evaluate(() => (window as any).__game.runState().stage)).toBe(3); await shot(page, 'kingdom-arrival');
+  const split3 = await page.evaluate(() => {
+    const g = (window as any).__game, boss = g.arenas().find((a: any) => a.kind === 'boss').rect;
+    g.teleport(boss.x + boss.w / 2, boss.y + boss.h); g.step(1, {}); g.killAll(); g.step(1, {});
+    const split = g.runState().splits[2]; g.step(120, {}); return split;
+  });
+  expect(split3).toBeGreaterThan(split2); expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('statPick');
+  await page.evaluate(() => {
+    const g = (window as any).__game; g.step(36, {}); g.confirmStatPick();
+    const exit = g.levelObjects('exit')[0]; g.teleport(exit.x + exit.w / 2, exit.y + exit.h); g.step(61, {});
+  });
+  await level(page, 'rebel_camp'); await finishFade(page); await shot(page, 'rebel-camp');
+  expect(await page.evaluate(() => (window as any).__game.shop().villageIndex)).toBe(3);
+  await page.evaluate(() => { const g = (window as any).__game; g.teleport(680, 320); g.step(1, { interact: true }); g.step(60, {}); });
   await page.waitForFunction(() => (window as any).__game.runState().transition?.part === 'in');
   await finishFade(page);
   expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('runSoFar'); await shot(page, 'continued');
@@ -84,7 +100,7 @@ test('a full saved run: Title, Tank, Plains, Crossroads services, Forest Guardia
   expect(saved.lastKit).toEqual({ cls: 'tank', weapon: 'war_maul' }); expect(saved.lastRoad).toBe('forest');
   expect(saved.bestSegments['tank|mountain'][0]).toBe(split); expect(saved.bestSegments['tank|forest'][0]).toBe(split);
   expect(saved.bestSegments['tank|forest'][1]).toBe(split2 - split);
-  expect(saved.pbs).toEqual({}); expect(saved.stats.runsCompleted).toBe(0); expect(saved.progress.levelsReached).toEqual(['plains', 'swamps']);
+  expect(saved.pbs).toEqual({}); expect(saved.stats.runsCompleted).toBe(0); expect(saved.progress.levelsReached).toEqual(['plains', 'swamps', 'kingdom']);
   await page.evaluate(() => { const g = (window as any).__game; g.titleChoose(2); g.screenAction('down'); g.screenAction('down'); g.screenAction('down'); });
   expect(await page.evaluate(() => (window as any).__game.screenState().model.cell)).toBe(3); await shot(page, 'saved-records');
   expect(errors).toEqual([]);

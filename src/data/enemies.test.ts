@@ -7,13 +7,13 @@ const regulars = defs.filter((d) => d.tier === 'regular');
 const elites = defs.filter((d) => d.elite);
 
 describe('Built enemy data (04 §3–5, checklist 1–3, 30)', () => {
-  it('has Stage 1 and both Stage 2 enemy sets, three Guardians, Spiderlings and training enemies', () => {
-    expect(Object.keys(ENEMIES).sort()).toEqual(['bandit', 'bandit_archer', 'bandit_brute', 'bat_swarm', 'bog_zombie', 'giant_spider', 'goblin_miner', 'goblin_shaman', 'great_boar', 'ram', 'rock_golem', 'sparring_dummy', 'spider_queen', 'spiderling', 'stone_colossus', 'straw_target', 'swamp_witch', 'training_dummy', 'treant', 'wild_boar', 'wisp', 'wolf']);
+  it('has Stage 1, both Stage 2 sets, Stage 3 with the Black Knight, three Guardians, Spiderlings and training enemies', () => {
+    expect(Object.keys(ENEMIES).sort()).toEqual(['bandit', 'bandit_archer', 'bandit_brute', 'bat_swarm', 'battle_mage', 'black_knight', 'bog_zombie', 'crossbowman', 'giant_spider', 'goblin_miner', 'goblin_shaman', 'great_boar', 'knight', 'ram', 'rock_golem', 'soldier', 'sparring_dummy', 'spider_queen', 'spiderling', 'stone_colossus', 'straw_target', 'swamp_witch', 'training_dummy', 'treant', 'war_hound', 'wild_boar', 'wisp', 'wolf']);
   });
   it('regular HP is 25–60, elite HP 120–170', () => {
     for (const d of regulars) { expect(d.hp).toBeGreaterThanOrEqual(25); expect(d.hp).toBeLessThanOrEqual(60); }
     for (const d of elites) { expect(d.hp).toBeGreaterThanOrEqual(120); expect(d.hp).toBeLessThanOrEqual(170); }
-    expect(elites.map((d) => d.id)).toEqual(['bandit_brute', 'goblin_shaman', 'treant']);
+    expect(elites.map((d) => d.id).sort()).toEqual(['bandit_brute', 'goblin_shaman', 'knight', 'treant']);
   });
   it('regular attacks deal 8–15; the elite strongest 18–22', () => {
     for (const d of regulars) for (const a of d.attacks) {

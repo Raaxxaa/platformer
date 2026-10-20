@@ -175,6 +175,7 @@ export class StageScene extends WorldScene {
     api.routeAction = (action: Parameters<RouteChoiceView['action']>[0]) => this.routeChoice?.action(action);
     api.summaryAction = (action: Parameters<RunSoFarView['action']>[0]) => this.runSoFar?.action(action);
     api.restartRun = () => this.world.restart();
+    api.enemyDraw = (id: number) => this.enemyDrawMode(id);
     api.loadout = () => structuredClone({ weapons: this.world.combat.slots, abilities: this.world.abilities.slots });
     api.homePanel = () => this.homePanel?.model.kind ?? null;
     api.homeAction = (action: Parameters<HomePanels['action']>[0]) => this.homePanel?.action(action);

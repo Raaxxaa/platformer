@@ -60,10 +60,10 @@ test('Crossroads inn saves the road, sleeps exactly120ticks, and loads the real 
   await page.screenshot({ path: 'test-results/m71-inn-forest-arrival.png' });
   expect(errors).toEqual([]);
 });
-test('Border summary Home restores the saved starting kit and Crossroads keeps the saved road', async ({ page }) => {
+test('Rebel Camp summary Home restores the saved starting kit and Crossroads keeps the saved road', async ({ page }) => {
   const saved = defaultSave(); saved.lastKit = { cls: 'tank', weapon: 'war_maul' }; saved.lastRoad = 'forest';
   await page.addInitScript(save => localStorage.setItem('rushblade.save', JSON.stringify(save)), saved);
-  await page.goto('/?debug=1&start=border');
+  await page.goto('/?debug=1&start=rebel_camp');
   await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(1, {}); g.setGold(999); g.teleport(680, 320); g.step(1, { interact: true }); });
   await page.evaluate(() => { const g = (window as any).__game; g.step(60, {}); });

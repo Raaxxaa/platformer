@@ -42,7 +42,7 @@ for (const road of ['mountains', 'swamps'] as const) {
 }
 
 for (const route of [{ road: 'mountain', level: 'mountains', boss: 'stone_colossus' }, { road: 'forest', level: 'swamps', boss: 'spider_queen' }] as const) {
-  test(`${route.road}: real Plains carry, inn, Guardian split 2, stat choice, Border and continuation`, async ({ page }) => {
+  test(`${route.road}: real Plains carry, inn, Guardian split 2, stat choice, Border and Stage 3`, async ({ page }) => {
     const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
     const typed = route.road === 'forest';
     await page.goto(`/?debug=1&start=plains&kit=tank:war_maul${typed ? '&seed=M71RUN' : ''}`);
@@ -113,10 +113,10 @@ for (const route of [{ road: 'mountain', level: 'mountains', boss: 'stone_coloss
       const g = (window as any).__game; g.teleport(680, 320); g.step(1, { interact: true });
       const before = g.runState().runTicks; g.step(60, {}); return before;
     });
-    // The renderer acknowledges the unchanged Border scene between the two real fade halves.
-    await page.waitForFunction(() => (window as any).__game.runState().transition?.part === 'in');
-    await page.evaluate(() => { const g = (window as any).__game; g.step(g.runState().transition.left, {}); });
-    expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('runSoFar');
+    // The Border inn now leads to Stage 3 (M9 part 3): the kingdom level loads between the two fade halves.
+    await arrive(page, 'kingdom');
+    expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('stage');
+    expect(await page.evaluate(() => (window as any).__game.runState().stage)).toBe(3);
     expect(await page.evaluate(() => (window as any).__game.runState().runTicks)).toBe(borderSleep + 120);
     expect(await page.evaluate(() => (window as any).__game.runState().splits)).toEqual([split1, kill.split, null, null]);
     const save = await page.evaluate(() => (window as any).__game.save());
