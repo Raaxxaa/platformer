@@ -444,7 +444,7 @@ describe('Shield (02 §12)', () => {
   it('a frontal projectile is parried in the first 0.20 s and sent back at 1.5x speed for 24', () => {
     const w = setup('shield', [{ id: 'bandit_archer', x: 262, hp: 5000 }]);
     const archer = w.enemies[0];
-    spawnEnemyProjectile(w, archer, ENEMY_PROJECTILES.enemy_arrow, 'facing', 0);
+    spawnEnemyProjectile(w, archer, ENEMY_PROJECTILES.enemy_arrow!, 'facing', 0);
     run(w, { attack1: true }, 1);
     let ev: WorldEvent[] = [];
     for (let i = 0; i < 20 && w.projectiles.length; i++) ev = ev.concat(run(w, { attack1: true }, 1));
@@ -460,7 +460,7 @@ describe('Shield (02 §12)', () => {
     const w = setup('shield', [{ id: 'bandit_archer', x: 330, hp: 5000 }]);
     run(w, { attack1: true }, 1);
     run(w, { attack1: true }, 30);
-    spawnEnemyProjectile(w, w.enemies[0], ENEMY_PROJECTILES.enemy_arrow, 'facing', 0);
+    spawnEnemyProjectile(w, w.enemies[0], ENEMY_PROJECTILES.enemy_arrow!, 'facing', 0);
     run(w, { attack1: true }, 60);
     expect(w.projectiles.length).toBe(0);
     expect(w.health.hp).toBeLessThan(w.health.maxHp);

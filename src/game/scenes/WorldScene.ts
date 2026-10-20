@@ -67,6 +67,8 @@ const DRAW = {
   projectile: 0xffd84a, attackBox: 0xff3030, attackAlpha: 0.4, enemyHurtbox: 0x4080ff,
   hpBack: 0x202020, hpFill: 0xe04040, hpGap: 4, eye: 2, overlay: 0x000000, overlayAlpha: 0.6,
   playerShot: 0xfff4c8, blast: 0xffa83a, blastAlpha: 0.5, hammer: 0x42d9ff, charge: 0xffd84a,
+  // Placeholders for M9 part 2 weapon pieces that have no art yet: Javelin platforms, rune ring, raised Shield.
+  platform: 0xc8a05a, rune: 0xb06cff, shield: 0x6fc4ff, shieldParry: 0xffffff,
 } as const;
 
 export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost {
@@ -245,6 +247,20 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       this.stepWorld(specToInput(this.prevSpec, spec));
       this.prevSpec = spec;
     }
+  }
+
+  /** Grey-box stand-ins until the weapons have art (M9 part 2): Javelin platforms (blinking in their last second), the rune ring, a raised shield. */
+  private drawWeaponPlaceholders(g: Phaser.GameObjects.Graphics, w: GameWorld): void {
+    for (const q of w.grid.pixelPlatforms) {
+      if (q.expireTick - w.tick < 120 && Math.floor(w.tick / 8) % 2 === 0) continue;
+      g.fillStyle(DRAW.platform, 1).fillRect(q.x, q.y, q.w, q.h);
+    }
+    for (const e of w.abilityEntities) {
+      if (e.kind !== 'rune_ring') continue;
+      for (const r of (e.view?.().runes as { x: number; y: number; w: number; h: number }[] | undefined) ?? []) g.fillStyle(DRAW.rune, 1).fillRect(r.x, r.y, r.w, r.h);
+    }
+    const sh = w.combat.shield, b = w.body;
+    if (sh?.phase === 'up') g.fillStyle(sh.t < sh.windowTicks ? DRAW.shieldParry : DRAW.shield, 1).fillRect(b.facing > 0 ? b.x + b.w / 2 : b.x - b.w / 2 - 4, b.y - b.h + 2, 4, b.h - 4);
   }
 
   /** Opens the class pick for these classes (07 §6.7). */
@@ -506,6 +522,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       if (this.boxesMode || !this.playerProjViews.hasArt(p.def.id)) this.playerShots.fillStyle(DRAW.playerShot, 1).fillRect(p.x - p.def.w / 2, p.y - p.def.h / 2, p.def.w, p.def.h);
     }
     for (const id of w.blasts) { const bl = w.hitGroups.find((x) => x.id === id); if (bl) g.fillStyle(DRAW.blast, DRAW.blastAlpha).fillRect(bl.rect.x, bl.rect.y, bl.rect.w, bl.rect.h); }
+    this.drawWeaponPlaceholders(g, w);
 
     const b = w.body;
     const left = b.x - b.w / 2, top = b.y - b.h;

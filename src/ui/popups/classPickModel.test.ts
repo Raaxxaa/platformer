@@ -18,6 +18,13 @@ describe('class pick (07 §6.7)', () => {
     expect(m.kit.weapon).toBe('staff');
     expect(m.step(press((i) => { i.pause.pressed = true; }))).toBe('close');
   });
+  it('lists the third starting weapon only once it is unlocked (05 §14.3)', () => {
+    expect(new ClassPickModel(['tank'], null).weapons).toEqual(['war_maul', 'iron_fists']);
+    const m = new ClassPickModel(['tank'], { cls: 'tank', weapon: 'giant_axe' }, { tank: ['giant_axe'] });
+    expect(m.weapons).toEqual(['war_maul', 'iron_fists', 'giant_axe']);
+    expect(m.kit).toEqual({ cls: 'tank', weapon: 'giant_axe' });
+    expect(new ClassPickModel(['wizard'], null, { tank: ['giant_axe'] }).weapons).toEqual(['storm_hammer', 'staff']);
+  });
   it('parses ?kit=', () => {
     expect(parseKit('archer:bow')).toEqual({ cls: 'archer', weapon: 'bow' });
     expect(parseKit('archer:staff')).toBeNull();
