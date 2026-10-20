@@ -2,7 +2,7 @@
 
 **Goal:** the run continues past the Border Village. The Border inn now loads the new `kingdom` level (Stage 3), with its 4 regular mobs, its elite and the Black Knight. Stage 4 and the Enemy King are the next part.
 
-**Status: done (2026-10-20).** Built by a build agent; SPEC-GAPs 28 and up in `docs/SPEC-GAPS.md`.
+**Status: done (2026-10-20).** Built by a build agent; SPEC-GAPs 28 to 34 in `docs/SPEC-GAPS.md`. Level source: `levels-src/kingdom/gen_kingdom.py` (a generator, like the Training Yard's), built by `npm run levels`.
 
 **Spec:** `docs/spec/04-enemies-bosses.md` §6 (Stage 3 mobs), §8 (`enemy_bolt`, `fireball`, `dark_wave`), §9 (boss rules), §11 (Black Knight); `docs/spec/06-run-levels-save.md` §8 (the 8 sections, `kingdom` row), §9 (arenas), §10 (cannon), §12.2 (Rebel Camp); `docs/spec/05-loot-economy.md` §5.5 (Black Knight loot), §7.5 and §9.5 (Ambush pack, enemy mix).
 

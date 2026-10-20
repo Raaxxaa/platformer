@@ -48,6 +48,7 @@ export function bossSpeedMult(e: EnemyState): number {
   return e.boss?.enraged ? e.def.boss?.enragedSpeedMult ?? 1 : 1;
 }
 
+// SPEC-GAP: 04 §6 does not say which side of the player the Battle Mage teleports to (docs/SPEC-GAPS.md 31).
 function teleportSpot(w: GameWorld, e: EnemyState): { x: number; y: number } | null {
   const own = e.x >= w.body.x ? 1 : -1;
   for (const side of [own, -own]) {
@@ -105,7 +106,7 @@ export function onKingdomDamaged(w: GameWorld, e: EnemyState): void {
   if (e.def.id !== 'black_knight' || e.dead || !e.boss || e.boss.introTicks > 0 || (e.boss.transitionTicks ?? 0) > 0) return;
   const s = kingdomState(e);
   if (s.bulwarkTicks > 0 || e.ai.state !== 'engage' || e.ai.attack || e.control) return;
-  if (Math.sign(w.body.x - e.x) !== e.facing) return;
+  if (Math.sign(w.body.x - e.x) !== e.facing) return;      // SPEC-GAP: "frontal" is judged from where the player stands (docs/SPEC-GAPS.md 30)
   const phase = e.boss.enraged ? 2 : 1;
   if ((e.ai.cooldowns.get('bulwark') ?? 0) > 0) return;
   e.ai.cooldowns.set('bulwark', ticks(K.bulwarkCooldownS[phase]));

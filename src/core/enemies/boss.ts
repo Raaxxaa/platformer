@@ -45,7 +45,7 @@ export function stepBossPhases(w: GameWorld): void {
     if (!e.boss || e.dead || e.boss.enraged) continue;
     const b = e.def.boss;
     if (!b || e.hp > e.maxHp * b.enrageAt) continue;
-    if (b.transition) {
+    if (b.transition) {                                        // SPEC-GAP: transition vs Break (docs/SPEC-GAPS.md 34)
       if (e.control?.type === 'stagger') continue;          // a Break in progress delays the transition until it ends (04 §9.3)
       cancelEnemyAttack(w, e);
       e.control = null; e.knockback = false;
