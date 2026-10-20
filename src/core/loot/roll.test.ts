@@ -1,3 +1,4 @@
+import { ABILITIES } from '../../data/abilities.ts';
 import { describe, expect, it } from 'vitest';
 import { FIXED_ODDS, GRADE_ODDS } from '../../data/loot.ts';
 import { WEAPON_CLASSES } from '../../data/classes.ts';
@@ -60,7 +61,7 @@ describe('weapon and ability rolls (05 §4)', () => {
       expect(a.charges).toBeGreaterThanOrEqual(1);
       expect(a.rechargeLeft).toBe(0);
     }
-    expect(abilityPool([]).length).toBe(9);
+    expect(abilityPool([]).length).toBe(Object.keys(ABILITIES).length);   // every implemented ability
   });
   it('exclusions: a weapon roll can leave out ids (key chest item B)', () => {
     for (let s = 0; s < 300; s++) expect(rollWeapon(mulberry32(s), GRADE_ODDS.key[1], [], { exclude: ['greatsword'] }).weaponId).not.toBe('greatsword');

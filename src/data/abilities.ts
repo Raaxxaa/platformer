@@ -80,6 +80,10 @@ export const ABILITIES: Partial<Record<AbilityId, AbilityDef>> = {
       { marks: 3, radiusPx: 256, durationS: 12, charges: 1 },
     ]),
   },
+  rage: {
+    ...base('rage'), hits: {},
+    levels: rows(18, [{ damageBonus: 0.30, charges: 1 }, { damageBonus: 0.37, charges: 1 }, { damageBonus: 0.45, charges: 1 }, { damageBonus: 0.52, charges: 1 }, { damageBonus: 0.60, charges: 1 }]),
+  },
   thunder_strike: {
     ...base('thunder_strike'), startupS: 0.15, recoveryS: 0.20, groundMoveCap: 0.3, airGravityMult: 0.3,
     hits: { bolt: { damage: 0, kb: [0, -100], poise: 15, hitStop: 0.05, kind: 'shot' } },
@@ -103,6 +107,7 @@ export const ABILITY = {
   shockwave: { dy: -18, h: 44 },
   shoulderCharge: { vx: 360, box: { dx: 14, dy: -14, w: 20, h: 28 } as Box, crackedReach: 4 },
   arrowRain: { near: 16, top: 96, bottom: 32, waveTicks: 24, scanDy: -14 },
+  rage: { durationS: 6.0, linkedMult: 1.5 },
   hunterMark: { mult: 1.30, linkedMult: 1.45 },
   thunderStrike: { reach: 224, vReach: 112, boltTicks: 12, box: { dx: 0, dy: -80, w: 24, h: 160 } as Box, colStart: 48, colStep: 32, colDrop: 160 },
   blink: { diag: 0.7071, minMove: 8, iframeTicks: 18 },

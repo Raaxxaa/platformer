@@ -7,3 +7,4 @@ import './arrow_rain.ts';
 import './hunters_mark.ts';
 import './thunder_strike.ts';
 import './blink.ts';
+import './rage.ts';
