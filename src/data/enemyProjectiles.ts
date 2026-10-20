@@ -20,3 +20,9 @@ export const ENEMY_PROJECTILES: Partial<Record<EnemyProjectileId, EnemyProjectil
 ENEMY_PROJECTILES.enemy_bolt = { id: 'enemy_bolt', w: 12, h: 4, motion: 'straight', speed: 420, range: 400, hit: { box: { dx: 0, dy: 0, w: 12, h: 4 }, damage: 12 } };
 ENEMY_PROJECTILES.fireball = { id: 'fireball', w: 12, h: 12, motion: 'straight', speed: 260, range: 360, hit: { box: { dx: 0, dy: 0, w: 12, h: 12 }, damage: 12, status: { id: 'burning' } } };
 ENEMY_PROJECTILES.dark_wave = { id: 'dark_wave', w: 20, h: 32, motion: 'floorWave', speed: 300, range: 480, hit: { box: { dx: 0, dy: 0, w: 20, h: 32 }, damage: 18 } };
+
+// Stage 4 (04 §8). The Castle Mage's bolts, the King's homing orbs and falling swords, the Red Dragon's fire rain.
+ENEMY_PROJECTILES.arcane_bolt = { id: 'arcane_bolt', w: 8, h: 8, motion: 'straight', speed: 240, range: 300, hit: { box: { dx: 0, dy: 0, w: 8, h: 8 }, damage: 10 } };
+ENEMY_PROJECTILES.royal_orb = { id: 'royal_orb', w: 12, h: 12, motion: 'straight', speed: 160, life: 3.0, homing: { radius: 200, turnRate: 45 }, hit: { box: { dx: 0, dy: 0, w: 12, h: 12 }, damage: 15 } };
+ENEMY_PROJECTILES.falling_sword = { id: 'falling_sword', w: 12, h: 32, motion: 'falling', speed: 600, hit: { box: { dx: 0, dy: 0, w: 12, h: 32 }, damage: 18 } };
+ENEMY_PROJECTILES.fire_rain = { id: 'fire_rain', w: 16, h: 16, motion: 'falling', speed: 450, hit: { box: { dx: 0, dy: 0, w: 16, h: 16 }, damage: 16, status: { id: 'burning' } } };

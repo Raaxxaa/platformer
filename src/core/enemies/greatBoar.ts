@@ -6,7 +6,7 @@ import { removeEnemyGroups, type AttackHooks } from './attack.ts';
 import type { EnemyState } from './enemy.ts';
 import { spawnEnemyProjectile } from './projectiles.ts';
 
-export interface RockMarker { x: number; ticks: number; topY: number; owner: number; damage?: number; attack?: 'rock_rain' }
+export interface RockMarker { x: number; ticks: number; topY: number; owner: number; damage?: number; attack?: 'rock_rain' | 'blade_rain' | 'fire_rain'; proj?: 'falling_rock' | 'falling_sword' | 'fire_rain' }
 
 function chargeSpeed(e: EnemyState): number {
   return e.boss?.enraged ? GREAT_BOAR.CHARGE_SPEED_ENRAGED : GREAT_BOAR.CHARGE_SPEED;
@@ -52,11 +52,11 @@ export function stepRockfall(w: GameWorld): void {
 
 /** Attack-held markers release on their owner's Act tick, even while Chilled or in hit-stop. */
 export function dropMarkedRocks(w:GameWorld,ready:(marker:RockMarker)=>boolean):void {
-  const def=ENEMY_PROJECTILES.falling_rock;if(!def)return;
   const dropping=w.rockMarkers.filter(ready);
   for (const r of dropping) {
     const owner = w.enemies.find((e) => e.id === r.owner);
-    if (!owner || owner.dead) continue;
+    const def = ENEMY_PROJECTILES[r.proj ?? 'falling_rock'];
+    if (!owner || owner.dead || !def) continue;
     const shot=r.damage===undefined?def:{...def,hit:{...def.hit,damage:r.damage}};
     const p = spawnEnemyProjectile(w, owner, shot, 'facing', 0, { x: r.x, y: r.topY + def.h / 2 });
     p.vx = 0;

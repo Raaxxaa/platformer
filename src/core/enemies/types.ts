@@ -38,7 +38,10 @@ export interface BossDef {
   attackGapEnraged: number;                         // s
   enrageAt: number;                                 // HP fraction
   transition?: boolean;                             // a 1.0 s phase transition at enrageAt (04 §9.3)
-  enragedSpeedMult?: number;                        // walk/chase multiplier once in phase 2
+  enragedSpeedMult?: number;
+  phaseAt?: number[];                               // HP fractions where phases 2, 3... start (the King: [0.66, 0.33])
+  attackGaps?: number[];                            // per phase
+  speedMults?: number[];                            // walk/chase multiplier per phase                        // walk/chase multiplier once in phase 2
   bar: { name: string; title: string; marks: number[] };
 }
 export interface EnemyDef {

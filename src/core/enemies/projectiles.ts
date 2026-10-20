@@ -19,6 +19,8 @@ export interface EnemyProjectile {
   /** Last horizontal travel direction; grounded bombs keep their throw direction. */
   dir: 1 | -1;
   traveled: number;
+  /** World ticks alive, for `life` (the King's orbs). */
+  age?: number;
   groupId: number;
   arc?: { landed: boolean; fuseTicks: number };
 }
@@ -216,6 +218,8 @@ export function stepProjectiles(w: GameWorld): void {
       removeProjectile(w, p);
       continue;
     }
+    p.age = (p.age ?? 0) + scale;
+    if (p.def.life !== undefined && p.age >= ticks(p.def.life)) { removeProjectile(w, p); continue; }
     p.traveled += Math.hypot(nx - p.x, ny - p.y);
     p.x = nx; p.y = ny;
     if (p.def.range !== undefined && p.traveled >= p.def.range) { removeProjectile(w, p); continue; }

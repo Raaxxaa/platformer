@@ -84,6 +84,7 @@ import { createFallingRocks, stepFallingRocks, type FallingRocksState } from '..
 import { CANNON, FALLING_ROCKS } from '../../data/hazards.ts';
 import { createCannons, stepCannons, type CannonsState } from '../hazards/cannons.ts';
 import { stepMountainReaction } from '../enemies/mountains.ts';
+import { onCastleDamaged, stepCastleSpecial } from '../enemies/castle.ts';
 import { cancelKingdomReaction, onKingdomDamaged, stepKingdomReaction } from '../enemies/kingdom.ts';
 import { onSwampDamaged, stepSwampSpecial } from '../enemies/swamps.ts';
 import { createPlayerStatus, stepPlayerStatus, type PlayerStatuses } from '../combat/playerStatus.ts';
@@ -522,6 +523,19 @@ export class GameWorld {
   /** The stage boss died (06 §2.5): split 1 on this tick, unless the player died on an earlier tick. */
   onStageBossDefeated(): void {
     const r = this.run;
+    if (this.stage === 4) {                                   // the Enemy King: the run completes (06 §2.6)
+      if (r.phase === 'dead' && r.deathTick !== this.tick) return;
+      if (r.phase === 'dead') {                               // wins over a player death on the same tick: no death is recorded
+        this.events = this.events.filter((e) => e.t !== 'playerDied');
+        this.phase = 'stage'; r.deathTick = null;
+      }
+      r.phase = 'runComplete';
+      const final = recordSplit(r, this.stage, this.records, this.opts.practice);
+      r.bossDefeatedTick = this.tick;
+      if (final) this.events.push({ t: 'split', ...final });
+      this.events.push({ t: 'runCompleted' });
+      return;
+    }
     if (r.phase === 'dead' && r.deathTick !== this.tick) return;
     const split = recordSplit(r, this.stage, this.records, this.opts.practice);
     if (!split) return;
@@ -621,6 +635,7 @@ export class GameWorld {
   onEnemyHitByPlayer(e: EnemyState): void {
     onSwampDamaged(this,e);
     onKingdomDamaged(this,e);
+    onCastleDamaged(this,e);
     becomeAware(this, e, true);
   }
 
@@ -747,7 +762,7 @@ export class GameWorld {
       if (!e.knockback && e.grounded) e.vx = 0;
     } else if (!e.knockback) {
       const sparring = e.def.id === 'sparring_dummy';
-      if (stepGuardianSpecial(this,e)||stepSwampSpecial(this,e)||stepMountainReaction(this,e)||stepKingdomReaction(this,e)) { /* Waiting states and reactions own movement. */ }
+      if (stepGuardianSpecial(this,e)||stepSwampSpecial(this,e)||stepMountainReaction(this,e)||stepKingdomReaction(this,e)||stepCastleSpecial(this,e)) { /* Waiting states and reactions own movement. */ }
       else if (e.ai.attack) {
         stepEnemyAttack(this, e, attackHooks(e));
         if (sparring && !e.ai.attack) stepSparring(this, e);   // the next swing starts as the last ends (every 2.0 s)

@@ -8,6 +8,9 @@ import { spawnVenomSpit, spawnEnemyProjectile } from './projectiles.ts';
 import { finishEnemyAct, spawnAttackGroup, startEnemyAttack, type AttackHooks } from './attack.ts';
 import { dropMarkedRocks } from './greatBoar.ts';
 import { KINGDOM } from '../../data/kingdom.ts';
+import { CASTLE } from '../../data/castle.ts';
+
+const LANDING = ['leap_slam', 'ceiling_drop', 'leap_chop', 'shockwave_slam'];
 
 export interface GuardianState {
   marker: { x: number; y: number } | null;
@@ -95,7 +98,7 @@ export function stepGuardianBody(w: GameWorld, e: EnemyState): boolean {
 
 export function afterGuardianBody(w: GameWorld, e: EnemyState): void {
   const a = e.ai.attack;
-  if (a?.phase === 'act' && e.grounded && (a.def.id === 'leap_slam' || a.def.id === 'ceiling_drop')) {
+  if (a?.phase === 'act' && e.grounded && LANDING.includes(a.def.id)) {
     finishEnemyAct(w, e, guardianAttackHooks(e) ?? {});
   }
 }
@@ -111,13 +114,13 @@ function impact(w: GameWorld, e: EnemyState): void {
 
 export function guardianAttackHooks(e: EnemyState): AttackHooks | null {
   const def = e.ai.attack?.def;
-  if (!def || !['stone_colossus', 'spider_queen', 'black_knight'].includes(e.def.id)) return null;
-  if (e.def.id === 'black_knight' && def.id !== 'leap_slam') return null;   // its other moves use the shared hooks
-  const landing = def.id === 'leap_slam' || def.id === 'ceiling_drop';
+  if (!def || !['stone_colossus', 'spider_queen', 'black_knight', 'royal_executioner', 'enemy_king'].includes(e.def.id)) return null;
+  if (['black_knight', 'royal_executioner', 'enemy_king'].includes(e.def.id) && !LANDING.includes(def.id)) return null;   // their other moves use the shared hooks
+  const landing = LANDING.includes(def.id);
   return {
     deferHit: landing, untilLanding: landing,
     onActStart(w, en) {
-      if (def.id === 'leap_slam' && def.leap && 'jumpToX' in def.leap) {
+      if (def.leap && 'jumpToX' in def.leap) {
         const time = def.leap.jumpToX;
         en.vx = (targetX(w, en, w.body.x) - en.x) / time;
         en.vy = -GUARDIANS2.leapGravityHalf * time;
@@ -141,10 +144,12 @@ export function guardianAttackHooks(e: EnemyState): AttackHooks | null {
     onRecStart(w, en) {
       en.vx = 0;
       if (landing) impact(w, en);
-      if (def.id === 'leap_slam') {
+      if (def.id === 'leap_slam' || def.id === 'shockwave_slam') {
         const base = ENEMY_PROJECTILES.shockwave!;
-        const knight = en.def.id === 'black_knight';
-        const pd = { ...base, speed: knight ? KINGDOM.leapWaveSpeed : GUARDIANS2.leapWaveSpeed, range: knight ? KINGDOM.leapWaveRange : GUARDIANS2.leapWaveRange, hit: { ...base.hit, playerKb: def.hit!.playerKb } };
+        const knight = en.def.id === 'black_knight', king = en.def.id === 'enemy_king';
+        const pd = king
+          ? { ...base, h: CASTLE.king.slamWaveH, speed: CASTLE.king.slamWaveSpeed, range: undefined, hit: { ...base.hit, damage: CASTLE.king.slamWaveDamage, playerKb: def.hit!.playerKb } }   // to the walls (04 §12)
+          : { ...base, speed: knight ? KINGDOM.leapWaveSpeed : GUARDIANS2.leapWaveSpeed, range: knight ? KINGDOM.leapWaveRange : GUARDIANS2.leapWaveRange, hit: { ...base.hit, playerKb: def.hit!.playerKb } };
         for (const dir of [-1, 1] as const) {
           const p = spawnEnemyProjectile(w, en, pd, 'facing', 0, { x: en.x, y: en.y });
           p.vx = dir * pd.speed; p.dir = dir;

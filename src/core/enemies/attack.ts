@@ -5,13 +5,15 @@ import { ticks } from '../tuning.ts';
 import type { EnemyState } from './enemy.ts';
 import type { EnemyAttackDef, EnemyHit } from './types.ts';
 import { kingdomTeleTick } from './kingdom.ts';
+import { castleTeleStart, castleTeleTick, cancelCastleAttack } from './castle.ts';
+import { dragonTeleStart, dragonTeleTick, cancelDragonAttack } from './dragon.ts';
 import { bossAttackGapTicks } from './boss.ts';
 import { guardianTeleStart, cancelGuardianAttack } from './guardians2.ts';
 
 export type ChainHit = NonNullable<EnemyAttackDef['chain']>[number];
 
 /** The boss phase (1 or 2) an attack's `phases` filters use. */
-export function bossPhase(e: EnemyState): number { return e.boss?.enraged ? 2 : 1; }
+export function bossPhase(e: EnemyState): number { return e.boss ? Math.max(e.boss.phase, e.boss.enraged ? 2 : 1) : 1; }
 
 /** The hit, Act length and Move of the running link (04 §2.6 chains). */
 export function currentLink(a: NonNullable<EnemyState['ai']['attack']>): { hit?: EnemyHit; active: number; move?: { dist: number; time: number } } {
@@ -46,6 +48,8 @@ export function startEnemyAttack(w: GameWorld, e: EnemyState, def: EnemyAttackDe
   if(e.def.id==='treant'&&def.id==='root_snare')e.swamp!.marker={x:w.body.x,y:w.body.y};
   else if(e.def.id==='treant')e.swamp!.marker=null;
   guardianTeleStart(w,e);
+  castleTeleStart(w,e);
+  dragonTeleStart(w,e);
   w.events.push({ t: 'enemyTelegraph', enemyId: e.id, attackId: def.id, duration: def.telegraph });
 }
 
@@ -54,6 +58,8 @@ export function cancelEnemyAttack(w: GameWorld, e: EnemyState): void {
   const a = e.ai.attack;
   if (!a) return;
   cancelGuardianAttack(w,e);
+  cancelCastleAttack(w,e);
+  cancelDragonAttack(w,e);
   if(a.def.id==='root_snare'&&e.swamp)e.swamp.marker=null;
   removeEnemyGroups(w, e);
   setCooldown(e, a.def);
@@ -65,9 +71,9 @@ export function cancelEnemyAttack(w: GameWorld, e: EnemyState): void {
   if (e.knockback === false) e.vx = 0;
 }
 
-export function spawnAttackGroup(w: GameWorld, e: EnemyState): void {
+export function spawnAttackGroup(w: GameWorld, e: EnemyState, override?: EnemyHit): void {
   const a = e.ai.attack!;
-  const hit = currentLink(a).hit;
+  const hit = override ?? currentLink(a).hit;
   if (!hit) return;
   const marker=a.def.id==='root_snare'?e.swamp?.marker:null;
   const id = w.newId();
@@ -95,6 +101,8 @@ export function stepEnemyAttack(w: GameWorld, e: EnemyState, hooks: AttackHooks 
   a.t += 1;
   if (a.phase === 'tele') {
     kingdomTeleTick(w, e);
+    castleTeleTick(w, e);
+    dragonTeleTick(w, e);
     if (a.t < a.len) return false;
     a.phase = 'act';
     a.t = 0;

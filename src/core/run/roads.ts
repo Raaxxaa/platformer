@@ -9,9 +9,8 @@ export function openInn(w: GameWorld): boolean {
     beginTransition(w.run, 'sleep', { phase: 'stage', levelId: 'kingdom', stage: 3 });
     return true;
   }
-  if (w.level?.id === 'rebel_camp') {
-    // SPEC-GAP: Stage 4 and the Enemy King come in the next M9 part; until then the Rebel Camp inn ends the run at "Run so far".
-    beginTransition(w.run, 'sleep', { phase: 'runSoFar', levelId: 'rebel_camp', stage: 0 });
+  if (w.level?.id === 'rebel_camp') {                  // 06 §1: the Rebel Camp inn leads to Stage 4
+    beginTransition(w.run, 'sleep', { phase: 'stage', levelId: 'castle', stage: 4 });
     return true;
   }
   w.run.phase = 'routeChoice'; return true;

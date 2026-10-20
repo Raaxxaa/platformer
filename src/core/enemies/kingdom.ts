@@ -45,6 +45,7 @@ export function preferredBand(w: GameWorld, e: EnemyState): [number, number] {
 
 /** Black Knight phase-2 walk speed (84 px/s). */
 export function bossSpeedMult(e: EnemyState): number {
+  if (e.boss?.phase && e.def.boss?.speedMults) return e.def.boss.speedMults[e.boss.phase - 1] ?? 1;
   return e.boss?.enraged ? e.def.boss?.enragedSpeedMult ?? 1 : 1;
 }
 

@@ -19,6 +19,7 @@ export interface Chest { objectId: number; kind: 'key' | 'cursed' | 'timed'; x: 
 /** 04 §2.9 elite item roll: key below 0.15, ability below 0.30. */
 export const ELITE_DROP = { key: 0.15, ability: 0.30 } as const;
 const CHEST_KIND: Record<string, Chest['kind']> = { key_chest: 'key', cursed_chest: 'cursed', timed_chest: 'timed' };
+const DRAGON_ELEMENT = { red: 'fire', white: 'ice', storm: 'lightning', green: 'poison' } as const;
 /** Items pop out 16 px above their source and fall. */
 const POP_UP = 16;
 
@@ -109,7 +110,7 @@ export function lootOnKill(w: GameWorld, e: EnemyState): void {
     const rng = sourceRng(w.runSeed, 'loot', levelId(w), 'elite', e.id);
     dropItem(w, e.x, y, abilityItem(w, rng, 'key'));
   }
-  if (e.boss) {
+  if (e.boss && e.def.id !== 'enemy_king') {                // the King drops nothing; the run ends (04 §9.6)
     const rng = sourceRng(w.runSeed, 'loot', levelId(w), e.def.id);
     const arena=w.arenas.get(e.boss.arenaId)?.rect;
     const x=arena?Math.max(arena.x+GUARDIANS2.lootInset,Math.min(arena.x+arena.w-GUARDIANS2.lootInset,e.x)):e.x;
@@ -117,6 +118,9 @@ export function lootOnKill(w: GameWorld, e: EnemyState): void {
       const weapon = rollWeapon(rng, FIXED_ODDS.blackKnight, w.classState.carriedClasses, { unlocked: w.run.lootUnlocked });
       dropItem(w, x - KINGDOM.abilityDx, y, { weapon });
       dropItem(w, x + KINGDOM.abilityDx, y, abilityItem(w, rng, 'key'));
+    } else if (e.def.id === 'dragon') {                     // 05 §3.5: an A or S weapon with the Dragon's element
+      const weapon = rollWeapon(rng, FIXED_ODDS.dragon, w.classState.carriedClasses, { unlocked: w.run.lootUnlocked, forcedElement: DRAGON_ELEMENT[e.dragon?.color ?? w.run.dragon.color] });
+      dropItem(w, x, y, { weapon });
     } else dropItem(w, x, y, weaponItem(w, rng, 'key'));
   }
 }

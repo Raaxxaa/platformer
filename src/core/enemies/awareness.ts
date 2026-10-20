@@ -58,6 +58,7 @@ export function becomeAware(w: GameWorld, e: EnemyState, byHit: boolean): void {
 /** One enemy-time tick of noticing. */
 export function stepAwareness(w: GameWorld, e: EnemyState): void {
   if(e.swamp?.submerged||e.swamp?.hanging||e.ai.attack?.def.id==='rise_swipe'||e.ai.attack?.def.id==='drop')return;
+  if (e.def.id === 'gargoyle') return;           // the stone-form wake check replaces the notice timer (04 §7)
   if (e.aware || e.def.tier === 'dummy' || e.def.tier === 'target') return;
   if (e.ai.pendingAwareAt >= 0 && w.tick >= e.ai.pendingAwareAt) { becomeAware(w, e, false); return; }
   if (canSee(w, e)) e.noticeT += 1;

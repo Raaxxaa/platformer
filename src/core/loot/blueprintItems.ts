@@ -29,6 +29,7 @@ export function stepBlueprints(w: GameWorld): void {
 export function grantKingUnlocks(w: GameWorld): void {
   if (!w.run.startKit) return;
   const intent = kingUnlocks(w.runSeed, w.run.startKit.cls, w.run.lootUnlocked, w.run.blueprintsDropped, w.run.seeded, w.opts.practice);
+  w.run.winUnlocks = { blueprint: intent.blueprint, startWeapon: intent.startWeapon };
   if (intent.blueprint) { w.run.blueprintsDropped.push(intent.blueprint); w.events.push({ t: 'blueprintFound', id: intent.blueprint }); }
   if (intent.startWeapon) w.events.push({ t: 'startingWeaponUnlocked', cls: w.run.startKit.cls, weapon: intent.startWeapon });
 }

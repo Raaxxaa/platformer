@@ -13,6 +13,10 @@ export interface BossState {
   arenaId: string;
   introTicks: number;                 // 1.0 s intro after the lock: no attacks
   enraged: boolean;
+  /** 1-based boss phase (04 §9.3); `enraged` is phase >= 2. */
+  phase: number;
+  /** Phase entries waiting for the boss to be free (the King's Royal Decree). */
+  entered?: number[];
   /** 04 §9.3: the 1.0 s phase transition (no acting, no poise damage, no control effects). */
   transitionTicks?: number;
   lastAttack?: string;
@@ -25,7 +29,7 @@ export function spawnBoss(w: GameWorld, a: ArenaRt, bossId: EnemyId, entry: 'lef
   if (!ENEMIES[bossId]) return null;
   const x = entry === 'left' ? a.rect.x + a.rect.w * BOSS.SPAWN_FRACTION : a.rect.x + a.rect.w * (1 - BOSS.SPAWN_FRACTION);
   const e = spawnEnemy(w, { enemy: bossId, x: Math.round(x), y: a.rect.y + a.rect.h, facing: entry === 'left' ? -1 : 1 });
-  e.boss = { arenaId: a.id, introTicks: 0, enraged: false, transitionTicks: 0 };
+  e.boss = { arenaId: a.id, introTicks: 0, enraged: false, phase: 1, transitionTicks: 0 };
   w.enemies.push(e);
   return e;
 }
@@ -38,27 +42,33 @@ export function wakeBoss(e: EnemyState): void {
   e.boss!.introTicks = BOSS.INTRO_TICKS;
 }
 
-/** After step 9: enrage at ≤ 50% HP, at once and with no pause (04 §9.3). */
+/** After step 9: enrage / phase change (04 §9.3). Bosses with `transition` play a 1.0 s transition; a Break delays it. */
 export function stepBossPhases(w: GameWorld): void {
   for (const e of w.enemies) {
     queueQueenBroods(e);
-    if (!e.boss || e.dead || e.boss.enraged) continue;
+    if (!e.boss || e.dead) continue;
     const b = e.def.boss;
-    if (!b || e.hp > e.maxHp * b.enrageAt) continue;
+    if (!b || (e.boss.transitionTicks ?? 0) > 0) continue;
+    const at = b.phaseAt ?? [b.enrageAt];
+    let target = 1;
+    at.forEach((f, i) => { if (e.hp <= e.maxHp * f) target = i + 2; });     // phase skip: straight to the lowest phase reached
+    if (target <= e.boss.phase) continue;
     if (b.transition) {                                        // SPEC-GAP: transition vs Break (docs/SPEC-GAPS.md 34)
       if (e.control?.type === 'stagger') continue;          // a Break in progress delays the transition until it ends (04 §9.3)
       cancelEnemyAttack(w, e);
       e.control = null; e.knockback = false;
       e.boss.transitionTicks = ticks(KINGDOM.transitionS);
     }
+    e.boss.phase = target;
     e.boss.enraged = true;
+    (e.boss.entered ??= []).push(target);
   }
 }
 
 /** Attack gap in ticks: the enraged value once enraged. */
 export function bossAttackGapTicks(e: EnemyState): number | null {
   if (!e.boss?.enraged || !e.def.boss) return null;
-  return ticks(e.def.boss.attackGapEnraged);
+  return ticks(e.def.boss.attackGaps?.[e.boss.phase - 1] ?? e.def.boss.attackGapEnraged);
 }
 
 /** The boss of a locked boss arena, for the bar (07 draws it). */
@@ -87,7 +97,8 @@ export function onBossKilled(w: GameWorld, e: EnemyState): void {
   clearBossEffects(w,e);
   w.flask.charges = w.flask.maxCharges;
   w.events.push({ t: 'bossDefeated', bossId: e.def.id, stage: w.stage });
-  w.onStageBossDefeated();
+  if (e.def.id === 'dragon') w.run.dragon.outcome = 'killed';     // 06 §4: no split, door or stat pick
+  else w.onStageBossDefeated();
   const a = w.arenas.get(e.boss!.arenaId);
   if (a) {
     for (const id of a.exitDoorIds) w.setBodyActive(id, false);

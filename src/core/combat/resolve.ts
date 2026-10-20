@@ -27,6 +27,7 @@ import { applyEnemyDamage, enemyGuarded } from './enemyDamage.ts';
 import { MOUNTAIN } from '../../data/mountains.ts';
 import { removePlayerProjectile } from './playerProjectiles.ts';
 import { applyPlayerStatus } from './playerStatus.ts';
+import { castleTargetMult, collapseArmor, isDiveGroup, isPile, isStone } from '../enemies/castle.ts';
 
 /** The player hurtbox as a rect. */
 export function playerRect(w: GameWorld): Rect {
@@ -40,6 +41,7 @@ function hittable(e: EnemyState): boolean {
 
 /** An enemy reaches 0 HP: it dies, its attack and boxes go, and step 9 runs its on-kill effects. */
 export function killEnemy(w: GameWorld, e: EnemyState): void {
+  if (collapseArmor(w, e)) return;                          // Living Armor: the first HP 0 is a collapse, not a kill (04 §7)
   e.hp = 0;
   e.dead = true;
   e.deathTicks = e.def.boss ? BOSS.DEATH_ANIM_TICKS : ENEMY.DEATH_ANIM_TICKS;
@@ -60,9 +62,9 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const chance = critChance(w, isWeapon ? g.slot : undefined);
   const crit = guaranteedCrit(w, g, e) || (chance > 0 && w.rng.combat.next() < chance);
   // Shatter (02 §6.3): any direct hit on a Frozen enemy, as a target multiplier; it ends the freeze.
-  const guarded = enemyGuarded(w,g,e), warded = e.ward !== null;
+  const guarded = enemyGuarded(w,g,e), warded = e.ward !== null, stone = isStone(e);
   const armor = e.def.armor && !(e.def.armor.heavyIgnores && spec.heavy) ? e.def.armor.mult : 1;     // Knight armor (04 §6)
-  const tMult = targetMult(w, g, e) * shatterMult(w, e, true) * (guarded ? e.def.guard!.guardMult : 1) * armor;
+  const tMult = targetMult(w, g, e) * shatterMult(w, e, true) * (guarded ? e.def.guard!.guardMult : 1) * armor * castleTargetMult(e);
   const { damage, procBase } = playerHitDamage({
     base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: tMult,
   });
@@ -103,16 +105,16 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   }
   // Poise and stagger, then knockback (full if staggered; ignored if committed otherwise), then control.
   const committed = isCommitted(e);
-  const staggered = !warded && damagePoise(w, e, spec.poise * wind.poise * (guarded && !spec.heavy ? MOUNTAIN.guardPoiseMult : 1), !!spec.heavy);
+  const staggered = !warded && !stone && damagePoise(w, e, spec.poise * wind.poise * (guarded && !spec.heavy ? MOUNTAIN.guardPoiseMult : 1), !!spec.heavy);
   const dir = kbDir(w, g, e);
   const frozen = e.control?.type === 'pin' || e.status.frozen !== null;    // Frozen takes no knockback (02 §6.3)
   const ctl = spec.control;
   const kb: [number, number] = [spec.kb[0] * wind.kb, spec.kb[1] * wind.kb];
-  if (!warded && (!guarded || spec.heavy)) {
+  if (!warded && !stone && (!guarded || spec.heavy)) {
     if (ctl?.type === 'launch') applyLaunch(w, e, spec.kb, dir);
     else if (!frozen && (staggered || !committed)) applyEnemyKnockback(e, kb, dir);
   }
-  if (ctl?.type === 'knockdown' || ctl?.type === 'stun') controlOrPoise(w, e, ctl.type, ctl.duration);
+  if (!stone && (ctl?.type === 'knockdown' || ctl?.type === 'stun')) controlOrPoise(w, e, ctl.type, ctl.duration);
   else if (ctl?.type === 'pull' && g.pullTo) applyPull(w, e, g.pullTo);
   // Instant awareness: resolved while unaware, flips right after (04 §2.4).
   w.onEnemyHitByPlayer(e);
@@ -135,6 +137,7 @@ export function resolvePlayerHits(w: GameWorld): void {
       if (!hittable(e) || !canHit(g, e.id, w.tick)) continue;
       if (!groupOverlaps(g, enemyRect(e))) continue;
       if (!enemyGuarded(w,g,e) && g.contact?.(w, g, e)) continue;
+      if (isPile(e)) { if (!isDiveGroup(w, g.id)) continue; e.castle!.diveKill = true; }     // the pile: a dive slam only (04 §7)
       markHit(g, e.id, w.tick);
       applyPlayerHit(w, g, e);
     }

@@ -32,11 +32,12 @@ describe('Crossroads and Border inns (06 §3, §12.2)', () => {
     expect(events).toContainEqual({t:'loadLevel',levelId:'kingdom',stage:3});
     expect(w.run.splits).toEqual([100,300,null,null]);expect(w.records.pbs).toEqual({});
   });
-  it('the Rebel Camp inn ends the run for now at Run so far (Stage 4 is the next part)',()=>{
+  it('the Rebel Camp inn sleeps into Stage 4 (the castle level)',()=>{
     const data=loadLevel(json);data.id='rebel_camp';const w=GameWorld.fromLevel(data,{seedText:'REBEL'});
-    w.run.splits=[100,300,500,null];w.run.road='forest';
-    expect(openInn(w)).toBe(true);stepSpec(w,{},60);expect(w.run.transition?.target.phase).toBe('runSoFar');
-    w.completeLoading();stepSpec(w,{},60);expect(w.run.phase).toBe('runSoFar');expect(w.run.levelId).toBe('rebel_camp');expect(w.run.stage).toBe(0);
+    w.run.splits=[100,300,500,null];w.run.road='forest';w.health.hp=10;
+    expect(openInn(w)).toBe(true);const events=stepSpec(w,{},60);
+    expect(w.run.transition?.target).toEqual({phase:'stage',levelId:'castle',stage:4});
+    expect(events).toContainEqual({t:'loadLevel',levelId:'castle',stage:4});expect(w.health.hp).toBe(100);
     expect(w.records.pbs).toEqual({});
   });
   it('run kill counters survive a village boundary for the run-so-far screen', () => {

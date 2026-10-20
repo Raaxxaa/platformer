@@ -17,7 +17,7 @@ import type { EnemyId } from './types.ts';
 function world(id: EnemyId) {
   const grid=gridFromRects(60,30,[{x0:0,y0:20,x1:59,y1:29,kind:'solid'},{x0:0,y0:0,x1:59,y1:0,kind:'solid'}]);
   const w=new GameWorld({grid,spawn:{x:200,y:320},stage:2,enemies:[{enemy:id,x:400,y:320,facing:-1}]});
-  const e=w.enemies[0];e.dormant=false;e.aware=true;e.boss={arenaId:'boss2',introTicks:0,enraged:false};e.guardian=createGuardianState();
+  const e=w.enemies[0];e.dormant=false;e.aware=true;e.boss={arenaId:'boss2',introTicks:0,enraged:false,phase:1};e.guardian=createGuardianState();
   w.arenas.set('boss2',{id:'boss2',kind:'boss',rect:{x:16,y:16,w:928,h:304},doorIds:[],entryDoorIds:[],exitDoorIds:[],maxWave:0,parTicks:0,waveIds:[],nextWaveTick:0,doorsOpenTick:0,lockedOnce:true});
   w.run.arenas.boss2={locked:true,wave:0,lockTick:0,cleared:false,clearTick:null};
   w.health.iframeTicks=99999;return {w,e};

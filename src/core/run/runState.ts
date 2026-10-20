@@ -38,6 +38,8 @@ export interface RunState {
   /** Simulation tick of the Guardian death; statPick starts 120 ticks later. */
   bossDefeatedTick: number | null;
   statPickDone: boolean;
+  /** What beating the Enemy King unlocked, for the victory screen (05 §14.2, §14.3). */
+  winUnlocks: { blueprint: string | null; startWeapon: string | null };
 }
 
 export function createRunState(seedText: string, seeded = false): RunState {
@@ -46,7 +48,7 @@ export function createRunState(seedText: string, seeded = false): RunState {
     phase: 'stage', pausedFrom: null, transition: null, seedText, runSeed, seeded, startKit: null, started: false, endRecorded: false, stats: defaultRunStats(), goldEarnedTenths: 0, lootUnlocked: [], blueprintsDropped: [], road: null, stage: 1, levelId: 'plains',
     dragon: rollDragon(() => dragonRng.next()), runTicks: 0, stageTicks: 0, splits: [null, null, null, null], deathTick: null, sectionReached: 0,
     arenas: {}, timedDoors: {}, restartHoldTicks: 0, restartNeedsRelease: false,
-    bossDefeatedTick: null, statPickDone: false,
+    bossDefeatedTick: null, statPickDone: false, winUnlocks: { blueprint: null, startWeapon: null },
   };
 }
 

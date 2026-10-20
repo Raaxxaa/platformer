@@ -91,6 +91,8 @@ export interface EnemyState {
   summonOwner?: number;
   guardian?: GuardianState;
   kingdom?: import('./kingdom.ts').KingdomState;
+  castle?: import('./castle.ts').CastleState;
+  dragon?: import('./dragon.ts').DragonState;
 }
 
 /** Stage-scaled attack damage A (a float; 02 §3.3 rounds it). */
@@ -130,7 +132,7 @@ export function activateEnemies(w: GameWorld): void {
 
 /** Hurtbox rect (top-left) of an enemy. */
 export function enemyRect(e: EnemyState): { x: number; y: number; w: number; h: number } {
-  const { w, h } = e.def.hurtbox;
+  const { w, h } = e.castle && e.castle.pileTicks > 0 ? { w: 20, h: 10 } : e.def.hurtbox;     // the Living Armor pile (04 §7)
   return { x: e.x - w / 2, y: e.y - h, w, h };
 }
 

@@ -3,11 +3,13 @@ import type { EnemyDef, EnemyId } from '../core/enemies/types.ts';
 import { ENEMY } from '../core/tuning.ts';
 import { STONE_COLOSSUS, SPIDER_QUEEN } from './guardians2.ts';
 import { SPIDERLING } from './spiderlings.ts';
+import { ROYAL_GUARD, GARGOYLE, CASTLE_MAGE, LIVING_ARMOR, ROYAL_EXECUTIONER, ENEMY_KING } from './castle.ts';
 import { SOLDIER, CROSSBOWMAN, WAR_HOUND, BATTLE_MAGE, KNIGHT, BLACK_KNIGHT } from './kingdom.ts';
 
 const REGULAR = { tier: 'regular', elite: false, attackGap: ENEMY.ATTACK_GAP_REGULAR, turnDelay: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged' } as const;
 
-export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'great_boar' | 'bat_swarm' | 'goblin_miner' | 'rock_golem' | 'ram' | 'goblin_shaman' | 'bog_zombie' | 'giant_spider' | 'wisp' | 'swamp_witch' | 'treant' | 'soldier' | 'crossbowman' | 'war_hound' | 'battle_mage' | 'knight' | 'black_knight', EnemyDef> = {
+export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'great_boar' | 'bat_swarm' | 'goblin_miner' | 'rock_golem' | 'ram' | 'goblin_shaman' | 'bog_zombie' | 'giant_spider' | 'wisp' | 'swamp_witch' | 'treant' | 'soldier' | 'crossbowman' | 'war_hound' | 'battle_mage' | 'knight' | 'black_knight' | 'royal_guard' | 'gargoyle' | 'castle_mage' | 'living_armor' | 'royal_executioner' | 'enemy_king', EnemyDef> = {
+  royal_guard: ROYAL_GUARD, gargoyle: GARGOYLE, castle_mage: CASTLE_MAGE, living_armor: LIVING_ARMOR, royal_executioner: ROYAL_EXECUTIONER, enemy_king: ENEMY_KING,
   soldier: SOLDIER, crossbowman: CROSSBOWMAN, war_hound: WAR_HOUND, battle_mage: BATTLE_MAGE, knight: KNIGHT, black_knight: BLACK_KNIGHT,
   stone_colossus: STONE_COLOSSUS,
   spider_queen: SPIDER_QUEEN,

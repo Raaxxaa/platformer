@@ -11,6 +11,7 @@ import { mountainAttackHooks } from './mountains.ts';
 import { swampAttackHooks } from './swamps.ts';
 import { guardianAttackHooks } from './guardians2.ts';
 import { currentLink } from './attack.ts';
+import { castleAttackHooks } from './castle.ts';
 import { KINGDOM } from '../../data/kingdom.ts';
 
 
@@ -42,6 +43,7 @@ export function attackHooks(e: EnemyState): AttackHooks {
   const def = e.ai.attack?.def;
   if (!def) return {};
   if (e.def.id === 'great_boar') return greatBoarHooks(e);
+  const castle = castleAttackHooks(e); if (castle) return castle;
   const guardian=guardianAttackHooks(e);if(guardian)return guardian;
   const mountain = mountainAttackHooks(e);
   if (mountain) return mountain;
