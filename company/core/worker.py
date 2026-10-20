@@ -54,8 +54,18 @@ def aider_command(cfg: Config, t: Task, wt: Path, message_file: Path, log_dir: P
            "--llm-history-file", str(log_dir / "aider.llm.txt")]
     for r in reads:
         cmd += ["--read", r]
+    cmd += ["--aiderignore", str(write_aiderignore(cfg, log_dir, [*reads, *edits]))]
     cmd += edits
     return cmd
+
+
+def write_aiderignore(cfg: Config, log_dir: Path, keep: list[str]) -> Path:
+    """Aider auto-adds every file a prompt mentions. Hide docs, tests and huge files from that (and from the
+    repo map) so a small model's context isn't flooded; the task's own reads and edits stay visible."""
+    lines = [*cfg.data.get("worker", {}).get("hide", []), "!WORKER_NOTES.md", *(f"!{k}" for k in keep)]
+    path = log_dir / "aiderignore"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
 
 
 def write_model_settings(cfg: Config) -> None:

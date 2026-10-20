@@ -26,6 +26,11 @@ review_timeout_min = 40
 parallel_workers = 1      # one local model at a time: a second one just fights for the GPU
 poll_seconds = 20
 
+[worker]
+# Hidden from aider's auto-add and repo map (gitignore syntax). A task's own --read/--edit files stay visible.
+hide = ["docs/", "*.md", "CLAUDE.md", "company/", "tools/", "public/", "tests/", "levels-src/", "*.test.ts",
+        "src/core/sim/gameWorld.ts", "src/game/scenes/WorldScene.ts", "src/game/scenes/StageScene.ts"]
+
 [ollama]
 host = "http://127.0.0.1:11434"
 num_ctx = 32768
