@@ -83,6 +83,7 @@ import { buildLevelFeatures, type DarkZone, type Firefly, type GrapplePoint } fr
 import { createFallingRocks, stepFallingRocks, type FallingRocksState } from '../hazards/fallingRocks.ts';
 import { FALLING_ROCKS } from '../../data/hazards.ts';
 import { stepMountainReaction } from '../enemies/mountains.ts';
+import { cancelKingdomReaction, onKingdomDamaged, stepKingdomReaction } from '../enemies/kingdom.ts';
 import { onSwampDamaged, stepSwampSpecial } from '../enemies/swamps.ts';
 import { createPlayerStatus, stepPlayerStatus, type PlayerStatuses } from '../combat/playerStatus.ts';
 import { PLAYER_STATUS } from '../../data/playerStatus.ts';
@@ -616,6 +617,7 @@ export class GameWorld {
   /** An enemy took player damage: instant awareness (04 §2.4). */
   onEnemyHitByPlayer(e: EnemyState): void {
     onSwampDamaged(this,e);
+    onKingdomDamaged(this,e);
     becomeAware(this, e, true);
   }
 
@@ -712,7 +714,7 @@ export class GameWorld {
       stepEnemyBody(this, e);
       return;
     }
-    if (e.control || e.status.frozen || e.knockback) {stepMountainReaction(this,e);if(e.def.id==='swamp_witch')stepSwampSpecial(this,e);} // cancel even when its final control tick ends below
+    if (e.control || e.status.frozen || e.knockback) {cancelKingdomReaction(e);stepMountainReaction(this,e);if(e.def.id==='swamp_witch')stepSwampSpecial(this,e);} // cancel even when its final control tick ends below
     stepEnemyReactions(e);
     // Frozen: no action (its attack is cancelled); Chilled: acts on a fraction of ticks (02 §6.3). Gravity always.
     if (!enemyActs(e, this.worldTimeScale)) {
@@ -729,13 +731,20 @@ export class GameWorld {
       stepEnemyBody(this, e);
       return;
     }
+    if (e.boss && (e.boss.transitionTicks ?? 0) > 0) {   // phase transition: no acting, damage still lands (04 §9.3)
+      e.boss.transitionTicks! -= 1;
+      e.control = null;
+      if (!e.knockback) e.vx = 0;
+      stepEnemyBody(this, e);
+      return;
+    }
     for (const [id, n] of e.ai.cooldowns) if (n > 0) e.ai.cooldowns.set(id, n - 1);
     if (e.ai.gapTicks > 0) e.ai.gapTicks -= 1;
     if (e.control) {
       if (!e.knockback && e.grounded) e.vx = 0;
     } else if (!e.knockback) {
       const sparring = e.def.id === 'sparring_dummy';
-      if (stepGuardianSpecial(this,e)||stepSwampSpecial(this,e)||stepMountainReaction(this,e)) { /* Waiting states and reactions own movement. */ }
+      if (stepGuardianSpecial(this,e)||stepSwampSpecial(this,e)||stepMountainReaction(this,e)||stepKingdomReaction(this,e)) { /* Waiting states and reactions own movement. */ }
       else if (e.ai.attack) {
         stepEnemyAttack(this, e, attackHooks(e));
         if (sparring && !e.ai.attack) stepSparring(this, e);   // the next swing starts as the last ends (every 2.0 s)

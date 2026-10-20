@@ -15,3 +15,8 @@ export const ENEMY_PROJECTILES: Partial<Record<EnemyProjectileId, EnemyProjectil
   shockwave: { id: 'shockwave', w: 16, h: 16, motion: 'floorWave', speed: 260, hit: { box: { dx: 0, dy: 0, w: 16, h: 16 }, damage: 15, playerKb: [260, -200] } },
   falling_rock: { id: 'falling_rock', w: 18, h: 18, motion: 'falling', speed: 420, hit: { box: { dx: 0, dy: 0, w: 18, h: 18 }, damage: 15 } },
 };
+
+// Stage 3 (04 §8). Fireball burns; dark_wave is the Black Knight's jumpable floor wave.
+ENEMY_PROJECTILES.enemy_bolt = { id: 'enemy_bolt', w: 12, h: 4, motion: 'straight', speed: 420, range: 400, hit: { box: { dx: 0, dy: 0, w: 12, h: 4 }, damage: 12 } };
+ENEMY_PROJECTILES.fireball = { id: 'fireball', w: 12, h: 12, motion: 'straight', speed: 260, range: 360, hit: { box: { dx: 0, dy: 0, w: 12, h: 12 }, damage: 12, status: { id: 'burning' } } };
+ENEMY_PROJECTILES.dark_wave = { id: 'dark_wave', w: 20, h: 32, motion: 'floorWave', speed: 300, range: 480, hit: { box: { dx: 0, dy: 0, w: 20, h: 32 }, damage: 18 } };

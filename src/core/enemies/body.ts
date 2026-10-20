@@ -101,7 +101,7 @@ function stepPull(w: GameWorld, e: EnemyState): void {
 
 /** Grounded non-boss enemies within 10 px push apart at 40 px/s each; lower id moves left on a tie. */
 export function separateEnemies(w: GameWorld): void {
-  const list = w.enemies.filter((e) => !e.dead && !e.dormant && e.grounded && e.def.size !== 'boss' && !e.def.stationary).sort((a, b) => a.id - b.id);
+  const list = w.enemies.filter((e) => !e.dead && !e.dormant && e.grounded && e.def.size !== 'boss' && !e.def.stationary && !e.def.perched).sort((a, b) => a.id - b.id);
   const step = ENEMY.SEPARATION_SPEED * TICK;
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {

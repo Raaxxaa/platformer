@@ -3,9 +3,23 @@ import { boxToWorld } from '../combat/hitGroups.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { ticks } from '../tuning.ts';
 import type { EnemyState } from './enemy.ts';
-import type { EnemyAttackDef } from './types.ts';
+import type { EnemyAttackDef, EnemyHit } from './types.ts';
+import { kingdomTeleTick } from './kingdom.ts';
 import { bossAttackGapTicks } from './boss.ts';
 import { guardianTeleStart, cancelGuardianAttack } from './guardians2.ts';
+
+export type ChainHit = NonNullable<EnemyAttackDef['chain']>[number];
+
+/** The boss phase (1 or 2) an attack's `phases` filters use. */
+export function bossPhase(e: EnemyState): number { return e.boss?.enraged ? 2 : 1; }
+
+/** The hit, Act length and Move of the running link (04 §2.6 chains). */
+export function currentLink(a: NonNullable<EnemyState['ai']['attack']>): { hit?: EnemyHit; active: number; move?: { dist: number; time: number } } {
+  const k = a.link ?? 0;
+  if (k === 0 || !a.chain) return { hit: a.def.hit, active: a.def.active, move: a.def.move };
+  const c = a.chain[k - 1];
+  return { hit: c.hit, active: c.active, move: c.move };
+}
 
 function setCooldown(e: EnemyState, def: EnemyAttackDef): void {
   e.ai.cooldowns.set(def.id, ticks(def.cooldown));
@@ -23,7 +37,8 @@ export function removeEnemyGroups(w: GameWorld, e: EnemyState): void {
 /** Starts an attack's telegraph: holds a token, locks facing, emits `enemyTelegraph`. */
 export function startEnemyAttack(w: GameWorld, e: EnemyState, def: EnemyAttackDef): void {
   if(e.boss)e.boss.lastAttack=def.id;
-  e.ai.attack = { def, phase: 'tele', t: 0, len: ticks(def.telegraph), groupId: null, moved: 0, hitDone: false };
+  e.ai.attack = { def, phase: 'tele', t: 0, len: ticks(def.telegraph), groupId: null, moved: 0, hitDone: false,
+    link: 0, chain: (def.chain ?? []).filter((c) => !c.phases || c.phases.includes(bossPhase(e))) };
   e.ai.state = 'attack';
   e.ai.t = 0;
   e.vx = 0;
@@ -52,7 +67,7 @@ export function cancelEnemyAttack(w: GameWorld, e: EnemyState): void {
 
 export function spawnAttackGroup(w: GameWorld, e: EnemyState): void {
   const a = e.ai.attack!;
-  const hit = a.def.hit;
+  const hit = currentLink(a).hit;
   if (!hit) return;
   const marker=a.def.id==='root_snare'?e.swamp?.marker:null;
   const id = w.newId();
@@ -79,10 +94,11 @@ export function stepEnemyAttack(w: GameWorld, e: EnemyState, hooks: AttackHooks 
   const a = e.ai.attack!;
   a.t += 1;
   if (a.phase === 'tele') {
+    kingdomTeleTick(w, e);
     if (a.t < a.len) return false;
     a.phase = 'act';
     a.t = 0;
-    a.len = ticks(a.def.active);
+    a.len = ticks(currentLink(a).active);
     if(!hooks.deferHit)spawnAttackGroup(w, e);
     hooks.onActStart?.(w, e);
     if (a.len > 0) return false;
@@ -107,7 +123,15 @@ export function stepEnemyAttack(w: GameWorld, e: EnemyState, hooks: AttackHooks 
 /** Landing attacks finish after collision, so their impact is present on the landing tick. */
 export function finishEnemyAct(w:GameWorld,e:EnemyState,hooks:AttackHooks):void {
   const a=e.ai.attack!;
-  removeEnemyGroups(w,e);e.token=null;a.phase='rec';a.t=0;a.len=ticks(a.def.recovery);
+  removeEnemyGroups(w,e);
+  const next = a.chain?.[a.link ?? 0];
+  if (next) {                                   // the next chained hit: its own short Tele, still committed
+    a.link = (a.link ?? 0) + 1; a.phase = 'tele'; a.t = 0; a.len = ticks(next.telegraph); a.groupId = null;
+    e.vx = 0;
+    w.events.push({ t: 'enemyTelegraph', enemyId: e.id, attackId: a.def.id, duration: next.telegraph });
+    return;
+  }
+  e.token=null;a.phase='rec';a.t=0;a.len=ticks(a.def.recovery);
   hooks.onRecStart?.(w,e);
 }
 

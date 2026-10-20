@@ -10,13 +10,17 @@ import { greatBoarHooks } from './greatBoar.ts';
 import { mountainAttackHooks } from './mountains.ts';
 import { swampAttackHooks } from './swamps.ts';
 import { guardianAttackHooks } from './guardians2.ts';
+import { currentLink } from './attack.ts';
+import { KINGDOM } from '../../data/kingdom.ts';
 
 
 function fireShots(w: GameWorld, e: EnemyState): void {
   for (const s of e.ai.attack?.def.shots ?? []) {
     const def = ENEMY_PROJECTILES[s.projectile];
     if (!def) continue;
-    for (const angle of s.angles) spawnEnemyProjectile(w, e, def, s.aim, angle);
+    const dark = e.def.id === 'black_knight' && s.projectile === 'dark_wave';     // from +20, 0 (04 §11)
+    const aim = e.def.id === 'crossbowman' ? e.kingdom?.aim ?? undefined : undefined;
+    for (const angle of s.angles) spawnEnemyProjectile(w, e, def, s.aim, angle, dark ? { x: e.x + e.facing * KINGDOM.darkWaveDx, y: e.y } : undefined, aim, s.clampDeg);
   }
 }
 
@@ -48,20 +52,22 @@ export function attackHooks(e: EnemyState): AttackHooks {
         en.vx = en.facing * def.leap.vx;
         en.vy = def.leap.vy;
         en.grounded = false;
-      } else if (def.move) {
-        en.vx = (en.facing * def.move.dist) / def.move.time;
+      } else if (currentLink(en.ai.attack!).move) {
+        const mv = currentLink(en.ai.attack!).move!;
+        en.vx = (en.facing * mv.dist) / mv.time;
       }
       fireShots(w, en);
     },
     onActTick(w, en) {
       const a = en.ai.attack!;
       if (def.leap) return a.t > 1 && en.grounded;                    // the leap (and its box) ends on landing
-      if (def.move) {
+      const mv = currentLink(a).move;
+      if (mv) {
         if (en.def.id === 'wild_boar' && def.id === 'charge') {
           if (en.hitWall) { dazeAfterWall(w, en); return true; }
           if (en.grounded && !supportAhead(w, en, en.facing)) return true;   // skid at a ledge, then Rec
         }
-        en.vx = (en.facing * def.move.dist) / def.move.time;
+        en.vx = (en.facing * mv.dist) / mv.time;
       }
       return false;
     },

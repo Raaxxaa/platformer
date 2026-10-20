@@ -61,7 +61,8 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const crit = guaranteedCrit(w, g, e) || (chance > 0 && w.rng.combat.next() < chance);
   // Shatter (02 §6.3): any direct hit on a Frozen enemy, as a target multiplier; it ends the freeze.
   const guarded = enemyGuarded(w,g,e), warded = e.ward !== null;
-  const tMult = targetMult(w, g, e) * shatterMult(w, e, true) * (guarded ? e.def.guard!.guardMult : 1);
+  const armor = e.def.armor && !(e.def.armor.heavyIgnores && spec.heavy) ? e.def.armor.mult : 1;     // Knight armor (04 §6)
+  const tMult = targetMult(w, g, e) * shatterMult(w, e, true) * (guarded ? e.def.guard!.guardMult : 1) * armor;
   const { damage, procBase } = playerHitDamage({
     base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: tMult,
   });

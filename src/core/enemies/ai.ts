@@ -12,6 +12,8 @@ import { stepMountainAi, wardCandidates } from './mountains.ts';
 import { stepSwampFlight } from './swamps.ts';
 import { GUARDIANS2 } from '../../data/guardians2.ts';
 import { queenBroodEligible } from './guardians2.ts';
+import { bossSpeedMult, preferredBand } from './kingdom.ts';
+import { bossPhase } from './attack.ts';
 
 export function facePlayer(w: GameWorld, e: EnemyState): void {
   const dir = w.body.x > e.x ? 1 : -1;
@@ -31,6 +33,7 @@ export function eligibleAttacks(w: GameWorld, e: EnemyState): EnemyAttackDef[] {
   const out: EnemyAttackDef[] = [];
   for (const a of e.def.attacks) {
     if(e.def.id==='spider_queen'&&a.id==='brood'&&!queenBroodEligible(w,e))continue;
+    if (a.phases && !a.phases.includes(bossPhase(e))) continue;
     if(a.id==='rise_swipe'||a.id==='drop')continue; // These attacks run only from their level-state trigger.
     if(e.def.id==='wisp'&&a.id==='detonate'&&Math.hypot(w.body.x-e.x,dY)>a.use.maxX)continue;
     if (a.id === 'stone_ward' && e.def.id === 'goblin_shaman') {
@@ -101,14 +104,14 @@ function stepEngage(w: GameWorld, e: EnemyState): void {
     return;
   }
   facePlayer(w, e);
-  const [min, max] = e.def.preferred;
+  const [min, max] = preferredBand(w, e), speedMult = bossSpeedMult(e);
   // SPEC-GAP: 04 §3's Wolf "paces" after backing off is undefined; it stands in its band for now.
   const toward: 1 | -1 = w.body.x >= e.x ? 1 : -1;
   if (stepMountainAi(w, e) || stepSwampFlight(w,e)) { /* Flyers replace the ground preferred band (04 §4–5). */ }
-  else if (distX > max) e.vx = toward * e.def.chase;
+  else if (distX > max) e.vx = toward * e.def.chase * speedMult;
   else if (distX < (e.def.backOff ?? min)) {
     const away = (-toward) as 1 | -1;
-    const speed = isRanged(e.def.attacks[0] ?? ({} as EnemyAttackDef)) ? e.def.walk : e.def.chase;
+    const speed = (isRanged(e.def.attacks[0] ?? ({} as EnemyAttackDef)) ? e.def.walk : e.def.chase) * speedMult;
     e.vx = e.grounded && !supportAhead(w, e, away) ? 0 : away * speed;
   } else e.vx = 0;
   if (e.ai.gapTicks > 0 || w.health.dead || e.ai.turnTicks > 0) return;

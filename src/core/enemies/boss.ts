@@ -7,11 +7,14 @@ import type { EnemyId } from './types.ts';
 import type { ArenaRt } from '../run/arenas.ts';
 import { queueQueenBroods } from './guardians2.ts';
 import { cancelEnemyAttack } from './attack.ts';
+import { KINGDOM } from '../../data/kingdom.ts';
 
 export interface BossState {
   arenaId: string;
   introTicks: number;                 // 1.0 s intro after the lock: no attacks
   enraged: boolean;
+  /** 04 §9.3: the 1.0 s phase transition (no acting, no poise damage, no control effects). */
+  transitionTicks?: number;
   lastAttack?: string;
 }
 
@@ -22,7 +25,7 @@ export function spawnBoss(w: GameWorld, a: ArenaRt, bossId: EnemyId, entry: 'lef
   if (!ENEMIES[bossId]) return null;
   const x = entry === 'left' ? a.rect.x + a.rect.w * BOSS.SPAWN_FRACTION : a.rect.x + a.rect.w * (1 - BOSS.SPAWN_FRACTION);
   const e = spawnEnemy(w, { enemy: bossId, x: Math.round(x), y: a.rect.y + a.rect.h, facing: entry === 'left' ? -1 : 1 });
-  e.boss = { arenaId: a.id, introTicks: 0, enraged: false };
+  e.boss = { arenaId: a.id, introTicks: 0, enraged: false, transitionTicks: 0 };
   w.enemies.push(e);
   return e;
 }
@@ -41,7 +44,14 @@ export function stepBossPhases(w: GameWorld): void {
     queueQueenBroods(e);
     if (!e.boss || e.dead || e.boss.enraged) continue;
     const b = e.def.boss;
-    if (b && e.hp <= e.maxHp * b.enrageAt) e.boss.enraged = true;
+    if (!b || e.hp > e.maxHp * b.enrageAt) continue;
+    if (b.transition) {
+      if (e.control?.type === 'stagger') continue;          // a Break in progress delays the transition until it ends (04 §9.3)
+      cancelEnemyAttack(w, e);
+      e.control = null; e.knockback = false;
+      e.boss.transitionTicks = ticks(KINGDOM.transitionS);
+    }
+    e.boss.enraged = true;
   }
 }
 

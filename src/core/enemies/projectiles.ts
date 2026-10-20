@@ -33,7 +33,7 @@ function rectOf(p: EnemyProjectile): Rect {
 
 /** Spawns a projectile for enemy `e`. Straight shots start at the 04 §2.7 spawn point; floor waves at `at` (feet). */
 export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProjectileDef, aim: 'player' | 'facing' | 'arc', angleDeg: number,
-  at?: { x: number; y: number }, target?: { x: number; y: number }): EnemyProjectile {
+  at?: { x: number; y: number }, target?: { x: number; y: number }, clampDeg: number = ENEMY.AIM_CLAMP_DEG): EnemyProjectile {
   const speed = def.speed ?? 0;
   let x: number, y: number, vx: number, vy: number;
   if (def.motion === 'floorWave') {
@@ -51,9 +51,9 @@ export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProj
       vy = (feet.y - y - 0.5 * ENEMY_ARC.gravity * time * time) / time;
     } else {
       if (aim === 'player') {
-        const tx = w.body.x, ty = w.body.y - w.body.h / 2;
+        const tx = target?.x ?? w.body.x, ty = target?.y ?? w.body.y - w.body.h / 2;
         const a = Math.atan2(ty - y, (tx - x) * e.facing);
-        const lim = (ENEMY.AIM_CLAMP_DEG * Math.PI) / 180;
+        const lim = (clampDeg * Math.PI) / 180;
         ang += Math.max(-lim, Math.min(lim, a));
       }
       vx = e.facing * Math.cos(ang) * speed;

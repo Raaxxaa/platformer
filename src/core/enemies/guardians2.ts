@@ -7,6 +7,7 @@ import { spawnBrood, livingSpiderlings } from './spiderlings.ts';
 import { spawnVenomSpit, spawnEnemyProjectile } from './projectiles.ts';
 import { finishEnemyAct, spawnAttackGroup, startEnemyAttack, type AttackHooks } from './attack.ts';
 import { dropMarkedRocks } from './greatBoar.ts';
+import { KINGDOM } from '../../data/kingdom.ts';
 
 export interface GuardianState {
   marker: { x: number; y: number } | null;
@@ -110,7 +111,8 @@ function impact(w: GameWorld, e: EnemyState): void {
 
 export function guardianAttackHooks(e: EnemyState): AttackHooks | null {
   const def = e.ai.attack?.def;
-  if (!def || !['stone_colossus', 'spider_queen'].includes(e.def.id)) return null;
+  if (!def || !['stone_colossus', 'spider_queen', 'black_knight'].includes(e.def.id)) return null;
+  if (e.def.id === 'black_knight' && def.id !== 'leap_slam') return null;   // its other moves use the shared hooks
   const landing = def.id === 'leap_slam' || def.id === 'ceiling_drop';
   return {
     deferHit: landing, untilLanding: landing,
@@ -141,7 +143,8 @@ export function guardianAttackHooks(e: EnemyState): AttackHooks | null {
       if (landing) impact(w, en);
       if (def.id === 'leap_slam') {
         const base = ENEMY_PROJECTILES.shockwave!;
-        const pd = { ...base, speed: GUARDIANS2.leapWaveSpeed, range: GUARDIANS2.leapWaveRange, hit: { ...base.hit, playerKb: def.hit!.playerKb } };
+        const knight = en.def.id === 'black_knight';
+        const pd = { ...base, speed: knight ? KINGDOM.leapWaveSpeed : GUARDIANS2.leapWaveSpeed, range: knight ? KINGDOM.leapWaveRange : GUARDIANS2.leapWaveRange, hit: { ...base.hit, playerKb: def.hit!.playerKb } };
         for (const dir of [-1, 1] as const) {
           const p = spawnEnemyProjectile(w, en, pd, 'facing', 0, { x: en.x, y: en.y });
           p.vx = dir * pd.speed; p.dir = dir;

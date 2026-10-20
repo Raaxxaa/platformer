@@ -16,8 +16,18 @@ export function applyEnemyDamage(e: EnemyState, damage: number): void {
 export function enemyGuarded(w: GameWorld, g: HitGroup, e: EnemyState): boolean {
   const guard = e.def.guard;
   if(e.def.id==='stone_colossus'&&e.control?.type==='stagger')return false;
-  if (!guard || e.def.noFacing || (guard.when === 'notAttacking' && (e.ai.attack || e.control || e.status.frozen)) || guard.when === 'stance')
+  if (!guard || e.def.noFacing)
     return false;
+  if (guard.when === 'stance') {                         // Black Knight Bulwark (04 §11)
+    if (!(e.kingdom && e.kingdom.bulwarkTicks > 0 && w.tick >= e.kingdom.bulwarkFrom))
+      return false;
+  } else if (guard.when === 'notAttacking') {
+    if (e.control || e.status.frozen)
+      return false;
+    // Soldier: the shield is down only during its own Sword Thrust; other attacks keep it up (04 §6).
+    if (guard.downDuring ? guard.downDuring.includes(e.ai.attack?.def.id ?? '') : e.ai.attack)
+      return false;
+  }
   if (w.dive && (w.dive.descentId === g.id || w.dive.impactId === g.id))
     return false;
   const sourceX = g.kind === 'shot' ? g.rect.x + g.rect.w / 2 : w.body.x;

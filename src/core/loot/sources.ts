@@ -10,7 +10,8 @@ import { deriveSeed, Rng } from '../rng.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { GUARDIANS2 } from '../../data/guardians2.ts';
 import { CHEST_GOLD } from '../../data/economy.ts';
-import { ANY_ABILITY_CHANCE, CURSE_KILLS, GRADE_ODDS, KEY_CHEST_ABILITY_CHANCE, KEY_CHEST_ITEM_DX, type StageIndex } from '../../data/loot.ts';
+import { KINGDOM } from '../../data/kingdom.ts';
+import { ANY_ABILITY_CHANCE, CURSE_KILLS, FIXED_ODDS, GRADE_ODDS, KEY_CHEST_ABILITY_CHANCE, KEY_CHEST_ITEM_DX, type StageIndex } from '../../data/loot.ts';
 import { sourceRng, type Rng as RngFn } from './pick.ts';
 import { rollAbility, rollWeapon } from './roll.ts';
 
@@ -112,7 +113,11 @@ export function lootOnKill(w: GameWorld, e: EnemyState): void {
     const rng = sourceRng(w.runSeed, 'loot', levelId(w), e.def.id);
     const arena=w.arenas.get(e.boss.arenaId)?.rect;
     const x=arena?Math.max(arena.x+GUARDIANS2.lootInset,Math.min(arena.x+arena.w-GUARDIANS2.lootInset,e.x)):e.x;
-    dropItem(w, x, y, weaponItem(w, rng, 'key'));
+    if (e.def.id === 'black_knight') {                      // 05 §5.5: a B-or-better weapon, then 1 ability roll
+      const weapon = rollWeapon(rng, FIXED_ODDS.blackKnight, w.classState.carriedClasses, { unlocked: w.run.lootUnlocked });
+      dropItem(w, x - KINGDOM.abilityDx, y, { weapon });
+      dropItem(w, x + KINGDOM.abilityDx, y, abilityItem(w, rng, 'key'));
+    } else dropItem(w, x, y, weaponItem(w, rng, 'key'));
   }
 }
 

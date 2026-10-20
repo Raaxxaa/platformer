@@ -5,6 +5,7 @@ import type { GameWorld } from '../sim/gameWorld.ts';
 import { ENEMY, STAGE_SCALING, TILE_SIZE, VIEW_H, VIEW_W } from '../tuning.ts';
 import { ENEMIES } from '../../data/enemies.ts';
 import type { EnemyAttackDef, EnemyDef, EnemySpawn } from './types.ts';
+import type { ChainHit } from './attack.ts';
 import type { BossState } from './boss.ts';
 import type { GuardianState } from './guardians2.ts';
 
@@ -30,6 +31,9 @@ export interface RunningAttack {
   groupId: number | null;          // the attack's melee hit group while active
   moved: number;                   // px moved by an attack move
   hitDone: boolean;
+  /** Chain attacks (04 §2.6): 0 is the first hit, k is chain[k - 1]. */
+  link?: number;
+  chain?: ChainHit[];
 }
 
 export interface AiState {
@@ -86,6 +90,7 @@ export interface EnemyState {
   noRewards: boolean;
   summonOwner?: number;
   guardian?: GuardianState;
+  kingdom?: import('./kingdom.ts').KingdomState;
 }
 
 /** Stage-scaled attack damage A (a float; 02 §3.3 rounds it). */

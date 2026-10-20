@@ -23,7 +23,7 @@ export function applyEnemyKnockback(e: EnemyState, kb: [number, number], dir: 1 
 
 /** Removes poise; returns true if this hit staggers the enemy (02 §4.3). */
 export function damagePoise(w: GameWorld, e: EnemyState, amount: number, heavy: boolean): boolean {
-  if (e.ward) return false;
+  if (e.ward || (e.boss?.transitionTicks ?? 0) > 0) return false;
   e.noPoiseHitTicks = 0;
   if (e.control?.type === 'stagger') return false;     // locked at 0; no extension
   if (e.poiseImmuneTicks > 0) return false;
