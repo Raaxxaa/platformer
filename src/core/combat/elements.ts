@@ -1,4 +1,5 @@
 // Elements on weapon hits (02 §6). M4 has Lightning level 1 only (Storm Caller, Arcane Archer); the rest come with loot.
+import { dragonImmune } from './status.ts';
 import { enemyCenter, enemyHittable, type EnemyState } from '../enemies/enemy.ts';
 import { roundHalfUp } from '../math.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
@@ -43,7 +44,7 @@ export function lightningChain(w: GameWorld, target: EnemyState, level: 1 | 2 | 
   const L = COMBAT.LIGHTNING[level - 1];
   const c = enemyCenter(target);
   const list = w.enemies
-    .filter((e) => e !== target && enemyHittable(e))
+    .filter((e) => e !== target && enemyHittable(e) && !dragonImmune(e, 'lightning'))
     .map((e) => ({ e, d: Math.hypot(enemyCenter(e).x - c.x, enemyCenter(e).y - c.y) }))
     .filter((x) => x.d <= L.range)
     .sort((a, b) => a.d - b.d || a.e.id - b.e.id)

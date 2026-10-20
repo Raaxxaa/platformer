@@ -8,7 +8,7 @@ const elites = defs.filter((d) => d.elite);
 
 describe('Built enemy data (04 §3–5, checklist 1–3, 30)', () => {
   it('has Stage 1, both Stage 2 sets, Stages 3 and 4 with the Black Knight and the Enemy King, three Guardians, Spiderlings and training enemies', () => {
-    expect(Object.keys(ENEMIES).sort()).toEqual(['bandit', 'bandit_archer', 'bandit_brute', 'bat_swarm', 'battle_mage', 'black_knight', 'bog_zombie', 'castle_mage', 'crossbowman', 'enemy_king', 'gargoyle', 'giant_spider', 'goblin_miner', 'goblin_shaman', 'great_boar', 'knight', 'living_armor', 'ram', 'rock_golem', 'royal_executioner', 'royal_guard', 'soldier', 'sparring_dummy', 'spider_queen', 'spiderling', 'stone_colossus', 'straw_target', 'swamp_witch', 'training_dummy', 'treant', 'war_hound', 'wild_boar', 'wisp', 'wolf']);
+    expect(Object.keys(ENEMIES).sort()).toEqual(['bandit', 'bandit_archer', 'bandit_brute', 'bat_swarm', 'battle_mage', 'black_knight', 'bog_zombie', 'castle_mage', 'crossbowman', 'dragon', 'enemy_king', 'gargoyle', 'giant_spider', 'goblin_miner', 'goblin_shaman', 'great_boar', 'knight', 'living_armor', 'ram', 'rock_golem', 'royal_executioner', 'royal_guard', 'soldier', 'sparring_dummy', 'spider_queen', 'spiderling', 'stone_colossus', 'straw_target', 'swamp_witch', 'training_dummy', 'treant', 'war_hound', 'wild_boar', 'wisp', 'wolf']);
   });
   it('regular HP is 25–60, elite HP 120–170', () => {
     for (const d of regulars) { expect(d.hp).toBeGreaterThanOrEqual(25); expect(d.hp).toBeLessThanOrEqual(60); }

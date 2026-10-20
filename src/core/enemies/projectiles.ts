@@ -215,6 +215,10 @@ export function stepProjectiles(w: GameWorld): void {
       const front = nx + Math.sign(p.vx) * (p.def.w / 2) - (p.vx < 0 ? 0 : 1);
       if (!boxFree(w.grid, nx, feet, p.def.w, p.def.h) || !hasSupport(w, Math.floor(front), feet)) { removeProjectile(w, p); continue; }
     } else if (!boxFree(w.grid, nx, ny + p.def.h / 2, p.def.w, p.def.h)) {
+      if (p.def.motion === 'falling' && p.def.puddle && p.vy > 0) {        // a falling shot that leaves a pool (the Red Dragon's Fire Rain)
+        const floor = Math.ceil((p.y + p.def.h / 2) / TILE_SIZE) * TILE_SIZE, pd = p.def.puddle;
+        w.puddles.push({ id: w.newId(), owner: p.owner, x: p.x - pd.w / 2, y: floor - pd.h, w: pd.w, h: pd.h, left: ticks(pd.life), next: ENEMY_PUDDLE.intervalTicks, status: pd.status });
+      }
       removeProjectile(w, p);
       continue;
     }

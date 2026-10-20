@@ -8,6 +8,7 @@ import { COMBAT, ENEMY, TICK, TILE_SIZE } from '../tuning.ts';
 import type { EnemyState } from './enemy.ts';
 import { GUARDIANS2 } from '../../data/guardians2.ts';
 import { stepGuardianBody } from './guardians2.ts';
+import { stepDragonBody } from './dragon.ts';
 
 function asBox(e: EnemyState): AABBBody {
   return { x: e.x, y: e.y, w: e.def.hurtbox.w, h: e.def.hurtbox.h, remX: e.remX, remY: e.remY };
@@ -33,6 +34,7 @@ function mayDrop(w: GameWorld, e: EnemyState): boolean {
 export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
   if (e.def.stationary) return;
   if(stepGuardianBody(w,e))return;
+  if(stepDragonBody(w,e))return;
   if(e.swamp?.submerged||e.swamp?.hanging)return;
   const c = e.control;
   if (c?.type === 'pin') { e.vx = 0; e.vy = 0; return; }                // held flush, no gravity (02 §4.4)

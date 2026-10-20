@@ -10,6 +10,11 @@ import { dragonTeleStart, dragonTeleTick, cancelDragonAttack } from './dragon.ts
 import { bossAttackGapTicks } from './boss.ts';
 import { guardianTeleStart, cancelGuardianAttack } from './guardians2.ts';
 
+function unionRect(rs: { x: number; y: number; w: number; h: number }[]) {
+  const x0 = Math.min(...rs.map((r) => r.x)), y0 = Math.min(...rs.map((r) => r.y));
+  return { x: x0, y: y0, w: Math.max(...rs.map((r) => r.x + r.w)) - x0, h: Math.max(...rs.map((r) => r.y + r.h)) - y0 };
+}
+
 export type ChainHit = NonNullable<EnemyAttackDef['chain']>[number];
 
 /** The boss phase (1 or 2) an attack's `phases` filters use. */
@@ -78,8 +83,9 @@ export function spawnAttackGroup(w: GameWorld, e: EnemyState, override?: EnemyHi
   const marker=a.def.id==='root_snare'?e.swamp?.marker:null;
   const id = w.newId();
   a.groupId = id;
+  const rects = hit.boxes ? [hit.box, ...hit.boxes].map((b) => boxToWorld(b, e.x, e.y, e.facing)) : undefined;
   w.hitGroups.push({
-    id, owner: e.id, kind: 'melee', rect: boxToWorld(hit.box, marker?.x??e.x, marker?.y??e.y, e.facing),
+    id, owner: e.id, kind: 'melee', rect: rects ? unionRect(rects) : boxToWorld(hit.box, marker?.x??e.x, marker?.y??e.y, e.facing), ...(rects ? { rects } : {}),
     spec: { damage: hit.damage, kb: [0, 0], poise: 0, hitStop: 0, kind: 'melee', rehit: hit.rehit, maxHits: hit.maxHits },
     enemyHit: hit, box: marker ? undefined : hit.box, active: true, lastHitTick: new Map(), hitCount: new Map(), attackInstance: id,
   });
@@ -148,6 +154,6 @@ export function syncEnemyGroups(w: GameWorld): void {
   for (const g of w.hitGroups) {
     if (typeof g.owner !== 'number' || g.kind !== 'melee' || !g.box) continue;
     const e = w.enemies.find((x) => x.id === g.owner);
-    if (e) g.rect = boxToWorld(g.box, e.x, e.y, e.facing);
+    if (e) { g.rect = boxToWorld(g.box, e.x, e.y, e.facing); if (g.enemyHit?.boxes) { g.rects = [g.enemyHit.box, ...g.enemyHit.boxes].map((b) => boxToWorld(b, e.x, e.y, e.facing)); g.rect = unionRect(g.rects); } }
   }
 }

@@ -8,6 +8,8 @@ import { ARENA, ENEMY } from '../tuning.ts';
 import { COMBAT_ARENA } from '../../data/levelRules.ts';
 import { spawnBoss, wakeBoss } from '../enemies/boss.ts';
 import type { EnemyId } from '../enemies/types.ts';
+import { spawnDragon } from '../enemies/dragon.ts';
+import { castleState } from '../enemies/castle.ts';
 
 /** Runtime data for one arena (rebuilt on every restart). */
 export interface ArenaRt {
@@ -40,6 +42,7 @@ export function buildArenas(w: GameWorld): Map<string, ArenaRt> {
       parTicks: Math.round(par * 120), waveIds: [], nextWaveTick: -1, doorsOpenTick: -1, lockedOnce: false,
     });
     w.run.arenas[id] = { locked: false, wave: 0, lockTick: -1, cleared: false, clearTick: null };
+    if (kind === 'side' && w.run.dragon.present && w.run.dragon.stage === w.stage) spawnDragon(w, out.get(id)!, w.run.dragon.color);   // 06 §4
     if (kind === 'boss' && a.props.boss) spawnBoss(w, out.get(id)!, String(a.props.boss) as EnemyId, a.props.entry === 'right' ? 'right' : 'left');
   }
   return out;
@@ -57,6 +60,7 @@ function spawnWave(w: GameWorld, a: ArenaRt, wave: number): void {
     e.ai.state = 'engage';
     e.spawnInTicks = ENEMY.SPAWN_IN_TICKS;
     e.waveArena = a.id;
+    if (e.def.id === 'gargoyle') castleState(e).stone = false;      // wave Gargoyles are awake (04 §2.2)
     w.enemies.push(e);
     a.waveIds.push(e.id);
   }

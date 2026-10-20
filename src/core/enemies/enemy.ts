@@ -142,5 +142,5 @@ export function enemyCenter(e: EnemyState): { x: number; y: number } {
 
 /** Invisible submerged enemies and irreversible explosions cannot be selected or damaged (04 §5). */
 export function enemyHittable(e: EnemyState): boolean {
-  return !e.dead && !e.dormant && e.spawnInTicks===0 && !e.swamp?.submerged && !e.swamp?.detonating;
+  return !e.dead && !e.dormant && e.spawnInTicks===0 && !e.dragon?.untouchable && !e.swamp?.submerged && !e.swamp?.detonating;
 }

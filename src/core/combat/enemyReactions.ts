@@ -4,6 +4,7 @@ import type { EnemyState } from '../enemies/enemy.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { BOSS, COMBAT, ENEMY, ticks } from '../tuning.ts';
 import { BOND } from '../../data/classes.ts';
+import { onDragonBreak } from '../enemies/dragon.ts';
 
 /** Committed: in the Tele or Act of an attack (02 §4.2). */
 export function isCommitted(e: EnemyState): boolean {
@@ -37,6 +38,7 @@ export function damagePoise(w: GameWorld, e: EnemyState, amount: number, heavy: 
   const n = e.def.boss ? ticks(e.def.boss.breakTime) : heavy ? Math.round(COMBAT.STAGGER_HEAVY_TICKS * heavyMult) : COMBAT.STAGGER_TICKS;
   if(e.def.boss && !e.grounded)e.vy=Math.max(0,e.vy); // 04 §9.1: airborne Break falls instead of continuing its leap upward.
   e.control = { type: 'stagger', ticks: n };
+  onDragonBreak(e);
   return true;
 }
 

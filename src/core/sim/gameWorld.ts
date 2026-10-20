@@ -86,6 +86,7 @@ import { createCannons, stepCannons, type CannonsState } from '../hazards/cannon
 import { bladeCenter, bladeRehitTicks, createBlades, stepBlades, type BladesState } from '../hazards/swingingBlades.ts';
 import { SWINGING_BLADE } from '../../data/hazards.ts';
 import { stepMountainReaction } from '../enemies/mountains.ts';
+import { afterDragonBody, stepDragonSpecial, stepDragonWorld } from '../enemies/dragon.ts';
 import { onCastleDamaged, stepCastleSpecial } from '../enemies/castle.ts';
 import { cancelKingdomReaction, onKingdomDamaged, stepKingdomReaction } from '../enemies/kingdom.ts';
 import { onSwampDamaged, stepSwampSpecial } from '../enemies/swamps.ts';
@@ -146,6 +147,7 @@ export type WorldEvent =
   | { t: 'runStarted' }
   | { t: 'pbSaved' }
   | { t: 'runCompleted' }
+  | { t: 'dragonWarning'; color: 'red' | 'white' | 'storm' | 'green' }
   | { t: 'blueprintFound'; id: BlueprintId }
   | { t: 'startingWeaponUnlocked'; cls: ClassId; weapon: import('../combat/types.ts').WeaponId }
   | { t: 'openHomePanel'; panel: 'training' | 'seed' | 'records' };
@@ -166,6 +168,8 @@ export interface GameWorldOptions {
   /** Phaser supplies the current in-memory unlock list only when a new run starts. */
   nextRunUnlocks?: () => readonly BlueprintId[];
   level?: LevelData;
+  /** Debug and tests: force the Dragon roll (06 §4). */
+  dragon?: import('../run/dragonRoll.ts').DragonRoll;
   /** Arena wave spawns, spawned by the arena logic (06 §9.2). */
   waveSpawns?: LevelEnemySpawn[];
   /** Loot objects that don't work yet (M4): drawn as markers. */
@@ -254,6 +258,8 @@ export class GameWorld {
   fallingRocks!: FallingRocksState;
   cannons!: CannonsState;
   blades!: BladesState;
+  /** The dragon_warning zone was entered (once per stage visit). */
+  dragonWarned = false;
   readonly level: LevelData | null;
   readonly waveSpawns: LevelEnemySpawn[];
   readonly markers: LevelObject[];
@@ -304,7 +310,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[] }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; dragon?: GameWorldOptions['dragon'] }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -316,7 +322,7 @@ export class GameWorld {
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
       records: opts.records, practice: opts.practice,
-      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks,
+      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon,
       loadout: (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
@@ -345,6 +351,7 @@ export class GameWorld {
     this.opts.seeded = this.run.seeded;
     this.run.startKit = this.opts.startKit ?? null;
     this.run.runSeed = this.runSeed;
+    if (this.opts.dragon) this.run.dragon = { ...this.opts.dragon };
     if (!carry) {
       this.run.lootUnlocked = unlockedCatalog(this.opts.nextRunUnlocks?.() ?? this.opts.unlockedBlueprints ?? [], this.run.seeded || this.opts.practice);
       this.run.stage = this.level?.stage ?? this.stage;
@@ -429,6 +436,7 @@ export class GameWorld {
     this.fallingRocks = createFallingRocks(this.level?.objects ?? []);
     this.cannons = createCannons(this.level?.objects ?? []);
     this.blades = createBlades(this.level?.objects ?? []);
+    this.dragonWarned = false;
     for (const c of this.minecarts) this.interactables.push({ id: c.id, x: c.spawnX, y: c.spawnY, w: c.w, h: c.h, kind: 'minecart', label: 'Ride', use: (w) => {
       if (c.active && !c.started && boardCart(c, w.body)) w.events.push({ t: 'move', e: 'cartBoard' });
     } });
@@ -766,7 +774,7 @@ export class GameWorld {
       if (!e.knockback && e.grounded) e.vx = 0;
     } else if (!e.knockback) {
       const sparring = e.def.id === 'sparring_dummy';
-      if (stepGuardianSpecial(this,e)||stepSwampSpecial(this,e)||stepMountainReaction(this,e)||stepKingdomReaction(this,e)||stepCastleSpecial(this,e)) { /* Waiting states and reactions own movement. */ }
+      if (stepGuardianSpecial(this,e)||stepSwampSpecial(this,e)||stepMountainReaction(this,e)||stepKingdomReaction(this,e)||stepCastleSpecial(this,e)||stepDragonSpecial(this,e)) { /* Waiting states and reactions own movement. */ }
       else if (e.ai.attack) {
         stepEnemyAttack(this, e, attackHooks(e));
         if (sparring && !e.ai.attack) stepSparring(this, e);   // the next swing starts as the last ends (every 2.0 s)
@@ -777,6 +785,7 @@ export class GameWorld {
     e.hitWall = false;
     stepEnemyBody(this, e);
     afterGuardianBody(this,e);
+    afterDragonBody(this,e);
   }
 
   /** One 120 Hz tick in 02 §2.1 order. */
@@ -899,6 +908,7 @@ export class GameWorld {
     stepZones(this);
     stepVillage(this);
     stepArenas(this);
+    stepDragonWorld(this);
     stepTraining(this);
     stepCamera(this.camera, this.body, () => this.rng.cosmetic.next());
     // Phase changes take effect on the following tick (06 §2.8).

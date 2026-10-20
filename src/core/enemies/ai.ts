@@ -14,6 +14,7 @@ import { GUARDIANS2 } from '../../data/guardians2.ts';
 import { queenBroodEligible } from './guardians2.ts';
 import { bossSpeedMult, preferredBand } from './kingdom.ts';
 import { bossPhase } from './attack.ts';
+import { dragonAllows, dragonBehind, dragonWeightMult, stepDragonAi } from './dragon.ts';
 import { gargoyleAtHover, stepCastleAi, wardCandidate } from './castle.ts';
 
 export function facePlayer(w: GameWorld, e: EnemyState): void {
@@ -36,6 +37,8 @@ export function eligibleAttacks(w: GameWorld, e: EnemyState): EnemyAttackDef[] {
     if(e.def.id==='spider_queen'&&a.id==='brood'&&!queenBroodEligible(w,e))continue;
     if (a.phases && !a.phases.includes(bossPhase(e))) continue;
     if(a.id==='rise_swipe'||a.id==='drop')continue;
+    if (e.dragon && !dragonAllows(w, e, a.id)) continue;
+    if (e.dragon && a.use.behind && !dragonBehind(w, e)) continue;
     if (e.def.id === 'gargoyle' && !gargoyleAtHover(w, e)) continue;       // Swoop starts from the hover point (04 §7)
     if (a.id === 'ward' && e.def.id === 'castle_mage') {
       if ((e.ai.cooldowns.get(a.id) ?? 0) <= 0 && wardCandidate(w, e)) out.push(a);
@@ -73,7 +76,7 @@ function chooseAttack(w: GameWorld, e: EnemyState): EnemyAttackDef | null {
   if(e.boss&&list.length>1)list=list.filter(a=>a.id!==e.boss!.lastAttack);
   if (list.length === 0) return null;
   if (list.length === 1) return list[0];
-  return w.rng.enemyAI.pickWeighted(list.map((a) => ({ item: a, weight: a.weight ?? 1 })));
+  return w.rng.enemyAI.pickWeighted(list.map((a) => ({ item: a, weight: (a.weight ?? 1) * dragonWeightMult(e, a.id) })));
 }
 
 /** Walk toward x at `speed`; returns false if a wall or ledge stops it. */
@@ -113,7 +116,7 @@ function stepEngage(w: GameWorld, e: EnemyState): void {
   const [min, max] = preferredBand(w, e), speedMult = bossSpeedMult(e);
   // SPEC-GAP: 04 §3's Wolf "paces" after backing off is undefined; it stands in its band for now.
   const toward: 1 | -1 = w.body.x >= e.x ? 1 : -1;
-  if (stepMountainAi(w, e) || stepSwampFlight(w,e) || stepCastleAi(w, e)) { /* Flyers replace the ground preferred band (04 §4–5). */ }
+  if (stepMountainAi(w, e) || stepSwampFlight(w,e) || stepCastleAi(w, e) || stepDragonAi(w, e)) { /* Flyers replace the ground preferred band (04 §4–5). */ }
   else if (distX > max) e.vx = toward * e.def.chase * speedMult;
   else if (distX < (e.def.backOff ?? min)) {
     const away = (-toward) as 1 | -1;

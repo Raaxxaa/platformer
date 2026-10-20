@@ -47,6 +47,7 @@ export const gameSession = {
     for (const e of w.events) {
       if (e.t === 'blueprintFound') saveStore().update((s) => { if (!s.unlocks.blueprints.includes(e.id)) s.unlocks.blueprints.push(e.id); });
       if (e.t === 'startingWeaponUnlocked') saveStore().update((s) => { const list = s.unlocks.startWeapons[e.cls] ??= []; if (!list.includes(e.weapon)) list.push(e.weapon); });
+      if (e.t === 'bossDefeated' && e.bossId === 'dragon') saveStore().update((s) => { s.stats.dragonsKilled++; });      // 06 §4: normal runs only (practice returned above)
       if (e.t === 'playerDied') this.endRun(w, 'death', e.cause);
       if (e.t === 'runCompleted') this.endRun(w, 'complete');
       if (e.t === 'split') saveStore().update((s) => {

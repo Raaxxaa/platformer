@@ -8,6 +8,7 @@ import type { ArenaRt } from '../run/arenas.ts';
 import { queueQueenBroods } from './guardians2.ts';
 import { cancelEnemyAttack } from './attack.ts';
 import { KINGDOM } from '../../data/kingdom.ts';
+import { onDragonPhase } from './dragon.ts';
 
 export interface BossState {
   arenaId: string;
@@ -62,6 +63,7 @@ export function stepBossPhases(w: GameWorld): void {
     e.boss.phase = target;
     e.boss.enraged = true;
     (e.boss.entered ??= []).push(target);
+    onDragonPhase(e);
   }
 }
 
@@ -74,7 +76,8 @@ export function bossAttackGapTicks(e: EnemyState): number | null {
 /** The boss of a locked boss arena, for the bar (07 draws it). */
 export function bossBar(w: GameWorld): BossBar | null {
   for (const e of w.enemies) {
-    if (!e.boss || e.dead || !e.def.boss || !w.run.arenas[e.boss.arenaId]?.locked) continue;
+    if (!e.boss || e.dead || !e.def.boss) continue;
+    if (e.dragon ? !e.dragon.awake || e.dragon.passive : !w.run.arenas[e.boss.arenaId]?.locked) continue;
     return { ...e.def.boss.bar, hp: e.hp, maxHp: e.maxHp };
   }
   return null;

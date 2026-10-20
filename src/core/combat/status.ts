@@ -25,11 +25,16 @@ export const newStatus = (): EnemyStatus => ({ burn: null, chill: null, frost: {
 
 const isBoss = (e: EnemyState) => e.def.tier === 'boss';
 
+const OWN_ELEMENT = { red: 'fire', white: 'ice', storm: 'lightning', green: 'poison' } as const;
+/** Each Dragon is immune to its own element: Burn, Chill and Freeze, chain damage, Poison (02 §6.7). */
+export const dragonImmune = (e: EnemyState, element: 'fire' | 'ice' | 'lightning' | 'poison'): boolean => !!e.dragon && OWN_ELEMENT[e.dragon.color] === element;
+
 /** Applies the element of one direct hit (after its damage). `mult` = the hit's target multipliers. */
 export function applyElementHit(w: GameWorld, e: EnemyState, el: ElementOnHit, procBase: number, mult: number, srcIndex: number | null,
   src: WeaponInstance | null = null): void {
   void srcIndex;
   const s = e.status, k = el.level - 1, bonus = 1 + elementBonus(w);
+  if (dragonImmune(e, el.id as 'fire')) return;
   if (el.id === 'fire') applyBurn(e, ELEMENT.BURN.pct[k] * bonus * procBase * mult, ELEMENT.BURN.spread[k], src);
   else if (el.id === 'ice') {
     const raw = ELEMENT.ICE.scale[k], scale = isBoss(e) ? 1 - (1 - raw) / 2 : raw;
@@ -57,6 +62,7 @@ export function applyElementHit(w: GameWorld, e: EnemyState, el: ElementOnHit, p
 
 /** One Burn: the larger per-tick value, a fresh 3.0 s (02 §6.2). Firestarter calls this too. */
 export function applyBurn(e: EnemyState, perTick: number, spread: number, src: WeaponInstance | null): void {
+  if (dragonImmune(e, 'fire')) return;
   const b = e.status.burn;
   e.status.burn = {
     perTick: Math.max(perTick, b?.perTick ?? 0), left: ticks(ELEMENT.BURN.durationS),

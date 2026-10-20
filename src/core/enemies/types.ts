@@ -17,6 +17,8 @@ export type PlayerStatusId = 'burning' | 'poisoned' | 'chilled' | 'rooted';
 export type { Box };
 export interface EnemyHit {
   box: Box; damage: number;                     // base (Stage 1)
+  /** More boxes that hit together with `box` (the Dragon's breath). */
+  boxes?: Box[];
   playerKb?: [number, number]; status?: { id: PlayerStatusId; duration?: number; stacks?: number };
   unblockable?: boolean; rehit?: number; maxHits?: number;
 }

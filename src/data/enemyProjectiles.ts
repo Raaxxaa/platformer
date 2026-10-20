@@ -25,4 +25,5 @@ ENEMY_PROJECTILES.dark_wave = { id: 'dark_wave', w: 20, h: 32, motion: 'floorWav
 ENEMY_PROJECTILES.arcane_bolt = { id: 'arcane_bolt', w: 8, h: 8, motion: 'straight', speed: 240, range: 300, hit: { box: { dx: 0, dy: 0, w: 8, h: 8 }, damage: 10 } };
 ENEMY_PROJECTILES.royal_orb = { id: 'royal_orb', w: 12, h: 12, motion: 'straight', speed: 160, life: 3.0, homing: { radius: 200, turnRate: 45 }, hit: { box: { dx: 0, dy: 0, w: 12, h: 12 }, damage: 15 } };
 ENEMY_PROJECTILES.falling_sword = { id: 'falling_sword', w: 12, h: 32, motion: 'falling', speed: 600, hit: { box: { dx: 0, dy: 0, w: 12, h: 32 }, damage: 18 } };
-ENEMY_PROJECTILES.fire_rain = { id: 'fire_rain', w: 16, h: 16, motion: 'falling', speed: 450, hit: { box: { dx: 0, dy: 0, w: 16, h: 16 }, damage: 16, status: { id: 'burning' } } };
+ENEMY_PROJECTILES.fire_rain = { id: 'fire_rain', w: 16, h: 16, motion: 'falling', speed: 450, hit: { box: { dx: 0, dy: 0, w: 16, h: 16 }, damage: 16, status: { id: 'burning' } },
+  puddle: { w: 48, h: 8, life: 3.0, status: 'burning' } };       // a fire pool 48 x 8 for 3.0 s

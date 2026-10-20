@@ -84,7 +84,7 @@ function stepGargoyle(w: GameWorld, e: EnemyState): boolean {
   if (e.ai.attack) return false;
   const c = enemyCenter(e);
   s.farTicks = Math.hypot(w.body.x - c.x, w.body.y - w.body.h / 2 - c.y) > C.gargoyle.farRange ? s.farTicks + 1 : 0;
-  if (s.farTicks >= C.gargoyle.farTicks) s.returning = true;
+  if (s.farTicks >= C.gargoyle.farTicks && e.waveArena === null) s.returning = true;
   if (s.returning) {
     const dx = e.spawn.x - e.x, dy = e.spawn.y - e.y, d = Math.hypot(dx, dy);
     if (d <= 2) { e.x = e.spawn.x; e.y = e.spawn.y; e.remX = e.remY = 0; e.vx = e.vy = 0; s.stone = true; s.returning = false; e.aware = false; e.ai.state = 'idle'; return true; }
