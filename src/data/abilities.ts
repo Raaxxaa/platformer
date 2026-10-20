@@ -89,6 +89,15 @@ export const ABILITIES: Partial<Record<AbilityId, AbilityDef>> = {
     hits: { bolt: { damage: 0, kb: [0, -100], poise: 15, hitStop: 0.05, kind: 'shot' } },
     levels: rows(8, [{ bolts: 2, damagePerBolt: 25, charges: 1 }, { bolts: 3, damagePerBolt: 23, charges: 1 }, { bolts: 4, damagePerBolt: 22, charges: 1 }, { bolts: 5, damagePerBolt: 22, charges: 1 }, { bolts: 6, damagePerBolt: 23, charges: 1 }]),
   },
+  frost_burst: {
+    ...base('frost_burst'), startupS: 0.10, recoveryS: 0.20, groundMoveCap: 0, airGravityMult: 0.5, airHover: true,
+    hits: { burst: { damage: 0, kb: [60, -20], poise: 10, hitStop: 0.05, kind: 'shot' } },
+    levels: rows(12, [
+      { damage: 20, radiusPx: 56, freezeS: 1.5, freezeLevel: 1, charges: 1 }, { damage: 26, radiusPx: 64, freezeS: 1.8, freezeLevel: 1, charges: 1 },
+      { damage: 33, radiusPx: 72, freezeS: 2.1, freezeLevel: 2, charges: 1 }, { damage: 42, radiusPx: 80, freezeS: 2.5, freezeLevel: 2, charges: 1 },
+      { damage: 52, radiusPx: 96, freezeS: 3.0, freezeLevel: 3, charges: 1 },
+    ]),
+  },
   blink: {
     ...base('blink'), hits: {},
     levels: rows(5, [{ distancePx: 64, charges: 1 }, { distancePx: 72, charges: 1 }, { distancePx: 80, charges: 1 }, { distancePx: 88, charges: 1 }, { distancePx: 96, charges: 2 }]),
@@ -110,5 +119,6 @@ export const ABILITY = {
   rage: { durationS: 6.0, linkedMult: 1.5 },
   hunterMark: { mult: 1.30, linkedMult: 1.45 },
   thunderStrike: { reach: 224, vReach: 112, boltTicks: 12, box: { dx: 0, dy: -80, w: 24, h: 160 } as Box, colStart: 48, colStep: 32, colDrop: 160 },
+  frostBurst: { dy: -14, chillLevel: 1, eliteMult: 0.5, linkedFreezeMult: 1.5 },
   blink: { diag: 0.7071, minMove: 8, iframeTicks: 18 },
 } as const;
