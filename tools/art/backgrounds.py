@@ -50,6 +50,8 @@ def _fill_below(img, xs, top, dark, light, rim=3):
 
 
 def render(set_name, layer, width=W):
+    if set_name in ('mountains', 'mountains_cave'):
+        return render_mountains(set_name, layer, width)
     if set_name != 'plains':
         return render_village(set_name, layer, width)
     xs = np.arange(width)
@@ -115,6 +117,106 @@ def render(set_name, layer, width=W):
         _fill_below(img, xs, top, dark, light, rim=2)
         return Image.fromarray(img, 'RGBA')
     raise ValueError(layer)
+
+
+MT_ALLOWED = {
+    'mountains': {0: ['mt_sky', 'mt_bg0'], 1: ['mt_bg1'], 2: ['mt_bg2']},
+    'mountains_cave': {0: ['mtc_sky', 'mtc_bg0'], 1: ['mtc_bg1'], 2: ['mtc_bg2']},
+}
+
+
+def _peaks(xs, g, n, base, hmin, hmax, wmin, wmax, jag=0.0):
+    """Top edge (y per column) of n periodic triangular peaks."""
+    top = np.full(len(xs), 1e9)
+    for k in range(n):
+        cx = k * W / n + g.uniform(-W / n / 4, W / n / 4)
+        h, w = g.uniform(hmin, hmax), g.uniform(wmin, wmax)
+        d = np.abs(_wrap(xs - cx))
+        top = np.minimum(top, np.where(d < w, base - h * (1 - d / w), 1e9))
+    top = np.minimum(top, base + 8)
+    if jag:
+        top = top + _wave(xs, [(23, jag, 0.3), (41, jag / 2, 1.7)])
+    return top
+
+
+def _hang(xs, g, n, hmin, hmax, wmin, wmax):
+    """Bottom edge (y per column) of n periodic stalactites hanging from y = 0."""
+    bot = np.zeros(len(xs))
+    for k in range(n):
+        cx = k * W / n + g.uniform(-W / n / 3, W / n / 3)
+        h, w = g.uniform(hmin, hmax), g.uniform(wmin, wmax)
+        d = np.abs(_wrap(xs - cx))
+        bot = np.maximum(bot, np.where(d < w, h * np.clip(1 - d / w, 0, 1) ** 0.8, 0))
+    return bot
+
+
+def render_mountains(set_name, layer, width=W):
+    cave = set_name == 'mountains_cave'
+    xs = np.arange(width)
+    img = np.zeros((H, width, 4), np.uint8)
+    ys = np.arange(H)[:, None]
+    pre = 'mtc' if cave else 'mt'
+    sky, c0, c1, c2 = P.RAMPS[pre + '_sky'], P.RAMPS[pre + '_bg0'], P.RAMPS[pre + '_bg1'], P.RAMPS[pre + '_bg2']
+    g = _rng(f'bg_{set_name}_{layer}')
+    if layer == 0:
+        for i, col in enumerate(sky):
+            _paint(img, np.broadcast_to((ys >= i * 60), (H, width)), col)
+        if cave:        # far stalactites and a floor line
+            bot = _hang(xs, g, 9, 30, 80, 22, 40)
+            _paint(img, ys < np.round(bot)[None, :], c0[0])
+            _paint(img, (ys < np.round(bot)[None, :]) & (ys >= np.round(bot)[None, :] - 2), c0[1])
+            _fill_below(img, xs, 300 + _wave(xs, [(2, 5, 0.4), (5, 3, 1.1)]), c0[0], c0[1], rim=2)
+        else:           # snowy far peaks
+            top = _peaks(xs, g, 5, 262, 90, 150, 70, 110, jag=1.5)
+            _fill_below(img, xs, top, c0[1], c0[0], rim=1)
+            # shade the right-facing flank of each peak in the darker color (light from the upper left)
+            t = np.round(top).astype(int)[None, :]
+            below = ys >= t
+            slope = np.concatenate([top[1:], top[:1]]) - top
+            _paint(img, below & (slope[None, :] < -0.2) & (ys < t + 40 + 0 * xs[None, :]), c0[0])
+        return Image.fromarray(img, 'RGBA')
+    if layer == 1:
+        if cave:
+            bot = np.round(_hang(xs, g, 12, 40, 110, 14, 30)).astype(int)[None, :]
+            _paint(img, ys < bot, c1[0])
+            _paint(img, (ys < bot) & (ys >= bot - 2), c1[1])
+            _fill_below(img, xs, 316 + _wave(xs, [(3, 4, 0.2), (7, 2, 0.9)]), c1[0], c1[1], rim=2)
+        else:           # rocky ridges
+            top = _peaks(xs, g, 9, 296, 40, 80, 38, 60, jag=1.2)
+            _fill_below(img, xs, top, c1[0], c1[1], rim=3)
+        return Image.fromarray(img, 'RGBA')
+    dark, lit = c2
+    if cave:            # pillars floor to ceiling
+        for k in range(5):
+            cx = k * W / 5 + g.uniform(-24, 24)
+            wd = g.uniform(8, 14)
+            dx = _wrap(xs[None, :] - cx)
+            body = np.abs(dx) < wd + 0.06 * np.abs(ys - 180)
+            _paint(img, body, dark)
+            _paint(img, body & (dx < -wd + 3 - 0.06 * np.abs(ys - 180)) & ((ys + xs[None, :]) % 2 == 0), lit)
+        bot = np.round(_hang(xs, g, 7, 20, 50, 12, 24)).astype(int)[None, :]
+        _paint(img, ys < bot, dark)
+        _paint(img, (ys < bot) & (ys >= bot - 1), lit)
+        _fill_below(img, xs, 336 + _wave(xs, [(3, 2, 1.0), (7, 1.5, 0.5)]), dark, lit, rim=2)
+        return Image.fromarray(img, 'RGBA')
+    # pines: stacked triangle tiers, trunks, a ground strip
+    for k in range(9):
+        cx = k * W / 9 + g.uniform(-14, 14)
+        base = 330 + g.uniform(-4, 4)
+        hgt = g.uniform(70, 110)
+        tiers = 5
+        for ti in range(tiers):
+            ty = base - hgt * (ti + 1) / tiers
+            half = (hgt / tiers) * 0.9 * (tiers - ti) / 1.6 + 3
+            dx = np.abs(_wrap(xs[None, :] - cx))
+            y0 = ty - hgt / tiers * 1.4
+            mask = (dx < half * np.clip((ys - y0) / (hgt / tiers * 1.4 + 1), 0, 1)) & (ys >= y0) & (ys < ty + 4)
+            _paint(img, mask, dark)
+            _paint(img, mask & (_wrap(xs[None, :] - cx) < -half * 0.45 * np.clip((ys - y0) / 12, 0, 1)) & (ys < ty - 1)
+                   & ((ys + xs[None, :]) % 2 == 0), lit)
+        _paint(img, (np.abs(_wrap(xs[None, :] - cx)) < 2) & (ys >= base - 10) & (ys < base + 12), dark)
+    _fill_below(img, xs, 338 + _wave(xs, [(3, 2, 1.0), (8, 1.5, 0.5)]), dark, lit, rim=2)
+    return Image.fromarray(img, 'RGBA')
 
 
 def _box(img, xs, x0, x1, y0, y1, col):

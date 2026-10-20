@@ -71,4 +71,60 @@ def build(assets, preview):
     for l in layers:
         stack.alpha_composite(l)
     stack.resize((1280, 720), Image.NEAREST).save(os.path.join(preview, 'bg_plains_stack.png'))
+    build_mountains(assets, preview)
     return sheet, layers
+
+
+def mountains_demo_grid():
+    rows = [
+        '..........................',
+        '..........................',
+        '..........................',
+        '...............######.....',
+        '..###....#.....######.....',
+        '..###....#......####......',
+        '.........#................',
+        '..........................',
+        'RRRRRRRRRR################',
+        '##########################',
+    ]
+    ice = np.array([[c == 'R' for c in r] for r in rows])
+    return np.array([[c in '#R' for c in r] for r in rows]), ice
+
+
+def build_mountains(assets, preview):
+    sheet = T.build_sheet('mountains')
+    P.check_palette_lock(sheet, P.allowed(T.MT_ALLOWED), 'tiles_mountains')
+    sheet.save(os.path.join(assets, 'tiles', 'tiles_mountains.png'))
+    sheet.resize((sheet.width * 4, sheet.height * 4), Image.NEAREST).save(
+        os.path.join(preview, 'tiles_mountains_sheet.png'))
+    stacks = {}
+    for sn in ('mountains', 'mountains_cave'):
+        layers = []
+        for i in range(3):
+            img = B.render(sn, i)
+            P.check_palette_lock(img, P.allowed(B.MT_ALLOWED[sn][i]), f'bg_{sn}_{i}')
+            img.save(os.path.join(assets, 'bg', f'bg_{sn}_{i}.png'))
+            layers.append(img)
+        stack = Image.new('RGBA', (640, 360))
+        for l in layers:
+            stack.alpha_composite(l)
+        stack.resize((1280, 720), Image.NEAREST).save(os.path.join(preview, f'bg_{sn}_stack.png'))
+        stacks[sn] = layers
+    # demo: solid rock, an ice strip, one-way, spikes
+    solid, ice = mountains_demo_grid()
+    idx = T.autotile(solid)
+    h, w = solid.shape
+    scene = Image.new('RGBA', (w * 16, h * 16))
+    for l in stacks['mountains']:
+        scene.alpha_composite(l.crop((0, 360 - h * 16, w * 16, 360)))
+    for y in range(h):
+        for x in range(w):
+            if idx[y, x] >= 0:
+                i = idx[y, x]
+                if ice[y, x]:
+                    cell = sheet.crop((1 + (i % 16) * 18, 1 + (4 + i // 16) * 18, 17 + (i % 16) * 18, 17 + (4 + i // 16) * 18))
+                else:
+                    cell = T.cell_image(sheet, i)
+                scene.alpha_composite(cell, (x * 16, y * 16))
+    scene.resize((w * 48, h * 48), Image.NEAREST).save(os.path.join(preview, 'tiles_mountains_demo.png'))

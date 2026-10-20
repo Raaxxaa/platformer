@@ -54,6 +54,21 @@ RAMPS = {
     'vl_light': _hex('#ffd27a', '#fff0c0'),
     'vh_sky': sky_bands((0xf2, 0xb4, 0x8a), (0xfb, 0xe6, 0xc8)),      # village_home (dawn)
     'vc_sky': sky_bands((0xe0, 0x78, 0x5a), (0xf6, 0xc8, 0x90)),      # village_crossroads (sunset)
+    # 08 §3.7 mountains (Stage 2, Caves & Mountains)
+    'mt_rock': _hex('#1c1e2e', '#31364b', '#4d556e', '#747f98', '#a7b2c6'),
+    'mt_snow': _hex('#6ea6cf', '#a5d6ef', '#e5f5ff'),
+    'mt_ice': _hex('#3e7fb8', '#6fb4e0', '#a9e0f5', '#e2f7ff'),
+    'mt_sky': sky_bands((0x58, 0x78, 0xae), (0xbc, 0xcc, 0xe0)),
+    'mt_bg0': _hex('#8aa1c2', '#a6bad4'),
+    'mt_bg1': _hex('#5c7096', '#6f819f'),
+    'mt_bg2': _hex('#384464', '#455378'),
+    'mtc_sky': sky_bands((0x0f, 0x11, 0x19), (0x16, 0x1a, 0x26)),
+    'mtc_bg0': _hex('#0f1119', '#161a26'),
+    'mtc_bg1': _hex('#1b2030', '#232a3d'),
+    'mtc_bg2': _hex('#2a3247', '#343d55'),
+    'en_ochre': _hex('#4a2d1b', '#7a4926', '#b07335', '#e2a951'),
+    'en_magenta': _hex('#3a1736', '#6a2a59', '#a1457d', '#d978a7'),
+    'en_olive': _hex('#2d391a', '#4e6526', '#7d9937', '#b5cb59'),
     'en_red': _hex('#4a1824', '#7e2a34', '#b8443f', '#e27b5b'),
     'en_slate': _hex('#24263a', '#444a6a', '#737ca0', '#adb6d4'),
     # The plains row lists en_bone without values; the swamps row gives them (plan ART1 Task 1).
@@ -66,6 +81,9 @@ CLASS_COLORS = dict(zip(['swordsman', 'tank', 'archer', 'wizard', 'none'],
                         _hex('#ff5a5a', '#ff9a3c', '#a8d846', '#42d9ff', '#9d98b0')))
 
 PLAINS_WORLD_RAMPS = ['pl_soil', 'pl_grass', 'pl_wood', 'pl_sky', 'pl_bg0', 'pl_bg1', 'pl_bg2']
+MOUNTAINS_WORLD_RAMPS = ['mt_rock', 'mt_snow', 'mt_ice', 'mt_sky', 'mt_bg0', 'mt_bg1', 'mt_bg2',
+                         'mtc_sky', 'mtc_bg0', 'mtc_bg1', 'mtc_bg2']
+MOUNTAINS_ENEMY_RAMPS = ['ink', 'white', 'gray', 'en_ochre', 'en_magenta', 'en_olive', 'en_bone', 'fx_fire']
 PLAYER_BODY_RAMPS = ['ink', 'skin', 'hair', 'p_cloth', 'p_leather', 'p_steel']
 PLAINS_ENEMY_RAMPS = ['ink', 'white', 'skin', 'hair', 'en_red', 'en_slate', 'en_bone', 'gray']
 
