@@ -84,7 +84,10 @@ export function spinReady(w: GameWorld, slot: Slot, input: InputState): boolean 
 
 // ---------------------------------------------------------------- Flail
 
-/** The Flail release pulls small and medium enemies to 24 px in front of the player, then staggers them 0.6 s. */
+/**
+ * The Flail release pulls small and medium enemies to 24 px in front of the player, then staggers them 0.6 s.
+ * SPEC-GAP: 02 §10.5 gives the pull point no height; the pulled enemy ends with its feet at the player's feet level.
+ */
 function flailPull(w: GameWorld, _g: HitGroup, e: EnemyState, info: { killed: boolean }): void {
   if (info.killed) return;
   const b = w.body, F = S.flailPull;

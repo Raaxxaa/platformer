@@ -335,6 +335,7 @@ export function stepPlayerCombat(w: GameWorld, input: InputState): void {
   if (c.shield && !cur) { w.mods.actionMoveMult = SHIELD.moveMult; w.mods.facingLocked = true; return; }   // 02 §12
   const st = cur ? stepDef(w, cur) : null;
   w.mods.actionMoveMult = st ? (cur!.phase === 'recovery' && st.recoveryMoveMult !== undefined ? st.recoveryMoveMult : st.moveMult) : 1;
+  // SPEC-GAP: "moves at 70% of max run speed in the held direction" is built as a 70% move cap, so the spin stands still with no direction held.
   if (cur?.kind === 'spin' && cur.phase === 'active') w.mods.actionMoveMult = WEAPON_SPECIAL.axeSpin.speedMult;   // 70% while spinning
   w.mods.facingLocked = st !== null && !st.canTurn;
 }

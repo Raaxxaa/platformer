@@ -115,7 +115,10 @@ function parry(w: GameWorld, src: Extract<HurtSource, { kind: 'enemyHit' }>, sh:
   }
 }
 
-/** A block (02 §12): the caller applies the damage; this ends the hit itself and applies the shove and hit-stop. */
+/**
+ * A block (02 §12): the caller applies the damage; this ends the hit itself and applies the shove and hit-stop.
+ * SPEC-GAP: the attacker's hit-stop stays the standard 0.075 s the hit resolver adds (02 §12 says 0.05 s), and a blocked hit's status effect still applies.
+ */
 export function blockEffects(w: GameWorld, src: Extract<HurtSource, { kind: 'enemyHit' }>): void {
   const b = w.body, stop = ticks(SHIELD.blockStopS);
   if (src.group) {

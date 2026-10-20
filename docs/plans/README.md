@@ -16,7 +16,7 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | M5 | Loot: grades, elements, perks, S moves, chests, keys, Lucky Blocks, gold, merchant, boss drop | `M5-loot.md` | Done |
 | M7 | Full run loop: title, Home Village, stat pick after the boss, Crossroads shop and inn, route choice, saving, death screen, records, settings | `M7-villages-and-saving.md` | Done |
 | M7.1 | Stage 2: both roads (Caves & Mountains, Dark Forest & Swamps), their enemies and Guardians, Border Village | `M7.1-stage2-two-roads.md` | Done |
-| **M9** | **Stages 3–4 (Enemy Kingdom, King's Castle), Black Knight, Enemy King, the Dragon, the other 8 abilities and 11 weapons** | Part 1 (abilities): `M9-part1-abilities.md` (done); rest to write | **Next** (part 1 done 2026-10-20) |
+| **M9** | **Stages 3–4 (Enemy Kingdom, King's Castle), Black Knight, Enemy King, the Dragon, the other 8 abilities and 11 weapons** | Part 1 (abilities): `M9-part1-abilities.md` (done); part 2 (11 weapons): `M9-part2-weapons.md` (done); Stages 3–4, bosses to write | **Next** (parts 1 and 2 done 2026-10-20) |
 | M10 | Speedrun extras: seeds, practice mode, ghosts, balance | to write | Planned |
 | M11 | Layout variety: sections change between runs | to write | Planned |
 | M12 | Character customization: looks, colors, cosmetics from mobs and shops | to write | Planned |

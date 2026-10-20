@@ -112,6 +112,7 @@ export function signatureFire(w: GameWorld, cur: CurrentAttack, opts: FireOpts, 
   }
   if (inst.weaponId === 'wand') {
     // Seeker Swarm: every 5th shot is 3 shots (−15°, 0°, +15°) with a wider, faster homing.
+    // SPEC-GAP: "every 5th shot" counts only Seeker Swarm shots (S grade) and never resets.
     const n = ++w.combat.wandShots[cur.slot];
     if (n % S.wandSwarmEvery !== 0) return { opts, extra: [] };
     const homing = { radius: SG.seekerSwarm.radius, turnRate: SG.seekerSwarm.turnRate };

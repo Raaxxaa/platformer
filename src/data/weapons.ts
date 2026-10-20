@@ -89,6 +89,7 @@ export const WEAPONS: Partial<Record<WeaponId, WeaponDef>> = {
       step('spear_2', 0.125, 0.075, 0.20, { dx: 34, dy: -16, w: 52, h: 10 }, { damage: 14, kb: [100, -20], poise: 12, hitStop: 0.05 }, MEDIUM),
       step('spear_3', 0.15, 0.10, 0.25, { dx: 38, dy: -16, w: 60, h: 12 }, { damage: 18, kb: [180, -40], poise: 20, hitStop: 0.05 }, MEDIUM),
     ],
+    // SPEC-GAP: 02 §10.5 gives the lunge no startup; it has none (the move starts on the press).
     // The lunge (02 §10.5): its active phase is the 0.16 s move; the hit box is the tip plus the swept body (built by the special).
     special: { id: 'spear_lunge', startup: 0, active: 0.16, recovery: 0.20, moveMult: 1,
       hit: { damage: 24, kb: [200, -60], poise: 30, hitStop: 0.05, kind: 'melee' } },

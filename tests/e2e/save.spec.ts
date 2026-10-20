@@ -94,7 +94,7 @@ test('a failed storage write keeps playing in memory and shows the save warning'
   expect(errors).toEqual([]);
 });
 
-test('a valid save with an unbuilt third starter boots Home without losing that saved kit', async ({ page }) => {
+test('a valid save with the unlocked third starter boots Home with it equipped and keeps the saved kit', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('rushblade.save', JSON.stringify({
     v: 1, lastKit: { cls: 'tank', weapon: 'giant_axe' }, unlocks: { startWeapons: { tank: ['giant_axe'] } },
   })));
@@ -104,7 +104,7 @@ test('a valid save with an unbuilt third starter boots Home without losing that 
   expect(errors).toEqual([]);
   expect(await page.evaluate(() => (window as any).__game.save().lastKit)).toEqual({ cls: 'tank', weapon: 'giant_axe' });
   expect(await page.evaluate(() => (window as any).__game.save().unlocks.startWeapons.tank)).toEqual(['giant_axe']);
-  expect(await page.evaluate(() => (window as any).__game.loadout().weapons[0].weaponId)).toBe('war_maul');
+  expect(await page.evaluate(() => (window as any).__game.loadout().weapons[0].weaponId)).toBe('giant_axe');          // built in M9 part 2
   await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   await page.screenshot({ path: 'test-results/m7-unbuilt-kit.png' });
 });
