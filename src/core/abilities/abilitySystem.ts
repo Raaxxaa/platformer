@@ -24,6 +24,8 @@ export interface ActivationCtx {
   /** 03 §8.1 direction rule: moveX if not 0, else facing; from a wall slide, away from the wall. */
   dir: 1 | -1;
   input: InputState;
+  /** A `start` may set this: the cooldown that starts is this many ticks instead of the full one (Grapple Arrow's miss). */
+  rechargeOverride?: number;
 }
 
 /**
@@ -209,7 +211,9 @@ function tryStart(w: GameWorld, slot: Slot, input: InputState): boolean {
   const ctx: ActivationCtx = { slot, ability: s, row: levelRow(s), def, linked: false, dir, input };
   ctx.linked = w.classState.connection && a.link !== null && a.link.fromSlot !== slot && w.body.pt - a.link.openedTick <= BOND.LINK_TICKS;
   if (impl?.start && !impl.start(w, ctx)) { w.events.push({ t: 'abilityFizzle', slot }); return true; }
+  const wasRecharging = s.charges < maxCharges(s);
   activate(w, slot, s);
+  if (ctx.rechargeOverride !== undefined && !wasRecharging) s.rechargeLeft = ctx.rechargeOverride;
   return true;
 }
 

@@ -13,3 +13,4 @@ import './blade_flurry.ts';
 import './boulder_toss.ts';
 import './turret.ts';
 import './riposte.ts';
+import './grapple_arrow.ts';

@@ -110,6 +110,15 @@ export const ABILITIES: Partial<Record<AbilityId, AbilityDef>> = {
       { turrets: 2, boltDamage: 14, fireIntervalS: 0.7, charges: 1 },
     ]),
   },
+  grapple_arrow: {
+    ...base('grapple_arrow'),
+    hits: { rope: { damage: 0, kb: [0, 0], poise: 10, hitStop: 0.05, kind: 'shot' } },
+    levels: rows(4, [
+      { rangePx: 160, pullSpeed: 450, damage: 15, charges: 1 }, { rangePx: 176, pullSpeed: 480, damage: 20, charges: 1 },
+      { rangePx: 192, pullSpeed: 520, damage: 26, charges: 1 }, { rangePx: 208, pullSpeed: 560, damage: 33, charges: 1 },
+      { rangePx: 224, pullSpeed: 600, damage: 40, charges: 1 },
+    ]),
+  },
   hunters_mark: {
     ...base('hunters_mark'), hits: {},
     levels: rows(12, [
@@ -164,6 +173,10 @@ export const ABILITY = {
   turret: {
     offsetX: 12, size: 16, gravity: 1500, maxFall: 600, fallLimitS: 2.0, lifeS: 8.0, firstShotS: 0.2, muzzleDy: -10, range: 256,
     boltSpeed: 500, boltRange: 320, boltBox: { w: 8, h: 4 },
+  },
+  grappleArrow: {
+    diag: 0.7071, pointDeg: 35, enemyDeg: 20, missRechargeTicks: 120, durationPadS: 0.1,
+    pullDx: 20, pullMinSpeed: 480, pullTimeS: 0.25, stunS: 0.5, linkedStunMult: 1.5, arriveDist: 20, arriveVy: -150,
   },
   hunterMark: { mult: 1.30, linkedMult: 1.45 },
   thunderStrike: { reach: 224, vReach: 112, boltTicks: 12, box: { dx: 0, dy: -80, w: 24, h: 160 } as Box, colStart: 48, colStep: 32, colDrop: 160 },
