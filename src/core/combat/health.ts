@@ -40,7 +40,7 @@ export function hurtPlayerDot(w:GameWorld,damageA:number,cause:'burning'|'poison
 export type HurtSource =
   | { kind: 'enemyHit'; enemyId: number; enemyDefId: string; damageA: number; attackerCx: number; melee: boolean; playerKb?: [number, number]; travelDir?: 1 | -1;
     /** 04's `unblockable` flag: Riposte, parry and block ignore it. */ unblockable?: boolean; /** The enemy hit group (Riposte marks it used and destroys a projectile). */ group?: HitGroup }
-  | { kind: 'hazard'; cause: 'spikes' | 'hazard'; damageA: number };
+  | { kind: 'hazard'; cause: 'spikes' | 'hazard'; damageA: number; playerKb?: [number, number]; travelDir?: 1 | -1 };
 
 /** Super armor sources (02 §5.3): Shoulder Charge, Rage, Iron Will while attacking (03). */
 const SUPER_ARMOR: ((w: GameWorld) => boolean)[] = [];
@@ -106,6 +106,9 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
       if (src.playerKb) [kbx, kby] = src.playerKb;
       if (!src.melee && src.travelDir) dir = src.travelDir;
       else if (b.x !== src.attackerCx) dir = b.x > src.attackerCx ? 1 : -1;
+    } else if (src.playerKb) {
+      [kbx, kby] = src.playerKb;                                 // a cannonball pushes along its travel (06 §10)
+      if (src.travelDir) dir = src.travelDir;
     }
     applyKnockback(b, dir * kbx, kby, COMBAT.HITSTUN_TICKS, w.mods);
     h.hitstunTicks = COMBAT.HITSTUN_TICKS;

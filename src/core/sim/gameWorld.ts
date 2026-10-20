@@ -21,7 +21,7 @@ import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { ElementId, FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
 import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
-import { CAMERA, COMBAT, FLASK, RESTART, RUN, RUSH } from '../tuning.ts';
+import { CAMERA, COMBAT, FLASK, RESTART, RUN, RUSH, VIEW_H, VIEW_W } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
 import type { TileGrid } from '../level/tiles.ts';
 import { isGrounded, pushOut } from '../physics/collide.ts';
@@ -81,7 +81,8 @@ import { buildCollapsingPlatforms, stepCollapsingPlatforms, type CollapsingPlatf
 import { breakCrackedWalls } from '../abilities/list/shoulder_charge.ts';
 import { buildLevelFeatures, type DarkZone, type Firefly, type GrapplePoint } from '../level/features.ts';
 import { createFallingRocks, stepFallingRocks, type FallingRocksState } from '../hazards/fallingRocks.ts';
-import { FALLING_ROCKS } from '../../data/hazards.ts';
+import { CANNON, FALLING_ROCKS } from '../../data/hazards.ts';
+import { createCannons, stepCannons, type CannonsState } from '../hazards/cannons.ts';
 import { stepMountainReaction } from '../enemies/mountains.ts';
 import { cancelKingdomReaction, onKingdomDamaged, stepKingdomReaction } from '../enemies/kingdom.ts';
 import { onSwampDamaged, stepSwampSpecial } from '../enemies/swamps.ts';
@@ -248,6 +249,7 @@ export class GameWorld {
   darkZones: DarkZone[] = [];
   fireflies: Firefly[] = [];
   fallingRocks!: FallingRocksState;
+  cannons!: CannonsState;
   readonly level: LevelData | null;
   readonly waveSpawns: LevelEnemySpawn[];
   readonly markers: LevelObject[];
@@ -421,6 +423,7 @@ export class GameWorld {
     this.collapsingPlatforms = buildCollapsingPlatforms(this.level?.objects ?? []);
     Object.assign(this, buildLevelFeatures(this.level?.objects ?? []));
     this.fallingRocks = createFallingRocks(this.level?.objects ?? []);
+    this.cannons = createCannons(this.level?.objects ?? []);
     for (const c of this.minecarts) this.interactables.push({ id: c.id, x: c.spawnX, y: c.spawnY, w: c.w, h: c.h, kind: 'minecart', label: 'Ride', use: (w) => {
       if (c.active && !c.started && boardCart(c, w.body)) w.events.push({ t: 'move', e: 'cartBoard' });
     } });
@@ -839,6 +842,8 @@ export class GameWorld {
     stepRockfall(this);
     for (const e of this.enemies) if (e.ward && (e.ward.ticks -= this.worldTimeScale) <= 0) e.ward = null;
     if (stepFallingRocks(this.fallingRocks, this.grid, playerRect(this), this.worldTimeScale)) hurtPlayer(this, { kind: 'hazard', cause: 'hazard', damageA: FALLING_ROCKS.damage });
+    const ball = stepCannons(this.cannons, this.grid, { x: this.camera.x, y: this.camera.y, w: VIEW_W, h: VIEW_H }, playerRect(this), this.worldTimeScale);
+    if (ball) hurtPlayer(this, { kind: 'hazard', cause: 'hazard', damageA: CANNON.damage, playerKb: CANNON.kb, travelDir: ball.dir });
     activateEnemies(this);
     stepStatuses(this);
     stepSignatures(this);
