@@ -72,6 +72,17 @@ export const ABILITIES: Partial<Record<AbilityId, AbilityDef>> = {
       { damage: 62, distancePx: 144, ticks: 48, stunS: 1.0, charges: 1 },
     ]),
   },
+  boulder_toss: {
+    ...base('boulder_toss'), startupS: 0.25, recoveryS: 0.20, groundMoveCap: 0.3, airGravityMult: 0.5,
+    hits: {
+      boulder: { damage: 0, kb: [220, -160], poise: 40, hitStop: 0.075, kind: 'shot' },
+      shard: { damage: 0, kb: [100, -80], poise: 10, hitStop: 0.025, kind: 'shot' },
+    },
+    levels: rows(8, [
+      { damage: 45, sizePx: 16, shards: 0, charges: 1 }, { damage: 60, sizePx: 18, shards: 0, charges: 1 }, { damage: 78, sizePx: 20, shards: 0, charges: 1 },
+      { damage: 98, sizePx: 22, shards: 0, charges: 1 }, { damage: 120, sizePx: 24, shards: 4, charges: 1 },
+    ]),
+  },
   arrow_rain: {
     ...base('arrow_rain'), startupS: 0.15, recoveryS: 0.15, groundMoveCap: 0.5, airGravityMult: 0.5,
     hits: { wave: { damage: 0, kb: [20, 0], poise: 5, hitStop: 0.025, kind: 'shot' } },
@@ -125,6 +136,10 @@ export const ABILITY = {
   bladeFlurry: { radius: 28, degPerS: 450, size: 10 },
   shockwave: { dy: -18, h: 44 },
   shoulderCharge: { vx: 360, box: { dx: 14, dy: -14, w: 20, h: 28 } as Box, crackedReach: 4 },
+  boulderToss: {
+    spawn: { dx: 12, dy: -18 }, vx: 360, vy: -240, gravity: 900, lifeS: 3.0,
+    shardDamage: 20, shardSize: 8, shardLifeS: 1.5, shardV: [[-160, -260], [-80, -320], [80, -320], [160, -260]] as ReadonlyArray<readonly [number, number]>,
+  },
   arrowRain: { near: 16, top: 96, bottom: 32, waveTicks: 24, scanDy: -14 },
   rage: { durationS: 6.0, linkedMult: 1.5 },
   hunterMark: { mult: 1.30, linkedMult: 1.45 },

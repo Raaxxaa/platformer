@@ -10,3 +10,4 @@ import './blink.ts';
 import './rage.ts';
 import './frost_burst.ts';
 import './blade_flurry.ts';
+import './boulder_toss.ts';
