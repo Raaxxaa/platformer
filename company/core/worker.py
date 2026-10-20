@@ -48,7 +48,7 @@ def aider_command(cfg: Config, t: Task, wt: Path, message_file: Path, log_dir: P
            "--no-pretty", "--no-stream", "--no-fancy-input", "--no-suggest-shell-commands",
            "--no-detect-urls", "--no-notifications", "--no-gitignore",
            "--test-cmd", " && ".join(cfg.data["gate"]["quick"]), "--auto-test",
-           "--map-tokens", "2048",
+           "--map-tokens", "2048", "--timeout", str(int(cfg.data["ollama"].get("request_timeout_s", 600))),
            "--chat-history-file", str(log_dir / "aider.chat.md"),
            "--input-history-file", str(log_dir / "aider.input"),
            "--llm-history-file", str(log_dir / "aider.llm.txt")]
@@ -75,6 +75,8 @@ def write_model_settings(cfg: Config) -> None:
     lines = []
     for n in names:
         lines += [f"- name: ollama_chat/{n}", "  extra_params:", f"    num_ctx: {ctx}"]
+        if not cfg.data["ollama"].get("think", True):
+            lines.append("    think: false")         # thinking models spend minutes before each edit
     path = cfg.state_dir / "aider.model.settings.yml"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")

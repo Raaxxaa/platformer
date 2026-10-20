@@ -34,6 +34,8 @@ hide = ["docs/", "*.md", "CLAUDE.md", "company/", "tools/", "public/", "tests/",
 [ollama]
 host = "http://127.0.0.1:11434"
 num_ctx = 32768
+think = false               # thinking models (qwen3.5) otherwise think for minutes before every edit
+request_timeout_s = 1500    # one model request; slow local models need more than aider's default
 
 [models]
 # Overwritten by `company setup` after it checks your GPU/RAM.
