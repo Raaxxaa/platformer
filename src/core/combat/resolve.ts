@@ -152,7 +152,7 @@ export function resolveEnemyHits(w: GameWorld): void {
     const attackerCx = g.kind === 'melee' && owner ? owner.x : g.rect.x + g.rect.w / 2;
     const dealt = hurtPlayer(w, {
       kind: 'enemyHit', enemyId: g.owner, enemyDefId: owner?.def.id ?? 'enemy', damageA: enemyDamageA(w, g.enemyHit.damage),
-      attackerCx, melee: g.kind === 'melee', playerKb: g.enemyHit.playerKb, travelDir: g.dir,
+      attackerCx, melee: g.kind === 'melee', playerKb: g.enemyHit.playerKb, travelDir: g.dir, unblockable: g.enemyHit.unblockable, group: g,
     });
     if (dealt === 0) continue;                                  // invulnerable: not marked, may hit later
     if(g.enemyHit.status)applyPlayerStatus(w,g.enemyHit.status.id,g.enemyHit.status.stacks??1,g.enemyHit.status.duration);

@@ -56,6 +56,15 @@ export const ABILITIES: Partial<Record<AbilityId, AbilityDef>> = {
       { blades: 4, durationS: 6.0, damagePerHit: 5, charges: 1 },
     ]),
   },
+  riposte: {
+    ...base('riposte'), startupS: 0, recoveryS: 1.0, groundMoveCap: 0, airGravityMult: 0.5,
+    hits: { counter: { damage: 0, kb: [260, -120], poise: 50, hitStop: 0.10, kind: 'melee' } },
+    levels: rows(8, [
+      { damage: 45, w: 64, h: 40, refundDash: false, charges: 1 }, { damage: 60, w: 72, h: 40, refundDash: false, charges: 1 },
+      { damage: 78, w: 80, h: 48, refundDash: false, charges: 1 }, { damage: 98, w: 88, h: 48, refundDash: false, charges: 1 },
+      { damage: 122, w: 96, h: 56, refundDash: true, charges: 1 },
+    ]),
+  },
   shockwave: {
     ...base('shockwave'), startupS: 0.20, recoveryS: 0.25, groundMoveCap: 0, airGravityMult: 0.5, airHover: true,
     hits: { slam: { damage: 0, kb: [80, -320], poise: 40, hitStop: 0.075, kind: 'shot', control: { type: 'launch', duration: 0 } } },
@@ -143,6 +152,7 @@ export const ABILITY = {
   bladeDash: { vx: 480, ticks: 24, box: { dx: 0, dy: -14, w: 28, h: 32 } as Box },
   whirlwind: { vx: 120, box: { dx: 0, dy: -16, w: 48, h: 32 } as Box, pullRadius: 64, pullSpeed: 120 },
   bladeFlurry: { radius: 28, degPerS: 450, size: 10 },
+  riposte: { dy: -14, counterTicks: 12, iframeTicks: 48, recoveryAfterBlock: 30, stopS: 0.075 },
   shockwave: { dy: -18, h: 44 },
   shoulderCharge: { vx: 360, box: { dx: 14, dy: -14, w: 20, h: 28 } as Box, crackedReach: 4 },
   boulderToss: {

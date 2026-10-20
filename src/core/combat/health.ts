@@ -9,6 +9,7 @@ import { enemyHitDamage } from './damage.ts';
 import { maxStop } from './hitStop.ts';
 import { addRushValue } from './rush.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
+import type { HitGroup } from './hitGroups.ts';
 
 export interface PlayerHealth {
   hp: number; maxHp: number;
@@ -35,7 +36,8 @@ export function hurtPlayerDot(w:GameWorld,damageA:number,cause:'burning'|'poison
 }
 
 export type HurtSource =
-  | { kind: 'enemyHit'; enemyId: number; enemyDefId: string; damageA: number; attackerCx: number; melee: boolean; playerKb?: [number, number]; travelDir?: 1 | -1 }
+  | { kind: 'enemyHit'; enemyId: number; enemyDefId: string; damageA: number; attackerCx: number; melee: boolean; playerKb?: [number, number]; travelDir?: 1 | -1;
+    /** 04's `unblockable` flag: Riposte, parry and block ignore it. */ unblockable?: boolean; /** The enemy hit group (Riposte marks it used and destroys a projectile). */ group?: HitGroup }
   | { kind: 'hazard'; cause: 'spikes' | 'hazard'; damageA: number };
 
 /** Super armor sources (02 §5.3): Shoulder Charge, Rage, Iron Will while attacking (03). */
@@ -48,7 +50,12 @@ export function hasSuperArmor(w: GameWorld): boolean {
 }
 
 /** Hooks for later milestones (02 §5.2 steps 2–4, Second Wind). They never handle the hit in M2. */
-const ripostes = (): boolean => false;
+let riposteHook: ((w: GameWorld, src: HurtSource) => boolean) | null = null;
+/** Riposte registers its block here (02 §5.2 step 2). Only enemy direct hits reach it. */
+export function setRiposteHook(f: (w: GameWorld, src: HurtSource) => boolean): void {
+  riposteHook = f;
+}
+const ripostes = (w: GameWorld, src: HurtSource): boolean => !!riposteHook && riposteHook(w, src);
 const parries = (): boolean => false;
 const blocks = (): boolean => false;
 
@@ -63,7 +70,7 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   if (h.iframeTicks > 0) return 0;
   if (src.kind === 'enemyHit' && (b.dashIframes || h.abilityIframeTicks > 0)) return 0;
   // 2–4. Riposte, parry, block: hooks.
-  if (src.kind === 'enemyHit' && (ripostes() || parries() || blocks())) return 0;
+  if (src.kind === 'enemyHit' && (ripostes(w, src) || parries() || blocks())) return 0;
   // 5. Damage.
   // A practice hit (Sparring Dummy, 04 §2.11) deals 0 but runs the rest of the pipeline.
   const practice = src.kind === 'enemyHit' && src.damageA === 0;
