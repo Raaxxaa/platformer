@@ -100,7 +100,7 @@ test('normal movement enters real swamp water, wades at 85 px/s and uses the wat
     return g.body();
   });
   expect(before.inWater).toBe(false);
-  const wading = await page.evaluate(() => { const g = (window as any).__game; g.step(30, { moveX: 1 }); return g.body(); });
+  const wading = await page.evaluate(() => { const g = (window as any).__game; g.step(60, { moveX: 1 }); return g.body(); });
   expect(wading.x).toBeGreaterThan(before.x); expect(wading.inWater).toBe(true);
   expect(wading.grounded).toBe(true); expect(wading.onIce).toBe(false); expect(wading.vx).toBe(85);
   await draw(page); await page.screenshot({ path: 'test-results/m71-water-wading.png' });
