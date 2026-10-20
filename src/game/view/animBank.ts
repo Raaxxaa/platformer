@@ -18,8 +18,10 @@ export class AnimBank {
   }
   /** Relative enemy keys (`idle`, `atk_slash`): regulars in `enemies_<level>` as `<id>_<key>`, bosses in `boss_<id>`. */
   enemy(id: string, boss: boolean, level = 'plains'): Lookup {
-    return boss ? (k) => this.get(`boss_${id}`, k) : (k) => this.get(`enemies_${level}`, `${id}_${k}`)
+    const plain: Lookup = boss ? (k) => this.get(`boss_${id}`, k) : (k) => this.get(`enemies_${level}`, `${id}_${k}`)
       ?? [...this.map.values()].find(a => a.atlas.startsWith('enemies_') && a.key === `${id}_${k}`);
+    // Flyers (Bat Swarm, Will-o'-Wisp) are drawn with `fly` / `float` instead of a separate `idle`.
+    return (k) => plain(k) ?? (k === 'idle' ? plain('fly') ?? plain('float') : undefined);
   }
   vfx(key: string): AnimDef | undefined { return this.get('vfx', key); }
   projectile(key: string): AnimDef | undefined { return this.get('projectiles', key); }
