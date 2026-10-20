@@ -35,7 +35,7 @@ describe('Crossroads shop stock (05 §10.1)', () => {
     const first = rollWeapon(rng, { ...GRADE_ODDS.free[2], F: 0, C: 0 }, classes), weapons = [first.weaponId], abilities: AbilityId[] = [];
     const expected: ShopState['slots'] = [{ kind: 'weapon', weapon: first }];
     for (let i = 1; i < 3; i++) {
-      const ability = rng() < 0.40 ? rollAbility(rng, ['blade_dash'], classes, abilities) : null;
+      const ability = rng() < 0.40 ? rollAbility(rng, ['blade_dash'], classes, abilities, w.run.lootUnlocked) : null;
       if (ability) { abilities.push(ability.id); expected.push({ kind: 'ability', ability }); }
       else { const weapon = rollWeapon(rng, GRADE_ODDS.free[2], classes, { exclude: weapons }); weapons.push(weapon.weaponId); expected.push({ kind: 'weapon', weapon }); }
     }

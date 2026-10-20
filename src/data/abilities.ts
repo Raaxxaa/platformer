@@ -92,6 +92,15 @@ export const ABILITIES: Partial<Record<AbilityId, AbilityDef>> = {
       { waves: 10, damagePerWave: 14, widthPx: 160, charges: 1 },
     ]),
   },
+  turret: {
+    ...base('turret'), startupS: 0.10, recoveryS: 0.10, groundMoveCap: 0, airGravityMult: 1,
+    hits: { bolt: { damage: 0, kb: [60, -10], poise: 6, hitStop: 0.025, kind: 'shot' } },
+    levels: rows(14, [
+      { turrets: 1, boltDamage: 12, fireIntervalS: 1.0, charges: 1 }, { turrets: 1, boltDamage: 14, fireIntervalS: 0.9, charges: 1 },
+      { turrets: 1, boltDamage: 16, fireIntervalS: 0.8, charges: 1 }, { turrets: 1, boltDamage: 18, fireIntervalS: 0.7, charges: 1 },
+      { turrets: 2, boltDamage: 14, fireIntervalS: 0.7, charges: 1 },
+    ]),
+  },
   hunters_mark: {
     ...base('hunters_mark'), hits: {},
     levels: rows(12, [
@@ -142,6 +151,10 @@ export const ABILITY = {
   },
   arrowRain: { near: 16, top: 96, bottom: 32, waveTicks: 24, scanDy: -14 },
   rage: { durationS: 6.0, linkedMult: 1.5 },
+  turret: {
+    offsetX: 12, size: 16, gravity: 1500, maxFall: 600, fallLimitS: 2.0, lifeS: 8.0, firstShotS: 0.2, muzzleDy: -10, range: 256,
+    boltSpeed: 500, boltRange: 320, boltBox: { w: 8, h: 4 },
+  },
   hunterMark: { mult: 1.30, linkedMult: 1.45 },
   thunderStrike: { reach: 224, vReach: 112, boltTicks: 12, box: { dx: 0, dy: -80, w: 24, h: 160 } as Box, colStart: 48, colStep: 32, colDrop: 160 },
   frostBurst: { dy: -14, chillLevel: 1, eliteMult: 0.5, linkedFreezeMult: 1.5 },

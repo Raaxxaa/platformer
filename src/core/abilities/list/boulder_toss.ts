@@ -50,7 +50,6 @@ function spawnLob(w: GameWorld, kind: LobEntity['kind'], x: number, y: number, v
   w.abilityEntities.push(e);
 }
 
-// SPEC-GAP: solid bodies (not just tiles) should also stop it (03 §9.4)
 registerAbility('boulder_toss', {
   effect(w, c) {
     const b = w.body, f = b.facing, size = c.row.sizePx as number, shards = c.row.shards as number;
