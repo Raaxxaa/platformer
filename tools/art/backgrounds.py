@@ -52,6 +52,8 @@ def _fill_below(img, xs, top, dark, light, rim=3):
 def render(set_name, layer, width=W):
     if set_name == 'swamps':
         return render_swamps(layer, width)
+    if set_name == 'village_border':
+        return render_border(layer, width)
     if set_name in ('mountains', 'mountains_cave'):
         return render_mountains(set_name, layer, width)
     if set_name != 'plains':
@@ -227,6 +229,65 @@ def render_swamps(layer, width=W):
         _dead_tree(img, xs, g, cx, 342, g.uniform(260, 330), 9.0, dark)
     _fog(img, xs, 316, 18, lit, 2.4)
     _fill_below(img, xs, 338 + _wave(xs, [(3, 2, 1.0), (8, 1.5, 0.5)]), dark, lit, rim=2)
+    return Image.fromarray(img, 'RGBA')
+
+
+BORDER_ALLOWED = {0: ['mt_sky', 'mt_bg0', 'mt_bg1', 'vl_light'], 1: ['mt_bg0', 'mt_bg1', 'vl_light'],
+                  2: ['mt_bg2', 'vl_light']}
+
+
+def render_border(layer, width=W):
+    """Border Village (a mountain town at sunset, 08 §3.7): peaks, snowy roofs, lantern posts."""
+    xs = np.arange(width)
+    img = np.zeros((H, width, 4), np.uint8)
+    ys = np.arange(H)[:, None]
+    sky, bg0, bg1, bg2 = P.RAMPS['mt_sky'], P.RAMPS['mt_bg0'], P.RAMPS['mt_bg1'], P.RAMPS['mt_bg2']
+    light = P.RAMPS['vl_light']
+    g = _rng(f'bg_village_border_{layer}')
+    if layer == 0:
+        for i, col in enumerate(sky):
+            _paint(img, np.broadcast_to((ys >= i * 44), (H, width)), col)
+        sx = 480                                                   # a low sun between the peaks
+        dx = _wrap(xs[None, :] - sx)
+        _paint(img, dx * dx + (ys - 214) ** 2 < 24 ** 2, light[1])
+        _paint(img, (dx * dx + (ys - 214) ** 2 < 24 ** 2) & (dx * dx + (ys - 214) ** 2 >= 21 ** 2), light[0])
+        top = _peaks(xs, g, 5, 262, 80, 130, 70, 100, jag=1.5)
+        _fill_below(img, xs, top, bg0[1], bg0[0], rim=1)
+        slope = np.concatenate([top[1:], top[:1]]) - top
+        t = np.round(top).astype(int)[None, :]
+        _paint(img, (ys >= t) & (slope[None, :] < -0.2) & (ys < t + 40), bg0[0])
+        ridge = _peaks(xs, g, 9, 300, 14, 34, 34, 54, jag=1.0)
+        _fill_below(img, xs, np.minimum(ridge, 262 + _wave(xs, [(2, 4, 0.6)])) + 14, bg1[0], bg1[1], rim=2)
+        return Image.fromarray(img, 'RGBA')
+    if layer == 1:
+        base = 300 + _wave(xs, [(2, 3, 0.4), (5, 2, 1.3)])
+        _fill_below(img, xs, base, bg1[0], bg1[1], rim=2)
+        n = 9
+        for k in range(n):
+            cx = k * W / n + g.uniform(-10, 10)
+            wdt, hgt = g.uniform(36, 52), g.uniform(26, 40)
+            x0 = (cx - wdt / 2) % W
+            _box(img, xs, x0, x0 + wdt, 300 - hgt, 304, bg1[0])
+            _tri(img, xs, cx, wdt / 2 + 5, 300 - hgt + 1, 26, bg1[0])
+            _tri(img, xs, cx, (wdt / 2 + 5) * 0.5, 300 - hgt - 12, 14, bg1[1])   # snow on the steep roof
+            for wx in (cx - wdt / 4, cx + wdt / 6):
+                _box(img, xs, (wx - 3) % W, (wx - 3) % W + 6, 300 - hgt + 12, 300 - hgt + 19, light[0])
+            chx = (cx + wdt / 4) % W
+            _box(img, xs, chx, chx + 5, 300 - hgt - 20, 300 - hgt - 4, bg1[0])
+        for k in range(14):                                                   # pines between the houses
+            px = k * W / 14 + g.uniform(-8, 8) + W / 28
+            _tri(img, xs, px, 9, 304, 28 + (k * 5) % 12, bg1[0])
+        return Image.fromarray(img, 'RGBA')
+    dark, lit = bg2
+    top = 336 + _wave(xs, [(3, 2, 1.0), (7, 1.5, 0.5)])
+    _fill_below(img, xs, top, dark, lit, rim=2)
+    for k in range(4):                                                        # lantern posts with warm lamps
+        px = 40 + k * 160
+        _box(img, xs, px, px + 4, 262, 340, dark)
+        _box(img, xs, px - 6, px + 10, 258, 262, dark)
+        _box(img, xs, px - 5, px + 1, 262, 272, dark)
+        _box(img, xs, px - 4, px, 264, 270, light[1])
+        _box(img, xs, px - 3, px - 1, 265, 268, light[0])
     return Image.fromarray(img, 'RGBA')
 
 

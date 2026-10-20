@@ -560,6 +560,26 @@
    },
    "trimmed": false
   },
+  "inn_border_00": {
+   "frame": {
+    "h": 160,
+    "w": 128,
+    "x": 132,
+    "y": 116
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 160,
+    "w": 128
+   },
+   "spriteSourceSize": {
+    "h": 160,
+    "w": 128,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "loot_stand_00": {
    "frame": {
     "h": 16,
@@ -585,6 +605,26 @@
     "h": 112,
     "w": 496,
     "x": 2,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 112,
+    "w": 496
+   },
+   "spriteSourceSize": {
+    "h": 112,
+    "w": 496,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "market_roof_border_00": {
+   "frame": {
+    "h": 112,
+    "w": 496,
+    "x": 500,
     "y": 2
    },
    "rotated": false,
@@ -1068,7 +1108,7 @@
   "scale": "1",
   "size": {
    "h": 855,
-   "w": 500
+   "w": 998
   },
   "version": "1"
  }

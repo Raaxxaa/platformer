@@ -257,6 +257,343 @@
   "mode": "speed"
  },
  {
+  "key": "atk_brood",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "atk_brood_00",
+   "atk_brood_01",
+   "atk_brood_02",
+   "atk_brood_03",
+   "atk_brood_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_ceiling_drop",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "atk_ceiling_drop_00",
+   "atk_ceiling_drop_01",
+   "atk_ceiling_drop_02",
+   "atk_ceiling_drop_03",
+   "atk_ceiling_drop_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_fang_strike",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "atk_fang_strike_00",
+   "atk_fang_strike_01",
+   "atk_fang_strike_02",
+   "atk_fang_strike_03",
+   "atk_fang_strike_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_pounce",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "atk_pounce_00",
+   "atk_pounce_01",
+   "atk_pounce_02",
+   "atk_pounce_03",
+   "atk_pounce_04",
+   "atk_pounce_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_venom_spit",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "atk_venom_spit_00",
+   "atk_venom_spit_01",
+   "atk_venom_spit_02",
+   "atk_venom_spit_03",
+   "atk_venom_spit_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "break",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "break_00",
+   "break_01",
+   "break_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0
+    ]
+   },
+   {
+    "phase": "all",
+    "frames": [
+     1,
+     2
+    ],
+    "loopFps": 4
+   }
+  ]
+ },
+ {
+  "key": "climb",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "climb_00",
+   "climb_01"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
+  "key": "death",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "death_00",
+   "death_01",
+   "death_02",
+   "death_03",
+   "death_04",
+   "death_05",
+   "death_06",
+   "death_07",
+   "death_08"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
+  "key": "fall",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "fall_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "hang_top",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "hang_top_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "hurt",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "idle",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "intro",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "intro_00",
+   "intro_01",
+   "intro_02",
+   "intro_03",
+   "intro_04",
+   "intro_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "stagger",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "stagger_00",
+   "stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "transition",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "transition_00",
+   "transition_01",
+   "transition_02",
+   "transition_03",
+   "transition_04",
+   "transition_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "walk",
+  "atlas": "boss_spider_queen",
+  "frames": [
+   "walk_00",
+   "walk_01",
+   "walk_02",
+   "walk_03",
+   "walk_04",
+   "walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
   "key": "atk_fist_slam",
   "atlas": "boss_stone_colossus",
   "frames": [
@@ -586,6 +923,105 @@
   ],
   "mode": "once",
   "fps": 8
+ },
+ {
+  "key": "spiderling_atk_bite",
+  "atlas": "enemies_extra",
+  "frames": [
+   "spiderling_atk_bite_00",
+   "spiderling_atk_bite_01",
+   "spiderling_atk_bite_02",
+   "spiderling_atk_bite_03",
+   "spiderling_atk_bite_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "spiderling_death",
+  "atlas": "enemies_extra",
+  "frames": [
+   "spiderling_death_00",
+   "spiderling_death_01",
+   "spiderling_death_02",
+   "spiderling_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "spiderling_hurt",
+  "atlas": "enemies_extra",
+  "frames": [
+   "spiderling_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "spiderling_idle",
+  "atlas": "enemies_extra",
+  "frames": [
+   "spiderling_idle_00",
+   "spiderling_idle_01",
+   "spiderling_idle_02",
+   "spiderling_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "spiderling_knockdown",
+  "atlas": "enemies_extra",
+  "frames": [
+   "spiderling_knockdown_00",
+   "spiderling_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "spiderling_stagger",
+  "atlas": "enemies_extra",
+  "frames": [
+   "spiderling_stagger_00",
+   "spiderling_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "spiderling_walk",
+  "atlas": "enemies_extra",
+  "frames": [
+   "spiderling_walk_00",
+   "spiderling_walk_01",
+   "spiderling_walk_02",
+   "spiderling_walk_03",
+   "spiderling_walk_04",
+   "spiderling_walk_05"
+  ],
+  "mode": "speed"
  },
  {
   "key": "straw_target_death",
@@ -3007,6 +3443,14 @@
   "mode": "once"
  },
  {
+  "key": "inn_border",
+  "atlas": "objects",
+  "frames": [
+   "inn_border_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "loot_stand",
   "atlas": "objects",
   "frames": [
@@ -3019,6 +3463,14 @@
   "atlas": "objects",
   "frames": [
    "market_roof_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "market_roof_border",
+  "atlas": "objects",
+  "frames": [
+   "market_roof_border_00"
   ],
   "mode": "once"
  },
@@ -7764,6 +8216,16 @@
   ],
   "mode": "loop",
   "fps": 6
+ },
+ {
+  "key": "venom_glob",
+  "atlas": "projectiles",
+  "frames": [
+   "venom_glob_00",
+   "venom_glob_01"
+  ],
+  "mode": "loop",
+  "fps": 10
  },
  {
   "key": "ab_shockwave_56",

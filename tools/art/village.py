@@ -11,7 +11,7 @@ from . import raster as R
 ATLAS = 'objects'
 ALLOWED = ['ink', 'white', 'trim', 'gray', 'npc', 'vl_wood', 'vl_plaster', 'vl_light',
            'w_steel', 'w_wood', 'w_gold', 'w_magic', 'fx_heal', 'fx_poison',
-           'en_glow', 'sw_moss', 'sw_mud']
+           'en_glow', 'sw_moss', 'sw_mud', 'mt_rock', 'mt_snow']
 FLOOR_Y = 320                         # 06 §12.1: floor surface at row 20
 INN_ORIGIN = (39 * 16, 160)           # top-left of the inn frame in the village map
 INN_SIZE = (128, 160)
@@ -103,14 +103,14 @@ def well():
     return c
 
 
-def market_roof():
-    """Striped awning over the shop row (tiles 7–37) on three posts, 496 × 112."""
+def market_roof(border=False):
+    """Striped awning over the shop row (tiles 7–37) on three posts, 496 × 112 (border: slate and snow)."""
     w = (37 - 7 + 1) * 16
     h = 112
     f = Fig(w, h)
     post = f.part('post', 'vl_wood')
-    a = f.part('stripe_a', 'vl_plaster')
-    b = f.part('stripe_b', 'npc')
+    a = f.part('stripe_a', 'mt_snow' if border else 'vl_plaster')
+    b = f.part('stripe_b', 'mt_rock' if border else 'npc')
     ridge = f.part('ridge', 'vl_wood', 1)
     for px in (2, w // 2 - 1 + (24 * 16 + 8 - (7 * 16 + w // 2)), w - 6):
         f.rect(px, 14, 4, h - 15, post)
@@ -122,15 +122,16 @@ def market_roof():
     return f.done()
 
 
-def inn():
-    """Two-storey timber inn with a sign and warm windows; the door covers tiles 41–43, rows 16–19."""
+def inn(border=False):
+    """Two-storey timber inn with a sign and warm windows; the door covers tiles 41–43, rows 16–19.
+    border: stone ground floor and a snow-capped slate roof."""
     w, h = INN_SIZE
     f = Fig(w, h)
-    wall = f.part('wall', 'vl_plaster')
+    wall = f.part('wall', 'mt_rock' if border else 'vl_plaster')
     wall2 = f.part('wall_up', 'vl_plaster', 1)
     beam = f.part('beam', 'vl_wood', 1)
-    roof = f.part('roof', 'vl_wood', 1)
-    shingle = f.part('shingle', 'vl_wood', 2)
+    roof = f.part('roof', 'mt_rock' if border else 'vl_wood', 1)
+    shingle = f.part('shingle', 'mt_rock' if border else 'vl_wood', 2)
     win = f.part('win', 'vl_light')
     frame = f.part('frame', 'vl_wood')
     door = f.part('door', 'vl_wood')
@@ -152,6 +153,10 @@ def inn():
         R.line(f.L, (int(18 - (y - 8) * 0.44) + 2, y), (int(w - 18 + (y - 8) * 0.44) - 3, y), shingle)
     chim = f.part('chim', 'gray', 1)
     f.rect(w - 34, 0, 10, 14, chim)
+    if border:                                           # snow along the roof ridge and eaves
+        snow = f.part('snow', 'mt_snow')
+        R.fill_polygon(f.L, [(14, 24), (18, 8), (w - 18, 8), (w - 14, 24), (w - 22, 18), (22, 18)], snow)
+        f.rect(0, 46, w, 3, snow)
     # upper windows
     for wx in (12, 44, 76, 106):
         f.rect(wx - 1, 58, 14, 18, frame)
@@ -183,6 +188,8 @@ def building_frames():
         'well_00': _img(well()),
         'market_roof_00': _img(market_roof()),
         'inn_00': _img(inn()),
+        'market_roof_border_00': _img(market_roof(True)),
+        'inn_border_00': _img(inn(True)),
     }
 
 
@@ -650,6 +657,8 @@ def dummy_frames():
         fr[f'training_dummy_hit_{i:02d}'] = dummy(i + 1)
     out = {k: _img(v) for k, v in fr.items()}
     out.update(yard_enemy_frames())
+    from .bosses import spider_queen
+    out.update(spider_queen.spiderling_frames()[0])           # ART7: the Spiderling lives in enemies_extra
     return out
 
 
@@ -661,12 +670,14 @@ DUMMY_ANIMS = [A.anim('training_dummy_idle', 'enemies_extra', 1, 'once'),
 def anims():
     out = list(DUMMY_ANIMS) + list(YARD_ENEMY_ANIMS) + [A.anim('ability_altar_idle', ATLAS, 2, 'loop', 1), A.anim('gate_idle', ATLAS, 2, 'loop', 2),
            A.anim('shop_refill_idle', ATLAS, 4, 'loop', 6)]
+    from .bosses import spider_queen
+    out += spider_queen.spiderling_frames()[1]
     out.append(A.anim('minecart_roll', ATLAS, 2, 'loop', 8))
     out.append(A.anim('firefly', ATLAS, 4, 'loop', 4))
     out.append(A.anim('grapple_vine', ATLAS, 2, 'loop', 2))
     for k in ('shop_item', 'shop_flask', 'shop_key', 'shop_reroll', 'unlocks_board', 'seed_board', 'loot_stand',
               'mirror_spot', 'class_statue_swordsman', 'class_statue_tank', 'class_statue_archer',
-              'class_statue_wizard', 'station_sign', 'station_flag_grey', 'station_flag_green', 'training_gate', 'cottage_a', 'cottage_b', 'well', 'market_roof', 'inn'):
+              'class_statue_wizard', 'station_sign', 'station_flag_grey', 'station_flag_green', 'training_gate', 'cottage_a', 'cottage_b', 'well', 'market_roof', 'inn', 'market_roof_border', 'inn_border'):
         out.append(A.anim(k, ATLAS, 1, 'once'))
     return out
 
@@ -688,6 +699,6 @@ def build(assets, preview):
     sheet({k: v for k, v in fr.items() if k != 'market_roof_00'}, os.path.join(preview, 'objects_sheet.png'), scale=3)
     dummy = dummy_frames()
     for n, img in dummy.items():
-        P.check_palette_lock(img, P.allowed(['ink', 'vl_wood', 'vl_plaster', 'gray', 'w_gold', 'w_wood', 'fx_heal']), 'enemies_extra', n)
+        P.check_palette_lock(img, P.allowed(['ink', 'vl_wood', 'vl_plaster', 'gray', 'w_gold', 'w_wood', 'fx_heal', 'en_violet', 'en_red', 'en_bone']), 'enemies_extra', n)
     A.pack_atlas('enemies_extra', dummy, os.path.join(assets, 'atlases'))
     return anims()

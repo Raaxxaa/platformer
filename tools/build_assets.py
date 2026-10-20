@@ -13,8 +13,8 @@ from art.enemies import plains as enemies_plains  # noqa: E402
 from art.enemies import mountains as enemies_mountains  # noqa: E402
 from art.enemies import swamps as enemies_swamps  # noqa: E402
 from art import style_board_stage2  # noqa: E402
-from art.bosses import great_boar, stone_colossus  # noqa: E402
-from audio import listen_sheet, sfx_defs  # noqa: E402
+from art.bosses import great_boar, stone_colossus, spider_queen  # noqa: E402
+from audio import listen_sheet, listen_sheet_stage2, sfx_defs, sfx_stage2  # noqa: E402
 
 
 def build(root=ROOT):
@@ -35,6 +35,7 @@ def build(root=ROOT):
     anims += enemies_mountains.build(assets, preview)
     anims += stone_colossus.build(assets, preview)
     anims += enemies_swamps.build(assets, preview)
+    anims += spider_queen.build(assets, preview)
     build_world.build(assets, preview)
     ui.build(assets, preview)
     fonts.build(os.path.join(assets, 'fonts'))
@@ -50,7 +51,9 @@ def build(root=ROOT):
     boards.build(preview)
     contrast.write_report(preview)
     sfx_defs.build(os.path.join(assets, 'audio', 'sfx'))
+    sfx_stage2.build(os.path.join(assets, 'audio', 'sfx'))
     listen_sheet.build(os.path.join(root, 'docs', 'art'))
+    listen_sheet_stage2.build(os.path.join(root, 'docs', 'art'))
     atlas.write_anims(os.path.join(assets, 'anims.json'), anims)
     return assets
 

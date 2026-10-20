@@ -87,7 +87,7 @@ def village_entities():
 
 
 def village_surfaces():
-    return {f'bg_{v}_{i}': mean_oklab(B.render(v, i)) for v in ('village_home', 'village_crossroads')
+    return {f'bg_{v}_{i}': mean_oklab(B.render(v, i)) for v in ('village_home', 'village_crossroads', 'village_border')
             for i in range(3)}
 
 

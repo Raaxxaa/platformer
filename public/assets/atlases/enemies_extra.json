@@ -180,12 +180,492 @@
    },
    "trimmed": false
   },
+  "spiderling_atk_bite_00": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 2,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_atk_bite_01": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 44,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_atk_bite_02": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 86,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_atk_bite_03": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 128,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_atk_bite_04": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 170,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_death_00": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 212,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_death_01": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 254,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_death_02": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 296,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_death_03": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 338,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_hurt_00": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 380,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_idle_00": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 422,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_idle_01": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 464,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_idle_02": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 506,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_idle_03": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 548,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_knockdown_00": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 590,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_knockdown_01": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 632,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_stagger_00": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 674,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_stagger_01": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 716,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_walk_00": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 758,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_walk_01": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 800,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_walk_02": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 842,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_walk_03": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 884,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_walk_04": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 926,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "spiderling_walk_05": {
+   "frame": {
+    "h": 32,
+    "w": 40,
+    "x": 968,
+    "y": 102
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 32,
+    "w": 40
+   },
+   "spriteSourceSize": {
+    "h": 32,
+    "w": 40,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "straw_target_death_00": {
    "frame": {
     "h": 32,
     "w": 32,
     "x": 2,
-    "y": 102
+    "y": 136
    },
    "rotated": false,
    "sourceSize": {
@@ -205,7 +685,7 @@
     "h": 32,
     "w": 32,
     "x": 36,
-    "y": 102
+    "y": 136
    },
    "rotated": false,
    "sourceSize": {
@@ -225,7 +705,7 @@
     "h": 32,
     "w": 32,
     "x": 70,
-    "y": 102
+    "y": 136
    },
    "rotated": false,
    "sourceSize": {
@@ -245,7 +725,7 @@
     "h": 32,
     "w": 32,
     "x": 104,
-    "y": 102
+    "y": 136
    },
    "rotated": false,
    "sourceSize": {
@@ -265,7 +745,7 @@
     "h": 32,
     "w": 32,
     "x": 138,
-    "y": 102
+    "y": 136
    },
    "rotated": false,
    "sourceSize": {
@@ -367,8 +847,8 @@
   "image": "enemies_extra.png",
   "scale": "1",
   "size": {
-   "h": 136,
-   "w": 502
+   "h": 170,
+   "w": 1010
   },
   "version": "1"
  }

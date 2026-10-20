@@ -959,6 +959,46 @@
     "y": 0
    },
    "trimmed": false
+  },
+  "venom_glob_00": {
+   "frame": {
+    "h": 14,
+    "w": 14,
+    "x": 66,
+    "y": 186
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 14,
+    "w": 14
+   },
+   "spriteSourceSize": {
+    "h": 14,
+    "w": 14,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "venom_glob_01": {
+   "frame": {
+    "h": 14,
+    "w": 14,
+    "x": 82,
+    "y": 186
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 14,
+    "w": 14
+   },
+   "spriteSourceSize": {
+    "h": 14,
+    "w": 14,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
   }
  },
  "meta": {

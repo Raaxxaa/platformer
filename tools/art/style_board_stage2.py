@@ -108,6 +108,7 @@ def build(preview):
     path = os.path.join(preview, 'style_board_mountains.png')
     scene.resize((1280, 720), Image.NEAREST).convert('RGB').save(path)
     build_swamps(preview)
+    build_border(preview)
     return path
 
 
@@ -197,6 +198,54 @@ def compose_swamps():
     for gx, gy_ in ((600 - 3, ly - 44), (600 + 4, ly - 44)):
         scene.alpha_composite(glint, (gx, gy_))
     return scene
+
+
+def compose_border(cam_x=112, cam_y=8):
+    """The Border Village with the Crossroads layout (06 §12.2): mountain backdrop, stone floor, slate roofs."""
+    from . import npcs, village as VL
+    from .style_board import _tint_trim
+    W, H = 640, 360
+    scene = Image.new('RGBA', (W, H))
+    for i in range(3):
+        scene.alpha_composite(B.render('village_border', i))
+    world = Image.new('RGBA', (48 * 16, 23 * 16))
+    obj = VL.all_frames()
+    npc, _ = npcs.build_frames()
+
+    def put(img, cx, bottom=VL.FLOOR_Y):
+        world.alpha_composite(img, (int(cx - img.width // 2), int(bottom - img.height)))
+    tile = lambda t: t * 16 + 8   # noqa: E731
+    roof = obj['market_roof_border_00']
+    world.alpha_composite(roof, (7 * 16, VL.FLOOR_Y - roof.height))
+    world.alpha_composite(obj['inn_border_00'], VL.INN_ORIGIN)
+    sheet = T.build_sheet('mountains')
+    g = np.zeros((23, 48), bool)
+    g[20:, :] = True
+    g[:, 0] = g[:, 47] = True
+    idx = T.autotile(g)
+    for y in range(17, 23):
+        for x in range(48):
+            if idx[y, x] >= 0:
+                world.alpha_composite(T.cell_image(sheet, idx[y, x]), (x * 16, y * 16))
+    put(npc['merchant_idle_00'], tile(37.5), VL.FLOOR_Y + 2)
+    put(npc['shopkeeper_wave_01'], tile(17), VL.FLOOR_Y + 2)
+    put(npc['innkeeper_idle_00'], tile(44.6), VL.FLOOR_Y + 2)
+    for frame, tx in VL.LAYOUT['crossroads']:
+        img = obj[frame]
+        if frame.startswith('ability_altar'):
+            img = _tint_trim(obj['ability_altar_idle_01'], P.CLASS_COLORS['archer' if tx == 19 else 'wizard'])
+        put(img, tx * 16 + 8)
+    b, ta, tb = render(draw('swordsman', POSES['idle'][0]))
+    col = P.CLASS_COLORS['none']
+    put(V.compose_player(b, ta, tb, col, col), tile(7), VL.FLOOR_Y + 2)
+    scene.alpha_composite(world.crop((cam_x, cam_y, cam_x + W, cam_y + H)))
+    return scene
+
+
+def build_border(preview):
+    path = os.path.join(preview, 'style_board_village_border.png')
+    compose_border().resize((1280, 720), Image.NEAREST).convert('RGB').save(path)
+    return path
 
 
 def build_swamps(preview):

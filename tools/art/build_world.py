@@ -73,7 +73,18 @@ def build(assets, preview):
     stack.resize((1280, 720), Image.NEAREST).save(os.path.join(preview, 'bg_plains_stack.png'))
     build_mountains(assets, preview)
     build_swamps(assets, preview)
+    build_border(assets, preview)
     return sheet, layers
+
+
+def build_border(assets, preview):
+    st = Image.new('RGBA', (640, 360))
+    for i in range(3):
+        img = B.render('village_border', i)
+        P.check_palette_lock(img, P.allowed(B.BORDER_ALLOWED[i]), f'bg_village_border_{i}')
+        img.save(os.path.join(assets, 'bg', f'bg_village_border_{i}.png'))
+        st.alpha_composite(img)
+    st.resize((1280, 720), Image.NEAREST).save(os.path.join(preview, 'bg_village_border_stack.png'))
 
 
 def build_swamps(assets, preview):

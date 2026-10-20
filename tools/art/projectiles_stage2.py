@@ -101,6 +101,17 @@ def potion(frame):
     return _done(L)
 
 
+def venom_glob(frame):
+    """Spider Queen venom glob 10 x 10: a dripping blob of poison (2 frames)."""
+    L = _L(14, 14)
+    b = _part(L, 'glob', 'fx_poison')
+    R.ellipse(L, 7, 7, 4.0 + 0.5 * frame, 4.0 - 0.3 * frame, b)
+    R.fill_polygon(L, [(3, 6), (0, 7 + frame), (3, 8)], b)               # trailing drip
+    hi = _one(L, 'hi', P.RAMPS['fx_poison'][3])
+    R.line(L, (6, 5), (7, 5), hi)
+    return _done(L)
+
+
 def puddle(frame):
     """Poison puddle 48 x 8 (2 frames at 6 fps): a flat pool with a few bubbles."""
     L = _L(48, 8)
@@ -187,6 +198,7 @@ def build_frames():
         fr[f'stone_spikes_{i:02d}'] = stone_spikes(i)
     for i in range(2):
         fr[f'potion_{i:02d}'] = potion(i)
+        fr[f'venom_glob_{i:02d}'] = venom_glob(i)
         fr[f'puddle_{i:02d}'] = puddle(i)
         fr[f'ripple_{i:02d}'] = ripple(i)
     for i in range(4):
@@ -195,7 +207,7 @@ def build_frames():
         fr[f'bubble_{i:02d}'] = bubble(i)
     for i in range(5):
         fr[f'splash_{i:02d}'] = splash(i)
-    anims = [A.anim('potion', ATLAS, 2, 'loop', 10), A.anim('puddle', ATLAS, 2, 'loop', 6),
+    anims = [A.anim('potion', ATLAS, 2, 'loop', 10), A.anim('venom_glob', ATLAS, 2, 'loop', 10), A.anim('puddle', ATLAS, 2, 'loop', 6),
              A.anim('toxic_cloud', ATLAS, 4, 'loop', 6), A.anim('bubble', ATLAS, 3, 'once', 6),
              A.anim('splash', ATLAS, 5, 'once', 20), A.anim('ripple', ATLAS, 2, 'loop', 8),
              A.anim('bomb', ATLAS, 2, 'loop', 10), A.anim('hex_bolt', ATLAS, 2, 'loop', 12),

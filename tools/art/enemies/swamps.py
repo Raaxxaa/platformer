@@ -159,11 +159,13 @@ def draw_spider(pose, size, feet, K=1.0, ramps=('en_violet', 'en_red')):
         kn = ((rt[0] + ft[0]) / 2 + (-(1 if fdx < rt[0] - fx else -1)) * 0 + (rt[0] - fx) * 0.15 + 0.0,
               min(rt[1], ft[1]) - 4.5 * K + pose.get('kneeLift', 0))
         part = f.part(f'leg{i}', body, shift)
-        R.capsule(f.L, ip(rt), ip(kn), 1.7 * K + (0.3 if K > 1 else 0), part)
-        R.capsule(f.L, ip(kn), ip(ft), 1.5 * K + (0.3 if K > 1 else 0), part)
+        R.capsule(f.L, ip(rt), ip(kn), min(1.7 * K, 3.0), part)
+        R.capsule(f.L, ip(kn), ip(ft), min(1.5 * K, 2.6), part)
 
     for i in (4, 5, 6, 7):
         leg(i, 2)
+    for i in (0, 1, 2, 3):
+        leg(i, 1)                                          # near legs are drawn under the body so it stays readable
     abd = f.part('abdomen', body)
     ax, ay = bx - 5.5 * K, by - 1 * K
     R.ellipse(f.L, ax, ay, 6.5 * K, 5.0 * K, abd)
@@ -181,8 +183,6 @@ def draw_spider(pose, size, feet, K=1.0, ramps=('en_violet', 'en_red')):
     eye = part1(f, 'eye', P.RAMPS['ink'][0] if pose.get('dead') else P.RAMPS['en_red'][3])
     box(f, int(hx + 1 * K), int(hy - 1 * K), int(hx + 1.5 * K), int(hy - 0.5 * K), eye)
     box(f, int(hx - 1 * K), int(hy - 1.5 * K), int(hx - 0.5 * K), int(hy - 1 * K), eye)
-    for i in (0, 1, 2, 3):
-        leg(i, 0)
     return finish(f)
 
 

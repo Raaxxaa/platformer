@@ -15,7 +15,7 @@ HURTBOX = {
     'goblin_shaman': (14, 24),
     'stone_colossus': (56, 72),     # 04 §9
     'bog_zombie': (14, 28), 'giant_spider': (26, 16), 'wisp': (14, 14), 'swamp_witch': (14, 28),
-    'treant': (30, 52),
+    'treant': (30, 52), 'spider_queen': (64, 36), 'spiderling': (12, 8),
 }
 
 # 04 §3: attack boxes (dx, dy, w, h) from the feet, facing right. None = projectile (no melee box).
@@ -40,6 +40,10 @@ ATTACK_BOX = {
     'wisp': {'detonate': None},
     'swamp_witch': {'poison_potion': None, 'claw': (14, -14, 20, 20), 'hex_hop': None},
     'treant': {'root_snare': None, 'branch_slam': (34, -20, 52, 40)},
+    # 04 §10.3 (Venom Spit shoots venom_glob; Brood spawns Spiderlings) and the Spiderling's Bite
+    'spider_queen': {'ceiling_drop': (0, -12, 96, 24), 'fang_strike': (40, -14, 48, 28),
+                     'pounce': (24, -12, 48, 28), 'venom_spit': None, 'brood': None},
+    'spiderling': {'bite': (10, -5, 14, 10)},
     # 04 §10.1 (Rockfall uses falling_rock projectiles, no melee box)
     'great_boar': {'charge': (28, -20, 40, 36), 'tusk_toss': (36, -24, 48, 48), 'stomp_quake': (0, -8, 96, 16)},
 }
