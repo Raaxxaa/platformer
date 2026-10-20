@@ -336,6 +336,677 @@
   "mode": "once"
  },
  {
+  "key": "bat_swarm_atk_dive_bite",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "bat_swarm_atk_dive_bite_00",
+   "bat_swarm_atk_dive_bite_01",
+   "bat_swarm_atk_dive_bite_02",
+   "bat_swarm_atk_dive_bite_03",
+   "bat_swarm_atk_dive_bite_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "bat_swarm_death",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "bat_swarm_death_00",
+   "bat_swarm_death_01",
+   "bat_swarm_death_02",
+   "bat_swarm_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bat_swarm_fly",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "bat_swarm_fly_00",
+   "bat_swarm_fly_01",
+   "bat_swarm_fly_02",
+   "bat_swarm_fly_03"
+  ],
+  "mode": "loop",
+  "fps": 14
+ },
+ {
+  "key": "bat_swarm_hurt",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "bat_swarm_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "bat_swarm_knockdown",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "bat_swarm_knockdown_00",
+   "bat_swarm_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "bat_swarm_stagger",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "bat_swarm_stagger_00",
+   "bat_swarm_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "goblin_miner_atk_bomb_toss",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_miner_atk_bomb_toss_00",
+   "goblin_miner_atk_bomb_toss_01",
+   "goblin_miner_atk_bomb_toss_02",
+   "goblin_miner_atk_bomb_toss_03",
+   "goblin_miner_atk_bomb_toss_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "goblin_miner_atk_pick_swing",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_miner_atk_pick_swing_00",
+   "goblin_miner_atk_pick_swing_01",
+   "goblin_miner_atk_pick_swing_02",
+   "goblin_miner_atk_pick_swing_03",
+   "goblin_miner_atk_pick_swing_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "goblin_miner_death",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_miner_death_00",
+   "goblin_miner_death_01",
+   "goblin_miner_death_02",
+   "goblin_miner_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "goblin_miner_hurt",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_miner_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "goblin_miner_idle",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_miner_idle_00",
+   "goblin_miner_idle_01",
+   "goblin_miner_idle_02",
+   "goblin_miner_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "goblin_miner_knockdown",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_miner_knockdown_00",
+   "goblin_miner_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "goblin_miner_stagger",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_miner_stagger_00",
+   "goblin_miner_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "goblin_miner_walk",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_miner_walk_00",
+   "goblin_miner_walk_01",
+   "goblin_miner_walk_02",
+   "goblin_miner_walk_03",
+   "goblin_miner_walk_04",
+   "goblin_miner_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "goblin_shaman_atk_hex_bolt",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_shaman_atk_hex_bolt_00",
+   "goblin_shaman_atk_hex_bolt_01",
+   "goblin_shaman_atk_hex_bolt_02",
+   "goblin_shaman_atk_hex_bolt_03",
+   "goblin_shaman_atk_hex_bolt_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "goblin_shaman_atk_stone_spikes",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_shaman_atk_stone_spikes_00",
+   "goblin_shaman_atk_stone_spikes_01",
+   "goblin_shaman_atk_stone_spikes_02",
+   "goblin_shaman_atk_stone_spikes_03",
+   "goblin_shaman_atk_stone_spikes_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "goblin_shaman_atk_stone_ward",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_shaman_atk_stone_ward_00",
+   "goblin_shaman_atk_stone_ward_01",
+   "goblin_shaman_atk_stone_ward_02",
+   "goblin_shaman_atk_stone_ward_03",
+   "goblin_shaman_atk_stone_ward_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "goblin_shaman_death",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_shaman_death_00",
+   "goblin_shaman_death_01",
+   "goblin_shaman_death_02",
+   "goblin_shaman_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "goblin_shaman_hurt",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_shaman_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "goblin_shaman_idle",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_shaman_idle_00",
+   "goblin_shaman_idle_01",
+   "goblin_shaman_idle_02",
+   "goblin_shaman_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "goblin_shaman_knockdown",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_shaman_knockdown_00",
+   "goblin_shaman_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "goblin_shaman_stagger",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_shaman_stagger_00",
+   "goblin_shaman_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "goblin_shaman_walk",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "goblin_shaman_walk_00",
+   "goblin_shaman_walk_01",
+   "goblin_shaman_walk_02",
+   "goblin_shaman_walk_03",
+   "goblin_shaman_walk_04",
+   "goblin_shaman_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "ram_atk_headbutt",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "ram_atk_headbutt_00",
+   "ram_atk_headbutt_01",
+   "ram_atk_headbutt_02",
+   "ram_atk_headbutt_03",
+   "ram_atk_headbutt_04",
+   "ram_atk_headbutt_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "ram_atk_leap_butt",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "ram_atk_leap_butt_00",
+   "ram_atk_leap_butt_01",
+   "ram_atk_leap_butt_02",
+   "ram_atk_leap_butt_03",
+   "ram_atk_leap_butt_04",
+   "ram_atk_leap_butt_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "ram_death",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "ram_death_00",
+   "ram_death_01",
+   "ram_death_02",
+   "ram_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "ram_hurt",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "ram_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "ram_idle",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "ram_idle_00",
+   "ram_idle_01",
+   "ram_idle_02",
+   "ram_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "ram_knockdown",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "ram_knockdown_00",
+   "ram_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "ram_stagger",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "ram_stagger_00",
+   "ram_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "ram_walk",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "ram_walk_00",
+   "ram_walk_01",
+   "ram_walk_02",
+   "ram_walk_03",
+   "ram_walk_04",
+   "ram_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "rock_golem_atk_fist_slam",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "rock_golem_atk_fist_slam_00",
+   "rock_golem_atk_fist_slam_01",
+   "rock_golem_atk_fist_slam_02",
+   "rock_golem_atk_fist_slam_03",
+   "rock_golem_atk_fist_slam_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "rock_golem_atk_shoulder_ram",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "rock_golem_atk_shoulder_ram_00",
+   "rock_golem_atk_shoulder_ram_01",
+   "rock_golem_atk_shoulder_ram_02",
+   "rock_golem_atk_shoulder_ram_03",
+   "rock_golem_atk_shoulder_ram_04",
+   "rock_golem_atk_shoulder_ram_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "rock_golem_death",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "rock_golem_death_00",
+   "rock_golem_death_01",
+   "rock_golem_death_02",
+   "rock_golem_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "rock_golem_hurt",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "rock_golem_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "rock_golem_idle",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "rock_golem_idle_00",
+   "rock_golem_idle_01",
+   "rock_golem_idle_02",
+   "rock_golem_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "rock_golem_knockdown",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "rock_golem_knockdown_00",
+   "rock_golem_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "rock_golem_stagger",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "rock_golem_stagger_00",
+   "rock_golem_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "rock_golem_turn",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "rock_golem_turn_00",
+   "rock_golem_turn_01"
+  ],
+  "mode": "once",
+  "fps": 2.5
+ },
+ {
+  "key": "rock_golem_walk",
+  "atlas": "enemies_mountains",
+  "frames": [
+   "rock_golem_walk_00",
+   "rock_golem_walk_01",
+   "rock_golem_walk_02",
+   "rock_golem_walk_03",
+   "rock_golem_walk_04",
+   "rock_golem_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
   "key": "bandit_archer_atk_arrow",
   "atlas": "enemies_plains",
   "frames": [
@@ -5840,6 +6511,16 @@
   "mode": "once"
  },
  {
+  "key": "bomb",
+  "atlas": "projectiles",
+  "frames": [
+   "bomb_00",
+   "bomb_01"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
   "key": "brute_wave",
   "atlas": "projectiles",
   "frames": [
@@ -5890,6 +6571,16 @@
   "fps": 20
  },
  {
+  "key": "hex_bolt",
+  "atlas": "projectiles",
+  "frames": [
+   "hex_bolt_00",
+   "hex_bolt_01"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
   "key": "orb",
   "atlas": "projectiles",
   "frames": [
@@ -5924,6 +6615,28 @@
    "staff_bolt_00"
   ],
   "mode": "once"
+ },
+ {
+  "key": "stone_spikes",
+  "atlas": "projectiles",
+  "frames": [
+   "stone_spikes_00",
+   "stone_spikes_01",
+   "stone_spikes_02",
+   "stone_spikes_03"
+  ],
+  "mode": "once",
+  "fps": 12
+ },
+ {
+  "key": "stone_ward",
+  "atlas": "projectiles",
+  "frames": [
+   "stone_ward_00",
+   "stone_ward_01"
+  ],
+  "mode": "loop",
+  "fps": 4
  },
  {
   "key": "ab_shockwave_56",

@@ -10,6 +10,9 @@ HURTBOX = {
     'wild_boar': (30, 20),
     'bandit_brute': (24, 40),
     'great_boar': (64, 40),          # 04 §9.1
+    # 04 §4 (Stage 2)
+    'bat_swarm': (24, 16), 'goblin_miner': (12, 20), 'rock_golem': (26, 32), 'ram': (26, 22),
+    'goblin_shaman': (14, 24),
 }
 
 # 04 §3: attack boxes (dx, dy, w, h) from the feet, facing right. None = projectile (no melee box).
@@ -19,6 +22,12 @@ ATTACK_BOX = {
     'bandit_archer': {'arrow': None, 'kick': (14, -12, 18, 16)},
     'wild_boar': {'charge': (14, -10, 24, 18), 'tusk_jab': (14, -10, 22, 18)},
     'bandit_brute': {'club_swing': (26, -20, 44, 36), 'overhead_smash': (30, -12, 40, 24)},
+    # 04 §4 (Stage 2). Bomb Toss and Hex Bolt are projectiles; Stone Spikes is an area effect drawn by VFX (08 §4.1)
+    'bat_swarm': {'dive_bite': (0, -8, 20, 14)},
+    'goblin_miner': {'bomb_toss': None, 'pick_swing': (14, -10, 20, 18)},
+    'rock_golem': {'fist_slam': (24, -10, 36, 20), 'shoulder_ram': (16, -16, 24, 30)},
+    'ram': {'headbutt': (16, -11, 22, 20), 'leap_butt': (16, -11, 22, 20)},
+    'goblin_shaman': {'stone_ward': None, 'hex_bolt': None, 'stone_spikes': (36, -12, 64, 24)},
     # 04 §10.1 (Rockfall uses falling_rock projectiles, no melee box)
     'great_boar': {'charge': (28, -20, 40, 36), 'tusk_toss': (36, -24, 48, 48), 'stomp_quake': (0, -8, 96, 16)},
 }

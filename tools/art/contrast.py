@@ -91,6 +91,31 @@ def village_surfaces():
             for i in range(3)}
 
 
+def mountains_entities():
+    from .enemies import mountains
+    out = {k: v for k, v in entities().items() if k.startswith('player_')}
+    frames, _ = mountains.build_frames()
+    for e in mountains.ENEMIES:
+        out[e] = frames[mountains.idle_key(e)]
+    return out
+
+
+def mountains_surfaces():
+    from PIL import Image
+    sheet = T.build_sheet('mountains')
+    rock = Image.new('RGBA', (16 * 47, 16))
+    ice = Image.new('RGBA', (16 * 47, 16))
+    for i in range(47):
+        rock.paste(T.cell_image(sheet, i), (16 * i, 0))
+        x, y = 1 + (i % 16) * 18, 1 + (4 + i // 16) * 18
+        ice.paste(sheet.crop((x, y, x + 16, y + 16)), (16 * i, 0))
+    s = {'terrain_mountains': mean_oklab(rock), 'terrain_ice': mean_oklab(ice)}
+    for i in range(3):
+        s[f'bg_mountains_{i}'] = mean_oklab(B.render('mountains', i))
+        s[f'bg_mountains_cave_{i}'] = mean_oklab(B.render('mountains_cave', i))
+    return s
+
+
 def _lines(ents, surf):
     ink = P.RAMPS['ink'][0]
     lines = []
@@ -103,7 +128,8 @@ def _lines(ents, surf):
 
 
 def report_lines():
-    return _lines(entities(), surfaces()) + _lines(village_entities(), village_surfaces())
+    return (_lines(entities(), surfaces()) + _lines(village_entities(), village_surfaces())
+            + _lines(mountains_entities(), mountains_surfaces()))
 
 
 def write_report(preview):

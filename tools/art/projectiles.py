@@ -9,7 +9,8 @@ from . import palette as P
 from . import raster as R
 
 ATLAS = 'projectiles'
-ALLOWED = ['ink', 'white', 'gray', 'en_red', 'en_slate', 'en_bone', 'w_wood', 'w_steel', 'w_gold', 'w_magic', 'fx_bolt']
+ALLOWED = ['ink', 'white', 'gray', 'en_red', 'en_slate', 'en_bone', 'w_wood', 'w_steel', 'w_gold', 'w_magic', 'fx_bolt',
+           'en_ochre', 'en_magenta', 'en_olive', 'fx_fire']
 
 
 def _L(w, h):
@@ -161,6 +162,10 @@ def build_frames():
     anims += [A.anim('enemy_arrow', ATLAS, 1, 'once'), A.anim('brute_wave', ATLAS, 2, 'loop', 12),
              A.anim('shockwave', ATLAS, 2, 'loop', 12), A.anim('falling_rock', ATLAS, 1, 'once'),
              A.anim('falling_rock_shatter', ATLAS, 4, 'once', 20)]
+    from . import projectiles_stage2 as S2
+    f2, a2 = S2.build_frames()
+    fr.update(f2)
+    anims += a2
     return fr, anims
 
 

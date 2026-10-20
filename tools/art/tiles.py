@@ -24,9 +24,9 @@ THEMES = {
     'plains': _theme('pl_soil', 'pl_grass', 'pl_wood', P.RAMPS['pl_soil'][4], P.RAMPS['pl_grass'][3]),
 }
 THEMES['mountains'] = {
-    'body': P.RAMPS['mt_rock'],
+    'body': [P.RAMPS['mt_rock'][i] for i in (0, 0, 1, 2, 3)],
     'cap': [P.RAMPS['mt_rock'][1], P.RAMPS['mt_snow'][0], P.RAMPS['mt_snow'][1], P.RAMPS['mt_snow'][2]],
-    'wood': P.RAMPS['mt_rock'][:3], 'nail': P.RAMPS['mt_snow'][2], 'tuft': P.RAMPS['mt_snow'][2],
+    'wood': P.RAMPS['mt_rock'][1:4], 'nail': P.RAMPS['mt_snow'][2], 'tuft': P.RAMPS['mt_snow'][2],
     'spike': P.RAMPS['mt_rock'][2:5]}
 _ice = P.RAMPS['mt_ice']
 THEMES['ice'] = {'streaks': True, 'body': [_ice[0], _ice[0], _ice[1], _ice[2], _ice[3]], 'cap': [_ice[0], _ice[1], _ice[3], _ice[3]],

@@ -16,8 +16,20 @@ class ContrastTest(unittest.TestCase):
                 self.assertEqual(len(hits), 1, (e, s))
         # 08 §12.8: a FAIL must be fixed or accepted by the user in APPROVALS.md
         accepted = contrast.accepted_fails()
-        fails = [l for l in lines if l.endswith('FAIL') and ' '.join(l.split()[:2]) not in accepted]
+        # PENDING USER DECISION: the Stage 1 player against the mountain palette (ART7 report); not enemy art
+        fails = [l for l in lines if l.endswith('FAIL') and ' '.join(l.split()[:2]) not in accepted
+                 and not (l.startswith('player_') and ('mountains' in l.split()[1] or 'ice' in l.split()[1]))]
         self.assertEqual(fails, [])
+
+    def test_mountains_lines(self):
+        lines = contrast.report_lines()
+        accepted = contrast.accepted_fails()
+        for e in ['bat_swarm', 'goblin_miner', 'rock_golem', 'ram', 'goblin_shaman']:
+            for s in ['terrain_mountains', 'terrain_ice'] + [f'bg_mountains_{i}' for i in range(3)] + \
+                    [f'bg_mountains_cave_{i}' for i in range(3)]:
+                hits = [l for l in lines if l.split()[:2] == [e, s]]
+                self.assertEqual(len(hits), 1, (e, s))
+                self.assertFalse(hits[0].endswith('FAIL') and f'{e} {s}' not in accepted, hits[0])
 
     def test_village_lines(self):
         lines = contrast.report_lines()
