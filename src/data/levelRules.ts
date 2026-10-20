@@ -65,3 +65,6 @@ export const EARLY_SPACING = {
 
 /** Enemy Kingdom (06 §8.2, §8.3): regulars per section (default column), cannons in §3 and §6, rooftops 20+ tiles up in §4. */
 export const STAGE3_LEVEL = { regulars: [0, 10, 4, 8, 9, 5, 4, 0], cannonSections: [3, 6], cannons: 3, roofHeight: 20 } as const;
+
+/** King's Castle (06 §8.2, §8.3): regulars per section (default column); spike floors, 4+ swinging blades, 3+ collapsing bridges across §3 and §6; a cannon gallery in §6; wall-jump towers. */
+export const STAGE4_LEVEL = { regulars: [0, 10, 4, 8, 9, 5, 4, 0], bladeSections: [3, 6], blades: 4, bridges: 3, gallerySection: 6, gallery: 4, towers: 2, summonInset: 48 } as const;

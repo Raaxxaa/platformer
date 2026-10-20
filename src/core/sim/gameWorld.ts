@@ -83,6 +83,8 @@ import { buildLevelFeatures, type DarkZone, type Firefly, type GrapplePoint } fr
 import { createFallingRocks, stepFallingRocks, type FallingRocksState } from '../hazards/fallingRocks.ts';
 import { CANNON, FALLING_ROCKS } from '../../data/hazards.ts';
 import { createCannons, stepCannons, type CannonsState } from '../hazards/cannons.ts';
+import { bladeCenter, bladeRehitTicks, createBlades, stepBlades, type BladesState } from '../hazards/swingingBlades.ts';
+import { SWINGING_BLADE } from '../../data/hazards.ts';
 import { stepMountainReaction } from '../enemies/mountains.ts';
 import { onCastleDamaged, stepCastleSpecial } from '../enemies/castle.ts';
 import { cancelKingdomReaction, onKingdomDamaged, stepKingdomReaction } from '../enemies/kingdom.ts';
@@ -251,6 +253,7 @@ export class GameWorld {
   fireflies: Firefly[] = [];
   fallingRocks!: FallingRocksState;
   cannons!: CannonsState;
+  blades!: BladesState;
   readonly level: LevelData | null;
   readonly waveSpawns: LevelEnemySpawn[];
   readonly markers: LevelObject[];
@@ -425,6 +428,7 @@ export class GameWorld {
     Object.assign(this, buildLevelFeatures(this.level?.objects ?? []));
     this.fallingRocks = createFallingRocks(this.level?.objects ?? []);
     this.cannons = createCannons(this.level?.objects ?? []);
+    this.blades = createBlades(this.level?.objects ?? []);
     for (const c of this.minecarts) this.interactables.push({ id: c.id, x: c.spawnX, y: c.spawnY, w: c.w, h: c.h, kind: 'minecart', label: 'Ride', use: (w) => {
       if (c.active && !c.started && boardCart(c, w.body)) w.events.push({ t: 'move', e: 'cartBoard' });
     } });
@@ -859,6 +863,8 @@ export class GameWorld {
     if (stepFallingRocks(this.fallingRocks, this.grid, playerRect(this), this.worldTimeScale)) hurtPlayer(this, { kind: 'hazard', cause: 'hazard', damageA: FALLING_ROCKS.damage });
     const ball = stepCannons(this.cannons, this.grid, { x: this.camera.x, y: this.camera.y, w: VIEW_W, h: VIEW_H }, playerRect(this), this.worldTimeScale);
     if (ball) hurtPlayer(this, { kind: 'hazard', cause: 'hazard', damageA: CANNON.damage, playerKb: CANNON.kb, travelDir: ball.dir });
+    const blade = stepBlades(this.blades, playerRect(this), this.worldTimeScale);
+    if (blade && hurtPlayer(this, { kind: 'hazard', cause: 'hazard', damageA: SWINGING_BLADE.damage, playerKb: SWINGING_BLADE.kb, travelDir: this.body.x >= bladeCenter(blade, this.blades.t).x ? 1 : -1 }) > 0) blade.rehit = bladeRehitTicks();     // dash and ability i-frames do not protect (06 §10)
     activateEnemies(this);
     stepStatuses(this);
     stepSignatures(this);

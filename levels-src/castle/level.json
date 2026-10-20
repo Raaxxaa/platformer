@@ -1,0 +1,1100 @@
+{
+ "levelId": "castle",
+ "kind": "stage",
+ "stage": 4,
+ "biome": "castle",
+ "width": 640,
+ "height": 144,
+ "chunks": [
+  {
+   "file": "castle.txt",
+   "x": 0,
+   "y": 0
+  }
+ ],
+ "legend": {},
+ "objects": [
+  {
+   "type": "player_start",
+   "x": 2,
+   "y": 109,
+   "props": {
+    "facing": 1
+   }
+  },
+  {
+   "type": "loot_stand",
+   "x": 14,
+   "y": 109,
+   "props": {
+    "kind": "weapon"
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 38,
+   "y": 107,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 46,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 50,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 54,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 71,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 80,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 88,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 92,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 96,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 105,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 114,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 124,
+   "y": 109,
+   "props": {
+    "enemy": "royal_executioner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 162,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 175,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.0
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 180,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.5
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 218,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.25
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 222,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.75
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 196,
+   "y": 95,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 208,
+   "y": 95,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 202,
+   "y": 95,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 230,
+   "y": 107,
+   "props": {}
+  },
+  {
+   "type": "key",
+   "x": 235,
+   "y": 100,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 251,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 244,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 263,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 258,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 294,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 298,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 238,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 317,
+   "y": 118,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 320,
+   "y": 118,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 322,
+   "y": 118,
+   "props": {}
+  },
+  {
+   "type": "cursed_chest",
+   "x": 325,
+   "y": 118,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 328,
+   "y": 118,
+   "props": {
+    "enemy": "royal_executioner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "loot_stand",
+   "x": 333,
+   "y": 118,
+   "props": {
+    "kind": "ability"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 304,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "arena",
+   "x": 338,
+   "y": 92,
+   "w": 38,
+   "h": 18,
+   "props": {
+    "id": "guard_hall",
+    "kind": "combat"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 337,
+   "y": 107,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "guard_hall",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 376,
+   "y": 107,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "guard_hall",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 348,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1,
+    "wave": 1,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 352,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1,
+    "wave": 1,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 372,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1,
+    "wave": 1,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 346,
+   "y": 109,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1,
+    "wave": 2,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 356,
+   "y": 109,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1,
+    "wave": 2,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 366,
+   "y": 109,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1,
+    "wave": 2,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 348,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1,
+    "wave": 3,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 352,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1,
+    "wave": 3,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 370,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1,
+    "wave": 3,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 362,
+   "y": 109,
+   "props": {
+    "enemy": "royal_executioner",
+    "facing": -1,
+    "wave": 3,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "merchant_spot",
+   "x": 388,
+   "y": 109,
+   "props": {}
+  },
+  {
+   "type": "lucky_block",
+   "x": 404,
+   "y": 107,
+   "props": {}
+  },
+  {
+   "type": "key",
+   "x": 417,
+   "y": 100,
+   "props": {}
+  },
+  {
+   "type": "cannon",
+   "x": 424,
+   "y": 108,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 434,
+   "y": 108,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 444,
+   "y": 108,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 452,
+   "y": 108,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 438,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 430,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 448,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 441,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 469,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.0
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 473,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.5
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 490,
+   "y": 95,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 380,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 510,
+   "y": 107,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 514,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 518,
+   "y": 109,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 524,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 560,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 570,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 548,
+   "y": 109,
+   "props": {
+    "enemy": "royal_executioner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 576,
+   "y": 109,
+   "props": {}
+  },
+  {
+   "type": "timed_door",
+   "x": 550,
+   "y": 116,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "id": "castle_timed",
+    "side": "left",
+    "timeLimit": 135
+   }
+  },
+  {
+   "type": "timed_chest",
+   "x": 562,
+   "y": 118,
+   "props": {
+    "door": "castle_timed"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 506,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "arena",
+   "x": 583,
+   "y": 91,
+   "w": 40,
+   "h": 19,
+   "props": {
+    "id": "throne_room",
+    "kind": "boss",
+    "boss": "enemy_king",
+    "entry": "left"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 582,
+   "y": 107,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "throne_room",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 623,
+   "y": 107,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "throne_room",
+    "role": "exit"
+   }
+  },
+  {
+   "type": "summon_point",
+   "x": 586,
+   "y": 109,
+   "props": {
+    "arena": "throne_room"
+   }
+  },
+  {
+   "type": "summon_point",
+   "x": 619,
+   "y": 109,
+   "props": {
+    "arena": "throne_room"
+   }
+  },
+  {
+   "type": "exit",
+   "x": 636,
+   "y": 107,
+   "w": 2,
+   "h": 3,
+   "props": {}
+  },
+  {
+   "type": "section",
+   "x": 0,
+   "y": 0,
+   "w": 30,
+   "h": 144,
+   "props": {
+    "index": 1
+   }
+  },
+  {
+   "type": "section",
+   "x": 30,
+   "y": 0,
+   "w": 100,
+   "h": 144,
+   "props": {
+    "index": 2
+   }
+  },
+  {
+   "type": "section",
+   "x": 130,
+   "y": 0,
+   "w": 106,
+   "h": 144,
+   "props": {
+    "index": 3
+   }
+  },
+  {
+   "type": "section",
+   "x": 236,
+   "y": 0,
+   "w": 100,
+   "h": 144,
+   "props": {
+    "index": 4
+   }
+  },
+  {
+   "type": "section",
+   "x": 336,
+   "y": 0,
+   "w": 42,
+   "h": 144,
+   "props": {
+    "index": 5
+   }
+  },
+  {
+   "type": "section",
+   "x": 378,
+   "y": 0,
+   "w": 124,
+   "h": 144,
+   "props": {
+    "index": 6
+   }
+  },
+  {
+   "type": "section",
+   "x": 502,
+   "y": 0,
+   "w": 78,
+   "h": 144,
+   "props": {
+    "index": 7
+   }
+  },
+  {
+   "type": "section",
+   "x": 580,
+   "y": 0,
+   "w": 60,
+   "h": 144,
+   "props": {
+    "index": 8
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   2,
+   109
+  ],
+  [
+   18,
+   109
+  ],
+  [
+   34,
+   109
+  ],
+  [
+   50,
+   109
+  ],
+  [
+   66,
+   109
+  ],
+  [
+   82,
+   109
+  ],
+  [
+   98,
+   109
+  ],
+  [
+   114,
+   109
+  ],
+  [
+   130,
+   109
+  ],
+  [
+   136,
+   109
+  ],
+  [
+   144,
+   109
+  ],
+  [
+   152,
+   109
+  ],
+  [
+   160,
+   109
+  ],
+  [
+   166,
+   109
+  ],
+  [
+   172,
+   109
+  ],
+  [
+   180,
+   109
+  ],
+  [
+   185,
+   109
+  ],
+  [
+   190,
+   109
+  ],
+  [
+   192,
+   95
+  ],
+  [
+   203,
+   95
+  ],
+  [
+   213,
+   95
+  ],
+  [
+   218,
+   100
+  ],
+  [
+   222,
+   100
+  ],
+  [
+   227,
+   109
+  ],
+  [
+   240,
+   109
+  ],
+  [
+   248,
+   109
+  ],
+  [
+   256,
+   109
+  ],
+  [
+   265,
+   109
+  ],
+  [
+   267,
+   109
+  ],
+  [
+   275,
+   109
+  ],
+  [
+   282,
+   109
+  ],
+  [
+   289,
+   109
+  ],
+  [
+   295,
+   109
+  ],
+  [
+   301,
+   109
+  ],
+  [
+   309,
+   109
+  ],
+  [
+   325,
+   109
+  ],
+  [
+   341,
+   109
+  ],
+  [
+   357,
+   109
+  ],
+  [
+   373,
+   109
+  ],
+  [
+   389,
+   109
+  ],
+  [
+   405,
+   109
+  ],
+  [
+   421,
+   109
+  ],
+  [
+   440,
+   109
+  ],
+  [
+   456,
+   109
+  ],
+  [
+   457,
+   109
+  ],
+  [
+   463,
+   109
+  ],
+  [
+   470,
+   109
+  ],
+  [
+   477,
+   109
+  ],
+  [
+   481,
+   109
+  ],
+  [
+   484,
+   95
+  ],
+  [
+   490,
+   95
+  ],
+  [
+   495,
+   95
+  ],
+  [
+   500,
+   109
+  ],
+  [
+   505,
+   109
+  ],
+  [
+   521,
+   109
+  ],
+  [
+   537,
+   109
+  ],
+  [
+   553,
+   109
+  ],
+  [
+   569,
+   109
+  ],
+  [
+   585,
+   109
+  ],
+  [
+   601,
+   109
+  ],
+  [
+   617,
+   109
+  ],
+  [
+   637,
+   109
+  ]
+ ]
+}
