@@ -8,7 +8,9 @@ const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? (process
       'C:/Program Files/Google/Chrome/Application/chrome.exe',
       'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
     ].find((path) => existsSync(path))
-  : '/opt/pw-browsers/chromium');
+  : process.platform === 'darwin'
+    ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    : '/opt/pw-browsers/chromium');
 if (!chromiumPath) throw new Error('Set PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH to an installed Chromium browser.');
 
 export default defineConfig({
