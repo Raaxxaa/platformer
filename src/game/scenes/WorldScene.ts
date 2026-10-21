@@ -58,6 +58,7 @@ import { BIOME_VIEW as B } from '../../data/biomeView.ts';
 import { DarknessView } from '../view/darkness.ts';
 import { Stage2FeatureView } from '../view/stage2Features.ts';
 import { KingdomFeatureView } from '../view/kingdomFeatures.ts';
+import { CastleFeatureView } from '../view/castleFeatures.ts';
 import { enemyDrawing } from '../view/enemyFallback.ts';
 
 /** Battle Mage Teleport (04 §6): fades out for 0.3 s, then fades in for 0.3 s. */
@@ -68,9 +69,13 @@ function fadeAlpha(e: EnemyState): number {
   return f.fade === 'out' ? k : 1 - k;
 }
 
+const DRAGON_COLOR = { red: 0xc03a2a, white: 0xdfe8f0, storm: 0x5a5ad8, green: 0x4a9a3a } as const;
+
 /** Grey-box enemy colors (plan M2, Task 17). */
 const ENEMY_COLOR: Partial<Record<EnemyId, number>> = {
   soldier: 0x8e96a8, crossbowman: 0x9c7a4a, war_hound: 0x6a6f7a, battle_mage: 0xb04a8a, knight: 0x5a6070, black_knight: 0x15151c,
+  royal_guard: 0xa88a52, gargoyle: 0x7a8088, castle_mage: 0x5a4ab0, living_armor: 0x6a7a8c, royal_executioner: 0x3a1418, enemy_king: 0xd8b030,
+  dragon: 0xc03a2a,
   wolf: 0x73809f, bandit: 0xb8443f, bandit_archer: 0xe27b5b, wild_boar: 0x7e2a34, bandit_brute: 0x4a1824, training_dummy: 0x9a6e3e,
 };
 const DRAW = {
@@ -85,6 +90,7 @@ const DRAW = {
 export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost {
   world!: GameWorld;
   private kingdomView!: KingdomFeatureView;
+  private castleView!: CastleFeatureView;
   protected readonly stepper = new FixedStepper();
   protected devices!: Devices;
   protected manual = false;
@@ -186,6 +192,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.playerShots = this.add.graphics().setDepth(DEPTH.playerProjectiles);
     this.features = new Stage2FeatureView(this, this.world);
     this.kingdomView = new KingdomFeatureView(this);
+    this.castleView = new CastleFeatureView(this);
     this.darkness = new DarknessView(this);
     this.lastViewTime = this.time.now;
     this.events.once('shutdown', () => { this.features.destroy(); this.darkness.destroy(); });
@@ -553,6 +560,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     drawMarkers(this.markersGfx.clear(), w);
     this.features.update(w, [], w.tick / TICK_RATE);
     this.kingdomView.update(w);
+    this.castleView.update(w);
     this.darkness.setVisible(!this.overview);
     this.darkness.update(w, w.tick / TICK_RATE);
     this.itemViews.update(w.groundItems, w.tick);
@@ -656,7 +664,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   private drawEnemyBox(g: Phaser.GameObjects.Graphics, e: EnemyState): void {
     const r = enemyRect(e);
     const alpha = e.dead ? Math.min(1, e.deathTicks / (e.boss ? BOSS.DEATH_ANIM_TICKS : ENEMY.DEATH_ANIM_TICKS)) : e.spawnInTicks > 0 ? 1 - e.spawnInTicks / ENEMY.SPAWN_IN_TICKS : 1;
-    let color = ENEMY_COLOR[e.def.id] ?? B.enemy;
+    let color = e.dragon ? DRAGON_COLOR[e.dragon.color] : ENEMY_COLOR[e.def.id] ?? B.enemy;
     const a = e.ai.attack;
     if (a && a.phase === 'tele') color = a.len - a.t <= ENEMY.TELEGRAPH_FLASH_LAST_TICKS ? DRAW.telegraphLast : DRAW.telegraph;
     if (e.control && e.control.type !== 'dazed') color = DRAW.controlled;

@@ -85,6 +85,7 @@ def tower(left, shaft_w, right_len, height=14):
     fill(lx0, F - height, lx1, F - 1, '#')
     fill(lx0, F - 3, lx1, F - 1, '.')                         # the doorway
     fill(rx0, F - height, rx0 + right_len - 1, F - 1, '#')   # the rampart, a solid block down to the floor
+    oneway(sx0, rx0 - 1, F - height)                          # a plank walkway across the shaft top joins the gate wall to the rampart; it is passable from below
     return sx0, rx0
 
 

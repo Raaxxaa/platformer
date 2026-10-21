@@ -11,7 +11,7 @@ async function level(page: Page, id: string) {
 }
 async function finishFade(page: Page) { await page.evaluate(() => { const g = (window as any).__game, t = g.runState().transition; if (t?.part === 'in') g.step(t.left, {}); }); }
 
-test('a full saved run: Title, Tank, Plains, Crossroads services, Forest Guardian, Border, Black Knight, Rebel Camp and Run so far', async ({ page }) => {
+test('a full saved run: Title, Tank, Plains, Crossroads services, Forest Guardian, Border, Black Knight, Rebel Camp, the Stage 4 castle, the Enemy King and Victory', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.title);
   await page.keyboard.press('Enter'); await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().model.step)).toBe(2);
@@ -92,15 +92,25 @@ test('a full saved run: Title, Tank, Plains, Crossroads services, Forest Guardia
   await level(page, 'rebel_camp'); await finishFade(page); await shot(page, 'rebel-camp');
   expect(await page.evaluate(() => (window as any).__game.shop().villageIndex)).toBe(3);
   await page.evaluate(() => { const g = (window as any).__game; g.teleport(680, 320); g.step(1, { interact: true }); g.step(60, {}); });
-  await page.waitForFunction(() => (window as any).__game.runState().transition?.part === 'in');
-  await finishFade(page);
-  expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('runSoFar'); await shot(page, 'continued');
+  await level(page, 'castle'); await finishFade(page);
+  expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('stage');
+  expect(await page.evaluate(() => (window as any).__game.runState().stage)).toBe(4); await shot(page, 'castle-arrival');
+  const split4 = await page.evaluate(() => {
+    const g = (window as any).__game, boss = g.arenas().find((a: any) => a.kind === 'boss').rect;
+    g.teleport(boss.x + boss.w / 2, boss.y + boss.h); g.step(1, {}); g.killAll(); g.step(1, {});
+    return g.runState().splits[3];
+  });
+  expect(split4).toBeGreaterThan(split3);
+  expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('runComplete');
+  await page.waitForFunction(() => (window as any).__game.victory?.() !== null, undefined, { timeout: 10000 });
+  await shot(page, 'victory');
   await page.reload(); await page.waitForFunction(() => (window as any).__game?.title);
   const saved = await page.evaluate(() => (window as any).__game.save());
   expect(saved.lastKit).toEqual({ cls: 'tank', weapon: 'war_maul' }); expect(saved.lastRoad).toBe('forest');
   expect(saved.bestSegments['tank|mountain'][0]).toBe(split); expect(saved.bestSegments['tank|forest'][0]).toBe(split);
   expect(saved.bestSegments['tank|forest'][1]).toBe(split2 - split);
-  expect(saved.pbs).toEqual({}); expect(saved.stats.runsCompleted).toBe(0); expect(saved.progress.levelsReached).toEqual(['plains', 'swamps', 'kingdom']);
+  expect(Object.keys(saved.pbs)).toEqual(['tank|forest']); expect(saved.pbs['tank|forest'].ticks).toBe(split4); expect(saved.stats.runsCompleted).toBe(1);
+  expect(saved.unlocks.startWeapons.tank).toEqual(['giant_axe']); expect(saved.progress.levelsReached).toEqual(['plains', 'swamps', 'kingdom', 'castle']);
   await page.evaluate(() => { const g = (window as any).__game; g.titleChoose(2); g.screenAction('down'); g.screenAction('down'); g.screenAction('down'); });
   expect(await page.evaluate(() => (window as any).__game.screenState().model.cell)).toBe(3); await shot(page, 'saved-records');
   expect(errors).toEqual([]);

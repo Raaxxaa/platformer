@@ -198,7 +198,8 @@ export function drawMarkers(g: Phaser.GameObjects.Graphics, w: GameWorld): void 
   }
   const boss = [...w.arenas.values()].find((x) => x.kind === 'boss');
   for (const r of w.rockMarkers) {
-    const floor = boss ? boss.rect.y + boss.rect.h : r.topY;
+    const own = w.enemies.find((x) => x.id === r.owner)?.boss?.arenaId, arena = (own ? w.arenas.get(own) : undefined) ?? boss;
+    const floor = arena ? arena.rect.y + arena.rect.h : r.topY;
     const k = M.shadowFrom + (1 - M.shadowFrom) * Math.min(1, 1 - r.ticks / TICK_RATE / 0.8);
     g.fillStyle(0x0d0b14, 0.5).fillEllipse(r.x, floor - 1, M.shadowW * k, M.shadowH * k);
     g.fillStyle(M.color, pulse).fillRect(Math.round(r.x - (M.shadowW * k) / 2), floor - M.h, Math.round(M.shadowW * k), 1);

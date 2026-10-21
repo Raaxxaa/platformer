@@ -2,7 +2,7 @@
 
 **Goal:** finish M9. The Rebel Camp inn loads the new `castle` level (Stage 4) with its 4 regular mobs, its elite and the Enemy King. Beating the King completes the run (victory screen, personal best, unlocks). The Dragon now appears in the side arena of Stage 2 or 3 when the run rolled it.
 
-**Status: in progress (2026-10-20).** SPEC-GAPs from 35 in `docs/SPEC-GAPS.md`; 28 and 29 are resolved here. Level source: `levels-src/castle/gen_castle.py` (a generator, like the Kingdom's), built by `npm run levels`.
+**Status: done (2026-10-20).** SPEC-GAPs 35 to 41 in `docs/SPEC-GAPS.md`; 28 and 29 are resolved here. Level source: `levels-src/castle/gen_castle.py` (a generator, like the Kingdom's), built by `npm run levels`.
 
 **Spec:** `docs/spec/04-enemies-bosses.md` §7 (Stage 4 mobs), §8 (`arcane_bolt`, `royal_orb`, `falling_sword`, `fire_rain`), §9 (boss rules, 3 phases), §12 (Enemy King), §13 (Dragon); `docs/spec/06-run-levels-save.md` §2.6 (run complete), §4 (Dragon rule), §8.3 (`castle` row), §9.3, §10 (swinging blade), §12.2 (Rebel Camp: same layout as the Border, so the existing copy is the real one); `docs/spec/05-loot-economy.md` §14.2 and §14.3 (King unlocks), §3.5 (Dragon loot); `docs/spec/07-ui-hud-controls.md` §7.11 (run summary).
 

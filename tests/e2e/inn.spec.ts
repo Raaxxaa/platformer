@@ -60,21 +60,24 @@ test('Crossroads inn saves the road, sleeps exactly120ticks, and loads the real 
   await page.screenshot({ path: 'test-results/m71-inn-forest-arrival.png' });
   expect(errors).toEqual([]);
 });
-test('Rebel Camp summary Home restores the saved starting kit and Crossroads keeps the saved road', async ({ page }) => {
+test('The Rebel Camp inn leads to the castle; the victory summary Home restores the saved starting kit and Crossroads keeps the saved road', async ({ page }) => {
   const saved = defaultSave(); saved.lastKit = { cls: 'tank', weapon: 'war_maul' }; saved.lastRoad = 'forest';
   await page.addInitScript(save => localStorage.setItem('rushblade.save', JSON.stringify(save)), saved);
   await page.goto('/?debug=1&start=rebel_camp');
   await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(1, {}); g.setGold(999); g.teleport(680, 320); g.step(1, { interact: true }); });
   await page.evaluate(() => { const g = (window as any).__game; g.step(60, {}); });
-  await page.waitForFunction(() => (window as any).__game.runState().transition?.part === 'in');
-  await page.evaluate(() => { const g = (window as any).__game; g.step(g.runState().transition.left, {}); });
-  await page.waitForFunction(() => (window as any).__game.runState().phase === 'runSoFar');
+  await page.waitForFunction(() => { const g = (window as any).__game; if (!g?.ready || g.levelId?.() !== 'castle') return false; g.setManual(true); return true; });
+  await page.evaluate(() => { const g = (window as any).__game, t = g.runState().transition; if (t?.part === 'in') g.step(t.left, {}); });
+  expect(await page.evaluate(() => (window as any).__game.runState().stage)).toBe(4);
+  await page.evaluate(() => { const g = (window as any).__game, boss = g.arenas().find((a: any) => a.kind === 'boss').rect; g.teleport(boss.x + boss.w / 2, boss.y + boss.h); g.step(1, {}); g.killAll(); g.step(1, {}); });
+  await page.waitForFunction(() => (window as any).__game.victory?.() !== null, undefined, { timeout: 10000 });
   const frozen = await page.evaluate(() => (window as any).__game.runState().runTicks);
   await page.keyboard.press('Escape');
   await page.evaluate(() => (window as any).__game.step(100, { restart: true }));
-  expect(await page.evaluate(() => ({ phase: (window as any).__game.runState().phase, ticks: (window as any).__game.runState().runTicks }))).toEqual({ phase: 'runSoFar', ticks: frozen });
+  expect(await page.evaluate(() => ({ phase: (window as any).__game.runState().phase, ticks: (window as any).__game.runState().runTicks }))).toEqual({ phase: 'runComplete', ticks: frozen });
   await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+  await page.waitForTimeout(1200);                       // the victory screen ignores input for its first 1.0 s (07 §7.11)
   await page.evaluate(() => { const g = (window as any).__game; g.summaryAction('right'); g.summaryAction('confirm'); g.step(60, {}); });
   await page.waitForFunction(() => (window as any).__game?.ready && (window as any).__game.levelId?.() === 'home');
   await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(120, {}); });

@@ -22,6 +22,7 @@ import type { ElementId, Grade, WeaponId } from '../../core/combat/types.ts';
 import { parseKit } from '../../ui/popups/classPickModel.ts';
 import { CLASS_IDS } from '../../data/classes.ts';
 import { LEVEL_FILE } from '../../data/run.ts';
+import { DRAGON_NAME } from '../../data/dragon.ts';
 import { debugSeed, randomSeed } from '../seed.ts';
 import { captureWorld, type WorldCarry } from '../../core/run/session.ts';
 import { gameSession } from '../session.ts';
@@ -35,6 +36,7 @@ import { ShopView } from '../../ui/popups/shop.ts';
 import { interactPrompt } from '../../ui/model/prompt.ts';
 import { RouteChoiceView } from '../../ui/popups/routeChoice.ts';
 import { RunSoFarView } from '../../ui/screens/runSoFar.ts';
+import { VICTORY_UI, victoryData } from '../../ui/screens/victory.ts';
 import { cancelRoad, chooseRoad } from '../../core/run/roads.ts';
 import { beginTransition } from '../../core/run/phases.ts';
 import { TimerBlock } from '../../ui/hud/timerBlock.ts';
@@ -79,6 +81,8 @@ export class StageScene extends WorldScene {
   private shopView: ShopView | null = null;
   private routeChoice: RouteChoiceView | null = null;
   private runSoFar: RunSoFarView | null = null;
+  private victory: RunSoFarView | null = null;
+  private victoryAt = -1;
   private menus!: MenuScreens;
   private deathView: DeathView | null = null;
   private deathCause = 'hazard';
@@ -93,7 +97,7 @@ export class StageScene extends WorldScene {
   init(data?: { level?: string; carry?: WorldCarry; titleFade?: boolean }): void {
     this.chosen = data?.level ?? null;
     this.deathView = null; this.deathCause = 'hazard'; this.titleFadeLeft = data?.titleFade ? FRONT_UI.title.fadeSeconds : 0;
-    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.labels = []; this.doorText.clear();
+    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.victory = null; this.victoryAt = -1; this.labels = []; this.doorText.clear();
   }
 
   preload(): void {
@@ -109,7 +113,11 @@ export class StageScene extends WorldScene {
     this.level = loadLevel(this.cache.json.get(`level_${this.levelId}`));
     const q = new URLSearchParams(window.location.search);
     const typedSeed = debugSeed(q);
-    const w = gameSession.makeWorld(this.level, this.carry, typedSeed);
+    // `?dragon=red|white|storm|green` (debug) forces the Dragon into this stage's side arena (06 §4).
+    const dc = q.get('debug') === '1' ? q.get('dragon') : null;
+    const dragon = dc && ['red', 'white', 'storm', 'green'].includes(dc) && this.level.stage >= 2 && this.level.stage <= 3
+      ? { present: true, stage: this.level.stage as 2 | 3, color: dc as 'red', outcome: 'absent' as const } : undefined;
+    const w = gameSession.makeWorld(this.level, this.carry, typedSeed, dragon);
     const section = q.get('debug') === '1' ? Number(q.get('section') ?? 0) : 0;
     if (section > 0) {
       // 06 §16: the player goes to the first main_path vertex inside section n.
@@ -161,6 +169,8 @@ export class StageScene extends WorldScene {
     api.completeLoading = () => this.world.completeLoading();
     api.killAll = () => { for (const e of this.world.enemies) if (!e.dead && !e.dormant && e.spawnInTicks === 0) killEnemy(this.world, e); };
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
+    api.setEnemyHp = (id: number, hp: number) => { const e = this.world.enemies.find((x) => x.id === id); if (e) { e.hp = hp; if (hp <= 0) killEnemy(this.world, e); } };
+    api.bossBar = () => this.world.bossBar;
     api.levelId = () => this.level.id;
     api.save = () => structuredClone(saveStore().data);
     api.appliedSettings = () => structuredClone(getUiSettings());
@@ -173,7 +183,8 @@ export class StageScene extends WorldScene {
     api.shop = () => structuredClone(this.world.shop);
     api.routeChoice = () => this.routeChoice ? { cursor: this.routeChoice.model.cursor, road: this.routeChoice.model.road } : null;
     api.routeAction = (action: Parameters<RouteChoiceView['action']>[0]) => this.routeChoice?.action(action);
-    api.summaryAction = (action: Parameters<RunSoFarView['action']>[0]) => this.runSoFar?.action(action);
+    api.summaryAction = (action: Parameters<RunSoFarView['action']>[0]) => (this.runSoFar ?? this.victory)?.action(action);
+    api.victory = () => this.victory ? { lines: this.victory.model.lines, cursor: this.victory.model.cursor } : null;
     api.restartRun = () => this.world.restart();
     api.enemyDraw = (id: number) => this.enemyDrawMode(id);
     api.loadout = () => structuredClone({ weapons: this.world.combat.slots, abilities: this.world.abilities.slots });
@@ -244,10 +255,10 @@ export class StageScene extends WorldScene {
     saveStore().update((s) => { s.lastKit = { ...kit }; });
     if (first && this.level.id === 'home') this.openHomePanel('training');
   }
-  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar || !!this.menus?.active || this.titleFadeLeft > 0; }
+  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.menus?.active || this.titleFadeLeft > 0; }
   private requestHome(): void {
     gameSession.endRun(this.world, 'quit');
-    this.runSoFar?.destroy(); this.runSoFar = null;
+    this.runSoFar?.destroy(); this.runSoFar = null; this.victory?.destroy(); this.victory = null;
     beginTransition(this.world.run, 'toHome', { phase: 'homeVillage', levelId: 'home', stage: 0 });
   }
   private syncRunPanels(): void {
@@ -258,6 +269,15 @@ export class StageScene extends WorldScene {
         onConfirm: (road) => { if (chooseRoad(w, road)) saveStore().update((s) => { s.lastRoad = road; }); this.routeChoice?.destroy(); this.routeChoice = null; this.clearMenuInput(); },
         onCancel: () => { cancelRoad(w); this.routeChoice?.destroy(); this.routeChoice = null; this.clearMenuInput(); },
       });
+    if (w.run.phase !== 'runComplete') { this.victory?.destroy(); this.victory = null; this.victoryAt = -1; }
+    else if (!this.victory) {                                   // the King's 1.5 s death animation plays first, then the summary opens (06 §2.6)
+      this.victoryAt = this.victoryAt < 0 ? this.time.now : this.victoryAt;
+      if (this.time.now - this.victoryAt >= VICTORY_UI.deathAnimSeconds * 1000) {
+        this.victory = new RunSoFarView(this, victoryData(w), { onRestart: () => { this.victory?.destroy(); this.victory = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
+        this.victory.setEnabled(false);                         // inputs are ignored for the first 1.0 s (07 §7.11)
+      }
+    }
+    if (this.victory && this.time.now - this.victoryAt >= (VICTORY_UI.deathAnimSeconds + VICTORY_UI.inputLockSeconds) * 1000 && !this.pause) this.victory.setEnabled(true);
     if (w.run.phase !== 'runSoFar') { this.runSoFar?.destroy(); this.runSoFar = null; }
     if (w.run.phase === 'runSoFar' && !this.runSoFar) this.runSoFar = new RunSoFarView(this, {
       runTicks: w.run.runTicks, split1: w.run.splits[0], split2:w.run.splits[1], gold: w.gold, kills: w.run.stats.kills,
@@ -289,6 +309,7 @@ export class StageScene extends WorldScene {
     if (this.homePanel?.active) { this.homePanel.setEnabled(!this.pause); this.homePanel.update(delta / 1000); }
     this.routeChoice?.setEnabled(!this.pause); this.routeChoice?.update(delta / 1000);
     this.runSoFar?.update(delta / 1000);
+    this.victory?.update(delta / 1000);
     super.update(time, delta);
   }
   private toTitle(): void {
@@ -312,6 +333,7 @@ export class StageScene extends WorldScene {
         if (result === 'restart') w.restart(); else if (result === 'home') this.requestHome(); else this.toTitle();
       });
     }
+    for (const { e } of this.frameEvents) if (e.t === 'dragonWarning') this.abilityHud.toast(`A ${DRAGON_NAME[e.color]} roars ahead!`, UI_COLOR.highlight, this.time.now, 3);
     this.syncRunPanels();
     this.villageView?.update(w, saveStore().data.typedSeed);
     this.shopView?.update(w, this.frameEvents.some(({ e }) => e.t === 'cantAfford'));

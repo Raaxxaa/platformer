@@ -10,7 +10,9 @@ import { activeHomePad, HomePanelInput, type HomePanelAction, type HomePanelPad 
 import { menuGlyphs, noteInputDevice } from '../inputSettings.ts';
 import { promptLine } from '../promptLine.ts';
 
-export interface RunSoFarData { runTicks: number; split1: number | null; split2?: number | null; kit: KitSummary; gold: number; kills: number }
+export interface RunSoFarData { runTicks: number; split1: number | null; split2?: number | null; kit: KitSummary; gold: number; kills: number;
+  /** The victory screen (after the Enemy King) replaces the title, the lines and their spacing. */
+  title?: string; lines?: string[]; lineGap?: number }
 export interface RunSoFarCallbacks { onRestart(): void; onHomeVillage(): void; onTitle(): void }
 export type RunSoFarCommand = typeof U.summary.commands[number];
 
@@ -21,7 +23,7 @@ export class RunSoFarModel {
   constructor(data: RunSoFarData) {
     const weapons = data.kit.weapons.map((weapon) => weapon ? `${WEAPON_NAME(weapon.weaponId)} ${weapon.grade}` : 'Empty');
     const abilities = data.kit.abilities.map((ability) => ability ? `${ABILITY_INFO[ability.id].name} Lv ${ability.level}` : 'Empty');
-    this.lines = [
+    this.lines = data.lines ?? [
       `Time ${formatTime(data.runTicks)}`, `Split 1 ${data.split1 === null ? '—' : formatTime(data.split1)}`,
       ...(data.split2 === undefined ? [] : [`Split 2 ${data.split2 === null ? '—' : formatTime(data.split2)}`]), `Class: ${data.kit.displayName}`,
       `Weapons: ${weapons.join(' / ') || 'Empty'}`, `Abilities: ${abilities.join(' / ') || 'Empty'}`, `Gold: ${data.gold}`, `Kills: ${data.kills}`,
@@ -47,8 +49,9 @@ export class RunSoFarView {
   private drawn = '';
   private readonly scene: Phaser.Scene;
   private readonly callbacks: RunSoFarCallbacks;
+  private readonly data: RunSoFarData;
   constructor(scene: Phaser.Scene, data: RunSoFarData, callbacks: RunSoFarCallbacks) {
-    this.scene = scene; this.callbacks = callbacks;
+    this.scene = scene; this.callbacks = callbacks; this.data = data;
     this.model = new RunSoFarModel(data); this.input.blockHeldPad(activeHomePad());
     this.dim = scene.add.graphics().setScrollFactor(0).setDepth(U.dimDepth);
     this.dim.fillStyle(UI_COLOR.ink, U.dimAlpha).fillRect(0, 0, scene.scale.width, scene.scale.height);
@@ -103,8 +106,8 @@ export class RunSoFarView {
     if (this.scene.textures.exists('ui') && this.scene.textures.get('ui').has(U.panelFrame)) {
       this.c.add(this.scene.add.nineslice(x, y, 'ui', U.panelFrame, w, h, U.corner, U.corner, U.corner, U.corner).setOrigin(0));
     } else this.rect(x, y, w, h);
-    this.text(x + w / 2, S.titleY, S.title, UI_COLOR.highlight, true);
-    this.model.lines.forEach((line, row) => this.text(x + w / 2, S.linesY + row * S.lineGap, line, row === 0 ? UI_COLOR.text : UI_COLOR.textDim));
+    this.text(x + w / 2, S.titleY, this.data.title ?? S.title, UI_COLOR.highlight, true);
+    this.model.lines.forEach((line, row) => this.text(x + w / 2, S.linesY + row * (this.data.lineGap ?? S.lineGap), line, row === 0 ? UI_COLOR.text : UI_COLOR.textDim));
     S.buttons.forEach((label, i) => {
       const xx = S.buttonXs[i], selected = this.model.cursor === i;
       this.rect(xx, S.buttonY, S.buttonW, S.buttonH, selected);

@@ -1,6 +1,6 @@
 // Browser session: the sole save repository and the source to return to after Training.
 import { saveDate, saveStore } from './save/storage.ts';
-import { GameWorld } from '../core/sim/gameWorld.ts';
+import { GameWorld, type GameWorldOptions } from '../core/sim/gameWorld.ts';
 import type { LevelData } from '../core/level/loadLevel.ts';
 import type { WorldCarry } from '../core/run/session.ts';
 import { randomSeed } from './seed.ts';
@@ -19,7 +19,7 @@ export const gameSession = {
     const save = saveStore().data;
     w.records.pbs = structuredClone(save.pbs); w.records.bestSegments = structuredClone(save.bestSegments);
   },
-  makeWorld(level: LevelData, carry?: WorldCarry, debugSeed?: string | null): GameWorld {
+  makeWorld(level: LevelData, carry?: WorldCarry, debugSeed?: string | null, dragon?: GameWorldOptions['dragon']): GameWorld {
     const save = saveStore().data;
     const homeTransition = carry?.run.transition?.target.phase === 'homeVillage' ? structuredClone(carry.run.transition) : null;
     if (homeTransition) carry = undefined;
@@ -34,7 +34,7 @@ export const gameSession = {
     }
     const w = GameWorld.fromLevel(level, { seedText: seed ?? randomSeed(), seeded: carry?.run.seeded ?? seed !== null,
       startKit, carry, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
-      nextRunUnlocks: () => saveStore().data.unlocks.blueprints });
+      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, dragon });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
