@@ -364,6 +364,2244 @@
   "mode": "speed"
  },
  {
+  "key": "atk_breath",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "atk_breath_00",
+   "atk_breath_01",
+   "atk_breath_02",
+   "atk_breath_03",
+   "atk_breath_04",
+   "atk_breath_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_claw_swipe",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "atk_claw_swipe_00",
+   "atk_claw_swipe_01",
+   "atk_claw_swipe_02",
+   "atk_claw_swipe_03",
+   "atk_claw_swipe_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_color_special",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "atk_color_special_00",
+   "atk_color_special_01",
+   "atk_color_special_02",
+   "atk_color_special_03",
+   "atk_color_special_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_dive_bomb",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "atk_dive_bomb_00",
+   "atk_dive_bomb_01",
+   "atk_dive_bomb_02",
+   "atk_dive_bomb_03",
+   "atk_dive_bomb_04",
+   "atk_dive_bomb_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_strafing_breath",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "atk_strafing_breath_00",
+   "atk_strafing_breath_01",
+   "atk_strafing_breath_02",
+   "atk_strafing_breath_03",
+   "atk_strafing_breath_04",
+   "atk_strafing_breath_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_tail_sweep",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "atk_tail_sweep_00",
+   "atk_tail_sweep_01",
+   "atk_tail_sweep_02",
+   "atk_tail_sweep_03",
+   "atk_tail_sweep_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_wing_gust",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "atk_wing_gust_00",
+   "atk_wing_gust_01",
+   "atk_wing_gust_02",
+   "atk_wing_gust_03",
+   "atk_wing_gust_04",
+   "atk_wing_gust_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "break",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "break_00",
+   "break_01",
+   "break_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0
+    ]
+   },
+   {
+    "phase": "all",
+    "frames": [
+     1,
+     2
+    ],
+    "loopFps": 4
+   }
+  ]
+ },
+ {
+  "key": "death",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "death_00",
+   "death_01",
+   "death_02",
+   "death_03",
+   "death_04",
+   "death_05",
+   "death_06",
+   "death_07",
+   "death_08"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
+  "key": "dive",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "dive_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "fall",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "fall_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "hover",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "hover_00",
+   "hover_01",
+   "hover_02",
+   "hover_03",
+   "hover_04",
+   "hover_05"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
+  "key": "hurt",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "idle",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "intro",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "intro_00",
+   "intro_01",
+   "intro_02",
+   "intro_03",
+   "intro_04",
+   "intro_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "perched",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "perched_00",
+   "perched_01"
+  ],
+  "mode": "loop",
+  "fps": 2
+ },
+ {
+  "key": "stagger",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "stagger_00",
+   "stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "takeoff",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "takeoff_00",
+   "takeoff_01",
+   "takeoff_02",
+   "takeoff_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "transition",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "transition_00",
+   "transition_01",
+   "transition_02",
+   "transition_03",
+   "transition_04",
+   "transition_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "walk",
+  "atlas": "boss_dragon_green",
+  "frames": [
+   "walk_00",
+   "walk_01",
+   "walk_02",
+   "walk_03",
+   "walk_04",
+   "walk_05",
+   "walk_06",
+   "walk_07"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "atk_breath",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "atk_breath_00",
+   "atk_breath_01",
+   "atk_breath_02",
+   "atk_breath_03",
+   "atk_breath_04",
+   "atk_breath_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_claw_swipe",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "atk_claw_swipe_00",
+   "atk_claw_swipe_01",
+   "atk_claw_swipe_02",
+   "atk_claw_swipe_03",
+   "atk_claw_swipe_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_color_special",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "atk_color_special_00",
+   "atk_color_special_01",
+   "atk_color_special_02",
+   "atk_color_special_03",
+   "atk_color_special_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_dive_bomb",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "atk_dive_bomb_00",
+   "atk_dive_bomb_01",
+   "atk_dive_bomb_02",
+   "atk_dive_bomb_03",
+   "atk_dive_bomb_04",
+   "atk_dive_bomb_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_strafing_breath",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "atk_strafing_breath_00",
+   "atk_strafing_breath_01",
+   "atk_strafing_breath_02",
+   "atk_strafing_breath_03",
+   "atk_strafing_breath_04",
+   "atk_strafing_breath_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_tail_sweep",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "atk_tail_sweep_00",
+   "atk_tail_sweep_01",
+   "atk_tail_sweep_02",
+   "atk_tail_sweep_03",
+   "atk_tail_sweep_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_wing_gust",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "atk_wing_gust_00",
+   "atk_wing_gust_01",
+   "atk_wing_gust_02",
+   "atk_wing_gust_03",
+   "atk_wing_gust_04",
+   "atk_wing_gust_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "break",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "break_00",
+   "break_01",
+   "break_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0
+    ]
+   },
+   {
+    "phase": "all",
+    "frames": [
+     1,
+     2
+    ],
+    "loopFps": 4
+   }
+  ]
+ },
+ {
+  "key": "death",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "death_00",
+   "death_01",
+   "death_02",
+   "death_03",
+   "death_04",
+   "death_05",
+   "death_06",
+   "death_07",
+   "death_08"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
+  "key": "dive",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "dive_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "fall",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "fall_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "hover",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "hover_00",
+   "hover_01",
+   "hover_02",
+   "hover_03",
+   "hover_04",
+   "hover_05"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
+  "key": "hurt",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "idle",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "intro",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "intro_00",
+   "intro_01",
+   "intro_02",
+   "intro_03",
+   "intro_04",
+   "intro_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "perched",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "perched_00",
+   "perched_01"
+  ],
+  "mode": "loop",
+  "fps": 2
+ },
+ {
+  "key": "stagger",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "stagger_00",
+   "stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "takeoff",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "takeoff_00",
+   "takeoff_01",
+   "takeoff_02",
+   "takeoff_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "transition",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "transition_00",
+   "transition_01",
+   "transition_02",
+   "transition_03",
+   "transition_04",
+   "transition_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "walk",
+  "atlas": "boss_dragon_red",
+  "frames": [
+   "walk_00",
+   "walk_01",
+   "walk_02",
+   "walk_03",
+   "walk_04",
+   "walk_05",
+   "walk_06",
+   "walk_07"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "atk_breath",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "atk_breath_00",
+   "atk_breath_01",
+   "atk_breath_02",
+   "atk_breath_03",
+   "atk_breath_04",
+   "atk_breath_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_claw_swipe",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "atk_claw_swipe_00",
+   "atk_claw_swipe_01",
+   "atk_claw_swipe_02",
+   "atk_claw_swipe_03",
+   "atk_claw_swipe_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_color_special",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "atk_color_special_00",
+   "atk_color_special_01",
+   "atk_color_special_02",
+   "atk_color_special_03",
+   "atk_color_special_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_dive_bomb",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "atk_dive_bomb_00",
+   "atk_dive_bomb_01",
+   "atk_dive_bomb_02",
+   "atk_dive_bomb_03",
+   "atk_dive_bomb_04",
+   "atk_dive_bomb_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_strafing_breath",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "atk_strafing_breath_00",
+   "atk_strafing_breath_01",
+   "atk_strafing_breath_02",
+   "atk_strafing_breath_03",
+   "atk_strafing_breath_04",
+   "atk_strafing_breath_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_tail_sweep",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "atk_tail_sweep_00",
+   "atk_tail_sweep_01",
+   "atk_tail_sweep_02",
+   "atk_tail_sweep_03",
+   "atk_tail_sweep_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_wing_gust",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "atk_wing_gust_00",
+   "atk_wing_gust_01",
+   "atk_wing_gust_02",
+   "atk_wing_gust_03",
+   "atk_wing_gust_04",
+   "atk_wing_gust_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "break",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "break_00",
+   "break_01",
+   "break_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0
+    ]
+   },
+   {
+    "phase": "all",
+    "frames": [
+     1,
+     2
+    ],
+    "loopFps": 4
+   }
+  ]
+ },
+ {
+  "key": "death",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "death_00",
+   "death_01",
+   "death_02",
+   "death_03",
+   "death_04",
+   "death_05",
+   "death_06",
+   "death_07",
+   "death_08"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
+  "key": "dive",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "dive_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "fall",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "fall_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "hover",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "hover_00",
+   "hover_01",
+   "hover_02",
+   "hover_03",
+   "hover_04",
+   "hover_05"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
+  "key": "hurt",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "idle",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "intro",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "intro_00",
+   "intro_01",
+   "intro_02",
+   "intro_03",
+   "intro_04",
+   "intro_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "perched",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "perched_00",
+   "perched_01"
+  ],
+  "mode": "loop",
+  "fps": 2
+ },
+ {
+  "key": "stagger",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "stagger_00",
+   "stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "takeoff",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "takeoff_00",
+   "takeoff_01",
+   "takeoff_02",
+   "takeoff_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "transition",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "transition_00",
+   "transition_01",
+   "transition_02",
+   "transition_03",
+   "transition_04",
+   "transition_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "walk",
+  "atlas": "boss_dragon_storm",
+  "frames": [
+   "walk_00",
+   "walk_01",
+   "walk_02",
+   "walk_03",
+   "walk_04",
+   "walk_05",
+   "walk_06",
+   "walk_07"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "atk_breath",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "atk_breath_00",
+   "atk_breath_01",
+   "atk_breath_02",
+   "atk_breath_03",
+   "atk_breath_04",
+   "atk_breath_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_claw_swipe",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "atk_claw_swipe_00",
+   "atk_claw_swipe_01",
+   "atk_claw_swipe_02",
+   "atk_claw_swipe_03",
+   "atk_claw_swipe_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_color_special",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "atk_color_special_00",
+   "atk_color_special_01",
+   "atk_color_special_02",
+   "atk_color_special_03",
+   "atk_color_special_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_dive_bomb",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "atk_dive_bomb_00",
+   "atk_dive_bomb_01",
+   "atk_dive_bomb_02",
+   "atk_dive_bomb_03",
+   "atk_dive_bomb_04",
+   "atk_dive_bomb_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_strafing_breath",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "atk_strafing_breath_00",
+   "atk_strafing_breath_01",
+   "atk_strafing_breath_02",
+   "atk_strafing_breath_03",
+   "atk_strafing_breath_04",
+   "atk_strafing_breath_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_tail_sweep",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "atk_tail_sweep_00",
+   "atk_tail_sweep_01",
+   "atk_tail_sweep_02",
+   "atk_tail_sweep_03",
+   "atk_tail_sweep_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_wing_gust",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "atk_wing_gust_00",
+   "atk_wing_gust_01",
+   "atk_wing_gust_02",
+   "atk_wing_gust_03",
+   "atk_wing_gust_04",
+   "atk_wing_gust_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 8
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "break",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "break_00",
+   "break_01",
+   "break_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0
+    ]
+   },
+   {
+    "phase": "all",
+    "frames": [
+     1,
+     2
+    ],
+    "loopFps": 4
+   }
+  ]
+ },
+ {
+  "key": "death",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "death_00",
+   "death_01",
+   "death_02",
+   "death_03",
+   "death_04",
+   "death_05",
+   "death_06",
+   "death_07",
+   "death_08"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
+  "key": "dive",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "dive_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "fall",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "fall_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "hover",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "hover_00",
+   "hover_01",
+   "hover_02",
+   "hover_03",
+   "hover_04",
+   "hover_05"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
+  "key": "hurt",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "idle",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "intro",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "intro_00",
+   "intro_01",
+   "intro_02",
+   "intro_03",
+   "intro_04",
+   "intro_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "perched",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "perched_00",
+   "perched_01"
+  ],
+  "mode": "loop",
+  "fps": 2
+ },
+ {
+  "key": "stagger",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "stagger_00",
+   "stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "takeoff",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "takeoff_00",
+   "takeoff_01",
+   "takeoff_02",
+   "takeoff_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "transition",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "transition_00",
+   "transition_01",
+   "transition_02",
+   "transition_03",
+   "transition_04",
+   "transition_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "walk",
+  "atlas": "boss_dragon_white",
+  "frames": [
+   "walk_00",
+   "walk_01",
+   "walk_02",
+   "walk_03",
+   "walk_04",
+   "walk_05",
+   "walk_06",
+   "walk_07"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "atk_blade_rain",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "atk_blade_rain_00",
+   "atk_blade_rain_01",
+   "atk_blade_rain_02",
+   "atk_blade_rain_03",
+   "atk_blade_rain_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_crown_cleave",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "atk_crown_cleave_00",
+   "atk_crown_cleave_01",
+   "atk_crown_cleave_02",
+   "atk_crown_cleave_03",
+   "atk_crown_cleave_04",
+   "atk_crown_cleave_05",
+   "atk_crown_cleave_06"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "tele1",
+    "frames": [
+     3
+    ]
+   },
+   {
+    "phase": "act1",
+    "frames": [
+     4
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     5,
+     6
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_royal_decree",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "atk_royal_decree_00",
+   "atk_royal_decree_01",
+   "atk_royal_decree_02",
+   "atk_royal_decree_03",
+   "atk_royal_decree_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_royal_thrust",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "atk_royal_thrust_00",
+   "atk_royal_thrust_01",
+   "atk_royal_thrust_02",
+   "atk_royal_thrust_03",
+   "atk_royal_thrust_04",
+   "atk_royal_thrust_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_scepter_orbs",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "atk_scepter_orbs_00",
+   "atk_scepter_orbs_01",
+   "atk_scepter_orbs_02",
+   "atk_scepter_orbs_03",
+   "atk_scepter_orbs_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_scepter_orbs_wide",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "atk_scepter_orbs_wide_00",
+   "atk_scepter_orbs_wide_01",
+   "atk_scepter_orbs_wide_02",
+   "atk_scepter_orbs_wide_03",
+   "atk_scepter_orbs_wide_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_shockwave_slam",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "atk_shockwave_slam_00",
+   "atk_shockwave_slam_01",
+   "atk_shockwave_slam_02",
+   "atk_shockwave_slam_03",
+   "atk_shockwave_slam_04",
+   "atk_shockwave_slam_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_throne_beam",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "atk_throne_beam_00",
+   "atk_throne_beam_01",
+   "atk_throne_beam_02",
+   "atk_throne_beam_03",
+   "atk_throne_beam_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "break",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "break_00",
+   "break_01",
+   "break_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0
+    ]
+   },
+   {
+    "phase": "all",
+    "frames": [
+     1,
+     2
+    ],
+    "loopFps": 4
+   }
+  ]
+ },
+ {
+  "key": "death",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "death_00",
+   "death_01",
+   "death_02",
+   "death_03",
+   "death_04",
+   "death_05",
+   "death_06",
+   "death_07",
+   "death_08"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
+  "key": "hurt",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "idle",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "intro",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "intro_00",
+   "intro_01",
+   "intro_02",
+   "intro_03",
+   "intro_04",
+   "intro_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "stagger",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "stagger_00",
+   "stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "transition",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "transition_00",
+   "transition_01",
+   "transition_02",
+   "transition_03",
+   "transition_04",
+   "transition_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "walk",
+  "atlas": "boss_enemy_king",
+  "frames": [
+   "walk_00",
+   "walk_01",
+   "walk_02",
+   "walk_03",
+   "walk_04",
+   "walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
   "key": "atk_charge",
   "atlas": "boss_great_boar",
   "frames": [
@@ -1245,6 +3483,751 @@
    "walk_03",
    "walk_04",
    "walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "castle_mage_atk_arcane_bolts",
+  "atlas": "enemies_castle",
+  "frames": [
+   "castle_mage_atk_arcane_bolts_00",
+   "castle_mage_atk_arcane_bolts_01",
+   "castle_mage_atk_arcane_bolts_02",
+   "castle_mage_atk_arcane_bolts_03",
+   "castle_mage_atk_arcane_bolts_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "castle_mage_atk_ward",
+  "atlas": "enemies_castle",
+  "frames": [
+   "castle_mage_atk_ward_00",
+   "castle_mage_atk_ward_01",
+   "castle_mage_atk_ward_02",
+   "castle_mage_atk_ward_03",
+   "castle_mage_atk_ward_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "castle_mage_channel",
+  "atlas": "enemies_castle",
+  "frames": [
+   "castle_mage_channel_00",
+   "castle_mage_channel_01"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "castle_mage_death",
+  "atlas": "enemies_castle",
+  "frames": [
+   "castle_mage_death_00",
+   "castle_mage_death_01",
+   "castle_mage_death_02",
+   "castle_mage_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "castle_mage_hurt",
+  "atlas": "enemies_castle",
+  "frames": [
+   "castle_mage_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "castle_mage_idle",
+  "atlas": "enemies_castle",
+  "frames": [
+   "castle_mage_idle_00",
+   "castle_mage_idle_01",
+   "castle_mage_idle_02",
+   "castle_mage_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "castle_mage_knockdown",
+  "atlas": "enemies_castle",
+  "frames": [
+   "castle_mage_knockdown_00",
+   "castle_mage_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "castle_mage_stagger",
+  "atlas": "enemies_castle",
+  "frames": [
+   "castle_mage_stagger_00",
+   "castle_mage_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "castle_mage_walk",
+  "atlas": "enemies_castle",
+  "frames": [
+   "castle_mage_walk_00",
+   "castle_mage_walk_01",
+   "castle_mage_walk_02",
+   "castle_mage_walk_03",
+   "castle_mage_walk_04",
+   "castle_mage_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "gargoyle_atk_swoop",
+  "atlas": "enemies_castle",
+  "frames": [
+   "gargoyle_atk_swoop_00",
+   "gargoyle_atk_swoop_01",
+   "gargoyle_atk_swoop_02",
+   "gargoyle_atk_swoop_03",
+   "gargoyle_atk_swoop_04",
+   "gargoyle_atk_swoop_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "gargoyle_death",
+  "atlas": "enemies_castle",
+  "frames": [
+   "gargoyle_death_00",
+   "gargoyle_death_01",
+   "gargoyle_death_02",
+   "gargoyle_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "gargoyle_fly",
+  "atlas": "enemies_castle",
+  "frames": [
+   "gargoyle_fly_00",
+   "gargoyle_fly_01",
+   "gargoyle_fly_02",
+   "gargoyle_fly_03"
+  ],
+  "mode": "loop",
+  "fps": 12
+ },
+ {
+  "key": "gargoyle_hurt",
+  "atlas": "enemies_castle",
+  "frames": [
+   "gargoyle_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "gargoyle_knockdown",
+  "atlas": "enemies_castle",
+  "frames": [
+   "gargoyle_knockdown_00",
+   "gargoyle_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "gargoyle_stagger",
+  "atlas": "enemies_castle",
+  "frames": [
+   "gargoyle_stagger_00",
+   "gargoyle_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "gargoyle_stone",
+  "atlas": "enemies_castle",
+  "frames": [
+   "gargoyle_stone_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "gargoyle_wake",
+  "atlas": "enemies_castle",
+  "frames": [
+   "gargoyle_wake_00",
+   "gargoyle_wake_01",
+   "gargoyle_wake_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ {
+  "key": "living_armor_atk_overhead_chop",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_atk_overhead_chop_00",
+   "living_armor_atk_overhead_chop_01",
+   "living_armor_atk_overhead_chop_02",
+   "living_armor_atk_overhead_chop_03",
+   "living_armor_atk_overhead_chop_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "living_armor_atk_sword_slash",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_atk_sword_slash_00",
+   "living_armor_atk_sword_slash_01",
+   "living_armor_atk_sword_slash_02",
+   "living_armor_atk_sword_slash_03",
+   "living_armor_atk_sword_slash_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "living_armor_collapse",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_collapse_00",
+   "living_armor_collapse_01",
+   "living_armor_collapse_02",
+   "living_armor_collapse_03"
+  ],
+  "mode": "once",
+  "fps": 13
+ },
+ {
+  "key": "living_armor_death",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_death_00",
+   "living_armor_death_01",
+   "living_armor_death_02",
+   "living_armor_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "living_armor_hurt",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "living_armor_idle",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_idle_00",
+   "living_armor_idle_01",
+   "living_armor_idle_02",
+   "living_armor_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "living_armor_knockdown",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_knockdown_00",
+   "living_armor_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "living_armor_pile",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_pile_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "living_armor_rise",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_rise_00",
+   "living_armor_rise_01",
+   "living_armor_rise_02",
+   "living_armor_rise_03"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "key": "living_armor_stagger",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_stagger_00",
+   "living_armor_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "living_armor_walk",
+  "atlas": "enemies_castle",
+  "frames": [
+   "living_armor_walk_00",
+   "living_armor_walk_01",
+   "living_armor_walk_02",
+   "living_armor_walk_03",
+   "living_armor_walk_04",
+   "living_armor_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "royal_executioner_atk_leap_chop",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_executioner_atk_leap_chop_00",
+   "royal_executioner_atk_leap_chop_01",
+   "royal_executioner_atk_leap_chop_02",
+   "royal_executioner_atk_leap_chop_03",
+   "royal_executioner_atk_leap_chop_04",
+   "royal_executioner_atk_leap_chop_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "royal_executioner_atk_overhead_chop",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_executioner_atk_overhead_chop_00",
+   "royal_executioner_atk_overhead_chop_01",
+   "royal_executioner_atk_overhead_chop_02",
+   "royal_executioner_atk_overhead_chop_03",
+   "royal_executioner_atk_overhead_chop_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "royal_executioner_atk_whirling_axe",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_executioner_atk_whirling_axe_00",
+   "royal_executioner_atk_whirling_axe_01",
+   "royal_executioner_atk_whirling_axe_02",
+   "royal_executioner_atk_whirling_axe_03",
+   "royal_executioner_atk_whirling_axe_04",
+   "royal_executioner_atk_whirling_axe_05",
+   "royal_executioner_atk_whirling_axe_06",
+   "royal_executioner_atk_whirling_axe_07"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3,
+     4,
+     5
+    ],
+    "loopFps": 16
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     6,
+     7
+    ]
+   }
+  ]
+ },
+ {
+  "key": "royal_executioner_death",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_executioner_death_00",
+   "royal_executioner_death_01",
+   "royal_executioner_death_02",
+   "royal_executioner_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "royal_executioner_hurt",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_executioner_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "royal_executioner_idle",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_executioner_idle_00",
+   "royal_executioner_idle_01",
+   "royal_executioner_idle_02",
+   "royal_executioner_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "royal_executioner_knockdown",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_executioner_knockdown_00",
+   "royal_executioner_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "royal_executioner_stagger",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_executioner_stagger_00",
+   "royal_executioner_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "royal_executioner_walk",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_executioner_walk_00",
+   "royal_executioner_walk_01",
+   "royal_executioner_walk_02",
+   "royal_executioner_walk_03",
+   "royal_executioner_walk_04",
+   "royal_executioner_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "royal_guard_atk_halberd_sweep",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_guard_atk_halberd_sweep_00",
+   "royal_guard_atk_halberd_sweep_01",
+   "royal_guard_atk_halberd_sweep_02",
+   "royal_guard_atk_halberd_sweep_03",
+   "royal_guard_atk_halberd_sweep_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "royal_guard_atk_halberd_thrust",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_guard_atk_halberd_thrust_00",
+   "royal_guard_atk_halberd_thrust_01",
+   "royal_guard_atk_halberd_thrust_02",
+   "royal_guard_atk_halberd_thrust_03",
+   "royal_guard_atk_halberd_thrust_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "royal_guard_death",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_guard_death_00",
+   "royal_guard_death_01",
+   "royal_guard_death_02",
+   "royal_guard_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "royal_guard_hurt",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_guard_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "royal_guard_idle",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_guard_idle_00",
+   "royal_guard_idle_01",
+   "royal_guard_idle_02",
+   "royal_guard_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "royal_guard_knockdown",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_guard_knockdown_00",
+   "royal_guard_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "royal_guard_stagger",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_guard_stagger_00",
+   "royal_guard_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "royal_guard_walk",
+  "atlas": "enemies_castle",
+  "frames": [
+   "royal_guard_walk_00",
+   "royal_guard_walk_01",
+   "royal_guard_walk_02",
+   "royal_guard_walk_03",
+   "royal_guard_walk_04",
+   "royal_guard_walk_05"
   ],
   "mode": "speed"
  },
@@ -13328,6 +16311,62 @@
   "mode": "once"
  },
  {
+  "key": "dragon_breath_green",
+  "atlas": "vfx",
+  "frames": [
+   "dragon_breath_green_00",
+   "dragon_breath_green_01",
+   "dragon_breath_green_02",
+   "dragon_breath_green_03"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dragon_breath_red",
+  "atlas": "vfx",
+  "frames": [
+   "dragon_breath_red_00",
+   "dragon_breath_red_01",
+   "dragon_breath_red_02",
+   "dragon_breath_red_03"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dragon_breath_storm",
+  "atlas": "vfx",
+  "frames": [
+   "dragon_breath_storm_00",
+   "dragon_breath_storm_01",
+   "dragon_breath_storm_02",
+   "dragon_breath_storm_03"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dragon_breath_white",
+  "atlas": "vfx",
+  "frames": [
+   "dragon_breath_white_00",
+   "dragon_breath_white_01",
+   "dragon_breath_white_02",
+   "dragon_breath_white_03"
+  ],
+  "mode": "loop",
+  "fps": 16
+ },
+ {
+  "key": "dragon_shadow",
+  "atlas": "vfx",
+  "frames": [
+   "dragon_shadow_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "dust_jump",
   "atlas": "vfx",
   "frames": [
@@ -13531,6 +16570,17 @@
   ],
   "mode": "once",
   "fps": 30
+ },
+ {
+  "key": "ice_spike",
+  "atlas": "vfx",
+  "frames": [
+   "ice_spike_00",
+   "ice_spike_01",
+   "ice_spike_02"
+  ],
+  "mode": "once",
+  "fps": 24
  },
  {
   "key": "link",
@@ -13764,6 +16814,16 @@
   ],
   "mode": "loop",
   "fps": 10
+ },
+ {
+  "key": "throne_beam",
+  "atlas": "vfx",
+  "frames": [
+   "throne_beam_00",
+   "throne_beam_01"
+  ],
+  "mode": "loop",
+  "fps": 12
  },
  {
   "key": "thunder",

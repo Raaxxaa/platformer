@@ -333,7 +333,14 @@ export class StageScene extends WorldScene {
         if (result === 'restart') w.restart(); else if (result === 'home') this.requestHome(); else this.toTitle();
       });
     }
-    for (const { e } of this.frameEvents) if (e.t === 'dragonWarning') this.abilityHud.toast(`A ${DRAGON_NAME[e.color]} roars ahead!`, UI_COLOR.highlight, this.time.now, 3);
+    for (const { e } of this.frameEvents) if (e.t === 'dragonWarning') {
+      this.abilityHud.toast(`A ${DRAGON_NAME[e.color]} roars ahead!`, UI_COLOR.highlight, this.time.now, 3);
+      // 08 §11 `dragon_shadow`: a 160 x 64 silhouette at alpha 0.35 crossing the screen right to left in 1.2 s at screen y 60-120.
+      if (this.textures.exists('vfx') && this.textures.get('vfx').has('dragon_shadow_00')) {
+        const sh = this.add.image(640 + 80, 90, 'vfx', 'dragon_shadow_00').setScrollFactor(0).setAlpha(0.35).setDepth(DEPTH.hud - 1);
+        this.tweens.add({ targets: sh, x: -80, duration: 1200, onComplete: () => sh.destroy() });
+      }
+    }
     this.syncRunPanels();
     this.villageView?.update(w, saveStore().data.typedSeed);
     this.shopView?.update(w, this.frameEvents.some(({ e }) => e.t === 'cantAfford'));

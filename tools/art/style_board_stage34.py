@@ -1,4 +1,5 @@
 """ART8 style boards (08 §12.7): kingdom, castle, bosses and weapons. 640 x 360 scenes shown at 2x."""
+import math
 import os
 
 import numpy as np
@@ -140,11 +141,96 @@ def compose_weapons():
     return scene
 
 
+def _crop(img):
+    a = np.array(img)
+    ys, xs = np.nonzero(a[:, :, 3] > 0)
+    return img.crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1)), (xs.min(), ys.min())
+
+
+def compose_castle():
+    from .enemies import castle
+    from . import objects34
+    from . import projectiles_stage34 as S34
+    W, H = 640, 360
+    scene = Image.new('RGBA', (W, H))
+    for i in range(3):
+        scene.alpha_composite(world34.render('castle', i))
+    sheet = T.build_sheet('castle')
+    g = np.zeros((23, 40), bool)
+    g[GROUND:, :] = True
+    g[GROUND:GROUND + 2, 17:24] = False                     # a pit with a collapsing bridge over it
+    g[GROUND - 2:GROUND, 33:40] = True
+    _terrain(scene, 'castle', g, sheet)
+    for x in range(17, 24):
+        scene.alpha_composite(_cell(sheet, 15, 3), (x * 16, GROUND * 16))      # collapsing bridge (one-way)
+    for x in range(17, 24):
+        scene.alpha_composite(_cell(sheet, 8, 3), (x * 16, (GROUND + 1) * 16))
+    for k, x in enumerate(range(26, 31)):
+        scene.alpha_composite(_cell(sheet, 4 if k == 0 else (6 if x == 30 else 5), 3), (x * 16, 14 * 16))
+    gy, ly = GROUND * 16, (GROUND - 2) * 16
+    for x, c in ((2, 8), (6, 9), (10, 12), (14, 15), (30, 8)):
+        scene.alpha_composite(_cell(sheet, c, 7), (x * 16, gy - 16))
+    scene.alpha_composite(_cell(sheet, 12, 3), (31 * 16, (GROUND - 1) * 16))
+    players_row(scene, gy)
+    frames, _ = castle.build_frames()
+    ob = objects34.frames()
+    _place(scene, frames['royal_guard_idle_00'], 175, gy, (88, 62))
+    _place(scene, frames['castle_mage_idle_00'], 262, gy, (24, 46))
+    _place(scene, frames['living_armor_idle_00'], 305, gy, (24, 46))
+    _place(scene, frames['living_armor_pile_00'], 340, gy, (24, 46))
+    _place(scene, frames['gargoyle_stone_00'], 55, 6 * 16 + 30, (24, 46))
+    _place(scene, frames['gargoyle_fly_00'], 250, gy - 100, (24, 46))
+    _place(scene, _fill(frames['gargoyle_atk_swoop_01'], TELE, TELE_ALPHA), 300, gy - 70, (48, 46))
+    _place(scene, _fill(frames['royal_guard_atk_halberd_thrust_01'], TELE, TELE_ALPHA), 430, gy, (88, 62))
+    _place(scene, frames['royal_executioner_idle_00'], 590, ly, (64, 94))
+    # the swinging blade: pivot, chain and blade at the bottom of its swing
+    px, py = 380, 20
+    scene.alpha_composite(ob['blade_pivot_00'], (px - 4, py - 4))
+    for k in range(1, 16):
+        scene.alpha_composite(ob['blade_chain_00'], (px - 2 + int(k * 8 * math.sin(0.35)), py + int(k * 8 * math.cos(0.35)) - 2))
+    bx, by = px + int(128 * math.sin(0.35)), py + int(128 * math.cos(0.35))
+    scene.alpha_composite(ob['swinging_blade_00'].rotate(-20, resample=Image.NEAREST), (bx - 12, by - 4))
+    scene.alpha_composite(S34.arcane_bolt(0), (330, gy - 36))
+    scene.alpha_composite(S34.arcane_bolt(1), (345, gy - 40))
+    loot(scene, gy, x0=470)
+    return scene
+
+
+def compose_bosses():
+    from .bosses import black_knight, enemy_king, dragon
+    from . import vfx34
+    W = 640
+    scene = Image.new('RGBA', (W, 1080))
+    for band, kind in enumerate(('kingdom', 'castle', 'kingdom')):
+        for i in range(3):
+            scene.alpha_composite(world34.render(kind, i), (0, band * 360))
+        floor = (0x2d, 0x25, 0x21, 255) if kind == 'kingdom' else (0x29, 0x24, 0x3a, 255)
+        scene.alpha_composite(Image.new('RGBA', (W, 40), floor), (0, band * 360 + 320))
+    bk, _ = black_knight.build_frames()
+    ek, _ = enemy_king.build_frames()
+    text(scene, 'The Black Knight (3 slashes, lunge, shield bash, dark wave, Bulwark, phase change)', 6, 6, color=P.UI_COLORS['text'])
+    for key, x in (('idle_00', 50), ('atk_triple_slash_02', 140), ('atk_triple_slash_04', 230), ('atk_lunge_thrust_02', 320),
+                   ('atk_shield_bash_02', 410), ('bulwark_00', 500), ('transition_03', 590)):
+        _place(scene, bk[key], x, 320, (72, 94))
+    text(scene, 'The Enemy King (cleave, thrust, scepter orbs, decree, shockwave slam, Throne Beam)', 6, 366, color=P.UI_COLORS['text'])
+    for key, x in (('idle_00', 50), ('atk_crown_cleave_02', 135), ('atk_scepter_orbs_02', 225), ('atk_royal_decree_02', 315),
+                   ('atk_shockwave_slam_02', 405), ('atk_throne_beam_02', 495), ('transition_03', 590)):
+        _place(scene, ek[key], x, 680, (80, 110))
+    text(scene, 'The Dragon: red, white, storm, green (breath cones below)', 6, 726, color=P.UI_COLORS['text'])
+    x = 80
+    fx = vfx34.frames()
+    for c in dragon.COLORS:
+        fr, _ = dragon.build_frames(c)
+        img, _o = _crop(fr['idle_00'])
+        scene.alpha_composite(img, (x - img.width // 2, 1040 - 100 - img.height + 60))
+        cone = fx[f'dragon_breath_{c}_01'].resize((140, 33), Image.NEAREST)
+        scene.alpha_composite(cone, (x - 60, 1040 - 20))
+        x += 155
+    return scene
+
+
 def build(preview):
     _save(compose_kingdom(), preview, 'style_board_kingdom')
+    _save(compose_castle(), preview, 'style_board_castle')
+    _save(compose_bosses(), preview, 'style_board_bosses')
     _save(compose_weapons(), preview, 'style_board_weapons')
-    try:
-        from . import style_board_castle
-        style_board_castle.build(preview, _save)
-    except ImportError:
-        pass

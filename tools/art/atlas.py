@@ -19,7 +19,7 @@ def check_frame_name(name):
         raise ValueError(f'bad frame name {name!r} (want <animKey>_<NN>)')
 
 
-def _layout(frames):
+def _layout(frames, max_page=MAX_PAGE, row_width=ROW_WIDTH):
     """Returns list of pages; each page = (w, h, [(name, x, y)])."""
     groups = {}
     for name, img in frames.items():
@@ -28,11 +28,11 @@ def _layout(frames):
     pages, cur, y, used_w = [], [], PAD, 0
     for size in order:
         w, h = size
-        cols = max(1, min(len(groups[size]), (min(ROW_WIDTH, MAX_PAGE) - PAD) // (w + PAD)))
+        cols = max(1, min(len(groups[size]), (min(row_width, max_page) - PAD) // (w + PAD)))
         names = sorted(groups[size])
         for r in range(0, len(names), cols):
             row = names[r:r + cols]
-            if y + h + PAD > MAX_PAGE and cur:
+            if y + h + PAD > max_page and cur:
                 pages.append((used_w, y, cur))
                 cur, y, used_w = [], PAD, 0
             x = PAD
@@ -46,13 +46,13 @@ def _layout(frames):
     return pages
 
 
-def pack_atlas(name, frames, out_dir, strict=True):
+def pack_atlas(name, frames, out_dir, strict=True, max_page=MAX_PAGE, row_width=ROW_WIDTH):
     """Pack frames {frameName: RGBA Image}; write <name>.png + <name>.json (or _0, _1 … pages)."""
     if strict:
         for n in frames:
             check_frame_name(n)
     os.makedirs(out_dir, exist_ok=True)
-    pages = _layout(frames)
+    pages = _layout(frames, max_page, row_width)
     meta = {'frames': {}, 'pages': []}
     for pi, (pw, ph, items) in enumerate(pages):
         base = name if len(pages) == 1 else f'{name}_{pi}'

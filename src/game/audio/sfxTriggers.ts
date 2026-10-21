@@ -6,6 +6,7 @@ import { TICK_RATE } from '../../core/tuning.ts';
 import { ANIM } from '../../data/art.ts';
 import { SFX } from '../../data/sfx.ts';
 import { WEAPONS } from '../../data/weapons.ts';
+import { cannonFlashing } from '../../core/hazards/cannons.ts';
 import { LUCKY } from '../../data/loot.ts';
 import type { TickEvent } from '../view/vfx.ts';
 import type { SfxRequest } from './sfxRules.ts';
@@ -22,7 +23,8 @@ const sizeOf = (e: EnemyState) => SIZE[e.def.size] ?? 'm';
 
 /** The state the triggers compare against (per scene, reset with the world). */
 /** Player projectile → its firing sound. */
-const SHOT_SFX: Record<string, string> = { arrow: 'shot_bow', arrow_charged: 'shot_bow', bolt: 'shot_crossbow', staff_bolt: 'shot_staff', orb: 'shot_orb' };
+const SHOT_SFX: Record<string, string> = { arrow: 'shot_bow', arrow_charged: 'shot_bow', bolt: 'shot_crossbow', staff_bolt: 'shot_staff', orb: 'shot_orb',
+  cannonball: 'shot_cannon', javelin: 'throw_javelin', knife: 'throw_knives', wand_shot: 'shot_wand' };
 
 export class SfxWatch {
   private aware = new Map<number, boolean>();
@@ -39,12 +41,16 @@ export class SfxWatch {
   private hazardRocks = new Map<number, number>();
   private shots = new Set<number>();
   private hammer: 'none' | 'out' | 'back' = 'none';
+  private flashing = new Set<number>();
+  private balls = new Set<number>();
+  private shieldUp = false;
   private charge: 'none' | 'charging' | 'full' = 'none';
 
   reset(): void {
     this.aware.clear(); this.phase.clear(); this.frozen.clear(); this.stagger.clear(); this.intro.clear();
     this.swingKey = ''; this.rush = 0; this.sipped = false; this.charges = -1; this.runFrame = -1; this.projectiles.clear();
     this.hazardRocks.clear();
+    this.flashing.clear(); this.balls.clear(); this.shieldUp = false;
   }
 
   /** Footsteps on run frames 1 and 5, from the player view's anim (checked each render). */
@@ -103,6 +109,7 @@ export class SfxWatch {
         case 'arenaCleared': out.push({ id: 'door_open' }, { id: 'arena_clear' }); break;
         case 'timedDoorOpened': out.push({ id: 'timed_open' }, { id: 'door_open' }); break;
         case 'timedDoorMissed': out.push({ id: 'timed_missed' }); break;
+        case 'dragonWarning': out.push({ id: 'dragon_warning' }); break;
         case 'bossDefeated': out.push({ id: 'boss_defeated' }); break;
         case 'split': if (e.deltaTicks !== null) out.push({ id: e.deltaTicks <= 0 ? 'split_faster' : 'split_slower' }); break;
         case 'abilityUsed': if (SFX[`ab_${e.id}`]) out.push({ id: `ab_${e.id}` }); break;
@@ -136,10 +143,16 @@ export class SfxWatch {
       const a = en.ai.attack;
       const ph = a ? `${a.def.id}:${a.phase}` : '';
       if (a && a.phase === 'act' && this.phase.get(en.id) !== ph && a.def.hit && !a.def.shots) out.push({ id: `enemy_swing_${sizeOf(en)}`, x: en.x });
+      if (en.dragon && a && a.phase === 'act' && this.phase.get(en.id) !== ph) {
+        if (a.def.id === 'breath' || a.def.id === 'strafing_breath') out.push({ id: `breath_${en.dragon.color}`, x: en.x });
+        else if (a.def.id === 'wing_gust' || a.def.id === 'dive_bomb') out.push({ id: 'wing_flap', x: en.x });
+      }
+      if (a && a.phase === 'tele' && a.def.hit?.unblockable && this.phase.get(en.id) !== ph) out.push({ id: 'tele_unblockable', x: en.x });
       this.phase.set(en.id, ph);
       if (en.boss) {
         const intro = en.boss.introTicks > 0;
-        if (intro && !this.intro.get(en.id) && SFX[`boss_roar_${en.def.id}`]) out.push({ id: `boss_roar_${en.def.id}` });
+        const roar = en.def.id === 'dragon' ? 'dragon_roar' : `boss_roar_${en.def.id}`;
+        if (intro && !this.intro.get(en.id) && SFX[roar]) out.push({ id: roar });
         this.intro.set(en.id, intro);
         const st = en.control?.type === 'stagger';
         if (st && !this.stagger.get(en.id)) out.push({ id: 'boss_break' });
@@ -167,6 +180,16 @@ export class SfxWatch {
     for (const [id, x] of rocks) if (!this.hazardRocks.has(id)) out.push({ id: 'rock_whistle', x });
     for (const [id, x] of this.hazardRocks) if (!rocks.has(id)) out.push({ id: 'rock_shatter', x });
     this.hazardRocks = rocks;
+    // ART8: cannons (fuse while the muzzle flashes, boom when a ball appears), the raised shield.
+    const flashing = new Set(w.cannons.cannons.filter((c) => cannonFlashing(c)).map((c) => c.id));
+    for (const c of w.cannons.cannons) if (flashing.has(c.id) && !this.flashing.has(c.id)) out.push({ id: 'cannon_fuse', x: c.x });
+    this.flashing = flashing;
+    const balls = new Set(w.cannons.balls.map((b) => b.id));
+    for (const b of w.cannons.balls) if (!this.balls.has(b.id) && b.traveled === 0) out.push({ id: 'cannon_fire', x: b.x });
+    this.balls = balls;
+    const up = w.combat.shield?.phase === 'up';
+    if (up && !this.shieldUp) out.push({ id: 'shield_raise' });
+    this.shieldUp = up;
     // Player shots, the thrown hammer, charging (ART5 sounds).
     const shotLive = new Set<number>();
     for (const p of w.playerProjectiles) {

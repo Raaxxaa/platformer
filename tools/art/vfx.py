@@ -9,7 +9,7 @@ from . import palette as P
 from . import raster as R
 
 ATLAS = 'vfx'
-ALLOWED = ['white', 'trim', 'gray', 'fx_bolt', 'fx_fire', 'fx_ice', 'fx_heal', 'fx_dark', 'w_steel', 'w_gold', 'w_magic', 'fx_poison', 'fx_wind']
+ALLOWED = ['ink', 'white', 'trim', 'gray', 'fx_bolt', 'fx_fire', 'fx_ice', 'fx_heal', 'fx_dark', 'w_steel', 'w_gold', 'w_magic', 'fx_poison', 'fx_wind']
 WHITE = P.sid((255, 255, 255))           # pure #ffffff (trim light): tints exactly in code
 GREY = P.sid((0xb0, 0xb0, 0xb0))
 
@@ -429,6 +429,9 @@ def build_frames():
     from . import vfx_elements as EL
     fr.update(EL.frames())
     anims += EL.anims()
+    from . import vfx34
+    fr.update(vfx34.frames())
+    anims += vfx34.anims()
     anims += [A.anim('hammer_dive_bolt', ATLAS, 4, 'once', 30), A.anim('hit_spark', ATLAS, 3, 'once', 30), A.anim('hit_heavy', ATLAS, 4, 'once', 30),
              A.anim('crit_spark', ATLAS, 4, 'once', 30), A.anim('stun_stars', ATLAS, 4, 'loop', 10),
              A.anim('dust_land', ATLAS, 4, 'once', 20), A.anim('dust_jump', ATLAS, 4, 'once', 20),

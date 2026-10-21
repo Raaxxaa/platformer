@@ -13,9 +13,9 @@ from art.enemies import plains as enemies_plains  # noqa: E402
 from art.enemies import mountains as enemies_mountains  # noqa: E402
 from art.enemies import swamps as enemies_swamps  # noqa: E402
 from art import style_board_stage2, style_board_stage34, world34  # noqa: E402
-from art.bosses import great_boar, stone_colossus, spider_queen, black_knight  # noqa: E402
-from art.enemies import kingdom as enemies_kingdom  # noqa: E402
-from audio import listen_sheet, listen_sheet_stage2, sfx_defs, sfx_stage2  # noqa: E402
+from art.bosses import great_boar, stone_colossus, spider_queen, black_knight, enemy_king, dragon  # noqa: E402
+from art.enemies import kingdom as enemies_kingdom, castle as enemies_castle  # noqa: E402
+from audio import listen_sheet, listen_sheet_stage2, listen_sheet_stage34, sfx_defs, sfx_stage2, sfx_stage34  # noqa: E402
 
 
 def build(root=ROOT):
@@ -39,6 +39,9 @@ def build(root=ROOT):
     anims += spider_queen.build(assets, preview)
     anims += enemies_kingdom.build(assets, preview)
     anims += black_knight.build(assets, preview)
+    anims += enemies_castle.build(assets, preview)
+    anims += enemy_king.build(assets, preview)
+    anims += dragon.build(assets, preview)
     build_world.build(assets, preview)
     world34.build(assets, preview)
     ui.build(assets, preview)
@@ -57,8 +60,10 @@ def build(root=ROOT):
     contrast.write_report(preview)
     sfx_defs.build(os.path.join(assets, 'audio', 'sfx'))
     sfx_stage2.build(os.path.join(assets, 'audio', 'sfx'))
+    sfx_stage34.build(os.path.join(assets, 'audio', 'sfx'))
     listen_sheet.build(os.path.join(root, 'docs', 'art'))
     listen_sheet_stage2.build(os.path.join(root, 'docs', 'art'))
+    listen_sheet_stage34.build(os.path.join(root, 'docs', 'art'))
     atlas.write_anims(os.path.join(assets, 'anims.json'), anims)
     return assets
 

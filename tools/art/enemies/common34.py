@@ -42,7 +42,7 @@ def anim_def(atlas, key, n, seg_override=None, fps_override=None):
 
 
 def build_enemy_atlas(atlas, enemies, tables, drawer, size_fn, allowed_ramps, preview, bg_color, seg_overrides=None,
-                      hidden=(), assets=None, label_w=330, boss=False):
+                      hidden=(), assets=None, label_w=330, boss=False, pack_kw=None):
     """tables: {enemy: {anim: [poses]}}; drawer(enemy, pose, size, feet) -> RGBA image; size_fn(enemy, anim) ->
     ((w, h), (anchorX, anchorY)). Returns the anims.json entries (anims in `hidden` are drawn but not listed)."""
     from .. import preview as V
@@ -63,7 +63,9 @@ def build_enemy_atlas(atlas, enemies, tables, drawer, size_fn, allowed_ramps, pr
     for n, img in frames.items():
         P.check_palette_lock(img, allowed, atlas, n)
     if assets:
-        A.pack_atlas(atlas, frames, os.path.join(assets, 'atlases'))
+        A.pack_atlas(atlas, frames, os.path.join(assets, 'atlases'), **(pack_kw or {}))
+    if preview is None:
+        return anims, frames
     rows = []
     owner = {}
     for enemy in enemies:

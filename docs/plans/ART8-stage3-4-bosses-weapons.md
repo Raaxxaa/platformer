@@ -41,30 +41,30 @@
 - [x] Write and push `docs/plans/ART8-stage3-4-bosses-weapons.md`.
 
 ### Task 2 (B): Weapons and abilities
-- [ ] Add body poses (shared by all four outfits) and weapon segments for the 11 new weapons, with every 08 §6.3 key: Twin Daggers 1–4; Spear 1–3 + `lunge`; Scythe 1–3; Giant Axe 1–2 + `spin` (6); Flail 1–2 + `charge`/`charged`; Shield `shield_up`, `atk_shield_bash`, `shield_lower`; Hand Cannon 1; Javelin 1; Throwing Knives 1; Wand 1; Spell Tome 1–3; `dive_*` frames for each.
-- [ ] Projectiles (`projectiles` atlas): `cannonball` (10 × 10), `javelin` (20 × 4), `javelin_stuck` platform frame, `knife` (8 × 4), `wand_shot` (6 × 6 rune, 2 frames), `tome_bolt`/`tome_rune` (per 02 §10.4), `skewer`, `soul`, `reflected`; muzzle flash for the cannon.
-- [ ] Wire: `WEAPON_ART` in `src/data/animKeys.ts`, `PROJECTILE_ANIMS`, player projectile view. Anything the game cannot play stays out of `anims.json`.
-- [ ] Ability effects: audit 03 against the `vfx` atlas; add what is missing.
-- [ ] **Look at the weapons board and every sheet, commit, push.**
+- [x] Add body poses (shared by all four outfits) and weapon segments for the 11 new weapons, with every 08 §6.3 key: Twin Daggers 1–4; Spear 1–3 + `lunge`; Scythe 1–3; Giant Axe 1–2 + `spin` (6); Flail 1–2 + `charge`/`charged`; Shield `shield_up`, `atk_shield_bash`, `shield_lower`; Hand Cannon 1; Javelin 1; Throwing Knives 1; Wand 1; Spell Tome 1–3; `dive_*` frames for each.
+- [x] Projectiles (`projectiles` atlas): `cannonball` (10 × 10), `javelin` (20 × 4), `javelin_stuck` platform frame, `knife` (8 × 4), `wand_shot` (6 × 6 rune, 2 frames), `tome_bolt`/`tome_rune` (per 02 §10.4), `skewer`, `soul`, `reflected`; muzzle flash for the cannon.
+- [x] Wire: `WEAPON_ART` in `src/data/animKeys.ts`, `PROJECTILE_ANIMS`, player projectile view. Anything the game cannot play stays out of `anims.json`.
+- [x] Ability effects: audit 03 against the `vfx` atlas; add what is missing.
+- [x] **Look at the weapons board and every sheet, commit, push.**
 
 ### Task 3 (C): Enemy Kingdom and the Black Knight
-- [ ] `tiles_kingdom.png` (stone, roof, banners, spikes, cannon-wall deco), `bg_kingdom_0..2` (distant city, walls, houses), `bg_village_rebel_camp_0..2` and its props, embers in the ambience.
-- [ ] `enemies_kingdom`: Soldier (guard stance, `guard_hit`), Crossbowman (`aim` 5 frames), War Hound (`en_steel` + `en_red` collar), Battle Mage, Knight; cannon object (24 × 16, muzzle glow 2 @ 10 fps) in `objects`; projectiles `enemy_bolt`, `fireball`, `dark_wave`.
-- [ ] `boss_black_knight` (144 × 96): idle, walk, `triple_slash` (3 hits + phase-2 4th), `lunge_thrust`, `shield_bash`, `dark_wave`, `leap_slam`, `bulwark`, intro, break, transition, death.
-- [ ] `style_board_kingdom.png`, contrast lines. **Commit, push.**
+- [x] `tiles_kingdom.png` (stone, roof, banners, spikes, cannon-wall deco), `bg_kingdom_0..2` (distant city, walls, houses), `bg_village_rebel_camp_0..2` and its props, embers in the ambience.
+- [x] `enemies_kingdom`: Soldier (guard stance, `guard_hit`), Crossbowman (`aim` 5 frames), War Hound (`en_steel` + `en_red` collar), Battle Mage, Knight; cannon object (24 × 16, muzzle glow 2 @ 10 fps) in `objects`; projectiles `enemy_bolt`, `fireball`, `dark_wave`.
+- [x] `boss_black_knight` (144 × 96): idle, walk, `triple_slash` (3 hits + phase-2 4th), `lunge_thrust`, `shield_bash`, `dark_wave`, `leap_slam`, `bulwark`, intro, break, transition, death.
+- [x] `style_board_kingdom.png`, contrast lines. **Commit, push.**
 
 ### Task 4 (D): King's Castle and the Enemy King
-- [ ] `tiles_castle.png` (stone, trim, carpet, collapsing bridge cells), `bg_castle_0..2` (arched windows, pillars, banners), swinging blade object (pivot, chain link, blade 24 × 24).
-- [ ] `enemies_castle`: Royal Guard, Gargoyle (`stone`, `wake`, `fly`), Castle Mage (`channel`), Living Armor (`collapse`, `pile`, `rise`), Royal Executioner.
-- [ ] `boss_enemy_king` (160 × 112) with every 04 attack, Throne Beam fade (alpha), decree guards (Royal Guard reuse), projectiles `arcane_bolt`, `royal_orb`, `falling_sword`, `fire_rain`.
-- [ ] `style_board_castle.png`. **Commit, push.**
+- [x] `tiles_castle.png` (stone, trim, carpet, collapsing bridge cells), `bg_castle_0..2` (arched windows, pillars, banners), swinging blade object (pivot, chain link, blade 24 × 24).
+- [x] `enemies_castle`: Royal Guard, Gargoyle (`stone`, `wake`, `fly`), Castle Mage (`channel`), Living Armor (`collapse`, `pile`, `rise`), Royal Executioner.
+- [x] `boss_enemy_king` (160 × 112) with every 04 attack, Throne Beam fade (alpha), decree guards (Royal Guard reuse), projectiles `arcane_bolt`, `royal_orb`, `falling_sword`, `fire_rain`.
+- [x] `style_board_castle.png`. **Commit, push.**
 
 ### Task 5 (E): The Dragon in 4 colors
-- [ ] One base drawing in four template shades recolored to `dr_red|dr_white|dr_storm|dr_green` → atlases `boss_dragon_<color>` (288 × 192): idle/`perched`, `walk`, `takeoff`, `hover`, `dive`, `fall`, `wing_hop`, `breath_loop`, claw swipe, tail sweep, wing gust, color special, dive bomb, strafing breath, intro, break, transition, death.
-- [ ] `vfx`: breath cone per color, ice spikes, thunder column, toxic cloud (reuse swamp frames recolored), `dragon_shadow`.
-- [ ] Wire `boss_dragon_<color>` into the enemy bank. **Commit, push.**
+- [x] One base drawing in four template shades recolored to `dr_red|dr_white|dr_storm|dr_green` → atlases `boss_dragon_<color>` (288 × 192): idle/`perched`, `walk`, `takeoff`, `hover`, `dive`, `fall`, `wing_hop`, `breath_loop`, claw swipe, tail sweep, wing gust, color special, dive bomb, strafing breath, intro, break, transition, death.
+- [x] `vfx`: breath cone per color, ice spikes, thunder column, toxic cloud (reuse swamp frames recolored), `dragon_shadow`.
+- [x] Wire `boss_dragon_<color>` into the enemy bank. **Commit, push.**
 
 ### Task 6 (F): Sounds, boards, approvals
-- [ ] `tools/audio/sfx_stage34.py`: `vo_` for the 10 new enemies, `proj_` for the new enemy projectiles, `boss_roar_black_knight`, `boss_roar_enemy_king`, `dragon_roar`, `breath_<color>`, `wing_flap`, `cannon_fuse`, `cannon_fire`, `blade_swoosh`, new weapon sounds (`shot_cannon`, `throw_javelin`, `throw_knives`, `shot_wand`, `tome_blast`, `rune_ring`), shield sounds, the 8 new ability sounds, `step_hard`, `platform_shake`, `tele_unblockable`. Listening sheet `docs/art/sounds_stage34.wav` + `.md`.
-- [ ] `style_board_bosses.png` and `style_board_weapons.png`; the contrast report; `tools/approved/APPROVALS.md` is **not** touched. Log the pending boards in `docs/art/APPROVALS.md` as "waiting for the user".
-- [ ] `npm run assets`, `typecheck`, `test`, `build`, `test:e2e` (with two screenshots proving the new art shows). **Push.**
+- [x] `tools/audio/sfx_stage34.py`: `vo_` for the 10 new enemies, `proj_` for the new enemy projectiles, `boss_roar_black_knight`, `boss_roar_enemy_king`, `dragon_roar`, `breath_<color>`, `wing_flap`, `cannon_fuse`, `cannon_fire`, `blade_swoosh`, new weapon sounds (`shot_cannon`, `throw_javelin`, `throw_knives`, `shot_wand`, `tome_blast`, `rune_ring`), shield sounds, the 8 new ability sounds, `step_hard`, `platform_shake`, `tele_unblockable`. Listening sheet `docs/art/sounds_stage34.wav` + `.md`.
+- [x] `style_board_bosses.png` and `style_board_weapons.png`; the contrast report; `tools/approved/APPROVALS.md` is **not** touched. Log the pending boards in `docs/art/APPROVALS.md` as "waiting for the user".
+- [x] `npm run assets`, `typecheck`, `test`, `build`, `test:e2e` (with two screenshots proving the new art shows). **Push.**

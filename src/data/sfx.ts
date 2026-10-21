@@ -75,6 +75,29 @@ export const SFX: Record<string, SfxDef> = {
   // ART6: element hits and statuses.
   fire_hit: hit(2), ice_hit: hit(2), poison_hit: hit(2), wind_hit: hit(2),
   freeze: { vol: 0.55, variants: 2, ...W }, shatter: { vol: 0.6, variants: 2, ...W },
+  // ART8: Stage 3-4, Dragon, new weapons and abilities (08 §13.3). Files come from tools/audio/sfx_stage34.py.
+  ...Object.fromEntries(['soldier', 'crossbowman', 'war_hound', 'battle_mage', 'knight', 'royal_guard', 'gargoyle', 'castle_mage', 'living_armor', 'royal_executioner']
+    .map((id) => [`vo_${id}`, { optional: true, vol: 0.4, variants: 2, ...W } as SfxDef])),
+  ...Object.fromEntries(['enemy_bolt', 'fireball', 'dark_wave', 'arcane_bolt', 'royal_orb', 'falling_sword', 'fire_rain']
+    .map((id) => [`proj_${id}`, { optional: true, vol: 0.45, variants: 2, ...W } as SfxDef])),
+  boss_roar_black_knight: { optional: true, vol: 0.8, variants: 0 }, boss_roar_enemy_king: { optional: true, vol: 0.8, variants: 0 },
+  dragon_roar: { optional: true, vol: 0.8, variants: 0 }, dragon_warning: { optional: true, vol: 0.6, variants: 0 },
+  breath_red: { optional: true, vol: 0.8, variants: 0, ...W }, breath_white: { optional: true, vol: 0.8, variants: 0, ...W },
+  breath_storm: { optional: true, vol: 0.8, variants: 0, ...W }, breath_green: { optional: true, vol: 0.8, variants: 0, ...W },
+  wing_flap: { optional: true, vol: 0.8, variants: 2, ...W },
+  cannon_fuse: { optional: true, vol: 0.5, variants: 2, ...W }, cannon_fire: { optional: true, vol: 0.5, variants: 2, ...W },
+  blade_swoosh: { optional: true, vol: 0.5, variants: 2, ...W },
+  shot_cannon: { optional: true, vol: 0.5, variants: 2 }, throw_javelin: { optional: true, vol: 0.5, variants: 2 },
+  throw_knives: { optional: true, vol: 0.5, variants: 2 }, shot_wand: { optional: true, vol: 0.3, variants: 2 },
+  tome_blast: { optional: true, vol: 0.5, variants: 2 }, rune_ring: { optional: true, vol: 0.5, variants: 2 },
+  hit_guarded: { optional: true, vol: 0.65, variants: 2 }, block: { optional: true, vol: 0.65, variants: 2 },
+  parry: { optional: true, vol: 0.65, variants: 2 }, shield_raise: { optional: true, vol: 0.65, variants: 2 },
+  ab_blade_flurry: { optional: true, vol: 0.6, variants: 0 }, ab_riposte: { optional: true, vol: 0.6, variants: 0 },
+  ab_riposte_counter: { optional: true, vol: 0.6, variants: 0 }, ab_rage: { optional: true, vol: 0.6, variants: 0 },
+  ab_boulder_toss: { optional: true, vol: 0.6, variants: 0 }, boulder_break: { optional: true, vol: 0.6, variants: 0, ...W },
+  ab_turret: { optional: true, vol: 0.6, variants: 0 }, turret_fire: { optional: true, vol: 0.6, variants: 2, ...W },
+  ab_grapple_arrow: { optional: true, vol: 0.6, variants: 0 }, ab_frost_burst: { optional: true, vol: 0.6, variants: 0 },
+  ab_time_slow: { optional: true, vol: 0.6, variants: 0 }, time_slow_end: { optional: true, vol: 0.6, variants: 0 },
   ui_move: ui, ui_confirm: ui, ui_back: ui, ui_error: ui, ui_open: ui, ui_close: ui, ui_toggle: ui,
 };
 

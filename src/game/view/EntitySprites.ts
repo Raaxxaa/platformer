@@ -6,6 +6,7 @@ import type { EnemyProjectile } from '../../core/enemies/projectiles.ts';
 import type { GameWorld } from '../../core/sim/gameWorld.ts';
 import { COMBAT, ENEMY, TICK_RATE } from '../../core/tuning.ts';
 import { CASTLE } from '../../data/castle.ts';
+import { DRAGON } from '../../data/dragon.ts';
 import { DUMMY_FRAMES, YARD_DUMMY_FRAMES } from '../../data/animKeys.ts';
 import { ANCHOR, ANIM, DEPTH, OVERLAY, TRIM_TINT, VFX, WEAPON_FRAME } from '../../data/art.ts';
 import { AnimClock, runFps, timeFrame, walkFps } from './animClock.ts';
@@ -18,6 +19,14 @@ import { yardDummyFrame, pickEnemyAnim, pickPlayerAnim, type Lookup, type Player
 export function enemySpecial(e: EnemyState): { key: string; progress?: number } | null {
   if (e.dead) return null;
   if (e.kingdom && e.kingdom.bulwarkTicks > 0) return { key: 'bulwark' };
+  const dg = e.dragon;
+  if (dg) {                                                   // 08 §7.4: perched, takeoff, hover, fall (attacks and hits use their own anims)
+    if (!dg.awake || dg.passive) return { key: 'perched' };
+    if (dg.mode === 'takeoff' || dg.mode === 'rise') return { key: 'takeoff', progress: Math.min(0.99, dg.segTicks / DRAGON.takeoffTicks) };
+    if (dg.mode === 'falling') return { key: 'fall' };
+    if (dg.mode === 'air' && !e.ai.attack && !e.control) return { key: 'hover' };
+    return null;
+  }
   const c = e.castle;
   if (!c) return null;
   if (c.stone) return { key: 'stone' };
@@ -159,7 +168,7 @@ export class EnemySprite {
   constructor(scene: Phaser.Scene, bank: AnimBank, e: EnemyState) {
     this.e = e;
     this.bank = bank;
-    this.get = bank.enemy(e.def.id, !!e.boss);
+    this.get = bank.enemy(e.dragon ? `dragon_${e.dragon.color}` : e.def.id, !!e.boss);
     this.dummy = e.def.id === 'training_dummy';
     const idle = this.get('idle');
     this.yard = e.def.id in YARD_DUMMY_FRAMES ? (e.def.id as keyof typeof YARD_DUMMY_FRAMES) : null;

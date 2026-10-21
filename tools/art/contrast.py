@@ -214,7 +214,20 @@ def report_lines():
             + _lines(mountains_entities(), mountains_surfaces())
             + _lines(swamps_entities(), swamps_surfaces())
             + _lines(kingdom_entities(), kingdom_surfaces())
-            + _castle_lines())
+            + _castle_lines() + dragon_lines())
+
+
+def dragon_lines():
+    """The four Dragons against the biomes they can appear in (08 §12.8: mountains, swamps, kingdom)."""
+    from .bosses import dragon
+    ents = {}
+    for c in dragon.COLORS:
+        frames, _ = dragon.build_frames(c)
+        ents[f'dragon_{c}'] = frames['idle_00']
+    out = []
+    for surf in (mountains_surfaces(), swamps_surfaces(), kingdom_surfaces()):
+        out += _lines(ents, surf)
+    return out
 
 
 def _castle_lines():

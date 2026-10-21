@@ -40,8 +40,8 @@ def crossbow(f, hand, ang):
     R.line(f.L, ip(a), ip(b), one(f, 'xb_string', P.RAMPS['gray'][3]))
 
 
-def staff(f, hand, ang, length, orb, glow=0, gem_ramp=None):
-    s = f.part('staff', 'en_bone', 2)
+def staff(f, hand, ang, length, orb, glow=0, gem_ramp=None, pole='en_bone'):
+    s = f.part('staff', pole, 2)
     top = seg(hand, ang, length)
     R.capsule(f.L, ip(seg(hand, ang, -6)), ip(top), 1.8, s)
     o = f.part('orb', gem_ramp or orb)
@@ -86,8 +86,23 @@ def kite_shield(f, c, ramp, emblem, scale=1.0, tilt=0):
 
 # ---------------------------------------------------------------- the figure
 
+def draw_pile(cfg, size, feet):
+    """Living Armor pile (08 §7.3 `pile`): a heap of plates with the helmet on top and a ghost glimmer."""
+    f = Fig(*size)
+    pl = cfg['plate']
+    fx, fy = feet
+    R.ellipse(f.L, fx, fy - 3, 10, 3.6, f.part('heap', pl, 1))
+    R.ellipse(f.L, fx - 4, fy - 5, 4, 2.6, f.part('plate1', pl))
+    R.ellipse(f.L, fx + 4, fy - 5, 3.6, 2.4, f.part('plate2', pl, 1))
+    R.ellipse(f.L, fx + 1, fy - 8, 4, 3.4, f.part('helm', pl))
+    R.line(f.L, (int(fx), int(fy - 8)), (int(fx + 2), int(fy - 8)), one(f, 'glim', P.RAMPS['en_ghost'][1]))
+    return finish(f)
+
+
 def draw_armored(cfg, pose, size, feet):
     s = cfg
+    if pose.get('pile'):
+        return draw_pile(cfg, size, feet)
     f = Fig(*size)
     lift = s.get('lift', 0)
     if lift:                                                  # lighten the plate shades (dark armors on dark floors)
@@ -128,14 +143,14 @@ def draw_armored(cfg, pose, size, feet):
         if not wp or wp.get('back', False) != back:
             return
         hand = j['hand' + wp.get('hand', 'F')]
-        k = s['weapon']
+        k = wp.get('kind', s['weapon'])
         a, n = wp['ang'], wp.get('len', s.get('wlen', 10))
         if k == 'sword':
             blade(f, hand, a, n, s.get('bw', 2.4), s.get('bramp', 'gray'), s.get('hilt', 'en_gold'))
         elif k == 'crossbow':
             crossbow(f, hand, a)
         elif k == 'staff':
-            staff(f, hand, a, n, s['orb'], wp.get('glow', 0), s.get('gem'))
+            staff(f, hand, a, n, s['orb'], wp.get('glow', 0), s.get('gem'), s.get('pole', 'en_bone'))
         elif k == 'polearm':
             polearm(f, hand, a, n)
         elif k == 'axe':
@@ -177,6 +192,9 @@ def draw_armored(cfg, pose, size, feet):
         R.fill_polygon(f.L, [(cx - 0.5, cy), (cx + 3.5, cy), (hpx + 4 + pose.get('sway', 0), hpy + 9), (hpx - 1, hpy + 9)], tb)
         if s.get('emblem'):
             R.line(f.L, (int(cx + 1), int(cy + 2)), (int(hpx + 1), int(hpy + 5)), f.part('tabard_em', s['emblem']))
+    if s.get('collar'):                                       # fur collar
+        co = f.part('collar', s['collar'])
+        R.ellipse(f.L, cx + 0.5, cy, tw2 + 1.5, 3.2, co)
     belt = f.part('belt', s.get('beltc', 'en_black'), 1)
     box(f, hpx - tw2 + 1, hpy + 1, hpx + tw2 - 1, hpy + 1 + (1 if s['big'] else 0), belt)
     if not s.get('robe'):
