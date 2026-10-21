@@ -186,7 +186,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     });
     this.bank = new AnimBank(this.cache.json.get('anims') as AnimDef[]);
     this.boxesMode = new URLSearchParams(window.location.search).get('boxes') === '1';
-    const bg = this.world.level?.kind === 'training' ? 'village_home' : this.world.level?.id === 'border' || this.world.level?.id === 'rebel_camp' ? 'village_border' : this.world.level?.biome ?? 'plains';
+    const bg = this.world.level?.kind === 'training' ? 'village_home' : this.world.level?.id === 'border' ? 'village_border' : this.world.level?.id === 'rebel_camp' ? 'village_rebel_camp' : this.world.level?.biome ?? 'plains';
     this.parallax = new Parallax(this, this.world.grid.heightPx, bg in PARALLAX ? bg as keyof typeof PARALLAX : 'plains');
     drawTerrain(this, this.world.grid, this.world.level?.biome ?? 'plains', this.world.level?.kind !== 'village');
     this.boxes = this.add.graphics().setDepth(DEPTH.enemies);

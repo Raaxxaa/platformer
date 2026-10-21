@@ -47,3 +47,30 @@ ATTACK_BOX = {
     # 04 §10.1 (Rockfall uses falling_rock projectiles, no melee box)
     'great_boar': {'charge': (28, -20, 40, 36), 'tusk_toss': (36, -24, 48, 48), 'stomp_quake': (0, -8, 96, 16)},
 }
+
+
+# ART8: Stage 3-4 (04 §6, §7, §9, §11-§13; copied from src/data/kingdom.ts, castle.ts, dragon.ts)
+HURTBOX.update({'soldier': (14, 28), 'crossbowman': (14, 28), 'war_hound': (28, 18), 'battle_mage': (14, 28),
+                'knight': (18, 36), 'black_knight': (22, 44), 'royal_guard': (14, 30), 'gargoyle': (20, 22),
+                'castle_mage': (14, 28), 'living_armor': (16, 30), 'royal_executioner': (22, 40),
+                'enemy_king': (24, 48), 'dragon': (72, 48)})
+_SLASH = (30, -22, 52, 40)
+ATTACK_BOX.update({
+    'soldier': {'sword_thrust': (24, -16, 36, 12), 'shield_bash': (14, -14, 18, 26)},
+    'crossbowman': {'bolt': None, 'kick': (14, -12, 18, 16)},
+    'war_hound': {'leap_bite': (14, -9, 22, 14), 'snap': (16, -9, 20, 14)},
+    'battle_mage': {'fireball': None, 'flame_burst': (0, -20, 64, 40)},
+    'knight': {'sword_combo': (26, -18, 44, 30), 'charging_thrust': (22, -18, 36, 14)},
+    'black_knight': {'triple_slash': _SLASH, 'lunge_thrust': (26, -22, 44, 14), 'shield_bash': (18, -22, 24, 40),
+                     'dark_wave': None, 'leap_slam': (0, -14, 96, 28)},
+    'royal_guard': {'halberd_thrust': (46, -18, 72, 10), 'halberd_sweep': (24, -16, 64, 32)},
+    'gargoyle': {'swoop': (0, -11, 24, 20)},
+    'castle_mage': {'ward': None, 'arcane_bolts': None},
+    'living_armor': {'sword_slash': (22, -16, 36, 28), 'overhead_chop': (24, -14, 32, 28)},
+    'royal_executioner': {'overhead_chop': (32, -20, 48, 40), 'whirling_axe': (0, -20, 80, 40), 'leap_chop': (0, -20, 64, 40)},
+    'enemy_king': {'crown_cleave': (34, -24, 60, 44), 'royal_thrust': (30, -22, 52, 14), 'scepter_orbs': None,
+                   'scepter_orbs_wide': None, 'royal_decree': None, 'shockwave_slam': (0, -14, 96, 28), 'blade_rain': None,
+                   'throne_beam': None},
+    'dragon': {'breath': None, 'claw_swipe': (52, -20, 72, 40), 'tail_sweep': (-60, -12, 104, 24), 'wing_gust': None,
+               'color_special': None, 'dive_bomb': (0, -16, 128, 32), 'strafing_breath': None},
+})

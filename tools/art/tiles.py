@@ -63,6 +63,20 @@ def _soil(seed, th):
     t = np.zeros((TILE, TILE, 3), np.uint8)
     body = th['body']
     t[:, :] = body[2]
+    if th.get('brick'):                                   # ART8: masonry (Kingdom and Castle): 4 px courses, 8 px bricks
+        for row in range(4):
+            y0 = row * 4
+            t[y0 + 3, :] = body[1]
+            off = 4 if row % 2 else 0
+            for x in range(off, TILE + 8, 8):
+                if x < TILE:
+                    t[y0:y0 + 3, x] = body[1]
+                if x + 1 < TILE:
+                    t[y0, x + 1:min(TILE, x + 7)] = body[3]
+            for _ in range(2):
+                bx, by = int(g.integers(0, 16)), int(g.integers(0, 4)) * 4 + 1
+                t[by, bx] = body[3]
+        return t
     for _ in range(5):
         x, y = g.integers(1, 14), g.integers(4, 14)
         t[y, x] = th['body'][1]
@@ -500,6 +514,10 @@ def tile_cells(set_name):
         for v in range(8):
             cells[(8 + v, 7)] = top_deco_sw(v)
             cells[(v, 8)] = hanging_deco_sw(v)
+        return cells
+    if set_name in ('kingdom', 'castle'):
+        from . import world34
+        cells.update(world34.extra_cells(set_name, th))
         return cells
     if set_name == 'mountains':
         cells[(12, 3)] = draw_cracked_wall(th)

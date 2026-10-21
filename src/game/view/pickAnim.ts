@@ -126,10 +126,12 @@ export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, r
 export interface EnemyAnimState {
   dead: boolean; vx: number; vy: number; knockback: boolean;
   control: { type: 'stagger' | 'knockdown' | 'dazed' | 'stun' | 'pin' | 'launch' | 'pull' } | null;
-  attack: { id: string; phase: string; t: number; len: number } | null;
+  attack: { id: string; phase: string; t: number; len: number; link?: number } | null;
   boss: { introTicks: number } | null;
   /** The boar's ledge skid (04 §3). */
   skidding?: boolean;
+  /** A special state that owns the pose (Black Knight bulwark, Gargoyle stone / wake, Living Armor collapse / pile / rise, Castle Mage channel). `progress` 0..1 drives phase anims. */
+  special?: { key: string; progress?: number } | null;
 }
 
 export interface EnemyPick { key: string; frame: number; alpha: number }
@@ -144,6 +146,11 @@ export function pickEnemyAnim(e: EnemyAnimState, get: Lookup, t: number, runPhas
     const last = def.frames.length - 1, fps = def.fps ?? 1;
     const fade = i < last ? 1 : Math.max(0, 1 - (t - last / fps) * fps);
     return { key: 'death', frame: i, alpha: fade };
+  }
+  if (e.special && has(e.special.key)) {
+    const d = get(e.special.key)!;
+    const p = e.special.progress;
+    return { key: e.special.key, frame: p === undefined ? timeFrame(d, t) : Math.min(d.frames.length - 1, Math.floor(p * d.frames.length)), alpha: 1 };
   }
   const c = e.control;
   if (e.boss && e.boss.introTicks > 0 && has('intro')) {
@@ -160,7 +167,11 @@ export function pickEnemyAnim(e: EnemyAnimState, get: Lookup, t: number, runPhas
   if (e.knockback && has('hurt')) return { key: 'hurt', frame: 0, alpha: 1 };
   if (e.skidding && has('skid')) return { key: 'skid', frame: 0, alpha: 1 };
   const a = e.attack;
-  if (a && has(`atk_${a.id}`)) return { key: `atk_${a.id}`, frame: phaseFrame(get(`atk_${a.id}`)!, a.phase, a.t, a.len, e.vy), alpha: 1 };
+  if (a && has(`atk_${a.id}`)) {
+    // 08 §7.2: each chained hit adds its own Tele and Act frames, listed as segments `tele1`, `act1`, `tele2`, `act2` …
+    const phase = a.link && (a.phase === 'tele' || a.phase === 'act') ? `${a.phase}${a.link}` : a.phase;
+    return { key: `atk_${a.id}`, frame: phaseFrame(get(`atk_${a.id}`)!, phase, a.t, a.len, e.vy), alpha: 1 };
+  }
   if (Math.abs(e.vx) > 0.5 && has('walk')) return { key: 'walk', frame: Math.floor(runPhase) % get('walk')!.frames.length, alpha: 1 };
   return { key: 'idle', frame: timeFrame(get('idle')!, t), alpha: 1 };
 }

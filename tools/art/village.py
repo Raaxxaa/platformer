@@ -11,7 +11,8 @@ from . import raster as R
 ATLAS = 'objects'
 ALLOWED = ['ink', 'white', 'trim', 'gray', 'npc', 'vl_wood', 'vl_plaster', 'vl_light',
            'w_steel', 'w_wood', 'w_gold', 'w_magic', 'fx_heal', 'fx_poison',
-           'en_glow', 'sw_moss', 'sw_mud', 'mt_rock', 'mt_snow']
+           'en_glow', 'sw_moss', 'sw_mud', 'mt_rock', 'mt_snow', 'kg_stone', 'kg_roof',
+           'en_steel', 'en_black', 'en_gold', 'fx_fire', 'cs_stone', 'cs_trim', 'cs_carpet', 'fx_ice']
 FLOOR_Y = 320                         # 06 §12.1: floor surface at row 20
 INN_ORIGIN = (39 * 16, 160)           # top-left of the inn frame in the village map
 INN_SIZE = (128, 160)
@@ -103,14 +104,14 @@ def well():
     return c
 
 
-def market_roof(border=False):
+def market_roof(border=False, rebel=False):
     """Striped awning over the shop row (tiles 7–37) on three posts, 496 × 112 (border: slate and snow)."""
     w = (37 - 7 + 1) * 16
     h = 112
     f = Fig(w, h)
     post = f.part('post', 'vl_wood')
-    a = f.part('stripe_a', 'mt_snow' if border else 'vl_plaster')
-    b = f.part('stripe_b', 'mt_rock' if border else 'npc')
+    a = f.part('stripe_a', 'kg_roof' if rebel else 'mt_snow' if border else 'vl_plaster')
+    b = f.part('stripe_b', 'kg_stone' if rebel else 'mt_rock' if border else 'npc')
     ridge = f.part('ridge', 'vl_wood', 1)
     for px in (2, w // 2 - 1 + (24 * 16 + 8 - (7 * 16 + w // 2)), w - 6):
         f.rect(px, 14, 4, h - 15, post)
@@ -122,16 +123,16 @@ def market_roof(border=False):
     return f.done()
 
 
-def inn(border=False):
+def inn(border=False, rebel=False):
     """Two-storey timber inn with a sign and warm windows; the door covers tiles 41–43, rows 16–19.
     border: stone ground floor and a snow-capped slate roof."""
     w, h = INN_SIZE
     f = Fig(w, h)
-    wall = f.part('wall', 'mt_rock' if border else 'vl_plaster')
+    wall = f.part('wall', 'kg_stone' if rebel else 'mt_rock' if border else 'vl_plaster')
     wall2 = f.part('wall_up', 'vl_plaster', 1)
     beam = f.part('beam', 'vl_wood', 1)
-    roof = f.part('roof', 'mt_rock' if border else 'vl_wood', 1)
-    shingle = f.part('shingle', 'mt_rock' if border else 'vl_wood', 2)
+    roof = f.part('roof', 'kg_roof' if rebel else 'mt_rock' if border else 'vl_wood', 1)
+    shingle = f.part('shingle', 'kg_roof' if rebel else 'mt_rock' if border else 'vl_wood', 2)
     win = f.part('win', 'vl_light')
     frame = f.part('frame', 'vl_wood')
     door = f.part('door', 'vl_wood')
@@ -190,6 +191,8 @@ def building_frames():
         'inn_00': _img(inn()),
         'market_roof_border_00': _img(market_roof(True)),
         'inn_border_00': _img(inn(True)),
+        'market_roof_rebel_00': _img(market_roof(False, True)),
+        'inn_rebel_00': _img(inn(False, True)),
     }
 
 
@@ -677,8 +680,10 @@ def anims():
     out.append(A.anim('grapple_vine', ATLAS, 2, 'loop', 2))
     for k in ('shop_item', 'shop_flask', 'shop_key', 'shop_reroll', 'unlocks_board', 'seed_board', 'loot_stand',
               'mirror_spot', 'class_statue_swordsman', 'class_statue_tank', 'class_statue_archer',
-              'class_statue_wizard', 'station_sign', 'station_flag_grey', 'station_flag_green', 'training_gate', 'cottage_a', 'cottage_b', 'well', 'market_roof', 'inn', 'market_roof_border', 'inn_border'):
+              'class_statue_wizard', 'station_sign', 'station_flag_grey', 'station_flag_green', 'training_gate', 'cottage_a', 'cottage_b', 'well', 'market_roof', 'inn', 'market_roof_border', 'inn_border', 'market_roof_rebel', 'inn_rebel'):
         out.append(A.anim(k, ATLAS, 1, 'once'))
+    from . import objects34
+    out += objects34.anims()
     return out
 
 

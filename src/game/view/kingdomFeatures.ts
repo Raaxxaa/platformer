@@ -18,19 +18,42 @@ export const KINGDOM_VIEW = {
 
 export class KingdomFeatureView {
   private readonly gfx: Phaser.GameObjects.Graphics;
+  private readonly scene: Phaser.Scene;
+  private readonly cannons: Phaser.GameObjects.Sprite[] = [];
+  private readonly glows: Phaser.GameObjects.Sprite[] = [];
+  private readonly balls: Phaser.GameObjects.Sprite[] = [];
   constructor(scene: Phaser.Scene) {
+    this.scene = scene;
     this.gfx = scene.add.graphics().setDepth(DEPTH.markers);
     scene.events.once('shutdown', () => this.gfx.destroy());
   }
 
   update(w: GameWorld): void {
     const g = this.gfx.clear(), K = KINGDOM_VIEW;
-    for (const c of w.cannons.cannons) {
+    const art = this.scene.textures.exists('objects') && this.scene.textures.get('objects').has('cannon_idle_00');
+    const pool = (list: Phaser.GameObjects.Sprite[], n: number, atlas: string, frame: string, depth: number) => {
+      while (list.length < n) list.push(this.scene.add.sprite(0, 0, atlas, frame).setDepth(depth));
+      list.forEach((s, i) => s.setVisible(i < n));
+    };
+    const cs = w.cannons.cannons;
+    pool(this.cannons, art ? cs.length : 0, 'objects', 'cannon_idle_00', DEPTH.doors);
+    pool(this.glows, art ? cs.length : 0, 'objects', 'cannon_glow_00', DEPTH.doors + 0.1);
+    pool(this.balls, art ? w.cannons.balls.length : 0, 'projectiles', 'cannonball_00', DEPTH.projectiles);
+    cs.forEach((c, i) => {
+      if (art) {
+        this.cannons[i].setPosition(c.x, c.y + 2).setFlipX(c.dir < 0);
+        this.glows[i].setPosition(c.x, c.y + 2).setFlipX(c.dir < 0).setVisible(cannonFlashing(c))
+          .setFrame(`cannon_glow_0${Math.floor(w.tick / 12) % 2}`);                   // 2 frames at 10 fps
+        return;
+      }
       g.fillStyle(K.cannon, 1).fillRect(c.x - K.cannonW / 2, c.y - K.cannonH / 2, K.cannonW, K.cannonH);
       g.lineStyle(1, K.cannonRim, 1).strokeRect(c.x - K.cannonW / 2 + 0.5, c.y - K.cannonH / 2 + 0.5, K.cannonW - 1, K.cannonH - 1);
       if (cannonFlashing(c)) g.fillStyle(K.flash, 1).fillCircle(c.x + c.dir * (K.cannonW / 2 + 2), c.y, K.flashR);   // the 0.6 s muzzle telegraph
-    }
-    for (const b of w.cannons.balls) g.fillStyle(K.ball, 1).fillRect(b.x - CANNON.size / 2, b.y - CANNON.size / 2, CANNON.size, CANNON.size);
+    });
+    w.cannons.balls.forEach((b, i) => {
+      if (art) this.balls[i].setPosition(b.x, b.y);
+      else g.fillStyle(K.ball, 1).fillRect(b.x - CANNON.size / 2, b.y - CANNON.size / 2, CANNON.size, CANNON.size);
+    });
     for (const e of w.enemies) {
       if (e.dead || e.dormant) continue;
       const a = e.ai.attack;
@@ -44,7 +67,7 @@ export class KingdomFeatureView {
         const r = boxToWorld(a.def.hit.box, e.x, e.y, e.facing);
         g.fillStyle(K.burst, K.burstAlpha).fillRect(r.x, r.y, r.w, r.h);
       }
-      if (e.def.id === 'black_knight' && bulwarkActive(w, e)) {
+      if (e.def.id === 'black_knight' && bulwarkActive(w, e) && !this.scene.textures.exists('boss_black_knight')) {
         const r = enemyRect(e);
         g.lineStyle(2, K.shield, K.shieldAlpha).strokeRect(r.x + (e.facing > 0 ? r.w - 2 : -2), r.y, 4, r.h);
       }

@@ -21,8 +21,11 @@ export class VillageView {
         .setOrigin(0.5, (ANCHOR.human.h - ANCHOR.feetFromBottom) / ANCHOR.human.h).setDepth(DEPTH.doors);
     }
     if (level.id !== 'home') {
-      scene.add.image(SHOP_UI.market.x, SHOP_UI.market.feetY, 'objects', 'market_roof_00').setOrigin(0, 1).setDepth(DEPTH.doors);
-      scene.add.image(SHOP_UI.inn.x, SHOP_UI.inn.y, 'objects', 'inn_00').setOrigin(0).setDepth(DEPTH.doors);
+      const sfx = level.id === 'border' ? '_border' : level.id === 'rebel_camp' ? '_rebel' : '';
+      const has = (f: string) => scene.textures.get('objects').has(f);
+      const roof = has(`market_roof${sfx}_00`) ? `market_roof${sfx}_00` : 'market_roof_00', inn = has(`inn${sfx}_00`) ? `inn${sfx}_00` : 'inn_00';
+      scene.add.image(SHOP_UI.market.x, SHOP_UI.market.feetY, 'objects', roof).setOrigin(0, 1).setDepth(DEPTH.doors);
+      scene.add.image(SHOP_UI.inn.x, SHOP_UI.inn.y, 'objects', inn).setOrigin(0).setDepth(DEPTH.doors);
       for (const [role, p] of [['shopkeeper', SHOP_UI.shopkeeper], ['innkeeper', SHOP_UI.innkeeper], ['merchant', SHOP_UI.merchant]] as const)
         scene.add.image(p.x, p.y, 'npcs', `${role}_idle_00`).setOrigin(0.5, (ANCHOR.human.h - ANCHOR.feetFromBottom) / ANCHOR.human.h).setDepth(DEPTH.doors);
     }

@@ -1,5 +1,369 @@
 [
  {
+  "key": "atk_dark_wave",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "atk_dark_wave_00",
+   "atk_dark_wave_01",
+   "atk_dark_wave_02",
+   "atk_dark_wave_03",
+   "atk_dark_wave_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_leap_slam",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "atk_leap_slam_00",
+   "atk_leap_slam_01",
+   "atk_leap_slam_02",
+   "atk_leap_slam_03",
+   "atk_leap_slam_04",
+   "atk_leap_slam_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_lunge_thrust",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "atk_lunge_thrust_00",
+   "atk_lunge_thrust_01",
+   "atk_lunge_thrust_02",
+   "atk_lunge_thrust_03",
+   "atk_lunge_thrust_04",
+   "atk_lunge_thrust_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_shield_bash",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "atk_shield_bash_00",
+   "atk_shield_bash_01",
+   "atk_shield_bash_02",
+   "atk_shield_bash_03",
+   "atk_shield_bash_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "atk_triple_slash",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "atk_triple_slash_00",
+   "atk_triple_slash_01",
+   "atk_triple_slash_02",
+   "atk_triple_slash_03",
+   "atk_triple_slash_04",
+   "atk_triple_slash_05",
+   "atk_triple_slash_06",
+   "atk_triple_slash_07",
+   "atk_triple_slash_08",
+   "atk_triple_slash_09",
+   "atk_triple_slash_10"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "tele1",
+    "frames": [
+     3
+    ]
+   },
+   {
+    "phase": "act1",
+    "frames": [
+     4
+    ]
+   },
+   {
+    "phase": "tele2",
+    "frames": [
+     5
+    ]
+   },
+   {
+    "phase": "act2",
+    "frames": [
+     6
+    ]
+   },
+   {
+    "phase": "tele3",
+    "frames": [
+     7
+    ]
+   },
+   {
+    "phase": "act3",
+    "frames": [
+     8
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     9,
+     10
+    ]
+   }
+  ]
+ },
+ {
+  "key": "break",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "break_00",
+   "break_01",
+   "break_02"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0
+    ]
+   },
+   {
+    "phase": "all",
+    "frames": [
+     1,
+     2
+    ],
+    "loopFps": 4
+   }
+  ]
+ },
+ {
+  "key": "bulwark",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "bulwark_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "death",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "death_00",
+   "death_01",
+   "death_02",
+   "death_03",
+   "death_04",
+   "death_05",
+   "death_06",
+   "death_07",
+   "death_08"
+  ],
+  "mode": "once",
+  "fps": 6
+ },
+ {
+  "key": "hurt",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "idle",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "idle_00",
+   "idle_01",
+   "idle_02",
+   "idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "intro",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "intro_00",
+   "intro_01",
+   "intro_02",
+   "intro_03",
+   "intro_04",
+   "intro_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "stagger",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "stagger_00",
+   "stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "transition",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "transition_00",
+   "transition_01",
+   "transition_02",
+   "transition_03",
+   "transition_04",
+   "transition_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "all",
+    "frames": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "walk",
+  "atlas": "boss_black_knight",
+  "frames": [
+   "walk_00",
+   "walk_01",
+   "walk_02",
+   "walk_03",
+   "walk_04",
+   "walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
   "key": "atk_charge",
   "atlas": "boss_great_boar",
   "frames": [
@@ -1061,6 +1425,686 @@
    "training_dummy_idle_00"
   ],
   "mode": "once"
+ },
+ {
+  "key": "battle_mage_atk_fireball",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "battle_mage_atk_fireball_00",
+   "battle_mage_atk_fireball_01",
+   "battle_mage_atk_fireball_02",
+   "battle_mage_atk_fireball_03",
+   "battle_mage_atk_fireball_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "battle_mage_atk_flame_burst",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "battle_mage_atk_flame_burst_00",
+   "battle_mage_atk_flame_burst_01",
+   "battle_mage_atk_flame_burst_02",
+   "battle_mage_atk_flame_burst_03",
+   "battle_mage_atk_flame_burst_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "battle_mage_death",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "battle_mage_death_00",
+   "battle_mage_death_01",
+   "battle_mage_death_02",
+   "battle_mage_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "battle_mage_hurt",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "battle_mage_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "battle_mage_idle",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "battle_mage_idle_00",
+   "battle_mage_idle_01",
+   "battle_mage_idle_02",
+   "battle_mage_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "battle_mage_knockdown",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "battle_mage_knockdown_00",
+   "battle_mage_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "battle_mage_stagger",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "battle_mage_stagger_00",
+   "battle_mage_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "battle_mage_walk",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "battle_mage_walk_00",
+   "battle_mage_walk_01",
+   "battle_mage_walk_02",
+   "battle_mage_walk_03",
+   "battle_mage_walk_04",
+   "battle_mage_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "crossbowman_atk_bolt",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "crossbowman_atk_bolt_00",
+   "crossbowman_atk_bolt_01",
+   "crossbowman_atk_bolt_02",
+   "crossbowman_atk_bolt_03",
+   "crossbowman_atk_bolt_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "crossbowman_atk_kick",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "crossbowman_atk_kick_00",
+   "crossbowman_atk_kick_01",
+   "crossbowman_atk_kick_02",
+   "crossbowman_atk_kick_03",
+   "crossbowman_atk_kick_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "crossbowman_death",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "crossbowman_death_00",
+   "crossbowman_death_01",
+   "crossbowman_death_02",
+   "crossbowman_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "crossbowman_hurt",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "crossbowman_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "crossbowman_idle",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "crossbowman_idle_00",
+   "crossbowman_idle_01",
+   "crossbowman_idle_02",
+   "crossbowman_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "crossbowman_knockdown",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "crossbowman_knockdown_00",
+   "crossbowman_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "crossbowman_stagger",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "crossbowman_stagger_00",
+   "crossbowman_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "knight_atk_charging_thrust",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "knight_atk_charging_thrust_00",
+   "knight_atk_charging_thrust_01",
+   "knight_atk_charging_thrust_02",
+   "knight_atk_charging_thrust_03",
+   "knight_atk_charging_thrust_04",
+   "knight_atk_charging_thrust_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "loopFps": 12
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "knight_atk_sword_combo",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "knight_atk_sword_combo_00",
+   "knight_atk_sword_combo_01",
+   "knight_atk_sword_combo_02",
+   "knight_atk_sword_combo_03",
+   "knight_atk_sword_combo_04",
+   "knight_atk_sword_combo_05",
+   "knight_atk_sword_combo_06"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "tele1",
+    "frames": [
+     3
+    ]
+   },
+   {
+    "phase": "act1",
+    "frames": [
+     4
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     5,
+     6
+    ]
+   }
+  ]
+ },
+ {
+  "key": "knight_death",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "knight_death_00",
+   "knight_death_01",
+   "knight_death_02",
+   "knight_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "knight_hurt",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "knight_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "knight_idle",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "knight_idle_00",
+   "knight_idle_01",
+   "knight_idle_02",
+   "knight_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "knight_knockdown",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "knight_knockdown_00",
+   "knight_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "knight_stagger",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "knight_stagger_00",
+   "knight_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "knight_walk",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "knight_walk_00",
+   "knight_walk_01",
+   "knight_walk_02",
+   "knight_walk_03",
+   "knight_walk_04",
+   "knight_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "soldier_atk_shield_bash",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "soldier_atk_shield_bash_00",
+   "soldier_atk_shield_bash_01",
+   "soldier_atk_shield_bash_02",
+   "soldier_atk_shield_bash_03",
+   "soldier_atk_shield_bash_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "soldier_atk_sword_thrust",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "soldier_atk_sword_thrust_00",
+   "soldier_atk_sword_thrust_01",
+   "soldier_atk_sword_thrust_02",
+   "soldier_atk_sword_thrust_03",
+   "soldier_atk_sword_thrust_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "soldier_death",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "soldier_death_00",
+   "soldier_death_01",
+   "soldier_death_02",
+   "soldier_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "soldier_guard_hit",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "soldier_guard_hit_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "soldier_hurt",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "soldier_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "soldier_idle",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "soldier_idle_00",
+   "soldier_idle_01",
+   "soldier_idle_02",
+   "soldier_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "soldier_knockdown",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "soldier_knockdown_00",
+   "soldier_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "soldier_stagger",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "soldier_stagger_00",
+   "soldier_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "soldier_walk",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "soldier_walk_00",
+   "soldier_walk_01",
+   "soldier_walk_02",
+   "soldier_walk_03",
+   "soldier_walk_04",
+   "soldier_walk_05"
+  ],
+  "mode": "speed"
+ },
+ {
+  "key": "war_hound_atk_leap_bite",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "war_hound_atk_leap_bite_00",
+   "war_hound_atk_leap_bite_01",
+   "war_hound_atk_leap_bite_02",
+   "war_hound_atk_leap_bite_03",
+   "war_hound_atk_leap_bite_04",
+   "war_hound_atk_leap_bite_05"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2,
+     3
+    ],
+    "byVy": true
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     4,
+     5
+    ]
+   }
+  ]
+ },
+ {
+  "key": "war_hound_atk_snap",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "war_hound_atk_snap_00",
+   "war_hound_atk_snap_01",
+   "war_hound_atk_snap_02",
+   "war_hound_atk_snap_03",
+   "war_hound_atk_snap_04"
+  ],
+  "mode": "phase",
+  "segments": [
+   {
+    "phase": "tele",
+    "frames": [
+     0,
+     1
+    ]
+   },
+   {
+    "phase": "act",
+    "frames": [
+     2
+    ]
+   },
+   {
+    "phase": "rec",
+    "frames": [
+     3,
+     4
+    ]
+   }
+  ]
+ },
+ {
+  "key": "war_hound_death",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "war_hound_death_00",
+   "war_hound_death_01",
+   "war_hound_death_02",
+   "war_hound_death_03"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "war_hound_hurt",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "war_hound_hurt_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "war_hound_idle",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "war_hound_idle_00",
+   "war_hound_idle_01",
+   "war_hound_idle_02",
+   "war_hound_idle_03"
+  ],
+  "mode": "loop",
+  "fps": 6
+ },
+ {
+  "key": "war_hound_knockdown",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "war_hound_knockdown_00",
+   "war_hound_knockdown_01"
+  ],
+  "mode": "once",
+  "fps": 10
+ },
+ {
+  "key": "war_hound_stagger",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "war_hound_stagger_00",
+   "war_hound_stagger_01"
+  ],
+  "mode": "loop",
+  "fps": 8
+ },
+ {
+  "key": "war_hound_walk",
+  "atlas": "enemies_kingdom",
+  "frames": [
+   "war_hound_walk_00",
+   "war_hound_walk_01",
+   "war_hound_walk_02",
+   "war_hound_walk_03",
+   "war_hound_walk_04",
+   "war_hound_walk_05"
+  ],
+  "mode": "speed"
  },
  {
   "key": "bat_swarm_atk_dive_bite",
@@ -3355,6 +4399,40 @@
   "fps": 1
  },
  {
+  "key": "blade_chain",
+  "atlas": "objects",
+  "frames": [
+   "blade_chain_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "blade_pivot",
+  "atlas": "objects",
+  "frames": [
+   "blade_pivot_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "cannon_glow",
+  "atlas": "objects",
+  "frames": [
+   "cannon_glow_00",
+   "cannon_glow_01"
+  ],
+  "mode": "loop",
+  "fps": 10
+ },
+ {
+  "key": "cannon_idle",
+  "atlas": "objects",
+  "frames": [
+   "cannon_idle_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "class_statue_archer",
   "atlas": "objects",
   "frames": [
@@ -3451,6 +4529,14 @@
   "mode": "once"
  },
  {
+  "key": "inn_rebel",
+  "atlas": "objects",
+  "frames": [
+   "inn_rebel_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "loot_stand",
   "atlas": "objects",
   "frames": [
@@ -3471,6 +4557,14 @@
   "atlas": "objects",
   "frames": [
    "market_roof_border_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "market_roof_rebel",
+  "atlas": "objects",
+  "frames": [
+   "market_roof_rebel_00"
   ],
   "mode": "once"
  },
@@ -3565,6 +4659,14 @@
   "atlas": "objects",
   "frames": [
    "station_sign_00"
+  ],
+  "mode": "once"
+ },
+ {
+  "key": "swinging_blade",
+  "atlas": "objects",
+  "frames": [
+   "swinging_blade_00"
   ],
   "mode": "once"
  },

@@ -135,6 +135,8 @@ def frames():
         fr[f'timed_door_cap_{st}_00'] = timed_door('cap', st).to_image()
     fr.update(arrows())
     fr.update(stage2_frames())
+    from . import objects34
+    fr.update(objects34.frames())
     return fr
 
 

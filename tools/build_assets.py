@@ -12,8 +12,9 @@ from art import atlas, boards, build_player, build_world, contrast, fonts, items
 from art.enemies import plains as enemies_plains  # noqa: E402
 from art.enemies import mountains as enemies_mountains  # noqa: E402
 from art.enemies import swamps as enemies_swamps  # noqa: E402
-from art import style_board_stage2  # noqa: E402
-from art.bosses import great_boar, stone_colossus, spider_queen  # noqa: E402
+from art import style_board_stage2, style_board_stage34, world34  # noqa: E402
+from art.bosses import great_boar, stone_colossus, spider_queen, black_knight  # noqa: E402
+from art.enemies import kingdom as enemies_kingdom  # noqa: E402
 from audio import listen_sheet, listen_sheet_stage2, sfx_defs, sfx_stage2  # noqa: E402
 
 
@@ -36,7 +37,10 @@ def build(root=ROOT):
     anims += stone_colossus.build(assets, preview)
     anims += enemies_swamps.build(assets, preview)
     anims += spider_queen.build(assets, preview)
+    anims += enemies_kingdom.build(assets, preview)
+    anims += black_knight.build(assets, preview)
     build_world.build(assets, preview)
+    world34.build(assets, preview)
     ui.build(assets, preview)
     fonts.build(os.path.join(assets, 'fonts'))
     fonts.sample(os.path.join(preview, 'font_sample.png'))
@@ -48,6 +52,7 @@ def build(root=ROOT):
     style_board.build(preview)
     style_board.build_villages(preview)
     style_board_stage2.build(preview)
+    style_board_stage34.build(preview)
     boards.build(preview)
     contrast.write_report(preview)
     sfx_defs.build(os.path.join(assets, 'audio', 'sfx'))

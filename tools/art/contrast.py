@@ -152,6 +152,51 @@ def swamps_surfaces():
     return out
 
 
+def _sheet_surfaces(set_name, bgs, key):
+    from PIL import Image
+    from . import world34
+    sheet = T.build_sheet(set_name)
+    blobs = Image.new('RGBA', (16 * 47, 16))
+    for i in range(47):
+        blobs.paste(T.cell_image(sheet, i), (16 * i, 0))
+    s = {f'terrain_{set_name}': mean_oklab(blobs)}
+    for i in range(3):
+        s[f'bg_{key}_{i}'] = mean_oklab(world34.render(key, i))
+    return s
+
+
+def kingdom_entities():
+    from .enemies import kingdom
+    from .bosses import black_knight
+    out = {k: v for k, v in entities().items() if k.startswith('player_')}
+    frames, _ = kingdom.build_frames()
+    for e in kingdom.ENEMIES:
+        out[e] = frames[kingdom.idle_key(e)]
+    bf, _ = black_knight.build_frames()
+    out['black_knight'] = bf['idle_00']
+    return out
+
+
+def kingdom_surfaces():
+    return _sheet_surfaces('kingdom', None, 'kingdom')
+
+
+def castle_entities():
+    from .enemies import castle
+    from .bosses import enemy_king
+    out = {k: v for k, v in entities().items() if k.startswith('player_')}
+    frames, _ = castle.build_frames()
+    for e in castle.ENEMIES:
+        out[e] = frames[castle.idle_key(e)]
+    kf, _ = enemy_king.build_frames()
+    out['enemy_king'] = kf['idle_00']
+    return out
+
+
+def castle_surfaces():
+    return _sheet_surfaces('castle', None, 'castle')
+
+
 def _lines(ents, surf):
     ink = P.RAMPS['ink'][0]
     lines = []
@@ -167,7 +212,16 @@ def _lines(ents, surf):
 def report_lines():
     return (_lines(entities(), surfaces()) + _lines(village_entities(), village_surfaces())
             + _lines(mountains_entities(), mountains_surfaces())
-            + _lines(swamps_entities(), swamps_surfaces()))
+            + _lines(swamps_entities(), swamps_surfaces())
+            + _lines(kingdom_entities(), kingdom_surfaces())
+            + _castle_lines())
+
+
+def _castle_lines():
+    try:
+        return _lines(castle_entities(), castle_surfaces())
+    except ImportError:          # the castle art is added in ART8 Task 4
+        return []
 
 
 def write_report(preview):

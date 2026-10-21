@@ -26,6 +26,10 @@ export const PARALLAX = {
   mountains_cave: { skyTop: 0x0f1119, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
   swamps: { skyTop: 0x121a20, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
   village_border: { skyTop: 0x5878ae, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
+  // ART8: Stage 3, Stage 4 and the Rebel Camp (08 §3.7).
+  kingdom: { skyTop: 0x3a3a5e, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
+  castle: { skyTop: 0x0d0b14, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
+  village_rebel_camp: { skyTop: 0x0c0e22, layers: [{ fx: 0.10, fy: 0.05 }, { fx: 0.30, fy: 0.12 }, { fx: 0.55, fy: 0.25 }] },
 } as const;
 export const VIEW = { w: 640, h: 360 } as const;
 

@@ -5,6 +5,7 @@ import { enemyRect } from '../../core/enemies/enemy.ts';
 import type { EnemyProjectile } from '../../core/enemies/projectiles.ts';
 import type { GameWorld } from '../../core/sim/gameWorld.ts';
 import { COMBAT, ENEMY, TICK_RATE } from '../../core/tuning.ts';
+import { CASTLE } from '../../data/castle.ts';
 import { DUMMY_FRAMES, YARD_DUMMY_FRAMES } from '../../data/animKeys.ts';
 import { ANCHOR, ANIM, DEPTH, OVERLAY, TRIM_TINT, VFX, WEAPON_FRAME } from '../../data/art.ts';
 import { AnimClock, runFps, timeFrame, walkFps } from './animClock.ts';
@@ -12,6 +13,24 @@ import type { AnimBank } from './animBank.ts';
 import { trimTints } from './trims.ts';
 import { castRt } from '../../core/abilities/abilitySystem.ts';
 import { yardDummyFrame, pickEnemyAnim, pickPlayerAnim, type Lookup, type PlayerAnimState } from './pickAnim.ts';
+
+/** The special pose an enemy's own state asks for (ART8): Bulwark, stone, wake, collapse, pile, rise, ward channel. */
+export function enemySpecial(e: EnemyState): { key: string; progress?: number } | null {
+  if (e.dead) return null;
+  if (e.kingdom && e.kingdom.bulwarkTicks > 0) return { key: 'bulwark' };
+  const c = e.castle;
+  if (!c) return null;
+  if (c.stone) return { key: 'stone' };
+  if (c.pileTicks > 0) {
+    const done = CASTLE.armor.pileTicks - c.pileTicks;
+    return done < COLLAPSE_TICKS ? { key: 'collapse', progress: done / COLLAPSE_TICKS } : { key: 'pile' };
+  }
+  if (c.riseTicks > 0) return { key: 'rise', progress: 1 - c.riseTicks / CASTLE.armor.riseTicks };
+  if (e.def.id === 'gargoyle' && c.crackTicks > 0) return { key: 'wake', progress: 1 - c.crackTicks / CASTLE.gargoyle.crackTicks };
+  if (c.wardTarget !== null && e.ai.attack?.phase === 'act') return { key: 'channel' };
+  return null;
+}
+const COLLAPSE_TICKS = 36;       // Living Armor collapse plays over 0.3 s (08 §7.3)
 
 /** The outfit before a kit is picked (08 §6: outfit = starting class). */
 export const DEFAULT_OUTFIT = 'swordsman';
@@ -183,8 +202,9 @@ export class EnemySprite {
     }
     const st = {
       dead: e.dead, vx: e.vx, vy: e.vy, knockback: !!e.knockback, control: e.control,
-      attack: e.ai.attack ? { id: e.ai.attack.def.id, phase: e.ai.attack.phase, t: e.ai.attack.t, len: e.ai.attack.len } : null,
+      attack: e.ai.attack ? { id: e.ai.attack.def.id, phase: e.ai.attack.phase, t: e.ai.attack.t, len: e.ai.attack.len, link: e.ai.attack.link } : null,
       boss: e.boss,
+      special: enemySpecial(e),
     };
     const frozen = e.hitStopTicks > 0;
     const key0 = pickEnemyAnim(st, this.get, this.clock.t, this.clock.runPhase).key;
