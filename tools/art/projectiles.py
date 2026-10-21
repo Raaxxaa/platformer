@@ -10,7 +10,8 @@ from . import raster as R
 
 ATLAS = 'projectiles'
 ALLOWED = ['ink', 'white', 'gray', 'en_red', 'en_slate', 'en_bone', 'w_wood', 'w_steel', 'w_gold', 'w_magic', 'fx_bolt',
-           'en_ochre', 'en_magenta', 'en_olive', 'fx_fire', 'sw_water', 'fx_poison']
+           'en_ochre', 'en_magenta', 'en_olive', 'fx_fire', 'sw_water', 'fx_poison',
+           'fx_ice', 'en_steel', 'en_black', 'en_gold', 'en_ghost']
 
 
 def _L(w, h):
@@ -166,6 +167,10 @@ def build_frames():
     f2, a2 = S2.build_frames()
     fr.update(f2)
     anims += a2
+    from . import projectiles_stage34 as S34
+    f3, a3 = S34.build_frames()
+    fr.update(f3)
+    anims += a3
     return fr, anims
 
 

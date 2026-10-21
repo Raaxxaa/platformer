@@ -76,6 +76,7 @@ export class PlayerSprite {
       forcedOwner: b.forced?.owner ?? null,
       charging: w.combat.charge ? w.combat.slots[w.combat.charge.slot]?.weaponId ?? null : null,
       diveWeapon: w.combat.slots[diveSlot]?.weaponId ?? null,
+      shield: w.combat.shield?.phase ?? null,
       drinkTicks: w.drinking ? w.drinking.t : null,
       ticksSinceDoubleJump: w.tick - ev.lastDoubleJumpTick,
       ticksSinceWallJump: w.tick - ev.lastWallJumpTick,

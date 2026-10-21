@@ -1,0 +1,235 @@
+{
+ "frames": {
+  "atk_javelin_1_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 2,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_javelin_1_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 164,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_javelin_1_02": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 326,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_javelin_1_03": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 488,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_javelin_1_04": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 650,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_javelin_fall_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 812,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_javelin_fall_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 2,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_javelin_land_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 164,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_javelin_land_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 326,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_javelin_windup_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 488,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_javelin_windup_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 650,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  }
+ },
+ "meta": {
+  "app": "rushblade tools/art/atlas.py",
+  "format": "RGBA8888",
+  "image": "weapon_javelin.png",
+  "scale": "1",
+  "size": {
+   "h": 198,
+   "w": 974
+  },
+  "version": "1"
+ }
+}

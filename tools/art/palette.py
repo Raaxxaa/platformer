@@ -81,6 +81,33 @@ RAMPS = {
     'en_olive': _hex('#2d391a', '#4e6526', '#7d9937', '#b5cb59'),
     'en_red': _hex('#4a1824', '#7e2a34', '#b8443f', '#e27b5b'),
     'en_slate': _hex('#24263a', '#444a6a', '#737ca0', '#adb6d4'),
+    # 08 §3.7 kingdom (Stage 3, Enemy Kingdom) and its night village (Rebel Camp)
+    'kg_stone': _hex('#2d2521', '#4d3f39', '#786454', '#a68e76', '#cfbb9f'),
+    'kg_roof': _hex('#592a20', '#894330', '#b76943'),
+    'kg_sky': sky_bands((0x3a, 0x3a, 0x5e), (0x9a, 0x8a, 0x94)),
+    'kg_bg0': _hex('#6a6482', '#7f7792'),
+    'kg_bg1': _hex('#4a4562', '#58516f'),
+    'kg_bg2': _hex('#2e2a3f', '#38334a'),
+    'rc_sky': sky_bands((0x0c, 0x0e, 0x22), (0x2a, 0x2a, 0x4a)),    # village_rebel_camp (night)
+    # 08 §3.7 castle (Stage 4, King's Castle)
+    'cs_stone': _hex('#16131e', '#29243a', '#423a55', '#615776', '#897fa0'),
+    'cs_trim': _hex('#5c4318', '#93702a', '#c9a24a'),
+    'cs_carpet': _hex('#4a1020', '#7a1a30', '#a8283e'),
+    'cs_sky': sky_bands((0x0d, 0x0b, 0x14), (0x1e, 0x1a, 0x2a)),
+    'cs_bg0': _hex('#19152a', '#211b33'),
+    'cs_bg1': _hex('#241e36', '#2c2541'),
+    'cs_bg2': _hex('#30294a', '#3a3257'),
+    # 08 §3.7 enemy ramps of Stages 3-4
+    'en_steel': _hex('#252a37', '#495167', '#7d879d', '#bfc7d7'),
+    'en_black': _hex('#1c1a27', '#2f2b3d', '#4a465f', '#75708f'),
+    'en_gold': _hex('#5a3d14', '#9b6e23', '#d9a83b', '#f9e08b'),
+    'en_verdigris': _hex('#1d3933', '#2e594d', '#4a8a72', '#7bc0a0'),
+    'en_ghost': _hex('#2a8999', '#59cfd7', '#c1f7f7'),
+    # 08 §3.7 Dragon ramps (the §7.4 recolor)
+    'dr_red': _hex('#4a1010', '#8a1e18', '#cf3b22', '#ff7a3a'),
+    'dr_white': _hex('#5a6884', '#8fa0bc', '#c6d4e8', '#f2f8ff'),
+    'dr_storm': _hex('#141f4a', '#26398a', '#3f6fd0', '#6fd2ff'),
+    'dr_green': _hex('#14321c', '#22582e', '#3f8f3a', '#8ed65a'),
     # The plains row lists en_bone without values; the swamps row gives them (plan ART1 Task 1).
     'en_bone': _hex('#59534a', '#8a8478', '#b8b2a4', '#e0dccc'),
 }
@@ -96,6 +123,12 @@ MOUNTAINS_WORLD_RAMPS = ['mt_rock', 'mt_snow', 'mt_ice', 'mt_sky', 'mt_bg0', 'mt
 MOUNTAINS_ENEMY_RAMPS = ['ink', 'white', 'gray', 'en_ochre', 'en_magenta', 'en_olive', 'en_bone', 'fx_fire']
 SWAMPS_WORLD_RAMPS = ['sw_mud', 'sw_moss', 'sw_water', 'sw_sky', 'sw_bg0', 'sw_bg1', 'sw_bg2']
 SWAMPS_ENEMY_RAMPS = ['ink', 'white', 'gray', 'en_violet', 'en_bone', 'en_glow', 'en_red', 'fx_poison']
+KINGDOM_WORLD_RAMPS = ['kg_stone', 'kg_roof', 'kg_sky', 'kg_bg0', 'kg_bg1', 'kg_bg2', 'rc_sky']
+KINGDOM_ENEMY_RAMPS = ['ink', 'white', 'gray', 'skin', 'hair', 'en_red', 'en_steel', 'en_black', 'fx_fire', 'en_bone', 'w_magic']
+CASTLE_WORLD_RAMPS = ['cs_stone', 'cs_trim', 'cs_carpet', 'cs_sky', 'cs_bg0', 'cs_bg1', 'cs_bg2']
+CASTLE_ENEMY_RAMPS = ['ink', 'white', 'gray', 'skin', 'hair', 'en_red', 'en_steel', 'en_gold', 'en_verdigris', 'en_ghost',
+                      'en_black', 'fx_fire', 'en_bone', 'w_magic']
+DRAGON_RAMPS = {'red': 'dr_red', 'white': 'dr_white', 'storm': 'dr_storm', 'green': 'dr_green'}
 PLAYER_BODY_RAMPS = ['ink', 'skin', 'hair', 'p_cloth', 'p_leather', 'p_steel']
 PLAINS_ENEMY_RAMPS = ['ink', 'white', 'skin', 'hair', 'en_red', 'en_slate', 'en_bone', 'gray']
 

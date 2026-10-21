@@ -1,0 +1,615 @@
+{
+ "frames": {
+  "atk_spear_1_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 2,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_1_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 164,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_1_02": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 326,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_1_03": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 488,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_1_04": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 650,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_1_smear": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 812,
+    "y": 2
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_2_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 2,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_2_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 164,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_2_02": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 326,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_2_03": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 488,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_2_04": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 650,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_2_smear": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 812,
+    "y": 100
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_3_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 2,
+    "y": 198
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_3_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 164,
+    "y": 198
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_3_02": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 326,
+    "y": 198
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_3_03": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 488,
+    "y": 198
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_3_04": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 650,
+    "y": 198
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_3_smear": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 812,
+    "y": 198
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_lunge_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 2,
+    "y": 296
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_lunge_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 164,
+    "y": 296
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_lunge_02": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 326,
+    "y": 296
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_lunge_03": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 488,
+    "y": 296
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_lunge_04": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 650,
+    "y": 296
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "atk_spear_lunge_smear": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 812,
+    "y": 296
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_spear_fall_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 2,
+    "y": 394
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_spear_fall_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 164,
+    "y": 394
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_spear_land_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 326,
+    "y": 394
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_spear_land_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 488,
+    "y": 394
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_spear_windup_00": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 650,
+    "y": 394
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "dive_spear_windup_01": {
+   "frame": {
+    "h": 96,
+    "w": 160,
+    "x": 812,
+    "y": 394
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 96,
+    "w": 160
+   },
+   "spriteSourceSize": {
+    "h": 96,
+    "w": 160,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  }
+ },
+ "meta": {
+  "app": "rushblade tools/art/atlas.py",
+  "format": "RGBA8888",
+  "image": "weapon_spear.png",
+  "scale": "1",
+  "size": {
+   "h": 492,
+   "w": 974
+  },
+  "version": "1"
+ }
+}

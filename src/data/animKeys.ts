@@ -6,6 +6,8 @@ export const ATLASES = [
   'player_swordsman', 'player_swordsman_trim', 'player_tank', 'player_tank_trim', 'player_archer', 'player_archer_trim',
   'player_wizard', 'player_wizard_trim', 'weapon_greatsword', 'weapon_war_maul', 'weapon_katana', 'weapon_iron_fists',
   'weapon_storm_hammer', 'weapon_bow', 'weapon_crossbow', 'weapon_staff',
+  'weapon_twin_daggers', 'weapon_spear', 'weapon_scythe', 'weapon_giant_axe', 'weapon_flail', 'weapon_shield', 'weapon_hand_cannon',
+  'weapon_javelin', 'weapon_throwing_knives', 'weapon_wand', 'weapon_spell_tome',
   'enemies_plains', 'enemies_extra', 'boss_great_boar', 'projectiles', 'vfx', 'objects', 'items', 'npcs',
 ] as const;
 export type AtlasKey = (typeof ATLASES)[number];
@@ -18,7 +20,7 @@ export const PLAYER_ANIMS = [
 export type PlayerAnim = (typeof PLAYER_ANIMS)[number];
 
 /** 08 §6.3: weapons with art and their combo step count. Body keys `atk_<id>_<n>`, weapon frames of the same name. */
-export const WEAPON_ART: Record<string, { steps: number; smear: boolean; charged?: boolean; charge?: boolean; throw?: boolean }> = {
+export const WEAPON_ART: Record<string, { steps: number; smear: boolean; charged?: boolean; charge?: boolean; throw?: boolean; lunge?: boolean; spin?: boolean; shield?: boolean; keys?: string[] }> = {
   greatsword: { steps: 3, smear: true },
   war_maul: { steps: 2, smear: true },
   // ART5: `atk_<id>_charged` / `charge_<id>` for charge weapons, `atk_storm_hammer_throw`; ranged weapons have no smear.
@@ -28,6 +30,18 @@ export const WEAPON_ART: Record<string, { steps: number; smear: boolean; charged
   bow: { steps: 1, smear: false, charged: true, charge: true },
   crossbow: { steps: 1, smear: false },
   staff: { steps: 1, smear: false, charged: true, charge: true },
+  // ART8: the 11 weapons M9 added. `lunge` / `spin` are the Spear and Giant Axe specials; the Shield's only step is the bash.
+  twin_daggers: { steps: 4, smear: true },
+  spear: { steps: 3, smear: true, lunge: true },
+  scythe: { steps: 3, smear: true },
+  giant_axe: { steps: 2, smear: true, spin: true },
+  flail: { steps: 2, smear: true, charged: true, charge: true },
+  shield: { steps: 1, smear: true, shield: true, keys: ['atk_shield_bash'] },
+  hand_cannon: { steps: 1, smear: false },
+  javelin: { steps: 1, smear: false },
+  throwing_knives: { steps: 1, smear: false },
+  wand: { steps: 1, smear: false },
+  spell_tome: { steps: 3, smear: false },
 };
 export const DIVE_PARTS = ['windup', 'fall', 'land'] as const;
 export const weaponStepKey = (weaponId: string, step: number) => `atk_${weaponId}_${step + 1}`;
@@ -70,7 +84,9 @@ export const CAST_POSE: Record<string, string> = { shockwave: 'cast_slam', arrow
 export const MOVE_POSE: Record<string, string> = { blade_dash: 'dash' };
 
 /** Enemy projectile anims in `projectiles`. */
-export const PROJECTILE_ANIMS = ['enemy_arrow', 'brute_wave', 'shockwave', 'falling_rock', 'falling_rock_shatter'] as const;
+export const PROJECTILE_ANIMS = ['enemy_arrow', 'brute_wave', 'shockwave', 'falling_rock', 'falling_rock_shatter',
+  'cannonball', 'javelin', 'javelin_platform', 'knife', 'wand_shot', 'rune', 'skewer', 'soul', 'reflected',
+  'enemy_bolt', 'fireball', 'dark_wave', 'arcane_bolt', 'royal_orb', 'falling_sword', 'fire_rain', 'fire_pool'] as const;
 
 /** 08 §11 VFX used in Stage 1 (anims in `vfx`). */
 export const VFX_ANIMS = [

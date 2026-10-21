@@ -17,7 +17,7 @@ MODES = {'idle': ('loop', 8), 'run': ('speed', None), 'skid': ('once', None), 'j
          'slide': ('once', None), 'crawl': ('loop', 8), 'dive_windup': ('phase', None), 'dive_fall': ('loop', 16),
          'dive_land': ('phase', None), 'hurt': ('once', 10), 'dead': ('once', 10), 'drink': ('phase', None),
          'cart_ride': ('loop', 6), 'cast_slam': ('phase', None), 'cast_up': ('phase', None), 'spin': ('loop', 20),
-         'shoulder': ('loop', 12)}
+         'shoulder': ('loop', 12), 'shield_up': ('once', None), 'shield_lower': ('once', None)}
 # 08 §6.2 ability pose phases
 PHASE_SEGMENTS = {'cast_slam': [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'recovery', 'frames': [2, 3]}],
                   'cast_up': [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'recovery', 'frames': [2]}]}
@@ -42,7 +42,11 @@ def build(assets, preview):
             if key.startswith('atk_'):
                 # 08 §6.3: phase-driven [S0, S1, A, R0, R1]; a projectile step: startup [0, 1], recovery [2, 3, 4]
                 from .weapons import RANGED
-                if key in RANGED:
+                if key == 'atk_giant_axe_spin':
+                    # 08 §6.3: startup [0], spin [1-4] looped at 20 fps, recovery [5]
+                    seg = [{'phase': 'startup', 'frames': [0]}, {'phase': 'active', 'frames': [1, 2, 3, 4], 'loopFps': 20},
+                           {'phase': 'recovery', 'frames': [5]}]
+                elif key in RANGED:
                     seg = [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'recovery', 'frames': [2, 3, 4]}]
                 else:
                     seg = [{'phase': 'startup', 'frames': [0, 1]}, {'phase': 'active', 'frames': [2]},

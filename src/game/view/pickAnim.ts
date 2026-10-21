@@ -15,6 +15,8 @@ export interface PlayerAnimState {
   /** A running ability cast (03 §7.6) and the ForcedMove owner tag, for ability poses (08 §6.2). */
   cast?: { id: string; phase: 'startup' | 'recovery'; t: number; len: number } | null;
   forcedOwner?: string | null;
+  /** The raised Shield (02 §12): `up` while guarding, `lower` for its 0.10 s recovery. */
+  shield?: 'up' | 'lower' | null;
   /** The weapon being charged (02 §9.4), for its `charge_<id>` pose. */
   charging?: string | null;
   /** Weapon whose dive layer draws during dive states. */
@@ -78,7 +80,9 @@ export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, r
   if (a && art) {
     const key = a.kind === 'charged' && art.charged ? weaponChargedKey(a.weaponId)
       : a.kind === 'throw' && art.throw ? weaponThrowKey(a.weaponId)
-      : a.kind === 'combo' || a.kind === undefined ? (a.step < art.steps ? weaponStepKey(a.weaponId, a.step) : null) : null;
+      : a.kind === 'lunge' && art.lunge ? `atk_${a.weaponId}_lunge`
+      : a.kind === 'spin' && art.spin ? `atk_${a.weaponId}_spin`
+      : a.kind === 'combo' || a.kind === undefined ? (a.step < art.steps ? (art.keys?.[a.step] ?? weaponStepKey(a.weaponId, a.step)) : null) : null;
     const def = key ? get(key) : undefined;
     if (key && def) {
       // Ranged anims have no `active` segment: hold the last startup frame through it.
@@ -88,6 +92,10 @@ export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, r
       const smearOn = art.smear && a.kind !== 'throw' && (a.phase === 'active' || (a.phase === 'recovery' && a.phaseTicks <= ANIM.SMEAR_RECOVERY_TICKS));
       return { key, frame, weapon: { atlas: `weapon_${a.weaponId}`, frame: def.frames[frame], behind: !!def.weaponBehind?.includes(frame), smear: smearOn ? `${key}_smear` : null } };
     }
+  }
+  if (s.shield && !a) {
+    const key = s.shield === 'up' ? 'shield_up' : 'shield_lower', def = get(key);
+    if (def) return { key, frame: 0, weapon: { atlas: 'weapon_shield', frame: def.frames[0], behind: false, smear: null } };
   }
   if (s.charging && WEAPON_ART[s.charging]?.charge) {
     const key = weaponChargeKey(s.charging), def = get(key);

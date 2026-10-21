@@ -34,7 +34,8 @@ describe('anim keys used by the view exist in the art', () => {
   it('weapon steps: body anim + weapon frames + smear; dives', () => {
     for (const [id, art] of Object.entries(WEAPON_ART)) {
       const wf = frames(`weapon_${id}`);
-      const keys = [...Array.from({ length: art.steps }, (_, s) => weaponStepKey(id, s)),
+      const keys = [...Array.from({ length: art.steps }, (_, s) => art.keys?.[s] ?? weaponStepKey(id, s)),
+        ...(art.lunge ? [`atk_${id}_lunge`] : []), ...(art.spin ? [`atk_${id}_spin`] : []), ...(art.shield ? ['shield_up', 'shield_lower'] : []),
         ...(art.charged ? [`atk_${id}_charged`] : []), ...(art.throw ? [`atk_${id}_throw`] : []), ...(art.charge ? [`charge_${id}`] : [])];
       for (const outfit of ['swordsman', 'tank', 'archer', 'wizard']) {
         for (const k of keys) {
@@ -43,7 +44,7 @@ describe('anim keys used by the view exist in the art', () => {
           for (const f of d!.frames) expect(wf.has(f), f).toBe(true);
         }
       }
-      if (art.smear) for (let s = 0; s < art.steps; s++) expect(wf.has(`${weaponStepKey(id, s)}_smear`), id).toBe(true);
+      if (art.smear) for (let s = 0; s < art.steps; s++) expect(wf.has(`${art.keys?.[s] ?? weaponStepKey(id, s)}_smear`), id).toBe(true);
       for (const p of DIVE_PARTS) expect(find(`weapon_${id}`, weaponDiveKey(id, p)), weaponDiveKey(id, p)).toBeDefined();
     }
   });

@@ -238,3 +238,6 @@ ABILITY_POSES = {
                  _p(ground=True, tilt=22, lean=3, armF=(-20, 90), armB=(-40, 60), legF=(30, 50), legB=(-46, 20))],
 }
 POSES.update(ABILITY_POSES)
+
+
+from . import player8  # noqa: E402,F401  (ART8 weapon poses register themselves)

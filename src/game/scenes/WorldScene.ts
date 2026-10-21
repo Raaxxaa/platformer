@@ -22,6 +22,7 @@ import { DEPTH } from '../../data/art.ts';
 import { drawTerrain, Parallax } from '../view/levelView.ts';
 import { timeFrame, type AnimDef } from '../view/animClock.ts';
 import { AnimBank } from '../view/animBank.ts';
+import { WeaponFxView } from '../view/weaponFx.ts';
 import { EnemySprite, PlayerSprite, ProjectileSprites, type PlayerViewEvents } from '../view/EntitySprites.ts';
 import { SfxPlayer } from '../audio/sfx.ts';
 import type { SfxRequest } from '../audio/sfxRules.ts';
@@ -113,6 +114,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected bank!: AnimBank;
   protected projViews!: ProjectileSprites;
   protected playerProjViews!: ProjectileSprites;
+  protected weaponFx!: WeaponFxView;
   protected hammerSprite!: Phaser.GameObjects.Sprite;
   protected vfx!: VfxDirector;
   protected markersGfx!: Phaser.GameObjects.Graphics;
@@ -200,6 +202,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     if (this.pickedKit) this.playerView.setOutfit(this.pickedKit.cls);
     this.projViews = new ProjectileSprites(this, this.bank);
     this.playerProjViews = new ProjectileSprites(this, this.bank, DEPTH.playerProjectiles);
+    this.weaponFx = new WeaponFxView(this);
     this.hammerSprite = this.add.sprite(0, 0, 'projectiles').setDepth(DEPTH.playerProjectiles).setVisible(false);
     this.vfx = new VfxDirector(new VfxPool(this, this.bank));
     this.markersGfx = this.add.graphics().setDepth(DEPTH.markers);
@@ -270,17 +273,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   }
 
   /** Grey-box stand-ins until the weapons have art (M9 part 2): Javelin platforms (blinking in their last second), the rune ring, a raised shield. */
-  private drawWeaponPlaceholders(g: Phaser.GameObjects.Graphics, w: GameWorld): void {
-    for (const q of w.grid.pixelPlatforms) {
-      if (q.expireTick - w.tick < 120 && Math.floor(w.tick / 8) % 2 === 0) continue;
-      g.fillStyle(DRAW.platform, 1).fillRect(q.x, q.y, q.w, q.h);
-    }
-    for (const e of w.abilityEntities) {
-      if (e.kind !== 'rune_ring') continue;
-      for (const r of (e.view?.().runes as { x: number; y: number; w: number; h: number }[] | undefined) ?? []) g.fillStyle(DRAW.rune, 1).fillRect(r.x, r.y, r.w, r.h);
-    }
-    const sh = w.combat.shield, b = w.body;
-    if (sh?.phase === 'up') g.fillStyle(sh.t < sh.windowTicks ? DRAW.shieldParry : DRAW.shield, 1).fillRect(b.facing > 0 ? b.x + b.w / 2 : b.x - b.w / 2 - 4, b.y - b.h + 2, 4, b.h - 4);
+  /** Javelin platforms and Rune Ring runes are drawn by `WeaponFxView` (ART8); the raised Shield is the weapon layer. */
+  private drawWeaponPlaceholders(_g: Phaser.GameObjects.Graphics, w: GameWorld): void {
+    this.weaponFx.update(w);
   }
 
   /** Opens the class pick for these classes (07 §6.7). */
