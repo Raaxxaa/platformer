@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import plainsJson from '../../../public/levels/plains.json';
+import kingdomJson from '../../../public/levels/kingdom.json';
 import swampsJson from '../../../public/levels/swamps.json';
 import { killEnemy } from '../combat/resolve.ts';
 import { loadLevel } from '../level/loadLevel.ts';
@@ -50,5 +51,15 @@ describe('practice world (06 §14)', () => {
     expect(w.econ.keys).toBe(1); expect(w.flask.charges).toBe(2);
     expect(w.combat.slots[0]).toMatchObject(practiceLoadout(s).weapons[0]!);
     expect(w.practiceClear).toBeNull();
+  });
+  it('06 checklist 29: kingdom with the Tank kit starts with a B lightning War Maul, Shockwave Lv3 and a 3/3 flask', () => {
+    const { w } = practice(kingdomJson, { levelId: 'kingdom', cls: 'tank', weapon: 'war_maul', dragon: 'off' });
+    expect(w.combat.slots[0]).toMatchObject({ weaponId: 'war_maul', grade: 'B', element: 'lightning' });
+    expect(w.abilities.slots[0]).toMatchObject({ id: 'shockwave', level: 3 }); expect(w.flask).toMatchObject({ charges: 3, maxCharges: 3 });
+  });
+  it('a Dragon option puts the perched Dragon in the level; Off removes a rolled one', () => {
+    const on = practice(swampsJson, { levelId: 'swamps', cls: 'tank', weapon: 'war_maul', dragon: 'storm' }).w;
+    expect(on.run.dragon).toMatchObject({ present: true, stage: 2, color: 'storm' });
+    for (const seed of ['A', 'B', 'C', 'D', 'E', 'F']) expect(practice(swampsJson, { levelId: 'swamps', cls: 'tank', weapon: 'war_maul', dragon: 'off' }, seed).w.run.dragon.present).toBe(false);
   });
 });

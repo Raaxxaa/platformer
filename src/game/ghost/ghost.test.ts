@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { decodeGhost, encodeGhost, ghostAt, GhostRecorder, type GhostSample } from './codec.ts';
 import { loadGhost, saveGhost, type GhostStorage } from './store.ts';
 import { GHOST } from '../../data/practice.ts';
+import { encodeSave } from '../../core/save/codec.ts';
+import { defaultSave } from '../../core/save/schema.ts';
 import { PLAYER_ANIM_KEYS } from '../../data/animKeys.ts';
 
 const sample = (i: number): GhostSample => ({ x: 100 + i, y: 200 + i, facing: i % 2 ? -1 : 1, anim: i % 3 ? 'run' : 'idle', frame: i % 8 });
@@ -54,5 +56,15 @@ describe('ghost storage (06 §14)', () => {
     const st = memory(); st.map.set('rushblade.ghosts', '{nope'); expect(loadGhost('plains|tank', 1, st)).toBeNull(); expect(saveGhost('plains|tank', 1, [sample(0)], st)).toBe(true);
     const bad: GhostStorage = { getItem: () => { throw Error('x'); }, setItem: () => { throw Error('x'); } };
     expect(loadGhost('plains|tank', 1, bad)).toBeNull(); expect(saveGhost('plains|tank', 1, [], bad)).toBe(false); expect(saveGhost('a', 1, [], null)).toBe(false);
+  });
+  it('06 checklist 36: a 7200-tick best stores 3601 samples, kept out of the export code; a changed best hides the ghost', () => {
+    const r = new GhostRecorder(); for (let t = 0; t <= 7200; t += 2) r.record(t, sample(t % 50));
+    expect(r.samples).toHaveLength(3601);
+    const st = memory(); saveGhost('kingdom|tank', 7200, r.samples, st);
+    const stored = JSON.parse(st.map.get('rushblade.ghosts')!); expect(stored.ghosts['kingdom|tank'].ticks).toBe(7200);
+    expect(stored.ghosts['kingdom|tank'].data).toHaveLength(Math.ceil((3601 * 6 * 4) / 3));
+    const data = defaultSave(); data.practiceBests['kingdom|tank'] = 7200;
+    expect(encodeSave(data)).not.toContain(stored.ghosts['kingdom|tank'].data.slice(0, 40));
+    expect(loadGhost('kingdom|tank', 7200, st)).toHaveLength(3601); expect(loadGhost('kingdom|tank', 7100, st)).toBeNull();
   });
 });
