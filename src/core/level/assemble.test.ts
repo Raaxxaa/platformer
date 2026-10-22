@@ -42,3 +42,35 @@ describe('section assembly (06 §8.7)', () => {
     }
   }, 600_000);
 });
+
+describe('every Plains version in place (06 §8.7)', async () => {
+  const { levelGrid } = await import('./loadLevel.ts');
+  const { sectionAt } = await import('./routeLint.ts');
+  const { boxFree, isGrounded } = await import('../physics/collide.ts');
+  const { createPlayerBody } = await import('../player/body.ts');
+  const { MOVE } = await import('../tuning.ts');
+  const perSection = (d: ReturnType<typeof assembleLevel>) => {
+    const got: Record<number, string[]> = {};
+    for (const o of d.objects.filter((x) => x.type === 'enemy' || x.type === 'hint' || ['lucky_block', 'key', 'key_chest', 'cursed_chest', 'timed_chest', 'merchant_spot', 'loot_stand'].includes(x.type))) {
+      const s = sectionAt(d, o.x + o.w / 2, o.y + (o.h ? o.h / 2 : -1));
+      (got[s] ??= []).push(`${o.type}:${o.props.enemy ?? o.props.action ?? ''}`);
+    }
+    for (const k of Object.keys(got)) got[Number(k)].sort();
+    return got;
+  };
+  const classic = perSection(assembleLevel(pack, classicPicks(pack)));
+  for (const [i, vs] of pack.sections.entries()) for (let v = 1; v < vs.length; v++) {
+    it(`s${i + 1} v${v + 1}: path vertices standable, contents in the section`, () => {
+      const picks = classicPicks(pack); picks[i] = v + 1;
+      const d = assembleLevel(pack, picks), g = levelGrid(d);
+      const bad: string[] = [];
+      d.objects.find((o) => o.type === 'main_path')!.points!.forEach((p, k) => {
+        const b = createPlayerBody(p.x, Math.floor(p.y / 16) * 16 + 16);
+        const fits = boxFree(g, b.x, b.y, b.w, b.h) || boxFree(g, b.x, b.y, b.w, MOVE.BOX_H_LOW);
+        if (!fits || !isGrounded(b, g, 0)) bad.push(`vertex ${k} (${Math.floor(p.x / 16)}, ${Math.floor(p.y / 16)})`);
+      });
+      expect(bad).toEqual([]);
+      expect(perSection(d)).toEqual(classic);
+    });
+  }
+});

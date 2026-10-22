@@ -185,3 +185,103 @@ Lucky Blocks 4 (§2, §3, §6, §7) · loot stands 2 (§1, §4) · keys 2 (§3, 
 ## What to show the user
 
 After building it, take a screenshot of each section (M3 Task 10). Then ask: does each section feel like its description ("busy", "tricky", "choice"…)? Which section is the most fun, and which is the most annoying?
+
+---
+
+## Versions (M11, 06 §8.7)
+
+Sections 2, 3, 4, 6 and 7 each have **3 versions**. The run's seed picks one per section, so there are 243 different Stage 1s. `v1` is the layout above (the "classic" layout). Every version keeps its section's **exact contents** (the same enemies, packs, chests, keys, Lucky Block, hints in the same order) and joins its neighbours on the floor row at both edges. Its main path is within ±10% of `v1`. Because classic Stage 1 is already 787 of its 790 allowed main-path tiles, no version is longer than `v1` by more than a tile. The versions are built by `levels-src/plains/gen_variants.py`. Thumbnails use the legend at the top; `=` is a plank (one-way).
+
+### § 2 v2 — Riverbank
+A dry stream bed of stepping stones (three 3-tile gaps over a safe bed), then two **plank bridges** over gullies. The groups stand in the same order and spacing as `v1`: the boar gets a long bank to charge on, and each archer still has its low hill.
+```
+ L                                 a                a
+b ^^  ww   _ _ _   o     b  b   ======   a w   ======  o a          B
+#####################  ###########   ######   ######   ###########
+     stepping stones          bridge 1          bridge 2
+```
+
+### § 2 v3 — Windmill hill
+One long gentle climb in 2-tile terraces to a wide summit, then back down. Each group stands on its own terrace: the boar on a 25-tile terrace, the two bandits on the summit, the archers at terrace edges.
+```
+                         b  b (summit)
+                o     __________      a w
+ L    ww     ________          ________       o a
+b##########__                          ________      B
+```
+
+### § 3 v2 — Waterfall cliff
+After the double-jump ledge and spike pit (as `v1`), a **wall-jump shaft** climbs the cliff face beside the falls. On the clifftop, the **slide tunnel** runs under an overhang behind the waterfall, and the key sits on two planks above it. Then you drop down to the wolves, the archer and the boar.
+```
+                         K =
+                       = |##|   <- overhang (slide under)
+ !dj   __  ^^ __   |  |______________
+ #  ##########  ## |sh|  clifftop      |___ w w ......... a o
+```
+
+### § 3 v3 — Fallen trees
+Double-jump across two fallen logs over a spiked gully. The **wall-jump shaft is inside a hollow trunk** (walk in at the bottom). From the top you run along a thick branch and **slide under a knot**, then drop to the ground. The key is on two planks past the tree.
+```
+                      |knot|
+               |  |===========  (branch)      K
+  __    __     |tr|                      = =
+ #  #^^#  #    |nk|              w w ............ a o
+```
+
+### § 4 v2 — Under the arch
+The tree-top skip runs on branches **below a rock arch**, reached through the same two-trunk shaft. The hollow is entered at the **far end** of the road (a 4-wide drop by the guide arrow) and runs back under the road: archer, bandit, the Brute, the key chest, the cursed chest and the ability stand last, at the far left.
+```
+        ______________ rock arch ______________
+     | |  ==   ==   ==   ==
+ www | |   b  b        o        > !dive  _
+ ###########################################  ####
+   s  Q  C  B             b  a   <- HOLLOW  ##
+```
+
+### § 4 v3 — Ridge path
+The skip is a **ridge path** on a stone ridge above the road (with planks on its crest). The side path is a **cave under the ridge**, entered by a drop in the middle of the road. The cave holds the archer and bandit on the left, and the Brute, chests and ability stand on the right.
+```
+     | |  ==  ==  ==  ==
+     | | ______ ridge ______
+ www | b  b  > !dive  _     o
+ ##################  #####################
+  a  b      <- CAVE ->   B  C  Q  s
+```
+
+### § 6 v2 — Rope bridges
+Three **plank bridges** between four tree trunks, high over a spiked floor. The wolves are on the middle bridge and an archer is at each end. **Drop through** the last bridge to the ground (hint), where the key waits. Then climb one more trunk, reach the merchant's clearing, and pass a rock with the boar on top.
+```
+   L
+  a=======|ww=====|=====a|
+ _|       |       |  K   |      M          _o_
+ #^^^^^^^^#^^^^^^^#######################  ####
+```
+
+### § 6 v3 — Treehouse village
+An abandoned village in the trees. Plank **ladders** lead up to treehouse 1 (archer). A rung takes you up to treehouse 2, whose plank floor holds the wolves and teaches the **drop-through**. A rope bridge (archer) leads to the big treehouse where the **merchant** stands on 21 flat tiles. The key is on the ground under the bridge.
+```
+                 ==ww=====
+           =                ================______M______
+    =   __a___                     a       |  treehouse |     _o_
+ ==    ^^^^^^          K                                     ####
+```
+
+### § 7 v2 — Shrine on the stair
+The **shrine stands high on a terrace over the road**, reached by a plank stair at its right side (where the timed door is). One key chest is on the low terrace with the archer, the other is on the shrine terrace. The road itself runs underneath to the boars and the Brute.
+```
+                  @@@@@@@@@@@@
+                C @   T      D=
+   L         a  ____________ =
+ b      C_____                     o  o   B
+```
+
+### § 7 v3 — Sunken shrine
+The road crosses a **plank floor over a pit**. Drop through to reach the sunken shrine (its timed door faces right). Climb out by two steps. The archer stands on a ledge just past the pit.
+```
+  L                                 a
+   C     b       C  ==========    ___    o  o   B
+ ####################        ######   ##########
+                    | @@@@@  |
+                    | @ T  D _|
+                    |________|
+```

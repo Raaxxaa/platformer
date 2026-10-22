@@ -157,3 +157,21 @@ describe('loot determinism (M5 Task 10)', () => {
     expect(a[0].length).toBeGreaterThan(100);
   });
 });
+
+describe('layout determinism (M11 Task 3)', () => {
+  it('a non-classic Plains layout runs identically twice with the same seed and inputs', async () => {
+    const pack = (await import('../../../public/levels/plains.pack.json')).default;
+    const { assembleLevel } = await import('../level/assemble.ts');
+    const { GameWorld: GW } = await import('./gameWorld.ts');
+    const { kitLoadout } = await import('../abilities/runtime.ts');
+    const { stepSpec } = await import('../testkit/combatWorld.ts');
+    const picks = [1, 3, 2, 3, 1, 2, 3, 1];
+    const run = () => {
+      const w = GW.fromLevel(assembleLevel(pack as never, picks), { seedText: 'LAYOUT', layout: picks });
+      w.setLoadout(kitLoadout('swordsman', 'greatsword'));
+      for (let t = 0; t < 2400; t++) stepSpec(w, { moveX: 1, attack1: t % 30 === 0, jump: t % 70 < 12, dash: t % 200 === 0 }, 1);
+      return JSON.stringify([w.body, w.health, w.enemies.map((e) => [e.id, e.x, e.y, e.hp]), w.groundItems.map((i) => [i.x, i.y, i.weapon]), w.run.runTicks]);
+    };
+    expect(run()).toBe(run());
+  });
+});
