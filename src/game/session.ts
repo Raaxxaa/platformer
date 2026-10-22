@@ -14,6 +14,8 @@ import { WEAPON_NAME } from '../data/uiText.ts';
 export const gameSession = {
   trainingReturn: 'title' as 'home' | 'title',
   kitNotice: null as string | null,
+  /** The last practice setup, so `Retry` and `Change setup` come back to it (06 §14). */
+  practiceSetup: null as PracticeSetup | null,
   takeKitNotice(): string | null { const text = this.kitNotice; this.kitNotice = null; return text; },
   /** A confirmed import replaces comparisons too; live gear, run state and its frozen pool stay intact. */
   refreshRecords(w: GameWorld): void {

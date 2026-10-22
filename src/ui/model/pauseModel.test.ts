@@ -35,4 +35,11 @@ describe('pause menu (07 §7.6)', () => {
     expect(m.input('confirm', 2500)).toBeNull();               // too late: armed again instead
     expect(m.input('confirm', 3000)).toBe('quit');
   });
+  it('practice lists Resume, Retry, Change setup, Settings and a confirmed Quit to title', () => {
+    const m = new PauseModel('practice');
+    expect(m.items.map((x) => x.label)).toEqual(['Resume', 'Retry', 'Change setup', 'Settings', 'Quit to title']);
+    m.input('down', 0); expect(m.input('confirm', 0)).toBe('restart');
+    m.input('down', 0); expect(m.input('confirm', 0)).toBe('setup');
+    m.input('down', 0); m.input('down', 0); expect(m.input('confirm', 0)).toBeNull(); expect(m.input('confirm', 100)).toBe('quit');
+  });
 });

@@ -29,7 +29,8 @@ describe('ghost codec (06 §14)', () => {
     const r = new GhostRecorder();
     for (let t = 0; t < 10; t++) { r.record(t, sample(t)); r.record(t, sample(t)); }
     expect(r.samples.map((s) => s.x)).toEqual([100, 102, 104, 106, 108]);
-    r.record(40, sample(1)); expect(r.samples).toHaveLength(5);
+    r.record(40, sample(1)); expect(r.samples).toHaveLength(21); expect(r.samples[10].x).toBe(101);
+    r.record(2 * GHOST.maxSamples + 50, sample(2)); expect(r.samples).toHaveLength(GHOST.maxSamples); r.reset(); expect(r.samples).toEqual([]);
   });
   it('plays sample floor(stageTicks / 2) and disappears after the last', () => {
     const list = [sample(0), sample(1), sample(2)];

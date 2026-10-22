@@ -32,14 +32,16 @@ export class SplitAlerts {
 }
 export function timerBlockModel(w: GameWorld, showTimer: boolean) {
   const visible = w.level?.kind !== 'training' && w.level?.id !== 'home' && w.run.phase !== 'homeVillage';
-  let info = w.run.seeded ? `SEED ${w.run.seedText}` : '', infoBad = false;
+  const practice = !!w.opts.practiceSetup;
+  let info = practice ? 'PRACTICE' : w.run.seeded ? `SEED ${w.run.seedText}` : '', infoBad = false;
   for (const door of w.timedDoors) {
     const body = w.bodies.list.find((b) => b.id === door.id);
     if (!body || w.run.timedDoors[door.id] !== 'pending' || Math.abs(body.x - w.body.x) > U.doorInfoRange) continue;
     const left = Math.max(0, timedDoorTimeLeft(w, door.id)); info = `DOOR ${formatTime(Math.round(left * TICK_RATE))}`; infoBad = left < U.doorInfoBadS; break;
   }
-  return { time: formatTime(w.run.runTicks), segment: w.level?.kind === 'village' ? VILLAGE_SHORT[w.level.id] : `STAGE ${w.stage}  ${formatTime(w.run.stageTicks)}`,
-    timeVisible: visible && showTimer, segmentVisible: visible && showTimer, infoVisible: visible, info, infoBad };
+  // 07 §3: in practice the timer shows the practice time (stageTicks) and the segment line is hidden.
+  return { time: formatTime(practice ? w.run.stageTicks : w.run.runTicks), segment: w.level?.kind === 'village' ? VILLAGE_SHORT[w.level.id] : `STAGE ${w.stage}  ${formatTime(w.run.stageTicks)}`,
+    timeVisible: visible && showTimer, segmentVisible: visible && showTimer && !practice, infoVisible: visible, info, infoBad };
 }
 
 export class TimerBlock {

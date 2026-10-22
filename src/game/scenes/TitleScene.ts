@@ -12,6 +12,7 @@ import { MenuScreens } from '../menuScreens.ts';
 import { applySettings } from '../settings.ts';
 import { getUiSettings, noteInputDevice, setKeyboardLayout } from '../../ui/inputSettings.ts';
 import { activeHomePad, type HomePanelAction, type HomePanelPad } from '../../ui/home/homePanels.ts';
+import type { PracticeSetup } from '../../core/run/practice.ts';
 import { MenuSurface } from '../../ui/screens/records.ts';
 import { TitleModel } from '../../ui/screens/front.ts';
 export const TITLE_CHOICES = U.titleRows.map((label, i) => ({ label, level: i === 0 ? 'home' : i === 1 ? 'training_yard' : null }));
@@ -57,7 +58,9 @@ export class TitleScene extends Phaser.Scene {
   private screens!: MenuScreens;
   private fade!: Phaser.GameObjects.Graphics;
   private fadeLeft = 0;
+  private openPracticeOnCreate = false;
   constructor() { super('Title'); }
+  init(data?: { practice?: boolean }): void { this.openPracticeOnCreate = !!data?.practice; this.fadeLeft = 0; }
   preload(): void { loadAssets(this); }
   create(): void {
     this.fadeLeft = 0; applySettings(this, saveStore().data.settings);
@@ -68,6 +71,7 @@ export class TitleScene extends Phaser.Scene {
     this.screens = new MenuScreens(this, () => { if (!this.screens.active) this.titleView.setEnabled(true); });
     this.fade = this.add.graphics().setScrollFactor(0).setDepth(U.fadeDepth).fillStyle(UI_COLOR.ink).fillRect(0, 0, this.scale.width, this.scale.height).setVisible(false);
     this.events.once('shutdown', () => { this.titleView.destroy(); this.screens.destroy(); });
+    if (this.openPracticeOnCreate) this.choose(4);
     if (debugEnabled()) window.__game = { ready: true, title: true, titleCursor: () => this.titleView.model.cursor,
       titleChoose: (i: number) => this.choose(i), save: () => structuredClone(saveStore().data),
       screenState: () => this.screens.active ? this.screens.snapshot() : { screen: 'title', model: { step: this.titleView.model.step, cursor: this.titleView.model.cursor } },
@@ -83,12 +87,19 @@ export class TitleScene extends Phaser.Scene {
     }
     this.screens.update(delta / 1000); if (!this.screens.active) this.titleView.update(delta / 1000);
   }
+  /** 06 §14: a practice attempt is a stage level started with its setup; nothing is carried in. */
+  private startPractice(setup: PracticeSetup): void {
+    gameSession.practiceSetup = setup;
+    if (window.__game) window.__game.ready = false;
+    this.scene.start('Stage', { level: setup.levelId, practice: setup });
+  }
   /** Legacy debug entry points retain the Play / Yard indices. */
   choose(index: number): void {
     if (this.fadeLeft > 0 || index < 0 || index >= U.titleRows.length) return;
     this.titleView.model.step = 2; this.titleView.setEnabled(false);
     if (index === 2) { this.screens.openRecords(); return; }
     if (index === 3) { this.screens.openSettings(); return; }
+    if (index === 4) { this.screens.openPractice(gameSession.practiceSetup, (setup) => this.startPractice(setup)); return; }
     if (index === 1) { gameSession.trainingReturn = 'title'; this.scene.start('Stage', { level: 'training_yard' }); }
     else { this.fadeLeft = U.title.fadeSeconds; if (window.__game) window.__game.ready = false; }
   }

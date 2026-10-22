@@ -43,3 +43,16 @@ describe('timer block and split alerts (07 §4.11, §6.9)', () => {
     w.run.timedDoors.door = 'open'; expect(timerBlockModel(w, true).info).toBe('SEED ABC');
   });
 });
+
+describe('timer block in practice and seeded runs (07 §3)', () => {
+  it('practice shows the practice time, hides the segment line and says PRACTICE (before any SEED)', () => {
+    const w = GameWorld.fromLevel(bossLevel(), { seedText: 'RACE1', seeded: true, startKit: { cls: 'tank', weapon: 'war_maul' }, practice: true, practiceSetup: { levelId: 'plains', cls: 'tank', weapon: 'war_maul', dragon: 'off' } });
+    w.run.runTicks = 9000; w.run.stageTicks = 600;
+    const m = timerBlockModel(w, true);
+    expect(m.time).toBe('0:05.00'); expect(m.segmentVisible).toBe(false); expect(m.info).toBe('PRACTICE');
+  });
+  it('a typed seed shows SEED <text> and a normal run shows nothing', () => {
+    const mk = (seeded: boolean) => GameWorld.fromLevel(bossLevel(), { seedText: 'RACE1', seeded, startKit: { cls: 'tank', weapon: 'war_maul' } });
+    expect(timerBlockModel(mk(true), true).info).toBe('SEED RACE1'); expect(timerBlockModel(mk(false), true).info).toBe('');
+  });
+});

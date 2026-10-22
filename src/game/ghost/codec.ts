@@ -33,15 +33,16 @@ export function decodeGhost(data: string): GhostSample[] | null {
   return out;
 }
 
-/** Collects one sample per `sampleTicks` stage ticks (sample i is taken at stageTicks = 2i) and stops at the cap. */
+/**
+ * Collects one sample per `sampleTicks` stage ticks: sample i is the player as drawn when stageTicks = 2i. The view renders less
+ * often than the sim ticks, so a render that skips ahead repeats the latest drawn state for the samples it passed. Stops at the cap.
+ */
 export class GhostRecorder {
   samples: GhostSample[] = [];
-  /** Call once per rendered tick with the current stage tick and the player as drawn. */
+  /** Call each render with the current stage tick and the player as drawn. */
   record(stageTicks: number, s: GhostSample): void {
-    if (stageTicks % GHOST.sampleTicks !== 0) return;
-    const i = stageTicks / GHOST.sampleTicks;
-    if (i !== this.samples.length || i >= GHOST.maxSamples) return;
-    this.samples.push({ ...s });
+    const want = Math.min(GHOST.maxSamples, Math.floor(stageTicks / GHOST.sampleTicks) + 1);
+    while (this.samples.length < want) this.samples.push({ ...s });
   }
   reset(): void { this.samples = []; }
 }

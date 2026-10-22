@@ -4,7 +4,8 @@ export const FRONT_UI = {
   boot: { textY: 170, bar: [240, 184, 160, 6], percent: 100, font: '12px monospace' },
   title: { titleY: 70, scale: 2, promptY: 220, blinkHz: 1, rowsY: 170, rowStep: 16, rowW: 160, rowH: 14, version: [632, 344], soundY: 316, warningY: 300, fadeSeconds: 0.25 },
   death: { titleY: 100, infoY: 126, lineH: 12, rowsY: 200, rowStep: 16, rowW: 160, rowH: 14, guardSeconds: 0.25 },
-  titleRows: ['Play', 'Training Yard', 'Records', 'Settings'], titleCommands: ['play', 'training', 'records', 'settings'],
+  // Practice (07 §7.3) is last so the earlier row numbers stay the same.
+  titleRows: ['Play', 'Training Yard', 'Records', 'Settings', 'Practice'], titleCommands: ['play', 'training', 'records', 'settings', 'practice'],
   deathRows: ['Restart', 'Change class', 'Title'], deathCommands: ['restart', 'home', 'title'],
   biomes: { plains: 'Plains & Forest', mountains: 'Caves & Mountains', swamps: 'Dark Forest & Swamps', kingdom: 'Enemy Kingdom', castle: "King's Castle" },
   causes: { hazard: 'Killed by a trap', spikes: 'Killed by spikes', burning: 'Burned', poisoned: 'Poisoned' },

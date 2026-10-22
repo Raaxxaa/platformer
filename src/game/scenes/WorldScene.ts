@@ -441,10 +441,11 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   }
 
   /** Where the pause menu is opened (its item list). */
-  protected pausePlace(): 'run' | 'training' | 'home' { return 'run'; }
+  protected pausePlace(): 'run' | 'training' | 'home' | 'practice' { return 'run'; }
   protected pauseInfo(): string { return PauseView.info(1, this.world.run.runTicks, null); }
   /** Pause results the scene acts on: restart and quit. */
   protected onPauseQuit(): void {}
+  protected onPauseSetup(): void {}
 
   pause: { model: PauseModel; view: PauseView } | null = null;
   private readonly onFocusLost = () => this.openPause(true);
@@ -466,6 +467,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     const r = this.pause.model.input(a, this.time.now);
     if (r === 'resume') this.closePause();
     else if (r === 'restart') { this.closePause(); this.world.restart(); }
+    else if (r === 'setup') { this.closePause(); this.onPauseSetup(); }
     else if (r === 'quit') { this.closePause(); this.onPauseQuit(); }
     else if (r === 'settings') this.onPauseSettings();
   }

@@ -53,6 +53,12 @@ import { UI_FRAME_SECONDS } from '../../data/stageUi.ts';
 import { HINT_PARTS } from '../../data/hints.ts';
 import { promptLine, type PromptPart } from '../../ui/promptLine.ts';
 import { PROMPT } from '../../data/prompts.ts';
+import type { PracticeSetup } from '../../core/run/practice.ts';
+import { practiceKey } from '../../core/run/practice.ts';
+import { PracticeResultView } from '../../ui/screens/practice.ts';
+import { GhostRecorder } from '../ghost/codec.ts';
+import { GhostView } from '../ghost/ghostView.ts';
+import { loadGhost, saveGhost } from '../ghost/store.ts';
 
 /** Grey marker letters for loot objects that start working in M4. */
 const MARKER_LETTER: Record<string, string> = {
@@ -86,6 +92,13 @@ export class StageScene extends WorldScene {
   private menus!: MenuScreens;
   private deathView: DeathView | null = null;
   private deathCause = 'hazard';
+  /** Practice mode (06 §14): the setup, the result screen, and the ghost being recorded and played. */
+  private practice: PracticeSetup | null = null;
+  private practiceResult: PracticeResultView | null = null;
+  private practiceAt = -1;
+  private ghostView: GhostView | null = null;
+  private readonly recorder = new GhostRecorder();
+  private lastWorldTick = 0;
   private titleFadeLeft = 0;
 
   constructor(key = 'Stage') {
@@ -94,8 +107,8 @@ export class StageScene extends WorldScene {
 
   /** The level the start screen chose (else the URL decides). */
   private chosen: string | null = null;
-  init(data?: { level?: string; carry?: WorldCarry; titleFade?: boolean }): void {
-    this.chosen = data?.level ?? null;
+  init(data?: { level?: string; carry?: WorldCarry; titleFade?: boolean; practice?: PracticeSetup }): void {
+    this.chosen = data?.level ?? null; this.practice = data?.practice ?? null; this.practiceResult = null; this.practiceAt = -1; this.ghostView = null; this.recorder.reset(); this.lastWorldTick = 0;
     this.deathView = null; this.deathCause = 'hazard'; this.titleFadeLeft = data?.titleFade ? FRONT_UI.title.fadeSeconds : 0;
     this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.victory = null; this.victoryAt = -1; this.labels = []; this.doorText.clear();
   }
@@ -117,7 +130,7 @@ export class StageScene extends WorldScene {
     const dc = q.get('debug') === '1' ? q.get('dragon') : null;
     const dragon = dc && ['red', 'white', 'storm', 'green'].includes(dc) && this.level.stage >= 2 && this.level.stage <= 3
       ? { present: true, stage: this.level.stage as 2 | 3, color: dc as 'red', outcome: 'absent' as const } : undefined;
-    const w = gameSession.makeWorld(this.level, this.carry, typedSeed, dragon);
+    const w = gameSession.makeWorld(this.level, this.carry, typedSeed, dragon, this.practice);
     const section = q.get('debug') === '1' ? Number(q.get('section') ?? 0) : 0;
     if (section > 0) {
       // 06 §16: the player goes to the first main_path vertex inside section n.
@@ -149,6 +162,11 @@ export class StageScene extends WorldScene {
     if (this.level.kind === 'village') this.villageView = new VillageView(this, this.level);
     if (this.level.kind === 'village' && this.level.id !== 'home') this.shopView = new ShopView(this);
     this.fade = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 30).fillStyle(UI_COLOR.ink).fillRect(0, 0, width, height).setVisible(false);
+    if (this.practice) {
+      this.ghostView = new GhostView(this, this.bank, this.practice.cls);
+      this.events.once('shutdown', () => { this.ghostView?.destroy(); this.practiceResult?.destroy(); this.practiceResult = null; });
+      this.reloadGhost();
+    }
     this.installStageDebug();
     const kitNotice = gameSession.takeKitNotice();
     if (kitNotice) this.abilityHud.toast(kitNotice, UI_COLOR.highlight, this.time.now, SAVE_RULES.warningSeconds);
@@ -174,9 +192,11 @@ export class StageScene extends WorldScene {
     api.levelId = () => this.level.id;
     api.save = () => structuredClone(saveStore().data);
     api.appliedSettings = () => structuredClone(getUiSettings());
-    api.screenState = () => this.menus.active ? this.menus.snapshot() : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
-    api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else this.deathView?.action(action); };
+    api.screenState = () => this.menus.active ? this.menus.snapshot() : this.practiceResult ? { screen: 'practiceResult', model: { cursor: this.practiceResult.model.cursor, canConfirm: this.practiceResult.model.canConfirm } } : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
+    api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else if (this.practiceResult) this.practiceResult.action(action); else this.deathView?.action(action); };
     api.timerBlock = () => this.timerBlock.snapshot();
+    api.practice = () => this.practice ? { setup: { ...this.practice }, clear: this.world.practiceClear ? { ...this.world.practiceClear } : null, resultOpen: !!this.practiceResult,
+      ghost: { loaded: this.ghostView?.samples?.length ?? 0, shown: this.ghostView?.shown ?? false, recorded: this.recorder.samples.length }, dragon: { ...this.world.run.dragon } } : null;
     api.dropBlueprint = (id: BlueprintId) => dropBlueprint(this.world, id, this.world.body.x, this.world.body.y);
     api.poolSnapshot = () => ({ unlocked: [...this.world.run.lootUnlocked], dropped: [...this.world.run.blueprintsDropped],
       weapons: weaponPool([], this.world.run.lootUnlocked), abilities: abilityPool([], [], this.world.run.lootUnlocked) });
@@ -235,16 +255,22 @@ export class StageScene extends WorldScene {
     api.arenas = () => [...this.world.arenas.values()].map((a) => ({ id: a.id, kind: a.kind, rect: a.rect }));
   }
 
-  protected pausePlace(): 'run' | 'training' | 'home' { return this.level.kind === 'training' ? 'training' : this.level.id === 'home' ? 'home' : 'run'; }
+  protected pausePlace(): 'run' | 'training' | 'home' | 'practice' { return this.practice ? 'practice' : this.level.kind === 'training' ? 'training' : this.level.id === 'home' ? 'home' : 'run'; }
   protected pauseInfo(): string {
     if (this.level.kind === 'training') return 'Training Yard';
+    if (this.practice) return PauseView.info(this.world.run.stage, this.world.run.stageTicks, this.world.run.seeded ? this.world.run.seedText : null);
     return PauseView.info(this.world.run.stage || Math.max(1, this.world.run.splits.filter((s) => s !== null).length), this.world.run.runTicks, this.world.run.seeded ? this.world.run.seedText : null);
   }
   protected pauseMenuCovered(): boolean { return !!this.menus?.active; }
   protected freezesExtraMenuWorld(): boolean { return this.titleFadeLeft > 0 || this.menus?.snapshot().screen === 'records'; }
   protected onPauseSettings(): void { this.menus.openSettings(); this.clearMenuInput(); }
   /** Quitting, or leaving the Training Yard: back to the start screen (M4.1 Task 2). */
+  protected onPauseSetup(): void {
+    if (!this.practice || this.leaving) return;
+    this.leaving = true; gameSession.practiceSetup = this.practice; this.scene.start('Title', { practice: true });
+  }
   protected onPauseQuit(): void {
+    if (this.practice) { gameSession.practiceSetup = this.practice; this.toTitle(); return; }
     if (this.level.kind === 'training' && gameSession.trainingReturn === 'home') this.goLevel('home');
     else if (this.level.kind === 'stage' || this.world.run.started) this.requestHome();
     else this.toTitle();
@@ -255,7 +281,7 @@ export class StageScene extends WorldScene {
     saveStore().update((s) => { s.lastKit = { ...kit }; });
     if (first && this.level.id === 'home') this.openHomePanel('training');
   }
-  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.menus?.active || this.titleFadeLeft > 0; }
+  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.menus?.active || this.titleFadeLeft > 0; }
   private requestHome(): void {
     gameSession.endRun(this.world, 'quit');
     this.runSoFar?.destroy(); this.runSoFar = null; this.victory?.destroy(); this.victory = null;
@@ -284,6 +310,38 @@ export class StageScene extends WorldScene {
       kit: { weapons: structuredClone(w.combat.slots), abilities: w.abilities.slots.map((s) => s ? { id: s.id, level: s.level } : null), displayName: w.classState.displayName },
     }, { onRestart: () => { this.runSoFar?.destroy(); this.runSoFar = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
   }
+  /** The ghost for this setup, only when it matches the practice best (06 §14). */
+  private reloadGhost(): void {
+    if (!this.practice || !this.ghostView) return;
+    const key = practiceKey(this.practice.levelId, this.practice.cls);
+    this.ghostView.load(loadGhost(key, saveStore().data.practiceBests[key]));
+  }
+  /** The result screen opens after the boss's death animation (07 §7.4). */
+  private syncPractice(): void {
+    const w = this.world, clear = w.practiceClear;
+    if (!clear) { this.practiceResult?.destroy(); this.practiceResult = null; this.practiceAt = -1; return; }
+    this.practiceAt = this.practiceAt < 0 ? this.time.now : this.practiceAt;
+    if (!this.practiceResult && this.time.now - this.practiceAt >= VICTORY_UI.deathAnimSeconds * 1000) {
+      this.practiceResult = new PracticeResultView(this, clear, (command) => {
+        this.practiceResult?.destroy(); this.practiceResult = null; this.clearMenuInput();
+        if (command === 'retry') w.restart(); else if (command === 'setup') this.onPauseSetup(); else this.onPauseQuit();
+      });
+    }
+  }
+  /** One ghost sample per 2 stage ticks as drawn; stored when `practiceBestSaved` fires; played back from the stored best. */
+  private syncGhost(): void {
+    const w = this.world, setup = this.practice;
+    if (!setup || !this.ghostView) return;
+    if (w.tick < this.lastWorldTick) { this.recorder.reset(); this.reloadGhost(); }
+    this.lastWorldTick = w.tick;
+    const running = w.run.phase === 'stage' && !w.practiceClear;
+    if (w.run.phase === 'stage') {
+      const b = w.body, a = this.playerView.anim;
+      this.recorder.record(w.practiceClear ? w.practiceClear.ticks : w.run.stageTicks, { x: b.x, y: b.y, facing: b.facing, anim: a.key, frame: a.frame });
+    }
+    for (const { e } of this.frameEvents) if (e.t === 'practiceBestSaved') saveGhost(e.key, e.ticks, this.recorder.samples);
+    this.ghostView.update(w.run.stageTicks, running);
+  }
   private openHomePanel(kind: HomePanelKind): void {
     if (kind === 'records') { this.menus.openRecords(); this.clearMenuInput(); return; }
     this.homePanel?.destroy();
@@ -310,6 +368,7 @@ export class StageScene extends WorldScene {
     this.routeChoice?.setEnabled(!this.pause); this.routeChoice?.update(delta / 1000);
     this.runSoFar?.update(delta / 1000);
     this.victory?.update(delta / 1000);
+    this.practiceResult?.setEnabled(!this.pause); this.practiceResult?.update(delta / 1000);
     super.update(time, delta);
   }
   private toTitle(): void {
@@ -324,7 +383,8 @@ export class StageScene extends WorldScene {
   protected renderExtra(): void {
     const w = this.world, U = STAGE_UI;
     for (const { e } of this.frameEvents) if (e.t === 'playerDied') this.deathCause = e.cause;
-    const deathVisible = w.phase === 'deathScreen' && (w.run.phase === 'dead' || w.run.phase === 'paused' && w.run.pausedFrom === 'dead');
+    if (this.practice && w.phase === 'deathScreen' && w.run.phase === 'dead') w.restart();      // 06 §14: no death screen in practice
+    const deathVisible = !this.practice && w.phase === 'deathScreen' && (w.run.phase === 'dead' || w.run.phase === 'paused' && w.run.pausedFrom === 'dead');
     if (!deathVisible) { this.deathView?.destroy(); this.deathView = null; }
     if (deathVisible) {
       this.overlay.setVisible(false); this.overlayText.setVisible(false);
@@ -342,6 +402,7 @@ export class StageScene extends WorldScene {
       }
     }
     this.syncRunPanels();
+    if (this.practice) { this.syncPractice(); this.syncGhost(); }
     this.villageView?.update(w, saveStore().data.typedSeed);
     this.shopView?.update(w, this.frameEvents.some(({ e }) => e.t === 'cantAfford'));
     if (w.run.phase === 'loading' && w.run.transition) {

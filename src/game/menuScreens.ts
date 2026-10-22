@@ -2,6 +2,8 @@
 import type Phaser from 'phaser';
 import { RecordsView } from '../ui/screens/records.ts';
 import { SettingsView } from '../ui/screens/settings.ts';
+import { PracticeSetupView } from '../ui/screens/practice.ts';
+import type { PracticeSetup } from '../core/run/practice.ts';
 import { SaveCodeView, type SaveCodeMode } from '../ui/screens/saveCode.ts';
 import type { HomePanelAction } from '../ui/home/homePanels.ts';
 import { saveStore } from './save/storage.ts';
@@ -16,19 +18,24 @@ export class MenuScreens {
   private records: RecordsView | null = null;
   private settings: SettingsView | null = null;
   private code: SaveCodeView | null = null;
+  private practice: PracticeSetupView | null = null;
   constructor(scene: Phaser.Scene, closed: () => void, focused: (on: boolean) => void = () => {}, imported: () => void = () => {}) {
     this.scene = scene; this.closed = closed; this.focused = focused; this.imported = imported;
     scene.events.once('shutdown', () => this.destroy());
   }
-  get active(): boolean { return !!(this.records || this.settings || this.code); }
+  get active(): boolean { return !!(this.records || this.settings || this.code || this.practice); }
   snapshot() {
+    if (this.practice) { const m = this.practice.model; return { screen: 'practice', model: { cursor: m.cursor, setup: { ...m.setup }, levels: m.levels, best: m.best, seed: m.seedText, selectable: m.selectable } }; }
     if (this.code) { const m = this.code.model; return { screen: m.mode, model: { stage: m.stage, cursor: m.cursor, error: m.error, confirming: m.confirming, notice: m.notice } }; }
     if (this.settings) { const m = this.settings.model; return { screen: 'settings', model: { cursor: m.cursor, rows: [...m.rows], controlsOpen: m.controlsOpen } }; }
     if (this.records) { const m = this.records.model; return { screen: 'records', model: { tab: m.tab, cell: m.cell, footer: m.footer } }; }
     return { screen: null, model: null };
   }
-  action(action: HomePanelAction): void { (this.code ?? this.settings ?? this.records)?.action(action); }
-  update(seconds: number): void { (this.code ?? this.settings ?? this.records)?.update(seconds); }
+  action(action: HomePanelAction): void { (this.code ?? this.settings ?? this.records ?? this.practice)?.action(action); }
+  update(seconds: number): void { (this.code ?? this.settings ?? this.records ?? this.practice)?.update(seconds); }
+  openPractice(initial: PracticeSetup | null, onStart: (setup: PracticeSetup) => void): void {
+    this.destroy(); this.practice = new PracticeSetupView(this.scene, () => saveStore().data, initial, { onStart: (setup) => { this.practice = null; onStart(setup); }, onClose: () => { this.practice = null; this.closed(); } });
+  }
   openRecords(): void {
     this.destroy(); this.records = new RecordsView(this.scene, () => saveStore().data, { onClose: () => { this.records = null; this.closed(); } });
   }
@@ -54,5 +61,5 @@ export class MenuScreens {
       onClose: () => { this.code = null; this.settings?.setEnabled(true); this.closed(); },
     });
   }
-  destroy(): void { this.code?.destroy(); this.records?.destroy(); this.settings?.destroy(); this.code = null; this.records = null; this.settings = null; }
+  destroy(): void { this.code?.destroy(); this.records?.destroy(); this.settings?.destroy(); this.practice?.destroy(); this.code = null; this.records = null; this.settings = null; this.practice = null; }
 }
