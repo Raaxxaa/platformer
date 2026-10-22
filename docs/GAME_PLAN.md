@@ -736,7 +736,7 @@ Each milestone ends with something you can play.
 
 **Why this is cheap to add later:** the level builder already makes each section from its own file (`s1.txt` … `s8.txt` in M3). Adding variants means drawing more files per section and letting the seed pick. The checks we already have (enemy counts, jump limits) would run on every possible combination.
 
-**When:** after the full game works (M11). Until then every run uses version 1 of each section.
+**Decided (M11):** sections 2, 3, 4, 6 and 7 of every stage get 3 versions each; the start, the arena and the boss stay fixed. Same seed = same layout, practice mode can pick versions or the classic layout, and best times stay per class and road. Exact rules: `docs/spec/06-run-levels-save.md` §8.7.
 
 ## 15. What's left to discuss
 

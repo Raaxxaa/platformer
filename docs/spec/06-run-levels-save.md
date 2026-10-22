@@ -309,6 +309,19 @@ Added after playtesting (new players were overwhelmed by the first fights). In S
 
 Counts and the per-type mix stay as §8.2 and 05 §9.5. `validateLevel` checks these rules for `plains` (§13).
 
+### 8.7 Section variants (layouts that change every run, M11)
+Each stage keeps its 8 sections in order, but some sections have **3 hand-made versions** (`v1`, `v2`, `v3`). Every run picks one version per section from the seed. `v1` is the layout that existed before M11 (the "classic" layout).
+
+- **Which sections vary:** 2, 3, 4, 6 and 7. **Fixed (v1 only):** 1 (start and first loot stand), 5 (combat arena) and 8 (boss arena and road), so the fights stay learnable.
+- **Same contents in every version of a section:** the exact same enemies (per type and count, elites included, packs keep their `group`), the same objects (Lucky Blocks, loot stands, keys, chests, timed door and chest, merchant spot, side arena and `dragon_warning` zone in §6 of Stages 2–3, cracked walls, grapple points, minecart), and the same gimmick of §8.3. So every combination meets §8.2 and §8.4 exactly. Only where things are changes.
+- **Connectors:** each version has an **entry anchor** (left edge, the floor tile row the player arrives on) and an **exit anchor** (right edge). The level is assembled by placing each section so its entry anchor meets the previous section's exit anchor. Every version of a section has the same entry height and the same exit height relative to its anchors, so any version fits next to any other.
+- **Length:** a version's main path is within **±10%** of `v1`'s, and its first-time and speedrun times (§8.2) stay close, so timed-door limits (§9.5) stay fair. The assembled level must fit §8.3's max size for **every** combination (3⁵ = 243 per stage; all are checked).
+- **Choosing:** stream `layout` with scope `'run'` (§7.2), created at run start right after `dragon`. For each stage in order 1, 2 (both roads), 3, 4, and each varying section in order 2, 3, 4, 6, 7: `pick = 1 + floor(rng() × 3)`. **Always draw all 25 numbers**, even for the road not taken, so seeds stay stable. The run's layout code is the 5 digits per stage, e.g. Plains `2-1-3-3-2`.
+- **Same seed = same layout.** A typed seed fixes the layout too, so seeded races stay fair.
+- **Practice mode** (§14) adds a **Layout** option: `Random` (a new seed's picks), `Classic` (all `v1`), or a chosen version per section. A practice ghost and practice best are kept per layout code; a ghost recorded on another layout is not drawn.
+- **Personal bests** stay per class and road (§5.3): learning the versions is part of the game, as in Dead Cells. Run history and the summary show the layout code.
+- Hint zones (§13.4) exist only in Stage 1 `v1` sections and the Training Yard; `v2`/`v3` of Plains sections keep the same hints in the same order (a new player can get any version).
+
 ## 9. Arenas, doors and the side arena
 
 ### 9.1 Shared
