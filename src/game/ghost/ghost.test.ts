@@ -44,7 +44,7 @@ describe('ghost storage (06 §14)', () => {
   it('stores under rushblade.ghosts as { v: 1, ghosts } and loads only when ticks equal the practice best', () => {
     const st = memory(), list = [sample(0), sample(1)];
     expect(saveGhost('plains|tank', 900, list, st)).toBe(true);
-    expect(JSON.parse(st.map.get('rushblade.ghosts')!)).toMatchObject({ v: 1, ghosts: { 'plains|tank': { ticks: 900 } } });
+    expect(JSON.parse(st.map.get('rushblade.ghosts')!)).toMatchObject({ v: 1, ghosts: { 'plains|tank|1-1-1-1-1': { ticks: 900 } } });
     expect(loadGhost('plains|tank', 900, st)).toEqual(list);
     expect(loadGhost('plains|tank', 800, st)).toBeNull(); expect(loadGhost('plains|tank', undefined, st)).toBeNull(); expect(loadGhost('castle|tank', 900, st)).toBeNull();
   });
@@ -61,10 +61,10 @@ describe('ghost storage (06 §14)', () => {
     const r = new GhostRecorder(); for (let t = 0; t <= 7200; t += 2) r.record(t, sample(t % 50));
     expect(r.samples).toHaveLength(3601);
     const st = memory(); saveGhost('kingdom|tank', 7200, r.samples, st);
-    const stored = JSON.parse(st.map.get('rushblade.ghosts')!); expect(stored.ghosts['kingdom|tank'].ticks).toBe(7200);
-    expect(stored.ghosts['kingdom|tank'].data).toHaveLength(Math.ceil((3601 * 6 * 4) / 3));
+    const stored = JSON.parse(st.map.get('rushblade.ghosts')!); expect(stored.ghosts['kingdom|tank|1-1-1-1-1'].ticks).toBe(7200);
+    expect(stored.ghosts['kingdom|tank|1-1-1-1-1'].data).toHaveLength(Math.ceil((3601 * 6 * 4) / 3));
     const data = defaultSave(); data.practiceBests['kingdom|tank'] = 7200;
-    expect(encodeSave(data)).not.toContain(stored.ghosts['kingdom|tank'].data.slice(0, 40));
+    expect(encodeSave(data)).not.toContain(stored.ghosts['kingdom|tank|1-1-1-1-1'].data.slice(0, 40));
     expect(loadGhost('kingdom|tank', 7200, st)).toHaveLength(3601); expect(loadGhost('kingdom|tank', 7100, st)).toBeNull();
   });
 });

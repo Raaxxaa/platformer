@@ -6,11 +6,12 @@ const save = (change: (s: SaveData) => void = () => {}): SaveData => { const s =
 
 describe('practice setup model (07 §7.4)', () => {
   it('opens on Stage 1 with the saved kit and shows the seed and best rows read-only', () => {
-    const s = save((d) => { d.lastKit = { cls: 'tank', weapon: 'iron_fists' }; d.practiceBests['plains|tank'] = 7200; });
+    const s = save((d) => { d.lastKit = { cls: 'tank', weapon: 'iron_fists' }; d.practiceBests['plains|tank|1-1-1-1-1'] = 7200; });
     const m = new PracticeSetupModel(() => s);
     expect(m.value('stage')).toBe('1 · Plains & Forest'); expect(m.cls).toBe('tank'); expect(m.weapon).toBe('iron_fists');
-    expect(m.value('seed')).toBe('Random'); expect(m.value('best')).toBe('1:00.00'); expect(m.value('dragon')).toBe('—');
-    expect(m.selectable).toEqual(['stage', 'class', 'weapon', 'start', 'back']);
+    expect(m.value('seed')).toBe('Random'); expect(m.value('best')).toBe('—'); expect(m.value('dragon')).toBe('—');   // Random layout: no fixed best
+    expect(m.selectable).toEqual(['stage', 'class', 'weapon', 'layout', 'start', 'back']);
+    m.layoutMode = 'classic'; expect(m.value('best')).toBe('1:00.00');
   });
   it('lists only reached stages and shows the typed seed', () => {
     const s = save((d) => { d.progress.levelsReached = ['plains', 'swamps', 'kingdom']; d.typedSeed = 'RACE1'; });
@@ -36,13 +37,36 @@ describe('practice setup model (07 §7.4)', () => {
   });
   it('Start and Back return results; Back key backs out; the setup comes out as chosen', () => {
     const m = new PracticeSetupModel(() => save());
-    m.action('down'); m.action('down'); m.action('down'); expect(m.cursor).toBe('start');
-    expect(m.action('confirm')).toBe('start'); expect(m.setup).toEqual({ levelId: 'plains', cls: 'swordsman', weapon: 'greatsword', dragon: 'off' });
+    m.action('down'); m.action('down'); m.action('down'); m.action('down'); expect(m.cursor).toBe('start');
+    expect(m.action('confirm')).toBe('start'); expect(m.setup).toEqual({ levelId: 'plains', cls: 'swordsman', weapon: 'greatsword', dragon: 'off', layout: null });
     m.action('down'); expect(m.action('confirm')).toBe('back'); expect(m.action('back')).toBe('back');
   });
   it('remembers an earlier setup', () => {
     const m = new PracticeSetupModel(() => save((d) => { d.progress.levelsReached = ['plains', 'kingdom']; }), { levelId: 'kingdom', cls: 'wizard', weapon: 'staff', dragon: 'storm' });
-    expect(m.setup).toEqual({ levelId: 'kingdom', cls: 'wizard', weapon: 'staff', dragon: 'storm' });
+    expect(m.setup).toEqual({ levelId: 'kingdom', cls: 'wizard', weapon: 'staff', dragon: 'storm', layout: null });
+  });
+});
+
+describe('practice Layout option (06 §8.7)', () => {
+  it('Random, Classic, or Custom with a version per section; the best follows the layout code', () => {
+    const s = save((d) => { d.practiceBests['plains|swordsman|2-1-3-1-1'] = 6000; });
+    const m = new PracticeSetupModel(() => s);
+    for (let i = 0; i < 3; i++) m.action('down');
+    expect(m.cursor).toBe('layout'); expect(m.value('layout')).toBe('Random'); expect(m.setup.layout).toBeNull();
+    m.action('right'); expect(m.value('layout')).toBe('Classic'); expect(m.setup.layout).toEqual([1, 1, 1, 1, 1, 1, 1, 1]);
+    m.action('right'); expect(m.value('layout')).toBe('Custom 1-1-1-1-1');
+    expect(m.selectable).toEqual(['stage', 'class', 'weapon', 'layout', 's2', 's3', 's4', 's6', 's7', 'start', 'back']);
+    m.action('down'); m.action('right'); expect(m.value('s2')).toBe('v2 Riverbank');
+    m.action('down'); m.action('down'); m.action('left'); expect(m.value('s4')).toBe('v3 Ridge path');
+    expect(m.setup.layout).toEqual([1, 2, 1, 3, 1, 1, 1, 1]); expect(m.value('layout')).toBe('Custom 2-1-3-1-1'); expect(m.value('best')).toBe('0:50.00');
+  });
+  it('is off for stages without versions yet', () => {
+    const m = new PracticeSetupModel(() => save((d) => { d.progress.levelsReached = ['plains', 'kingdom']; }));
+    m.action('right'); expect(m.value('layout')).toBe('—'); expect(m.selectable).not.toContain('layout'); expect(m.setup.layout).toBeNull();
+  });
+  it('remembers a custom layout', () => {
+    const m = new PracticeSetupModel(() => save(), { levelId: 'plains', cls: 'tank', weapon: 'war_maul', dragon: 'off', layout: [1, 3, 3, 3, 1, 3, 3, 1] });
+    expect(m.value('layout')).toBe('Custom 3-3-3-3-3');
   });
 });
 

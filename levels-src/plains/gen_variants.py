@@ -4,6 +4,7 @@
 Every version keeps v1's width, contents (enemies, objects, hints in order) and the floor row 38 at both edges.
 Tiles; rows grow downward; the map is 64 rows; a fresh grid is open above row 38 and solid from row 38 down.
 Main path vertices are standing cells (the row above the floor).
+SPEC-GAP: versions stay within ~1 tile of v1 so all 243 combinations fit the 790-tile Plains path cap (docs/SPEC-GAPS.md 49).
 Run: python3 levels-src/plains/gen_variants.py && npm run levels
 """
 import json

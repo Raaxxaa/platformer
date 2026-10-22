@@ -6,7 +6,7 @@ export const HOME_UI = {
   pad: { left: 14, right: 15, up: 12, down: 13, confirm: 0, back: 1 },
   seed: {
     panel: [200, 110, 240, 110], titleY: 6, boxesY: 30, length: 12, boxW: 14, boxH: 18, boxGap: 2,
-    actionsY: 60, actionW: 50, actionH: 16, actionGap: 4, hintY: 88, randomLength: 8,
+    actionsY: 62, layoutY: 49, actionW: 50, actionH: 16, actionGap: 4, hintY: 88, randomLength: 8,
     alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', buttons: ['Use', 'Random', 'Clear', 'Back'],
     hint: 'Arrows edit  Enter use  Esc back',
   },

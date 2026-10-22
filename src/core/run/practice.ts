@@ -11,8 +11,12 @@ import type { DragonRoll } from './dragonRoll.ts';
 export interface PracticeSetup { levelId: PracticeLevelId; cls: ClassId; weapon: WeaponId; dragon: PracticeDragon;
   /** 06 §8.7 Layout option: chosen picks (Classic or per section); absent = Random. */
   layout?: import('../level/assemble.ts').Picks | null }
-export type PracticeKey = `${PracticeLevelId}|${ClassId}`;
-export const practiceKey = (levelId: PracticeLevelId, cls: ClassId): PracticeKey => `${levelId}|${cls}`;
+/** 06 §8.7: practice bests and ghosts are kept per layout code (`plains|tank|2-1-3-3-2`). */
+export type PracticeKey = `${PracticeLevelId}|${ClassId}|${string}`;
+export const CLASSIC_CODE = '1-1-1-1-1';
+export const practiceKey = (levelId: PracticeLevelId, cls: ClassId, code: string = CLASSIC_CODE): PracticeKey => `${levelId}|${cls}|${code}`;
+/** Bests and ghosts saved before M11 (`plains|tank`) were on the classic layout. */
+export const migratePracticeKey = (key: string): string => (key.split('|').length === 2 ? `${key}|${CLASSIC_CODE}` : key);
 
 /** `plains` is always available; the rest come from `levelsReached` (06 §14). Always in the menu's order. */
 export function practiceLevels(levelsReached: readonly string[]): PracticeLevelId[] {

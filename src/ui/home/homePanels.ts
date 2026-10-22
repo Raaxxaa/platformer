@@ -1,4 +1,6 @@
 // Small Home Village panels. Models and input are pure; only the view touches Phaser/devices.
+import { layoutCode, rollLayout } from '../../core/run/layout.ts';
+import { fnv1a32 } from '../../core/rng.ts';
 import type Phaser from 'phaser';
 import { FONTS } from '../../data/animKeys.ts';
 import { UI_COLOR } from '../../data/uiText.ts';
@@ -38,6 +40,8 @@ export class HomePanelsModel {
   }
   get seed(): string { const blank = this.boxes.indexOf(''); return this.boxes.slice(0, blank < 0 ? this.boxes.length : blank).join(''); }
   get canUse(): boolean { return this.seed.length > 0; }
+  /** 06 §8.7: the typed seed fixes the layout too; show its Plains code. */
+  get layoutLine(): string { return this.seed ? `Plains layout ${layoutCode(rollLayout(fnv1a32(this.seed)).plains)}` : ''; }
   select(index: number): void {
     const max = this.kind === 'seed' ? U.seed.length + U.seed.buttons.length - 1 : this.kind === 'training' ? U.training.buttons.length - 1 : 0;
     this.cursor = Math.max(0, Math.min(max, index));
@@ -220,7 +224,9 @@ export class HomePanels {
         this.rect(xx, y + S.actionsY, S.actionW, S.actionH, m.cursor === index);
         this.text(xx + S.actionW / 2, y + S.actionsY + U.border, label, disabled ? UI_COLOR.textOff : m.cursor === index ? UI_COLOR.highlight : UI_COLOR.text);
         if (!disabled) this.target(xx, y + S.actionsY, S.actionW, S.actionH, index);
-      }); promptLine(this.scene, this.c, x + w / 2, y + S.hintY, ['←→ Position   ↑↓ Change   ', { menu: 'confirm' }, ' Use   ', { menu: 'back' }, ' Back']);
+      });
+      if (m.layoutLine) this.text(x + w / 2, y + S.layoutY, m.layoutLine, UI_COLOR.textDim);
+      promptLine(this.scene, this.c, x + w / 2, y + S.hintY, ['←→ Position   ↑↓ Change   ', { menu: 'confirm' }, ' Use   ', { menu: 'back' }, ' Back']);
     } else if (m.kind === 'training') {
       const T = U.training, [x, y, w, h] = T.panel; this.panel(x, y, w, h);
       this.text(x + w / 2, y + T.titleY, T.title, UI_COLOR.text, true); this.text(x + w / 2, y + T.bodyY, T.body, UI_COLOR.textDim);

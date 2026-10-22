@@ -31,7 +31,7 @@ describe('save shape validation (06 §15)', () => {
   });
   it('keeps a complete valid save byte-for-byte in shape, including full future gear and stages', () => {
     const save = defaultSave(); save.pbs['tank|forest'] = pb(); save.bestSegments['tank|forest'] = [1200, 2800, 4000, 4000];
-    save.progress.levelsReached = ['plains', 'mountains', 'swamps', 'kingdom', 'castle']; save.practiceBests['castle|tank'] = 4000;
+    save.progress.levelsReached = ['plains', 'mountains', 'swamps', 'kingdom', 'castle']; save.practiceBests['castle|tank|2-1-3-3-2'] = 4000;
     save.history = [history()]; expect(validateSave(save)).toEqual(save);
   });
   it.each([null, [], 42, 'save'])('rejects invalid root %j instead of importing it as an empty save', (raw) => { expect(() => validateSave(raw)).toThrow(); });
@@ -105,7 +105,7 @@ describe('entry-level save validation', () => {
   });
   it('drops a bad best-segment or practice entry without losing valid neighboring entries', () => {
     const save = validateSave({ bestSegments: { 'tank|forest': [1, null, 3, null], 'wizard|mountain': [1, -1, null, null], 'tank|swamps': [1, 2, 3, 4] }, practiceBests: { 'castle|wizard': 120, 'plains|tank': 0, 'home|tank': 50, 'swamps|archer': 1.5, 'plains|bad': 100 } });
-    expect(save.bestSegments).toEqual({ 'tank|forest': [1, null, 3, null] }); expect(save.practiceBests).toEqual({ 'castle|wizard': 120, 'plains|tank': 0 });
+    expect(save.bestSegments).toEqual({ 'tank|forest': [1, null, 3, null] }); expect(save.practiceBests).toEqual({ 'castle|wizard|1-1-1-1-1': 120, 'plains|tank|1-1-1-1-1': 0 });   // pre-M11 keys: classic layout
   });
   it('drops bad history entries individually and keeps deaths plus only long enough restarts/quits', () => {
     const shortDeath = history('death', 10); shortDeath.splits = [null, null, null, null];

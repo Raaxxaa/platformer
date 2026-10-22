@@ -1,6 +1,6 @@
 // Browser session: the sole save repository and the source to return to after Training.
 import { assembleLevel, type LevelPack, type Picks } from '../core/level/assemble.ts';
-import { rollLayout } from '../core/run/layout.ts';
+import { classicLayout, layoutCode, rollLayout } from '../core/run/layout.ts';
 import { fnv1a32 } from '../core/rng.ts';
 import type { StageLevelId } from '../data/levelRules.ts';
 import { saveDate, saveStore } from './save/storage.ts';
@@ -47,7 +47,8 @@ export const gameSession = {
       layout = forcedLayout ?? carry?.run.layout?.[pack.levelId as StageLevelId] ?? rollLayout(fnv1a32(seedText))[pack.levelId as StageLevelId];
       level = assembleLevel(pack, layout);
     }
-    const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout, seeded: carry?.run.seeded ?? seed !== null,
+    // SPEC-GAP: does practice Random pick a new layout on Retry? No: it keeps its layout (its best and ghost belong to it).
+    const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout || (!!practice && !!layout), seeded: carry?.run.seeded ?? seed !== null,
       startKit, carry, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
       nextRunUnlocks: () => saveStore().data.unlocks.blueprints, dragon, practice: !!practice, practiceSetup: practice ?? undefined });
     if (carry?.run.phase === 'loading') w.completeLoading();
@@ -84,7 +85,7 @@ export const gameSession = {
     const setup = w.opts.practiceSetup;
     for (const e of [...w.events]) {
       if (e.t !== 'practiceCleared' || !setup || !w.practiceClear) continue;
-      const key = practiceKey(setup.levelId, setup.cls);
+      const key = practiceKey(setup.levelId, setup.cls, layoutCode(w.opts.layout ?? classicLayout()));
       saveStore().update((s) => {
         const old = s.practiceBests[key], r = applyPracticeTime(s.practiceBests, key, e.ticks);
         w.practiceClear!.isNew = r.isNew; w.practiceClear!.best = r.isNew ? old ?? null : r.best;

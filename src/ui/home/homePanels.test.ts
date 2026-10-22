@@ -87,3 +87,13 @@ describe('Home training and records panels', () => {
     expect(m.action('back')).toEqual({ type: 'close' });
   });
 });
+
+describe('seed panel layout code (06 §8.7)', () => {
+  it('shows the Plains layout the typed seed gives, matching the run', async () => {
+    const { createRunState } = await import('../../core/run/runState.ts');
+    const { layoutCode } = await import('../../core/run/layout.ts');
+    const m = new HomePanelsModel('seed', data('RACE1'), () => 'ABCDEFGH');
+    expect(m.layoutLine).toBe(`Plains layout ${layoutCode(createRunState('RACE1').layout.plains)}`);
+    expect(seed().layoutLine).toBe('');
+  });
+});

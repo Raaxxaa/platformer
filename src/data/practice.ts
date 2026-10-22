@@ -28,10 +28,23 @@ export const PRACTICE_DRAGON_LABEL: Record<PracticeDragon, string> = { off: 'Off
 /** 07 §7.4 geometry: rows from y 80, 16 px apart, labels at x 160, values right-aligned at x 480. */
 export const PRACTICE_UI = {
   panel: [112, 40, 416, 220] as const, titleY: 52, rowsY: 80, rowStep: 16, labelX: 160, valueX: 480, rowW: 336, hintY: 240,
-  rows: ['stage', 'class', 'weapon', 'dragon', 'seed', 'best', 'start', 'back'] as const,
-  labels: { stage: 'Stage', class: 'Class', weapon: 'Weapon', dragon: 'Dragon', seed: 'Seed', best: 'Best' },
+  rows: ['stage', 'class', 'weapon', 'dragon', 'layout', 's2', 's3', 's4', 's6', 's7', 'seed', 'best', 'start', 'back'] as const,
+  labels: { stage: 'Stage', class: 'Class', weapon: 'Weapon', dragon: 'Dragon', layout: 'Layout', s2: '  Section 2', s3: '  Section 3', s4: '  Section 4', s6: '  Section 6', s7: '  Section 7', seed: 'Seed', best: 'Best' },
   result: { titleY: 100, timeY: 124, bestY: 150, rowsY: 190, rowStep: 16, rowW: 160, rowH: 14, guardSeconds: 0.5, rows: ['Retry', 'Change setup', 'Title'], commands: ['retry', 'setup', 'title'] },
 } as const;
 
 /** 06 §14 ghost recording and storage. */
 export const GHOST = { sampleTicks: 2, maxSamples: 12000, sampleBytes: 6, storageKey: 'rushblade.ghosts', version: 1, alpha: 0.4, maxCoord: 65535 } as const;
+
+/** 06 §8.7 practice Layout option. The section rows show only for `custom`. */
+export const PRACTICE_LAYOUT = ['random', 'classic', 'custom'] as const;
+export type PracticeLayoutMode = (typeof PRACTICE_LAYOUT)[number];
+export const PRACTICE_LAYOUT_LABEL: Record<PracticeLayoutMode, string> = { random: 'Random', classic: 'Classic', custom: 'Custom' };
+/** docs/levels/plains.md version names, per varying section (v1, v2, v3). */
+export const VERSION_NAMES: Partial<Record<string, Record<number, [string, string, string]>>> = {
+  plains: {
+    2: ['Open Fields', 'Riverbank', 'Windmill hill'], 3: ['Wooded Ravine', 'Waterfall cliff', 'Fallen trees'],
+    4: ['Old Grove', 'Under the arch', 'Ridge path'], 6: ['Forest Canopy', 'Rope bridges', 'Treehouse village'],
+    7: ['Sealed Shrine', 'Shrine on the stair', 'Sunken shrine'],
+  },
+};

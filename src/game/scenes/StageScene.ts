@@ -321,7 +321,7 @@ export class StageScene extends WorldScene {
   /** The ghost for this setup, only when it matches the practice best (06 §14). */
   private reloadGhost(): void {
     if (!this.practice || !this.ghostView) return;
-    const key = practiceKey(this.practice.levelId, this.practice.cls);
+    const key = practiceKey(this.practice.levelId, this.practice.cls, layoutCode(this.world.opts.layout ?? []));
     this.ghostView.load(loadGhost(key, saveStore().data.practiceBests[key]));
   }
   /** The result screen opens after the boss's death animation (07 §7.4). */

@@ -41,7 +41,7 @@ test('a typed seed is saved from the Home Village board and shown in practice an
   await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.title);
   await openPractice(page);
   expect(await page.evaluate(() => (window as any).__game.screenState().model.seed)).toBe('RACE7');
-  await act(page, 'down', 'down', 'down', 'confirm');
+  await act(page, 'down', 'down', 'down', 'down', 'confirm');                  // past the Layout row (M11): Start
   await stageReady(page, 'plains');
   await frames(page);
   const run = await page.evaluate(() => (window as any).__game.runState());
@@ -64,7 +64,7 @@ test('practice setup is keyboard-usable and starts a stage with the preset loado
   await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowDown');   // class, weapon, dragon
   await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowRight');   // Random color, Red
   await frames(page); await page.screenshot({ path: 'test-results/m10-practice-setup-dragon.png' });
-  expect(await page.evaluate(() => (window as any).__game.screenState().model.setup)).toEqual({ levelId: 'mountains', cls: 'archer', weapon: 'bow', dragon: 'red' });
+  expect(await page.evaluate(() => (window as any).__game.screenState().model.setup)).toEqual({ levelId: 'mountains', cls: 'archer', weapon: 'bow', dragon: 'red', layout: null });
   await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter');         // Start
   await stageReady(page, 'mountains');
   await frames(page);
@@ -84,7 +84,7 @@ test('practice boss clear: result screen, best saved, and the ghost replays the 
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
   await seedSave(page, save({ lastKit: { cls: 'swordsman', weapon: 'greatsword' } }));
   await title(page); await openPractice(page);
-  await act(page, 'down', 'down', 'down', 'confirm');                          // Start with the default setup
+  await act(page, 'down', 'down', 'down', 'right', 'down', 'confirm');       // Classic layout (M11), then Start
   await stageReady(page, 'plains');
   await page.evaluate(() => (window as any).__game.step(90, { moveX: 1 }));    // run a bit so the ghost has something to show
   await killBoss(page);
@@ -92,8 +92,8 @@ test('practice boss clear: result screen, best saved, and the ghost replays the 
   const first = await page.evaluate(() => (window as any).__game.practice());
   expect(first.clear).toMatchObject({ isNew: true }); expect(first.ghost.recorded).toBeGreaterThan(10);
   const ticks = first.clear.ticks;
-  expect(await page.evaluate(() => (window as any).__game.save().practiceBests['plains|swordsman'])).toBe(ticks);
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('rushblade.ghosts')!).ghosts['plains|swordsman'].ticks)).toBe(ticks);
+  expect(await page.evaluate(() => (window as any).__game.save().practiceBests['plains|swordsman|1-1-1-1-1'])).toBe(ticks);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('rushblade.ghosts')!).ghosts['plains|swordsman|1-1-1-1-1'].ticks)).toBe(ticks);
   expect(await page.evaluate(() => (window as any).__game.save().pbs)).toEqual({});     // practice writes no records
   await page.waitForFunction(() => (window as any).__game.practice().resultOpen);
   await frames(page); await page.screenshot({ path: 'test-results/m10-practice-result.png' });

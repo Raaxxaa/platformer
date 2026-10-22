@@ -1,4 +1,5 @@
 import { classicLayout, LAYOUT, layoutCode, parseLayoutCode } from '../run/layout.ts';
+import { migratePracticeKey } from '../run/practice.ts';
 // Full save validation (06 §15). Keep good entries; default missing fields. No storage or clock reads.
 import { ABILITY_INFO } from '../../data/abilities.ts';
 import { BONDS, CLASS_IDS, HYBRIDS, STARTING_KITS, WEAPON_CLASSES } from '../../data/classes.ts';
@@ -22,7 +23,7 @@ const weaponId = (raw: unknown): raw is WeaponId => typeof raw === 'string' && O
 const abilityId = (raw: unknown): raw is AbilityId => typeof raw === 'string' && Object.hasOwn(ABILITY_INFO, raw);
 const unique = <T>(raw: unknown, check: (value: unknown) => value is T): T[] => Array.isArray(raw) ? [...new Set(raw.filter(check))] : [];
 const pbKey = (raw: string): raw is PbKey => { const parts = raw.split('|'); return parts.length === 2 && cls(parts[0]) && road(parts[1]); };
-const practiceKey = (raw: string): boolean => { const parts = raw.split('|'); return parts.length === 2 && has(SAVE_STAGE_IDS, parts[0]) && cls(parts[1]); };
+const practiceKey = (raw: string): boolean => { const parts = migratePracticeKey(raw).split('|'); return parts.length === 3 && has(SAVE_STAGE_IDS, parts[0]) && cls(parts[1]) && parseLayoutCode(parts[2]) !== null; };
 
 function isoDate(raw: unknown): raw is string {
   if (typeof raw !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(raw)) return false;
@@ -156,7 +157,7 @@ export function validateSave(raw: unknown): SaveData {
   for (const [key, value] of Object.entries(object(source.bestSegments))) {
     if (pbKey(key) && Array.isArray(value) && value.length === RUN.STAGE_COUNT && value.every((tick) => tick === null || integer(tick))) result.bestSegments[key] = [...value] as NonNullable<SaveData['bestSegments'][PbKey]>;
   }
-  for (const [key, value] of Object.entries(object(source.practiceBests))) if (practiceKey(key) && integer(value)) result.practiceBests[key] = value;
+  for (const [key, value] of Object.entries(object(source.practiceBests))) if (practiceKey(key) && integer(value)) result.practiceBests[migratePracticeKey(key)] = value;
   result.history = (Array.isArray(source.history) ? source.history.map(runRecord).filter((entry): entry is RunRecord => entry !== null) : [])
     .sort((a, b) => b.date.localeCompare(a.date)).slice(0, S.historyLimit);
   return result;

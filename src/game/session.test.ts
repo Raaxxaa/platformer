@@ -69,12 +69,12 @@ describe('practice saves (06 §14)', () => {
   const clear = (w: GameWorld, ticks: number) => { w.practiceClear = { ticks, best: null, isNew: false }; w.events = [{ t: 'practiceCleared', ticks }]; gameSession.events(w); };
   it('writes the practice best only when faster, emits practiceBestSaved, and writes nothing else', () => {
     const w = make(); clear(w, 5000);
-    expect(testStore.current!.data.practiceBests['plains|tank']).toBe(5000);
-    expect(w.events).toContainEqual({ t: 'practiceBestSaved', key: 'plains|tank', ticks: 5000 }); expect(w.practiceClear).toMatchObject({ isNew: true, best: null });
+    expect(testStore.current!.data.practiceBests['plains|tank|1-1-1-1-1']).toBe(5000);
+    expect(w.events).toContainEqual({ t: 'practiceBestSaved', key: 'plains|tank|1-1-1-1-1', ticks: 5000 }); expect(w.practiceClear).toMatchObject({ isNew: true, best: null });
     const slow = make(); clear(slow, 6000);
-    expect(testStore.current!.data.practiceBests['plains|tank']).toBe(5000);
+    expect(testStore.current!.data.practiceBests['plains|tank|1-1-1-1-1']).toBe(5000);
     expect(slow.events.some((e) => e.t === 'practiceBestSaved')).toBe(false); expect(slow.practiceClear).toMatchObject({ isNew: false, best: 5000 });
-    const fast = make(); clear(fast, 4000); expect(testStore.current!.data.practiceBests['plains|tank']).toBe(4000); expect(fast.practiceClear!.best).toBe(5000);
+    const fast = make(); clear(fast, 4000); expect(testStore.current!.data.practiceBests['plains|tank|1-1-1-1-1']).toBe(4000); expect(fast.practiceClear!.best).toBe(5000);
     const d = testStore.current!.data; expect(d.history).toEqual([]); expect(d.pbs).toEqual({}); expect(d.stats.runsStarted).toBe(0);
   });
   it('makeWorld builds a practice world with the preset kit, even with a typed seed', () => {
