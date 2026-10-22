@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STAGE_SCALING, TICK_RATE } from '../core/tuning.ts';
 import { GRADE_MULT } from '../core/combat/damage.ts';
 import { ABILITIES } from './abilities.ts';
-import { CASTLE_ENEMIES } from './castle.ts';
-import { GUARDIANS2 } from './guardians2.ts';
-import { KINGDOM_ENEMIES } from './kingdom.ts';
+import { SPIDER_QUEEN, STONE_COLOSSUS } from './guardians2.ts';
 import { ENEMIES } from './enemies.ts';
 import { WEAPONS } from './weapons.ts';
 import { PLAYER_PROJECTILES } from './playerProjectiles.ts';
@@ -14,7 +12,7 @@ import type { WeaponDef } from '../core/combat/types.ts';
 
 // M10 balance checks: only numbers the spec states (00-README scaling, 02 §10.1, 03 §13, 06 §8.2). Nothing here tunes the game;
 // a number that disagrees with the spec is written down in docs/SPEC-GAPS.md instead of being changed.
-const bossHp = (id: string): number => ({ ...ENEMIES, ...GUARDIANS2, ...KINGDOM_ENEMIES, ...CASTLE_ENEMIES } as Record<string, { hp: number }>)[id].hp;
+const bossHp = (id: string): number => ({ ...ENEMIES, stone_colossus: STONE_COLOSSUS, spider_queen: SPIDER_QUEEN } as Record<string, { hp: number }>)[id].hp;
 const stageOf = { great_boar: 1, stone_colossus: 2, spider_queen: 2, black_knight: 3, enemy_king: 4 } as const;
 const scaledBossHp = (id: keyof typeof stageOf) => Math.round(bossHp(id) * STAGE_SCALING[stageOf[id]].bossHp);
 
