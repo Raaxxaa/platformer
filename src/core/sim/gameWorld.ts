@@ -1,5 +1,7 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
+import { practiceLoadout, type PracticeSetup } from '../run/practice.ts';
+import { PRACTICE_PRESET, PRACTICE_STAGE } from '../../data/practice.ts';
 import { setupMerchant, type MerchantState } from '../loot/merchant.ts';
 import { stepLucky, type LuckyBlock } from '../loot/lucky.ts';
 import type { LuckyId } from '../../data/loot.ts';
@@ -147,6 +149,7 @@ export type WorldEvent =
   | { t: 'runStarted' }
   | { t: 'pbSaved' }
   | { t: 'runCompleted' }
+  | { t: 'practiceCleared'; ticks: number }
   | { t: 'dragonWarning'; color: 'red' | 'white' | 'storm' | 'green' }
   | { t: 'blueprintFound'; id: BlueprintId }
   | { t: 'startingWeaponUnlocked'; cls: ClassId; weapon: import('../combat/types.ts').WeaponId }
@@ -164,6 +167,8 @@ export interface GameWorldOptions {
   carry?: WorldCarry;
   records?: RunRecords;
   practice?: boolean;
+  /** Practice mode (06 §14): the preset loadout, flask, keys and gold come from this setup on every (re)start. */
+  practiceSetup?: PracticeSetup;
   unlockedBlueprints?: readonly BlueprintId[];
   /** Phaser supplies the current in-memory unlock list only when a new run starts. */
   nextRunUnlocks?: () => readonly BlueprintId[];
@@ -310,7 +315,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; dragon?: GameWorldOptions['dragon'] }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; dragon?: GameWorldOptions['dragon'] }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -321,9 +326,9 @@ export class GameWorld {
       grid: parts.grid, spawn: { x: start.x, y: start.y }, facing: Number(start.props.facing ?? 1) < 0 ? -1 : 1,
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
-      records: opts.records, practice: opts.practice,
+      records: opts.records, practice: opts.practice, practiceSetup: opts.practiceSetup,
       unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon,
-      loadout: (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
+      loadout: opts.practiceSetup ? practiceLoadout(opts.practiceSetup) : (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
       markers: d.objects.filter((o) => MARKER_TYPES.has(o.type)),
@@ -403,6 +408,7 @@ export class GameWorld {
       this.health.hp = carriedState.hp; this.health.maxHp = carriedState.maxHp; this.flask = { ...carriedState.flask };
       this.ironWillAddedHP = this.classState.bond === 'iron_will' ? carriedState.maxHp - maxPlayerHp(this, false) : 0;
     }
+    if (this.opts.practiceSetup) this.applyPracticePreset();
     this.enemies = (this.opts.enemies ?? []).map((s) => spawnEnemy(this, s));
     this.pendingDeaths = [];
     this.projectiles = [];
@@ -448,6 +454,16 @@ export class GameWorld {
     if (!carry || this.level?.kind === 'stage') fillAbilities(this);
   }
 
+  /** The practice start state (06 §14 table): flask, HP, gold and keys. The loadout comes in through `opts.loadout`. */
+  private applyPracticePreset(): void {
+    const p = PRACTICE_PRESET[PRACTICE_STAGE[this.opts.practiceSetup!.levelId]];
+    this.flask = { charges: p.flask, maxCharges: p.flask, fillTenths: 0 };
+    this.health.maxHp = p.hp; this.health.hp = p.hp;
+    this.econ.goldTenths = p.gold * 10; this.econ.keys = p.keys;
+  }
+  /** Set on the practice boss's death tick: the time of this attempt (06 §14). */
+  practiceClear: { ticks: number } | null = null;
+
   restart(): void {
     const ended = captureRunEnd(this, 'restart'); if (ended) this.pendingRunEnds.push(ended);
     if (!this.run.seeded && this.opts.nextRandomSeed) {
@@ -458,8 +474,11 @@ export class GameWorld {
     // Every restart entry point requires release, including summary and pause buttons.
     this.run.restartNeedsRelease = true;
     // Same-Plains reload is synchronous. Other scenes must really load Plains before acknowledging it.
-    beginTransition(this.run, 'restart', { phase: 'stage', levelId: 'plains', stage: 1 });
-    if (!this.level || this.level.id === 'plains') this.completeLoading();
+    // Practice restarts the same level in place (06 §14); a normal restart goes back to Plains.
+    const practice = this.opts.practiceSetup && this.level;
+    this.practiceClear = null;
+    beginTransition(this.run, 'restart', practice ? { phase: 'stage', levelId: this.level!.id, stage: this.level!.stage as 1 } : { phase: 'stage', levelId: 'plains', stage: 1 });
+    if (practice || !this.level || this.level.id === 'plains') this.completeLoading();
     else this.loadRequestPending = true;
   }
 
@@ -535,6 +554,12 @@ export class GameWorld {
   /** The stage boss died (06 §2.5): split 1 on this tick, unless the player died on an earlier tick. */
   onStageBossDefeated(): void {
     const r = this.run;
+    if (this.opts.practice) {                                 // practice: the time of this attempt, no split, stat pick or run end (06 §14)
+      if (r.phase === 'dead' || this.practiceClear) return;
+      this.practiceClear = { ticks: r.stageTicks };
+      this.events.push({ t: 'practiceCleared', ticks: r.stageTicks });
+      return;
+    }
     if (this.stage === 4) {                                   // the Enemy King: the run completes (06 §2.6)
       if (r.phase === 'dead' && r.deathTick !== this.tick) return;
       if (r.phase === 'dead') {                               // wins over a player death on the same tick: no death is recorded
