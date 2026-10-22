@@ -119,3 +119,16 @@ export const YARD_FRAMES = {
 /** An item's icon (in `ui`) and the glow behind it on the ground (in `items`). */
 export const itemIcon = (kind: 'weapon' | 'ability', id: string) => `icon_${kind}_${id}`;
 export const itemGlow = (kind: 'weapon' | 'ability', id: string) => `glow_${kind}_${id}`;
+
+/**
+ * Every body anim key a player sprite can show, in a fixed order. A ghost sample stores the position in this list (06 §14),
+ * so only ever append to it. Keys that do not exist for an outfit fall back to `idle` when drawn.
+ */
+export const PLAYER_ANIM_KEYS: readonly string[] = [
+  ...PLAYER_ANIMS, 'cart_ride', ...Object.values(CAST_POSE).filter((v, i, a) => a.indexOf(v) === i),
+  ...Object.entries(WEAPON_ART).flatMap(([id, a]) => [
+    ...Array.from({ length: a.steps }, (_, i) => weaponStepKey(id, i)),
+    ...(a.charged ? [weaponChargedKey(id)] : []), ...(a.charge ? [weaponChargeKey(id)] : []), ...(a.throw ? [weaponThrowKey(id)] : []),
+    ...(a.keys ?? []), ...DIVE_PARTS.map((part) => weaponDiveKey(id, part)),
+  ]),
+];

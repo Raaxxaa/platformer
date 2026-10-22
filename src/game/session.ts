@@ -3,6 +3,7 @@ import { saveDate, saveStore } from './save/storage.ts';
 import { GameWorld, type GameWorldOptions } from '../core/sim/gameWorld.ts';
 import type { LevelData } from '../core/level/loadLevel.ts';
 import type { WorldCarry } from '../core/run/session.ts';
+import { applyPracticeTime, practiceKey, type PracticeSetup } from '../core/run/practice.ts';
 import { randomSeed } from './seed.ts';
 import { savePersonalBest } from '../core/run/splits.ts';
 import { appendHistory, captureRunEnd } from '../core/run/history.ts';
@@ -19,12 +20,12 @@ export const gameSession = {
     const save = saveStore().data;
     w.records.pbs = structuredClone(save.pbs); w.records.bestSegments = structuredClone(save.bestSegments);
   },
-  makeWorld(level: LevelData, carry?: WorldCarry, debugSeed?: string | null, dragon?: GameWorldOptions['dragon']): GameWorld {
+  makeWorld(level: LevelData, carry?: WorldCarry, debugSeed?: string | null, dragon?: GameWorldOptions['dragon'], practice?: PracticeSetup | null): GameWorld {
     const save = saveStore().data;
     const homeTransition = carry?.run.transition?.target.phase === 'homeVillage' ? structuredClone(carry.run.transition) : null;
     if (homeTransition) carry = undefined;
     const seed = carry?.run.seedText ?? debugSeed ?? save.typedSeed;
-    let startKit = carry?.run.startKit ?? (level.kind !== 'stage' ? save.lastKit : null);
+    let startKit = practice ? { cls: practice.cls, weapon: practice.weapon } : carry?.run.startKit ?? (level.kind !== 'stage' ? save.lastKit : null);
     this.kitNotice = null;
     if (startKit && !WEAPONS[startKit.weapon]) {
       // SPEC-GAP: How should this build load a valid saved lastKit whose unlocked weapon is not implemented yet?
@@ -34,15 +35,15 @@ export const gameSession = {
     }
     const w = GameWorld.fromLevel(level, { seedText: seed ?? randomSeed(), seeded: carry?.run.seeded ?? seed !== null,
       startKit, carry, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
-      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, dragon });
+      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, dragon, practice: !!practice, practiceSetup: practice ?? undefined });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
     return w;
   },
   events(w: GameWorld): void {
-    // Practice owns a separate best-time write path (M10); no normal-run save event is allowed.
-    if (w.opts.practice) return;
+    // Practice owns a separate best-time write path (06 §14); no normal-run save event is allowed.
+    if (w.opts.practice) { this.practiceEvents(w); return; }
     this.flushRunEnds(w);
     for (const e of w.events) {
       if (e.t === 'blueprintFound') saveStore().update((s) => { if (!s.unlocks.blueprints.includes(e.id)) s.unlocks.blueprints.push(e.id); });
@@ -62,6 +63,19 @@ export const gameSession = {
       if (e.t === 'stageStarted') saveStore().update((s) => { if (!s.progress.levelsReached.includes(e.levelId)) s.progress.levelsReached.push(e.levelId); });
       if (e.t === 'stationDone') saveStore().update((s) => { if (!s.training.includes(e.id)) s.training.push(e.id); });
       if (e.t === 'classDiscovered') saveStore().update((s) => { if (!s.progress.classesDiscovered.includes(e.id)) s.progress.classesDiscovered.push(e.id); });
+    }
+  },
+  /** 06 §14: practice writes only `practiceBests`, and only when the time is faster. */
+  practiceEvents(w: GameWorld): void {
+    const setup = w.opts.practiceSetup;
+    for (const e of [...w.events]) {
+      if (e.t !== 'practiceCleared' || !setup || !w.practiceClear) continue;
+      const key = practiceKey(setup.levelId, setup.cls);
+      saveStore().update((s) => {
+        const old = s.practiceBests[key], r = applyPracticeTime(s.practiceBests, key, e.ticks);
+        w.practiceClear!.isNew = r.isNew; w.practiceClear!.best = r.isNew ? old ?? null : r.best;
+      });
+      if (w.practiceClear.isNew) w.events.push({ t: 'practiceBestSaved', key, ticks: e.ticks });
     }
   },
   flushRunEnds(w: GameWorld): void {

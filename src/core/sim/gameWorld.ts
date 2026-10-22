@@ -1,6 +1,6 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
-import { practiceLoadout, type PracticeSetup } from '../run/practice.ts';
+import { practiceDragon, practiceLoadout, type PracticeSetup } from '../run/practice.ts';
 import { PRACTICE_PRESET, PRACTICE_STAGE } from '../../data/practice.ts';
 import { setupMerchant, type MerchantState } from '../loot/merchant.ts';
 import { stepLucky, type LuckyBlock } from '../loot/lucky.ts';
@@ -150,6 +150,7 @@ export type WorldEvent =
   | { t: 'pbSaved' }
   | { t: 'runCompleted' }
   | { t: 'practiceCleared'; ticks: number }
+  | { t: 'practiceBestSaved'; key: string; ticks: number }
   | { t: 'dragonWarning'; color: 'red' | 'white' | 'storm' | 'green' }
   | { t: 'blueprintFound'; id: BlueprintId }
   | { t: 'startingWeaponUnlocked'; cls: ClassId; weapon: import('../combat/types.ts').WeaponId }
@@ -357,6 +358,10 @@ export class GameWorld {
     this.run.startKit = this.opts.startKit ?? null;
     this.run.runSeed = this.runSeed;
     if (this.opts.dragon) this.run.dragon = { ...this.opts.dragon };
+    if (this.opts.practiceSetup) {                         // 06 §14: the Dragon is perched when the option is on; 'random' re-rolls each attempt
+      const roll = practiceDragon(this.opts.practiceSetup, new Rng(deriveSeed(this.runSeed, 'dragon', 'practice')).next());
+      this.run.dragon = roll ?? { ...this.run.dragon, present: false, outcome: 'absent' };
+    }
     if (!carry) {
       this.run.lootUnlocked = unlockedCatalog(this.opts.nextRunUnlocks?.() ?? this.opts.unlockedBlueprints ?? [], this.run.seeded || this.opts.practice);
       this.run.stage = this.level?.stage ?? this.stage;
@@ -462,7 +467,7 @@ export class GameWorld {
     this.econ.goldTenths = p.gold * 10; this.econ.keys = p.keys;
   }
   /** Set on the practice boss's death tick: the time of this attempt (06 §14). */
-  practiceClear: { ticks: number } | null = null;
+  practiceClear: { ticks: number; best: number | null; isNew: boolean } | null = null;
 
   restart(): void {
     const ended = captureRunEnd(this, 'restart'); if (ended) this.pendingRunEnds.push(ended);
@@ -556,7 +561,7 @@ export class GameWorld {
     const r = this.run;
     if (this.opts.practice) {                                 // practice: the time of this attempt, no split, stat pick or run end (06 §14)
       if (r.phase === 'dead' || this.practiceClear) return;
-      this.practiceClear = { ticks: r.stageTicks };
+      this.practiceClear = { ticks: r.stageTicks, best: null, isNew: false };
       this.events.push({ t: 'practiceCleared', ticks: r.stageTicks });
       return;
     }

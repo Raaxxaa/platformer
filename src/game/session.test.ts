@@ -62,3 +62,24 @@ describe('session write boundaries (06 §14–15)', () => {
     gameSession.events(w); expect(testStore.current!.writes).toBe(0); expect(testStore.current!.data).toEqual(before);
   });
 });
+
+describe('practice saves (06 §14)', () => {
+  const setup = { levelId: 'plains', cls: 'tank', weapon: 'war_maul', dragon: 'off' } as const;
+  const make = () => GameWorld.fromLevel(bossLevel(), { seedText: 'PRAC', startKit: { cls: 'tank', weapon: 'war_maul' }, practice: true, practiceSetup: setup });
+  const clear = (w: GameWorld, ticks: number) => { w.practiceClear = { ticks, best: null, isNew: false }; w.events = [{ t: 'practiceCleared', ticks }]; gameSession.events(w); };
+  it('writes the practice best only when faster, emits practiceBestSaved, and writes nothing else', () => {
+    const w = make(); clear(w, 5000);
+    expect(testStore.current!.data.practiceBests['plains|tank']).toBe(5000);
+    expect(w.events).toContainEqual({ t: 'practiceBestSaved', key: 'plains|tank', ticks: 5000 }); expect(w.practiceClear).toMatchObject({ isNew: true, best: null });
+    const slow = make(); clear(slow, 6000);
+    expect(testStore.current!.data.practiceBests['plains|tank']).toBe(5000);
+    expect(slow.events.some((e) => e.t === 'practiceBestSaved')).toBe(false); expect(slow.practiceClear).toMatchObject({ isNew: false, best: 5000 });
+    const fast = make(); clear(fast, 4000); expect(testStore.current!.data.practiceBests['plains|tank']).toBe(4000); expect(fast.practiceClear!.best).toBe(5000);
+    const d = testStore.current!.data; expect(d.history).toEqual([]); expect(d.pbs).toEqual({}); expect(d.stats.runsStarted).toBe(0);
+  });
+  it('makeWorld builds a practice world with the preset kit, even with a typed seed', () => {
+    testStore.current!.data.typedSeed = 'RACE1';
+    const w = gameSession.makeWorld(bossLevel(), undefined, null, undefined, setup);
+    expect(w.opts.practice).toBe(true); expect(w.combat.slots[0]).toMatchObject({ weaponId: 'war_maul', grade: 'C' }); expect(w.run.seedText).toBe('RACE1'); expect(w.run.seeded).toBe(true);
+  });
+});
