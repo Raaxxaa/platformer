@@ -35,5 +35,5 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | ART6 | Elements, S-grade signature effects, loot effects, element sounds (for M5) | Done |
 | ART7 | Stage 2 biomes: Caves & Mountains and Dark Forest & Swamps (tiles, backgrounds, 8 enemies, 2 elites, 2 Guardians, minecart), Border Village (`ART7-stage2-biomes.md`) | Done |
 | ART8 | Stages 3–4, the Black Knight, Enemy King, the Dragon (4 colors), the other abilities and weapons (`ART8-stage3-4-bosses-weapons.md`) | Done |
-| ART9 | Music | Planned |
+| ART9 | Music (`ART9-music.md`) | Done (waiting for the user to listen) |
 | ART10 | Character customization art (races, colors, accessories) | Planned (for M12) |

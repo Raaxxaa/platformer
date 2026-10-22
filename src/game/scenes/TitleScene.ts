@@ -6,6 +6,7 @@ import { UI_FRAME_SECONDS } from '../../data/stageUi.ts';
 import { loadAssets } from '../assets/loadAssets.ts';
 import { debugEnabled } from '../debug.ts';
 import { gameSession } from '../session.ts';
+import { music } from '../audio/music.ts';
 import { saveStore } from '../save/storage.ts';
 import { MenuScreens } from '../menuScreens.ts';
 import { applySettings } from '../settings.ts';
@@ -75,6 +76,7 @@ export class TitleScene extends Phaser.Scene {
     } as never;
   }
   update(_time: number, delta: number): void {
+    music.updateMenu(this);
     if (this.fadeLeft > 0) {
       this.fadeLeft = Math.max(0, this.fadeLeft - Math.min(UI_FRAME_SECONDS, delta / 1000)); this.fade.setVisible(true).setAlpha(1 - this.fadeLeft / U.title.fadeSeconds);
       if (this.fadeLeft === 0) this.scene.start('Village', { level: 'home', titleFade: true }); return;

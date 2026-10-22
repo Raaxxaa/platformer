@@ -4,6 +4,8 @@ import { FONTS } from '../../data/animKeys.ts';
 import { TILESET } from '../../data/art.ts';
 import { SFX, sfxFiles, sfxKey } from '../../data/sfx.ts';
 import { assetPlan } from './assetPlan.ts';
+import { MUSIC_TRACKS } from '../../data/musicRules.ts';
+import { MUSIC_INSTRUMENTS, instKey, musicKey } from '../audio/music.ts';
 declare const __ASSET_FILES__: readonly string[];
 
 export const BIOME = 'plains';
@@ -24,6 +26,11 @@ export function loadAssets(scene: Phaser.Scene): void {
   }
   for (const background of plan.backgrounds) for (let i = 0; i < 3; i++) l.image(`bg_${background}_${i}`, `assets/bg/bg_${background}_${i}.png`);
   for (const f of Object.values(FONTS)) l.bitmapFont(f, `assets/fonts/${f}.png`, `assets/fonts/${f}.xml`);
+  // Music (08 §14): note data + instrument samples. Missing files are skipped, the game then plays that piece silently.
+  const have = new Set(__ASSET_FILES__);
+  if (have.has('assets/audio/inst/instruments.json')) l.json('music_instruments', 'assets/audio/inst/instruments.json');
+  for (const id of MUSIC_INSTRUMENTS) if (have.has(`assets/audio/inst/${id}.wav`)) l.audio(instKey(id), `assets/audio/inst/${id}.wav`);
+  for (const id of MUSIC_TRACKS) if (have.has(`assets/music/${id}.json`)) l.json(musicKey(id), `assets/music/${id}.json`);
   for (const id of Object.keys(SFX)) sfxFiles(id).forEach((f, v) => {
     if (plan.audio.includes(f)) l.audio(sfxKey(id, v), `assets/audio/sfx/${f}`);
   });

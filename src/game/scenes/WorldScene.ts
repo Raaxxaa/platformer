@@ -25,6 +25,8 @@ import { AnimBank } from '../view/animBank.ts';
 import { WeaponFxView } from '../view/weaponFx.ts';
 import { EnemySprite, PlayerSprite, ProjectileSprites, type PlayerViewEvents } from '../view/EntitySprites.ts';
 import { SfxPlayer } from '../audio/sfx.ts';
+import { isSlow, music, musicSnapshot } from '../audio/music.ts';
+import type { MusicEvent } from '../audio/musicDirector.ts';
 import type { SfxRequest } from '../audio/sfxRules.ts';
 import { SfxWatch } from '../audio/sfxTriggers.ts';
 import { drawMarkers, VfxDirector, VfxPool, type TickEvent } from '../view/vfx.ts';
@@ -210,6 +212,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.abilityView = new AbilityView(this);
     this.lootView = new LootView(this);
     this.sfx = new SfxPlayer(this);
+    music.attach(this);
+    this.events.once('shutdown', () => music.resetDirector());
     // Browsers start audio only after a key press or click (08 §15, 07).
     // Bottom center, under the hint line: the bottom left holds the slots, the top center the boss bar (07 §4.1).
     this.soundNote = this.add.bitmapText(this.scale.width / 2, this.scale.height - 4, FONTS.small, 'Click or press any key for sound')
@@ -233,6 +237,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     if (api) {
       api.vfx = () => this.vfx.pool.counts();
       api.sfxLog = () => [...this.sfx.log];
+      api.musicLog = () => [...music.log];
       // M4 (plan "Global Constraints"): classes, abilities and weapons.
       api.abilityRuntime = () => structuredClone({ ...this.world.abilities, cast: this.world.abilities.cast ? { slot: this.world.abilities.cast.slot, startTick: this.world.abilities.cast.startTick, linked: this.world.abilities.cast.linked } : null });
       api.classState = () => structuredClone(this.world.classState);
@@ -315,6 +320,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     const evs = this.world.events.map((e) => ({ tick: this.world.tick, e }));
     this.frameEvents.push(...evs);
     this.sfxQueue.push(...this.sfxWatch.collect(this.world, evs));
+    for (const { e } of evs) {
+      if (e.t === 'bossDefeated') music.note({ t: 'bossDefeated', bossId: e.bossId });
+      else if (e.t === 'playerDied' || e.t === 'runCompleted' || e.t === 'enterVillage' || e.t === 'stageStarted' || e.t === 'loadLevel') music.note({ t: e.t } as MusicEvent);
+    }
     this.features?.onTick(this.world, evs);
     this.abilityView?.onTick(this.world, this.world.events, feet);
     if (this.vfx) this.vfx.update(this.world, evs, { atlas: `player_${this.playerView.outfit}`, frame: this.playerView.frameName, origin: [0.5, 46 / 48] });
@@ -573,6 +582,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.sfxQueue = [];
     this.sfx.play(reqs, w.tick, { camCenterX: cam.x + this.scale.width / 2, playerX: b.x });
     this.sfx.updateCart(w);
+    music.update(this, musicSnapshot(w), w.run.phase === 'paused' || !!this.pause, isSlow(w));
     this.soundNote.setVisible(this.sfx.locked && !this.overview);
     if (this.debug) g.lineStyle(1, COLOR.hurtbox, 1).strokeRect(left + 0.5, top + 0.5, b.w - 1, b.h - 1);
 

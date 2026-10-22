@@ -1,0 +1,93 @@
+[
+ {
+  "id": "kick",
+  "file": "kick.wav",
+  "rootMidi": 36,
+  "release": 0.25,
+  "seconds": 2.0
+ },
+ {
+  "id": "snare",
+  "file": "snare.wav",
+  "rootMidi": 38,
+  "release": 0.2,
+  "seconds": 2.0
+ },
+ {
+  "id": "hat",
+  "file": "hat.wav",
+  "rootMidi": 42,
+  "release": 0.03,
+  "seconds": 2.0
+ },
+ {
+  "id": "hat_open",
+  "file": "hat_open.wav",
+  "rootMidi": 46,
+  "release": 0.15,
+  "seconds": 2.0
+ },
+ {
+  "id": "tom",
+  "file": "tom.wav",
+  "rootMidi": 45,
+  "release": 0.25,
+  "seconds": 2.0
+ },
+ {
+  "id": "bass",
+  "file": "bass.wav",
+  "rootMidi": 36,
+  "release": 0.08,
+  "seconds": 2.0
+ },
+ {
+  "id": "lead",
+  "file": "lead.wav",
+  "rootMidi": 60,
+  "release": 0.1,
+  "seconds": 2.0
+ },
+ {
+  "id": "pluck",
+  "file": "pluck.wav",
+  "rootMidi": 60,
+  "release": 0.5,
+  "seconds": 2.0
+ },
+ {
+  "id": "pad",
+  "file": "pad.wav",
+  "rootMidi": 60,
+  "release": 0.4,
+  "seconds": 4.0
+ },
+ {
+  "id": "bell",
+  "file": "bell.wav",
+  "rootMidi": 72,
+  "release": 0.8,
+  "seconds": 2.0
+ },
+ {
+  "id": "strings",
+  "file": "strings.wav",
+  "rootMidi": 60,
+  "release": 0.3,
+  "seconds": 4.0
+ },
+ {
+  "id": "brass",
+  "file": "brass.wav",
+  "rootMidi": 60,
+  "release": 0.1,
+  "seconds": 2.0
+ },
+ {
+  "id": "arp",
+  "file": "arp.wav",
+  "rootMidi": 72,
+  "release": 0.06,
+  "seconds": 2.0
+ }
+]

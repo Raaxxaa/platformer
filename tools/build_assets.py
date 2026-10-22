@@ -15,6 +15,7 @@ from art.enemies import swamps as enemies_swamps  # noqa: E402
 from art import style_board_stage2, style_board_stage34, world34  # noqa: E402
 from art.bosses import great_boar, stone_colossus, spider_queen, black_knight, enemy_king, dragon  # noqa: E402
 from art.enemies import kingdom as enemies_kingdom, castle as enemies_castle  # noqa: E402
+from audio import render_music  # noqa: E402
 from audio import listen_sheet, listen_sheet_stage2, listen_sheet_stage34, sfx_defs, sfx_stage2, sfx_stage34  # noqa: E402
 
 
@@ -64,6 +65,7 @@ def build(root=ROOT):
     listen_sheet.build(os.path.join(root, 'docs', 'art'))
     listen_sheet_stage2.build(os.path.join(root, 'docs', 'art'))
     listen_sheet_stage34.build(os.path.join(root, 'docs', 'art'))
+    render_music.build(root)
     atlas.write_anims(os.path.join(assets, 'anims.json'), anims)
     return assets
 
