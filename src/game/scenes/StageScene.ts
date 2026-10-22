@@ -21,7 +21,9 @@ import { newWeapon } from '../../core/abilities/runtime.ts';
 import type { ElementId, Grade, WeaponId } from '../../core/combat/types.ts';
 import { parseKit } from '../../ui/popups/classPickModel.ts';
 import { CLASS_IDS } from '../../data/classes.ts';
-import { LEVEL_FILE } from '../../data/run.ts';
+import { LEVEL_FILE, LEVEL_PACKS } from '../../data/run.ts';
+import type { LevelPack } from '../../core/level/assemble.ts';
+import { layoutCode, parseLayoutCode } from '../../core/run/layout.ts';
 import { DRAGON_NAME } from '../../data/dragon.ts';
 import { debugSeed, randomSeed } from '../seed.ts';
 import { captureWorld, type WorldCarry } from '../../core/run/session.ts';
@@ -120,6 +122,7 @@ export class StageScene extends WorldScene {
     const start = q.get('start');
     this.levelId = this.chosen ?? (start === 'training' ? 'training_yard' : (q.get('debug') === '1' && start) || 'plains');
     this.load.json(`level_${this.levelId}`, `levels/${LEVEL_FILE[this.levelId] ?? this.levelId}.json`);
+    if (LEVEL_PACKS.includes(this.levelId)) this.load.json(`pack_${this.levelId}`, `levels/${this.levelId}.pack.json`);
   }
 
   protected makeWorld(): GameWorld {
@@ -130,7 +133,11 @@ export class StageScene extends WorldScene {
     const dc = q.get('debug') === '1' ? q.get('dragon') : null;
     const dragon = dc && ['red', 'white', 'storm', 'green'].includes(dc) && this.level.stage >= 2 && this.level.stage <= 3
       ? { present: true, stage: this.level.stage as 2 | 3, color: dc as 'red', outcome: 'absent' as const } : undefined;
-    const w = gameSession.makeWorld(this.level, this.carry, typedSeed, dragon, this.practice);
+    // 06 §8.7 / §16: `?layout=2-1-3-3-2` (debug) or the practice choice forces the section versions.
+    const pack = (LEVEL_PACKS.includes(this.levelId) ? this.cache.json.get(`pack_${this.levelId}`) : null) as LevelPack | null;
+    const forced = this.practice?.layout ?? (q.get('debug') === '1' && q.get('layout') ? parseLayoutCode(q.get('layout')!) : null);
+    const w = gameSession.makeWorld(this.level, this.carry, typedSeed, dragon, this.practice, pack, forced);
+    this.level = w.level!;
     const section = q.get('debug') === '1' ? Number(q.get('section') ?? 0) : 0;
     if (section > 0) {
       // 06 §16: the player goes to the first main_path vertex inside section n.
@@ -190,6 +197,7 @@ export class StageScene extends WorldScene {
     api.setEnemyHp = (id: number, hp: number) => { const e = this.world.enemies.find((x) => x.id === id); if (e) { e.hp = hp; if (hp <= 0) killEnemy(this.world, e); } };
     api.bossBar = () => this.world.bossBar;
     api.levelId = () => this.level.id;
+    api.layoutCode = () => layoutCode(this.world.opts.layout ?? []);
     api.save = () => structuredClone(saveStore().data);
     api.appliedSettings = () => structuredClone(getUiSettings());
     api.screenState = () => this.menus.active ? this.menus.snapshot() : this.practiceResult ? { screen: 'practiceResult', model: { cursor: this.practiceResult.model.cursor, canConfirm: this.practiceResult.model.canConfirm } } : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
@@ -388,7 +396,7 @@ export class StageScene extends WorldScene {
     if (!deathVisible) { this.deathView?.destroy(); this.deathView = null; }
     if (deathVisible) {
       this.overlay.setVisible(false); this.overlayText.setVisible(false);
-      if (!this.deathView) this.deathView = new DeathView(this, { stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText }, (result) => {
+      if (!this.deathView) this.deathView = new DeathView(this, { stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCode(w.opts.layout) : undefined }, (result) => {
         this.deathView?.destroy(); this.deathView = null; this.clearMenuInput();
         if (result === 'restart') w.restart(); else if (result === 'home') this.requestHome(); else this.toTitle();
       });

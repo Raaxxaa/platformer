@@ -68,3 +68,9 @@ export const STAGE3_LEVEL = { regulars: [0, 10, 4, 8, 9, 5, 4, 0], cannonSection
 
 /** King's Castle (06 §8.2, §8.3): regulars per section (default column); spike floors, 4+ swinging blades, 3+ collapsing bridges across §3 and §6; a cannon gallery in §6; wall-jump towers. */
 export const STAGE4_LEVEL = { regulars: [0, 10, 4, 8, 9, 5, 4, 0], bladeSections: [3, 6], blades: 4, bridges: 3, gallerySection: 6, gallery: 4, towers: 2, summonInset: 48 } as const;
+
+/** 06 §8.7 section variants: stage order of the `layout` draws, the varying sections, versions each. */
+export const LAYOUT = {
+  stages: ['plains', 'mountains', 'swamps', 'kingdom', 'castle'] as StageLevelId[],
+  vary: [2, 3, 4, 6, 7] as const, sections: 8, versions: 3,
+} as const;

@@ -3,6 +3,7 @@
 import type { GameWorld } from '../../core/sim/gameWorld.ts';
 import { ABILITY_INFO } from '../../data/abilities.ts';
 import { formatTime } from '../../core/time.ts';
+import { layoutCode } from '../../core/run/layout.ts';
 import { WEAPON_NAME } from '../../data/uiText.ts';
 import type { RunSoFarData } from './runSoFar.ts';
 
@@ -19,6 +20,9 @@ export function victoryLines(w: GameWorld): string[] {
   else if (pb && pb.ticks === r.runTicks) lines.push('* NEW PERSONAL BEST *');
   else if (pb) lines.push(`Personal best ${formatTime(pb.ticks)}`);
   r.splits.forEach((s, i) => lines.push(`Stage ${i + 1} ${s === null ? '-' : formatTime(s)}`));
+  // 06 §8.7: the layout of the stages played (Stage 2 on the road taken).
+  const played = ['plains', r.road === 'forest' ? 'swamps' : 'mountains', 'kingdom', 'castle'] as const;
+  lines.push(`Layout ${played.map((id) => layoutCode(r.layout[id])).join('  ')}`);
   lines.push(`Class: ${w.classState.displayName}   Road: ${r.road === 'forest' ? 'Forest' : 'Mountain'}`);
   lines.push(`Dragon: ${VICTORY_UI.dragon[r.dragon.present ? r.dragon.outcome === 'absent' ? 'skipped' : r.dragon.outcome : 'absent']}   Kills: ${r.stats.kills}   Gold: ${w.gold}`);
   if (r.winUnlocks.blueprint) lines.push(`Unlocked: ${unlockName(r.winUnlocks.blueprint)}`);

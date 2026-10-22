@@ -3,6 +3,9 @@
 import { practiceDragon, practiceLoadout, type PracticeSetup } from '../run/practice.ts';
 import { PRACTICE_PRESET, PRACTICE_STAGE } from '../../data/practice.ts';
 import { setupMerchant, type MerchantState } from '../loot/merchant.ts';
+import { layoutCode } from '../run/layout.ts';
+import type { Picks } from '../level/assemble.ts';
+import type { StageLevelId } from '../../data/levelRules.ts';
 import { stepLucky, type LuckyBlock } from '../loot/lucky.ts';
 import type { LuckyId } from '../../data/loot.ts';
 import { setupLoot, type Chest } from '../loot/sources.ts';
@@ -158,6 +161,9 @@ export type WorldEvent =
 
 export interface GameWorldOptions {
   grid: TileGrid;
+  /** 06 §8.7: the section versions this level was assembled from, and whether they were chosen (debug, practice)
+   *  rather than rolled from the seed. */
+  layout?: Picks; layoutForced?: boolean;
   spawn: { x: number; y: number };
   facing?: 1 | -1;
   seedText?: string;
@@ -316,7 +322,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; dragon?: GameWorldOptions['dragon'] }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; dragon?: GameWorldOptions['dragon']; layout?: Picks; layoutForced?: boolean }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -328,7 +334,7 @@ export class GameWorld {
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
       records: opts.records, practice: opts.practice, practiceSetup: opts.practiceSetup,
-      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon,
+      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon, layout: opts.layout, layoutForced: opts.layoutForced,
       loadout: opts.practiceSetup ? practiceLoadout(opts.practiceSetup) : (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
@@ -358,6 +364,7 @@ export class GameWorld {
     this.run.startKit = this.opts.startKit ?? null;
     this.run.runSeed = this.runSeed;
     if (this.opts.dragon) this.run.dragon = { ...this.opts.dragon };
+    if (this.opts.layoutForced && this.opts.layout && this.level) this.run.layout[this.level.id as StageLevelId] = [...this.opts.layout];
     // SPEC-GAP 46: does `random color` re-roll on retry? Yes, from the attempt's seed.
     if (this.opts.practiceSetup) {                         // 06 §14: the Dragon is perched when the option is on; 'random' re-rolls each attempt
       const roll = practiceDragon(this.opts.practiceSetup, new Rng(deriveSeed(this.runSeed, 'dragon', 'practice')).next());
@@ -484,7 +491,10 @@ export class GameWorld {
     const practice = this.opts.practiceSetup && this.level;
     this.practiceClear = null;
     beginTransition(this.run, 'restart', practice ? { phase: 'stage', levelId: this.level!.id, stage: this.level!.stage as 1 } : { phase: 'stage', levelId: 'plains', stage: 1 });
-    if (practice || !this.level || this.level.id === 'plains') this.completeLoading();
+    // 06 §8.7: a new seed can pick other section versions; then the stage is assembled again like any other load.
+    const relayout = !practice && !this.opts.layoutForced && !!this.opts.layout && this.level?.id === 'plains'
+      && layoutCode(this.run.layout.plains) !== layoutCode(this.opts.layout);
+    if (practice || !this.level || (this.level.id === 'plains' && !relayout)) this.completeLoading();
     else this.loadRequestPending = true;
   }
 

@@ -3,6 +3,7 @@ import type { GameWorld } from '../sim/gameWorld.ts';
 import type { RunRecord, SaveData } from '../save/schema.ts';
 import { SAVE_RULES } from '../../data/save.ts';
 import { snapshotKit } from '../save/snapshot.ts';
+import { layoutCodes } from './layout.ts';
 export type RunEndSnapshot = Omit<RunRecord, 'date'>;
 /** 06 §4: absent, skipped, escaped or killed. */
 function dragonOutcome(w: GameWorld): RunRecord['dragon'] {
@@ -19,7 +20,7 @@ export function captureRunEnd(w: GameWorld, result: RunRecord['result'], cause: 
   return { startClass: kit.cls, startWeapon: kit.weapon, road: r.road, seedText: r.seedText, seeded: r.seeded, result,
     stageReached, sectionReached: r.sectionReached, runTicks: r.runTicks, splits: [...r.splits], cause, dragon: dragonOutcome(w),
     kit: snapshotKit({ displayName: w.classState.displayName, weapons: w.combat.slots, abilities: w.abilities.slots }),
-    stats: { ...r.stats } };
+    stats: { ...r.stats }, layout: layoutCodes(r.layout) };
 }
 export function appendHistory(save: SaveData, snapshot: RunEndSnapshot | null, date: string): boolean {
   if (!snapshot || ((snapshot.result === 'restart' || snapshot.result === 'quit') && snapshot.runTicks < SAVE_RULES.historyMinTicks)) return false;

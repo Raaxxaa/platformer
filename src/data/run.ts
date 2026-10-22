@@ -4,3 +4,6 @@ export const ROAD_LEVEL = { mountain: 'mountains', forest: 'swamps' } as const;
 export const DRAGON_ROLL = { chance: .30, stage2Chance: .5, colors: ['red', 'white', 'storm', 'green'] } as const;
 export const RANDOM_SEED = { length: 8, alphabet: 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' } as const;
 export const LEVEL_FILE: Record<string, string> = { home: 'village_home', crossroads: 'village_crossroads', border: 'village_border', rebel_camp: 'village_rebel_camp' };
+
+/** 06 §8.7: levels whose sections come in versions (a `<id>.pack.json` next to the level). */
+export const LEVEL_PACKS: readonly string[] = ['plains'];

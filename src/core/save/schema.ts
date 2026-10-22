@@ -9,7 +9,9 @@ export interface PbRecord { ticks: number; splits: [number, number, number, numb
 export interface RunStats { kills: number; eliteKills: number; goldEarned: number; chestsOpened: number; luckyBlocksBroken: number; damageTaken: number; flasksDrunk: number }
 export interface RunRecord { date: string; startClass: ClassId; startWeapon: WeaponId; road: Road | null; seedText: string; seeded: boolean;
   result: 'complete' | 'death' | 'restart' | 'quit'; stageReached: 1 | 2 | 3 | 4; sectionReached: number; runTicks: number; splits: (number | null)[];
-  cause: string | null; dragon: 'absent' | 'skipped' | 'escaped' | 'killed'; kit: KitSummary; stats: RunStats }
+  cause: string | null; dragon: 'absent' | 'skipped' | 'escaped' | 'killed'; kit: KitSummary; stats: RunStats;
+  /** 06 §8.7 layout code per stage, e.g. `2-1-3-3-2`; runs saved before M11 read as all `1`. */
+  layout: Record<import('../../data/levelRules.ts').StageLevelId, string> }
 export type ActionId = 'left' | 'right' | 'up' | 'down' | 'jump' | 'dash' | 'attack1' | 'attack2' | 'ability1' | 'ability2' | 'heal' | 'interact' | 'restart' | 'pause';
 export interface SettingsData { volume: { master: number; music: number; sfx: number }; showTimer: boolean; screenShake: boolean; damageNumbers: boolean;
   promptStyle: 'auto' | 'keyboard' | 'xbox' | 'playstation'; bindings: { keyboard: Record<ActionId, [string | null, string | null]>; gamepad: Record<ActionId, number | null> } }

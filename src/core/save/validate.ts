@@ -1,3 +1,4 @@
+import { classicLayout, LAYOUT, layoutCode, parseLayoutCode } from '../run/layout.ts';
 // Full save validation (06 §15). Keep good entries; default missing fields. No storage or clock reads.
 import { ABILITY_INFO } from '../../data/abilities.ts';
 import { BONDS, CLASS_IDS, HYBRIDS, STARTING_KITS, WEAPON_CLASSES } from '../../data/classes.ts';
@@ -79,6 +80,11 @@ function personalBest(raw: unknown): PbRecord | null {
   if (!integer(p.ticks) || !times || p.ticks !== times.at(-1) || !isoDate(p.date) || !seed(p.seedText) || !gear) return null;
   return { ticks: p.ticks, splits: times as PbRecord['splits'], date: p.date, seedText: p.seedText, kit: gear };
 }
+/** 06 §15.2: a missing or bad layout code (saves before M11) is the classic layout. */
+function layoutField(raw: unknown): RunRecord['layout'] {
+  const o = typeof raw === 'object' && raw !== null ? raw as Record<string, unknown> : {};
+  return Object.fromEntries(LAYOUT.stages.map((s) => [s, typeof o[s] === 'string' && parseLayoutCode(o[s] as string) ? o[s] : layoutCode(classicLayout())])) as RunRecord['layout'];
+}
 function runRecord(raw: unknown): RunRecord | null {
   const h = object(raw), times = splits(h.splits, true), gear = kit(h.kit), stats = runStats(h.stats, true);
   if (!isoDate(h.date) || !cls(h.startClass) || !startWeapon(h.startClass, h.startWeapon) || !(h.road === null || road(h.road))
@@ -90,7 +96,7 @@ function runRecord(raw: unknown): RunRecord | null {
   if (h.result === 'complete' && (h.road === null || h.stageReached !== RUN.STAGE_COUNT || times.includes(null) || h.runTicks !== times.at(-1))) return null;
   return { date: h.date, startClass: h.startClass, startWeapon: h.startWeapon, road: h.road, seedText: h.seedText, seeded: h.seeded,
     result: h.result, stageReached: h.stageReached as RunRecord['stageReached'], sectionReached: h.sectionReached, runTicks: h.runTicks,
-    splits: times, cause: h.cause, dragon: h.dragon, kit: gear, stats };
+    splits: times, cause: h.cause, dragon: h.dragon, kit: gear, stats, layout: layoutField(h.layout) };
 }
 
 const fixedKey = (code: string) => /^(?:Escape|Tab|MetaLeft|MetaRight|ContextMenu|PrintScreen|F(?:[1-9]|1[0-2]))$/.test(code);

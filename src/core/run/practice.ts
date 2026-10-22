@@ -8,7 +8,9 @@ import { PRACTICE_DRAGON, PRACTICE_ELEMENT, PRACTICE_LEVELS, PRACTICE_PRESET, PR
 import { DRAGON_ROLL } from '../../data/run.ts';
 import type { DragonRoll } from './dragonRoll.ts';
 
-export interface PracticeSetup { levelId: PracticeLevelId; cls: ClassId; weapon: WeaponId; dragon: PracticeDragon }
+export interface PracticeSetup { levelId: PracticeLevelId; cls: ClassId; weapon: WeaponId; dragon: PracticeDragon;
+  /** 06 §8.7 Layout option: chosen picks (Classic or per section); absent = Random. */
+  layout?: import('../level/assemble.ts').Picks | null }
 export type PracticeKey = `${PracticeLevelId}|${ClassId}`;
 export const practiceKey = (levelId: PracticeLevelId, cls: ClassId): PracticeKey => `${levelId}|${cls}`;
 

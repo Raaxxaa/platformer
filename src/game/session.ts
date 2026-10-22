@@ -1,4 +1,8 @@
 // Browser session: the sole save repository and the source to return to after Training.
+import { assembleLevel, type LevelPack, type Picks } from '../core/level/assemble.ts';
+import { rollLayout } from '../core/run/layout.ts';
+import { fnv1a32 } from '../core/rng.ts';
+import type { StageLevelId } from '../data/levelRules.ts';
 import { saveDate, saveStore } from './save/storage.ts';
 import { GameWorld, type GameWorldOptions } from '../core/sim/gameWorld.ts';
 import type { LevelData } from '../core/level/loadLevel.ts';
@@ -22,7 +26,9 @@ export const gameSession = {
     const save = saveStore().data;
     w.records.pbs = structuredClone(save.pbs); w.records.bestSegments = structuredClone(save.bestSegments);
   },
-  makeWorld(level: LevelData, carry?: WorldCarry, debugSeed?: string | null, dragon?: GameWorldOptions['dragon'], practice?: PracticeSetup | null): GameWorld {
+  /** `pack`: the level's section versions (06 §8.7); the run's picks (or `forcedLayout`) assemble the level. */
+  makeWorld(level: LevelData, carry?: WorldCarry, debugSeed?: string | null, dragon?: GameWorldOptions['dragon'], practice?: PracticeSetup | null,
+    pack?: LevelPack | null, forcedLayout?: Picks | null): GameWorld {
     const save = saveStore().data;
     const homeTransition = carry?.run.transition?.target.phase === 'homeVillage' ? structuredClone(carry.run.transition) : null;
     if (homeTransition) carry = undefined;
@@ -35,7 +41,13 @@ export const gameSession = {
       this.kitNotice = `${WEAPON_NAME(startKit.weapon)} not ready. Using ${WEAPON_NAME(weapon)}.`;
       startKit = { cls: startKit.cls, weapon }; // Runtime fallback only: preserve saved kit and unlocks.
     }
-    const w = GameWorld.fromLevel(level, { seedText: seed ?? randomSeed(), seeded: carry?.run.seeded ?? seed !== null,
+    const seedText = seed ?? randomSeed();
+    let layout: Picks | undefined;
+    if (pack) {
+      layout = forcedLayout ?? carry?.run.layout?.[pack.levelId as StageLevelId] ?? rollLayout(fnv1a32(seedText))[pack.levelId as StageLevelId];
+      level = assembleLevel(pack, layout);
+    }
+    const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout, seeded: carry?.run.seeded ?? seed !== null,
       startKit, carry, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
       nextRunUnlocks: () => saveStore().data.unlocks.blueprints, dragon, practice: !!practice, practiceSetup: practice ?? undefined });
     if (carry?.run.phase === 'loading') w.completeLoading();

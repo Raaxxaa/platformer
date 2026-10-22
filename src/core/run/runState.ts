@@ -1,3 +1,4 @@
+import { rollLayout, type RunLayout } from './layout.ts';
 // Run phases and clocks (06 §2, §5, §16). No clock, storage or random source lives here.
 import { deriveSeed, fnv1a32, Rng } from '../rng.ts';
 import { rollDragon, type DragonRoll } from './dragonRoll.ts';
@@ -28,6 +29,8 @@ export interface RunState {
   dragon: DragonRoll;
   road: Road | null;
   stage: 0 | 1 | 2 | 3 | 4; levelId: LevelId;
+  /** 06 §8.7: the picked section versions per stage. */
+  layout: RunLayout;
   runTicks: number; stageTicks: number;
   splits: [number | null, number | null, number | null, number | null];
   deathTick: number | null;
@@ -46,7 +49,7 @@ export function createRunState(seedText: string, seeded = false): RunState {
   const runSeed = fnv1a32(seedText), dragonRng = new Rng(deriveSeed(runSeed, 'dragon', 'run'));
   return {
     phase: 'stage', pausedFrom: null, transition: null, seedText, runSeed, seeded, startKit: null, started: false, endRecorded: false, stats: defaultRunStats(), goldEarnedTenths: 0, lootUnlocked: [], blueprintsDropped: [], road: null, stage: 1, levelId: 'plains',
-    dragon: rollDragon(() => dragonRng.next()), runTicks: 0, stageTicks: 0, splits: [null, null, null, null], deathTick: null, sectionReached: 0,
+    dragon: rollDragon(() => dragonRng.next()), layout: rollLayout(runSeed), runTicks: 0, stageTicks: 0, splits: [null, null, null, null], deathTick: null, sectionReached: 0,
     arenas: {}, timedDoors: {}, restartHoldTicks: 0, restartNeedsRelease: false,
     bossDefeatedTick: null, statPickDone: false, winUnlocks: { blueprint: null, startWeapon: null },
   };

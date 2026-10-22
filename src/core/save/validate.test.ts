@@ -9,7 +9,8 @@ const kit = (): KitSummary => ({ displayName: 'Gladiator', weapons: [{ weaponId:
 const pb = (): PbRecord => ({ ticks: 12000, splits: [1200, 4000, 8000, 12000], date, seedText: 'ABCD1234', kit: kit() });
 const history = (result: RunRecord['result'] = 'death', ticks = 4000): RunRecord => ({ date, startClass: 'tank', startWeapon: 'war_maul', road: 'forest', seedText: 'ABCD1234', seeded: false, result,
   stageReached: 2, sectionReached: 8, runTicks: ticks, splits: [1200, null, null, null], cause: 'spikes', dragon: 'absent', kit: kit(),
-  stats: { kills: 5, eliteKills: 1, goldEarned: 10, chestsOpened: 1, luckyBlocksBroken: 2, damageTaken: 50, flasksDrunk: 1 } });
+  stats: { kills: 5, eliteKills: 1, goldEarned: 10, chestsOpened: 1, luckyBlocksBroken: 2, damageTaken: 50, flasksDrunk: 1 },
+  layout: { plains: '2-1-3-3-2', mountains: '1-1-1-1-1', swamps: '1-1-1-1-1', kingdom: '1-1-1-1-1', castle: '1-1-1-1-1' } });
 
 describe('save shape validation (06 §15)', () => {
   it('resets both devices when a valid custom keyboard has an invalid gamepad binding', () => {
@@ -126,5 +127,18 @@ describe('entry-level save validation', () => {
     const raw = { pbs: { 'tank|forest': pb() }, history: [history()] }, saved = validateSave(raw);
     raw.pbs['tank|forest'].splits[0] = 99; raw.history[0].kit.abilities[0]!.level = 1;
     expect(saved.pbs['tank|forest']?.splits[0]).toBe(1200); expect(saved.history[0].kit.abilities[0]?.level).toBe(5);
+  });
+});
+
+describe('run history layout codes (06 §8.7, §15.2)', () => {
+  it('keeps a valid code and fills old saves with the classic layout', async () => {
+    const { validateSave } = await import('./validate.ts');
+    const { defaultSave } = await import('./schema.ts');
+    const s = defaultSave();
+    const h = history() as unknown as Record<string, unknown>;
+    const old = { ...h }; delete old.layout;
+    const out = validateSave({ ...s, history: [h, old] } as never);
+    expect(out.history[0].layout.plains).toBe('2-1-3-3-2');
+    expect(out.history[1].layout.plains).toBe('1-1-1-1-1');
   });
 });
