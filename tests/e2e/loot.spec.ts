@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 // M5: chests, Lucky Blocks, graded weapons and their cards, the merchant, the cursed one-hit rule, the boss drop.
-async function boot(page: Page, query = '&start=plains&kit=swordsman:greatsword') {
+async function boot(page: Page, query = '&start=plains&layout=classic&kit=swordsman:greatsword') {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`/?debug=1&seed=LOOT${query}`);

@@ -21,6 +21,7 @@ async function arrive(page: Page, id: string) {
 
 for (const road of ['mountains', 'swamps'] as const) {
   test(`${road}: boot and all eight authored sections`, async ({ page }) => {
+  test.slow();   // 16 software-rendered screenshots
     const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
     for (let index = 1; index <= 8; index++) {
       // A fresh scene keeps an earlier arena's real camera lock out of later section photos.

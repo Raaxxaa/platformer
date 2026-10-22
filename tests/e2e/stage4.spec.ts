@@ -26,6 +26,7 @@ const openDragon = async (page: Page, level: string, color: string) => {
 };
 
 test('castle: boots and shows all eight authored sections', async ({ page }) => {
+  test.slow();   // 16 software-rendered screenshots
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   for (let index = 1; index <= 8; index++) {
     await page.goto(`/?debug=1&start=castle&section=${index}&seed=M94VIEW&kit=swordsman:greatsword`);

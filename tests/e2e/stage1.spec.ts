@@ -43,6 +43,7 @@ test('losing focus pauses the exact run phase and freezes its clocks', async ({ 
 });
 
 test('every section loads', async ({ page }) => {
+  test.slow();   // 16 software-rendered screenshots
   for (let n = 1; n <= 8; n++) {
     const errors = await boot(page, `&section=${n}`);
     await page.evaluate(() => (window as any).__game.step(2, {}));

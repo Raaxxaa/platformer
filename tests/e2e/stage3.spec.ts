@@ -22,6 +22,7 @@ async function arrive(page: Page, id: string) {
 const open = async (page: Page, query = '') => { await page.goto(`/?debug=1&start=kingdom&seed=M93&kit=swordsman:greatsword${query}`); await arrive(page, 'kingdom'); };
 
 test('kingdom: boots and shows all eight authored sections', async ({ page }) => {
+  test.slow();   // 16 software-rendered screenshots
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   for (let index = 1; index <= 8; index++) {
     await page.goto(`/?debug=1&start=kingdom&section=${index}&seed=M93VIEW&kit=swordsman:greatsword`);
