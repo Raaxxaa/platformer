@@ -85,10 +85,93 @@ def merge_rects(cells):
     return rects
 
 
-def build(level_dir):
-    """Returns (tiled_dict, level_id)."""
+def read_lines(path):
+    with open(path, encoding='utf-8') as f:
+        lines = f.read().split('\n')
+    while lines and lines[-1] == '':
+        lines.pop()
+    return lines
+
+
+def read_versions(level_dir, man):
+    """06 §8.7 section variants: [[version dict per v1, v2, ...] per section]. Version: lines, entry, exit, objects, mainPath."""
+    out = []
+    for n in range(1, man['sections'] + 1):
+        vs, v = [], 1
+        while os.path.isfile(os.path.join(level_dir, f's{n}', f'v{v}.json')):
+            with open(os.path.join(level_dir, f's{n}', f'v{v}.json'), encoding='utf-8') as f:
+                meta = json.load(f)
+            meta['lines'] = read_lines(os.path.join(level_dir, f's{n}', f'v{v}.txt'))
+            meta['width'] = max(len(line) for line in meta['lines'])
+            vs.append(meta)
+            v += 1
+        if not vs:
+            raise BuildError(f's{n}: no v1')
+        out.append(vs)
+    return out
+
+
+def assemble(man, versions, picks):
+    """Each section's entry anchor on the previous exit anchor (06 §8.7). Returns a classic manifest (chunks + objects)."""
+    chunks, objects, sections, path = [], [], [], []
+    x, y = man['origin']
+    prev = None
+    placed = []
+    for i, vs in enumerate(versions):
+        v = vs[picks[i] - 1]
+        if prev is not None:
+            px, py, pv = prev
+            x = px + pv['exit'][0] + 1 - v['entry'][0]
+            y = py + pv['exit'][1] - v['entry'][1]
+        placed.append((x, y, v))
+        prev = (x, y, v)
+    x0 = min(p[0] for p in placed)
+    y0 = min(p[1] for p in placed)
+    for i, (x, y, v) in enumerate(placed):
+        x -= x0; y -= y0
+        chunks.append({'lines': v['lines'], 'x': x, 'y': y, 'file': f's{i + 1}/v{picks[i]}.txt'})
+        for o in v['objects']:
+            o = json.loads(json.dumps(o))
+            o['x'] += x; o['y'] += y
+            objects.append(o)
+        path += [[px + x, py + y] for px, py in v['mainPath']]
+        sections.append({'type': 'section', 'x': x, 'y': y, 'w': v['width'], 'h': len(v['lines']), 'props': {'index': i + 1}})
+    W = max(c['x'] + max(len(line) for line in c['lines']) for c in chunks)
+    H = max(c['y'] + len(c['lines']) for c in chunks)
+    return dict(man, width=W, height=max(H, man.get('height', 0)), chunks=chunks, objects=objects + sections, mainPath=path)
+
+
+def load_manifest(level_dir):
     with open(os.path.join(level_dir, 'level.json'), encoding='utf-8') as f:
         man = json.load(f)
+    if 'sections' in man:
+        versions = read_versions(level_dir, man)
+        man = assemble(man, versions, [1] * len(versions))
+    return man
+
+
+def write_pack(level_dir, out_dir):
+    """06 §8.7: every section version for the game's assembler (public/levels/<id>.pack.json)."""
+    with open(os.path.join(level_dir, 'level.json'), encoding='utf-8') as f:
+        man = json.load(f)
+    if 'sections' not in man:
+        return None
+    versions = read_versions(level_dir, man)
+    legend = dict(DEFAULT_LEGEND)
+    legend.update(man.get('legend', {}))
+    pack = {k: man[k] for k in ('levelId', 'kind', 'stage', 'biome', 'height', 'origin')}
+    pack['legend'] = legend
+    pack['vary'] = man.get('vary', [])
+    pack['sections'] = [[{k: v[k] for k in ('entry', 'exit', 'lines', 'mainPath', 'objects')} for v in vs] for vs in versions]
+    path = os.path.join(out_dir, f'{man["levelId"]}.pack.json')
+    with open(path, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(json.dumps(pack, indent=1, sort_keys=True, ensure_ascii=False) + '\n')
+    return path
+
+
+def build(level_dir):
+    """Returns (tiled_dict, level_id)."""
+    man = load_manifest(level_dir)
     W, H = man['width'], man['height']
     grid = [['#'] * W for _ in range(H)]          # uncovered cells are solid
     legend = dict(DEFAULT_LEGEND)
@@ -96,11 +179,7 @@ def build(level_dir):
     markers = {}                                  # (x, y) -> legend entry (later chunks win)
     specials = {}                                 # (x, y) -> special char
     for ch in man['chunks']:
-        path = os.path.join(level_dir, ch['file'])
-        with open(path, encoding='utf-8') as f:
-            lines = f.read().split('\n')
-        while lines and lines[-1] == '':
-            lines.pop()
+        lines = ch['lines'] if 'lines' in ch else read_lines(os.path.join(level_dir, ch['file']))
         for row, line in enumerate(lines):
             for col, c in enumerate(line):
                 if c == ' ':
@@ -230,6 +309,8 @@ def main(argv):
         with open(os.path.join(OUT, f'{level_id}.json'), 'w', encoding='utf-8', newline='\n') as f:
             f.write(to_text(tiled))
         print(f'levels: wrote public/levels/{level_id}.json')
+        if write_pack(os.path.join(SRC, lid), OUT):
+            print(f'levels: wrote public/levels/{level_id}.pack.json')
     write_kinds_png(os.path.join(OUT, 'kinds.png'))
 
 

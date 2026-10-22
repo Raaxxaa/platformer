@@ -1,0 +1,73 @@
+{
+ "entry": [
+  0,
+  38
+ ],
+ "exit": [
+  55,
+  38
+ ],
+ "objects": [
+  {
+   "type": "arena",
+   "x": 2,
+   "y": 24,
+   "w": 36,
+   "h": 14,
+   "props": {
+    "id": "boss1",
+    "kind": "boss",
+    "boss": "great_boar",
+    "entry": "left"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 1,
+   "y": 35,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "boss1",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 38,
+   "y": 35,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "boss1",
+    "role": "exit"
+   }
+  },
+  {
+   "type": "exit",
+   "x": 52,
+   "y": 34,
+   "w": 3,
+   "h": 4,
+   "props": {}
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   37
+  ],
+  [
+   19,
+   37
+  ],
+  [
+   39,
+   37
+  ],
+  [
+   53,
+   37
+  ]
+ ]
+}
