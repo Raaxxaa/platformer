@@ -358,6 +358,7 @@ export class GameWorld {
     this.run.startKit = this.opts.startKit ?? null;
     this.run.runSeed = this.runSeed;
     if (this.opts.dragon) this.run.dragon = { ...this.opts.dragon };
+    // SPEC-GAP 46: does `random color` re-roll on retry? Yes, from the attempt's seed.
     if (this.opts.practiceSetup) {                         // 06 §14: the Dragon is perched when the option is on; 'random' re-rolls each attempt
       const roll = practiceDragon(this.opts.practiceSetup, new Rng(deriveSeed(this.runSeed, 'dragon', 'practice')).next());
       this.run.dragon = roll ?? { ...this.run.dragon, present: false, outcome: 'absent' };
@@ -559,6 +560,7 @@ export class GameWorld {
   /** The stage boss died (06 §2.5): split 1 on this tick, unless the player died on an earlier tick. */
   onStageBossDefeated(): void {
     const r = this.run;
+    // SPEC-GAP 44: no intro lock in practice; time counts from the first stage tick.
     if (this.opts.practice) {                                 // practice: the time of this attempt, no split, stat pick or run end (06 §14)
       if (r.phase === 'dead' || this.practiceClear) return;
       this.practiceClear = { ticks: r.stageTicks, best: null, isNew: false };

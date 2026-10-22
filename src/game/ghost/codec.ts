@@ -37,6 +37,7 @@ export function decodeGhost(data: string): GhostSample[] | null {
  * Collects one sample per `sampleTicks` stage ticks: sample i is the player as drawn when stageTicks = 2i. The view renders less
  * often than the sim ticks, so a render that skips ahead repeats the latest drawn state for the samples it passed. Stops at the cap.
  */
+// SPEC-GAP 45: renders skip samples; the latest drawn state is repeated.
 export class GhostRecorder {
   samples: GhostSample[] = [];
   /** Call each render with the current stage tick and the player as drawn. */

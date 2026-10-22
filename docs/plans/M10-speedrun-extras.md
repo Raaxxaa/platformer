@@ -2,7 +2,7 @@
 
 **Goal:** the speedrun extras from GAME_PLAN 6.4 and 14: type a seed for races, practise any stage you reached with a fixed loadout, and race a ghost of your best practice attempt.
 
-**Status: in progress (started 2026-10-22).**
+**Status: done (2026-10-22).** SPEC-GAPs 42 to 47 in `docs/SPEC-GAPS.md`. Only the numbers the spec gives are checked for balance; a real balance pass needs playtest numbers (SPEC-GAP 47).
 
 **Spec:** `docs/spec/06-run-levels-save.md` §7 (seeds), §14 (practice mode and ghost replay), §16 (debug params); `docs/spec/07-ui-hud-controls.md` §3 (info line, practice timer), §6.12 (seed entry), §7.3, §7.4 (practice setup and result), §7.6 (pause in practice); `docs/spec/04-enemies-bosses.md` §13 (Dragon in practice); `docs/spec/03-classes-abilities.md` §13 and `docs/spec/06-run-levels-save.md` §8.2 (balance numbers).
 
