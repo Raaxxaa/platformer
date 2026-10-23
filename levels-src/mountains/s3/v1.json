@@ -1,0 +1,178 @@
+{
+ "entry": [
+  0,
+  164
+ ],
+ "exit": [
+  23,
+  92
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 12,
+   "y": 137,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 12,
+   "y": 113,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 11,
+   "y": 126,
+   "props": {}
+  },
+  {
+   "type": "key",
+   "x": 18,
+   "y": 85,
+   "props": {}
+  },
+  {
+   "type": "falling_rocks",
+   "x": 13,
+   "y": 140,
+   "w": 4,
+   "h": 12,
+   "props": {
+    "interval": 2
+   }
+  },
+  {
+   "type": "falling_rocks",
+   "x": 5,
+   "y": 116,
+   "w": 4,
+   "h": 12,
+   "props": {
+    "interval": 2
+   }
+  },
+  {
+   "type": "falling_rocks",
+   "x": 13,
+   "y": 92,
+   "w": 4,
+   "h": 12,
+   "props": {
+    "interval": 2
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 7,
+   "y": 151,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 15,
+   "y": 139,
+   "props": {
+    "angle": 180
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 7,
+   "y": 127,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 15,
+   "y": 115,
+   "props": {
+    "angle": 180
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 7,
+   "y": 103,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 22,
+   "y": 89,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   163
+  ],
+  [
+   6,
+   163
+  ],
+  [
+   10,
+   151
+  ],
+  [
+   14,
+   151
+  ],
+  [
+   11,
+   139
+  ],
+  [
+   6,
+   139
+  ],
+  [
+   10,
+   127
+  ],
+  [
+   14,
+   127
+  ],
+  [
+   11,
+   115
+  ],
+  [
+   6,
+   115
+  ],
+  [
+   10,
+   103
+  ],
+  [
+   14,
+   103
+  ],
+  [
+   11,
+   91
+  ],
+  [
+   23,
+   91
+  ]
+ ]
+}

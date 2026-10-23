@@ -1,0 +1,89 @@
+{
+ "entry": [
+  0,
+  144
+ ],
+ "exit": [
+  55,
+  144
+ ],
+ "objects": [
+  {
+   "type": "arena",
+   "x": 1,
+   "y": 126,
+   "w": 36,
+   "h": 18,
+   "props": {
+    "id": "mountain_boss",
+    "kind": "boss",
+    "boss": "stone_colossus",
+    "entry": "left"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 0,
+   "y": 141,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "mountain_boss",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 37,
+   "y": 141,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "mountain_boss",
+    "role": "exit"
+   }
+  },
+  {
+   "type": "exit",
+   "x": 54,
+   "y": 141,
+   "w": 2,
+   "h": 3,
+   "props": {}
+  },
+  {
+   "type": "guide_arrow",
+   "x": 47,
+   "y": 140,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   143
+  ],
+  [
+   1,
+   143
+  ],
+  [
+   19,
+   143
+  ],
+  [
+   36,
+   143
+  ],
+  [
+   38,
+   143
+  ],
+  [
+   54,
+   143
+  ]
+ ]
+}

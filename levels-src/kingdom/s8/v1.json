@@ -1,0 +1,77 @@
+{
+ "entry": [
+  0,
+  72
+ ],
+ "exit": [
+  67,
+  72
+ ],
+ "objects": [
+  {
+   "type": "arena",
+   "x": 4,
+   "y": 56,
+   "w": 40,
+   "h": 16,
+   "props": {
+    "id": "castle_gate",
+    "kind": "boss",
+    "boss": "black_knight",
+    "entry": "left"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 3,
+   "y": 69,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "castle_gate",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 44,
+   "y": 69,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "castle_gate",
+    "role": "exit"
+   }
+  },
+  {
+   "type": "exit",
+   "x": 63,
+   "y": 69,
+   "w": 2,
+   "h": 3,
+   "props": {}
+  }
+ ],
+ "mainPath": [
+  [
+   6,
+   71
+  ],
+  [
+   22,
+   71
+  ],
+  [
+   38,
+   71
+  ],
+  [
+   54,
+   71
+  ],
+  [
+   64,
+   71
+  ]
+ ]
+}

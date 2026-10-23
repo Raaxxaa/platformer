@@ -1,0 +1,167 @@
+{
+ "entry": [
+  0,
+  164
+ ],
+ "exit": [
+  99,
+  164
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 11,
+   "y": 160,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 15,
+   "y": 160,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 19,
+   "y": 161,
+   "props": {
+    "enemy": "ram",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 33,
+   "y": 155,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 37,
+   "y": 163,
+   "props": {
+    "enemy": "ram",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 52,
+   "y": 160,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 59,
+   "y": 163,
+   "props": {
+    "enemy": "rock_golem",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 62,
+   "y": 155,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 76,
+   "y": 160,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 81,
+   "y": 163,
+   "props": {
+    "enemy": "ram",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 94,
+   "y": 163,
+   "props": {
+    "enemy": "goblin_shaman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 28,
+   "y": 161,
+   "props": {}
+  },
+  {
+   "type": "guide_arrow",
+   "x": 98,
+   "y": 160,
+   "props": {
+    "angle": -90
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   163
+  ],
+  [
+   16,
+   163
+  ],
+  [
+   19,
+   161
+  ],
+  [
+   23,
+   161
+  ],
+  [
+   26,
+   163
+  ],
+  [
+   48,
+   163
+  ],
+  [
+   51,
+   160
+  ],
+  [
+   55,
+   160
+  ],
+  [
+   58,
+   163
+  ],
+  [
+   99,
+   163
+  ]
+ ]
+}

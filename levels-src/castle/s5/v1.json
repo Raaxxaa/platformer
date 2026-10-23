@@ -1,0 +1,169 @@
+{
+ "entry": [
+  0,
+  110
+ ],
+ "exit": [
+  41,
+  110
+ ],
+ "objects": [
+  {
+   "type": "arena",
+   "x": 2,
+   "y": 92,
+   "w": 38,
+   "h": 18,
+   "props": {
+    "id": "guard_hall",
+    "kind": "combat"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 1,
+   "y": 107,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "guard_hall",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 40,
+   "y": 107,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "guard_hall",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 12,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1,
+    "wave": 1,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 16,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1,
+    "wave": 1,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 36,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1,
+    "wave": 1,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 10,
+   "y": 109,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1,
+    "wave": 2,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 20,
+   "y": 109,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1,
+    "wave": 2,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 30,
+   "y": 109,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1,
+    "wave": 2,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 12,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1,
+    "wave": 3,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 16,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1,
+    "wave": 3,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 34,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1,
+    "wave": 3,
+    "arena": "guard_hall"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 26,
+   "y": 109,
+   "props": {
+    "enemy": "royal_executioner",
+    "facing": -1,
+    "wave": 3,
+    "arena": "guard_hall"
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   5,
+   109
+  ],
+  [
+   21,
+   109
+  ],
+  [
+   37,
+   109
+  ]
+ ]
+}

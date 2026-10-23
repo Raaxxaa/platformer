@@ -1,0 +1,38 @@
+{
+ "entry": [
+  0,
+  110
+ ],
+ "exit": [
+  29,
+  110
+ ],
+ "objects": [
+  {
+   "type": "player_start",
+   "x": 2,
+   "y": 109,
+   "props": {
+    "facing": 1
+   }
+  },
+  {
+   "type": "loot_stand",
+   "x": 14,
+   "y": 109,
+   "props": {
+    "kind": "weapon"
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   2,
+   109
+  ],
+  [
+   18,
+   109
+  ]
+ ]
+}

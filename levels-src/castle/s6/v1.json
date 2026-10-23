@@ -1,0 +1,199 @@
+{
+ "entry": [
+  0,
+  110
+ ],
+ "exit": [
+  123,
+  110
+ ],
+ "objects": [
+  {
+   "type": "merchant_spot",
+   "x": 10,
+   "y": 109,
+   "props": {}
+  },
+  {
+   "type": "lucky_block",
+   "x": 26,
+   "y": 107,
+   "props": {}
+  },
+  {
+   "type": "key",
+   "x": 39,
+   "y": 100,
+   "props": {}
+  },
+  {
+   "type": "cannon",
+   "x": 46,
+   "y": 108,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 56,
+   "y": 108,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 66,
+   "y": 108,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 74,
+   "y": 108,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 60,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 52,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 70,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 63,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 91,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.0
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 95,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.5
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 112,
+   "y": 95,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 2,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   11,
+   109
+  ],
+  [
+   27,
+   109
+  ],
+  [
+   43,
+   109
+  ],
+  [
+   62,
+   109
+  ],
+  [
+   78,
+   109
+  ],
+  [
+   79,
+   109
+  ],
+  [
+   85,
+   109
+  ],
+  [
+   92,
+   109
+  ],
+  [
+   99,
+   109
+  ],
+  [
+   103,
+   109
+  ],
+  [
+   106,
+   95
+  ],
+  [
+   112,
+   95
+  ],
+  [
+   117,
+   95
+  ],
+  [
+   122,
+   109
+  ]
+ ]
+}

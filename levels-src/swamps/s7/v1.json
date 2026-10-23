@@ -1,0 +1,130 @@
+{
+ "entry": [
+  0,
+  56
+ ],
+ "exit": [
+  79,
+  56
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 7,
+   "y": 55,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 18,
+   "y": 51,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 28,
+   "y": 55,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 58,
+   "y": 55,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 70,
+   "y": 55,
+   "props": {
+    "enemy": "treant",
+    "facing": -1
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 15,
+   "y": 53,
+   "props": {}
+  },
+  {
+   "type": "key_chest",
+   "x": 25,
+   "y": 55,
+   "props": {}
+  },
+  {
+   "type": "key_chest",
+   "x": 63,
+   "y": 55,
+   "props": {}
+  },
+  {
+   "type": "timed_door",
+   "x": 42,
+   "y": 61,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "id": "swamp_timed",
+    "side": "left",
+    "timeLimit": 125
+   }
+  },
+  {
+   "type": "timed_chest",
+   "x": 49,
+   "y": 63,
+   "props": {
+    "door": "swamp_timed"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 35,
+   "y": 53,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 78,
+   "y": 53,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   33,
+   55
+  ],
+  [
+   41,
+   55
+  ],
+  [
+   56,
+   55
+  ],
+  [
+   79,
+   55
+  ]
+ ]
+}

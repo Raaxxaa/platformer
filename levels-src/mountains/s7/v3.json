@@ -1,0 +1,137 @@
+{
+ "entry": [
+  0,
+  144
+ ],
+ "exit": [
+  79,
+  144
+ ],
+ "objects": [
+  {
+   "type": "lucky_block",
+   "x": 3,
+   "y": 140,
+   "props": {}
+  },
+  {
+   "type": "key_chest",
+   "x": 19,
+   "y": 143,
+   "props": {}
+  },
+  {
+   "type": "key_chest",
+   "x": 30,
+   "y": 143,
+   "props": {}
+  },
+  {
+   "type": "timed_chest",
+   "x": 61,
+   "y": 138,
+   "props": {
+    "door": "mountain_timed"
+   }
+  },
+  {
+   "type": "timed_door",
+   "x": 56,
+   "y": 136,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "id": "mountain_timed",
+    "side": "left",
+    "timeLimit": 125
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 11,
+   "y": 141,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 40,
+   "y": 143,
+   "props": {
+    "enemy": "rock_golem",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 70,
+   "y": 143,
+   "props": {
+    "enemy": "ram",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 35,
+   "y": 136,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 75,
+   "y": 143,
+   "props": {
+    "enemy": "goblin_shaman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 25,
+   "y": 140,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 78,
+   "y": 140,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   143
+  ],
+  [
+   7,
+   143
+  ],
+  [
+   8,
+   141
+  ],
+  [
+   14,
+   141
+  ],
+  [
+   15,
+   143
+  ],
+  [
+   79,
+   143
+  ]
+ ]
+}

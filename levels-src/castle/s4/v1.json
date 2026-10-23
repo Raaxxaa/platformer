@@ -1,0 +1,179 @@
+{
+ "entry": [
+  0,
+  110
+ ],
+ "exit": [
+  99,
+  110
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 15,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 8,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 27,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 22,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 58,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 62,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 2,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 81,
+   "y": 118,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 84,
+   "y": 118,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 86,
+   "y": 118,
+   "props": {}
+  },
+  {
+   "type": "cursed_chest",
+   "x": 89,
+   "y": 118,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 92,
+   "y": 118,
+   "props": {
+    "enemy": "royal_executioner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "loot_stand",
+   "x": 97,
+   "y": 118,
+   "props": {
+    "kind": "ability"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 68,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   4,
+   109
+  ],
+  [
+   12,
+   109
+  ],
+  [
+   20,
+   109
+  ],
+  [
+   29,
+   109
+  ],
+  [
+   31,
+   109
+  ],
+  [
+   39,
+   109
+  ],
+  [
+   46,
+   109
+  ],
+  [
+   53,
+   109
+  ],
+  [
+   59,
+   109
+  ],
+  [
+   65,
+   109
+  ],
+  [
+   73,
+   109
+  ],
+  [
+   89,
+   109
+  ]
+ ]
+}

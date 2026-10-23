@@ -1,0 +1,169 @@
+{
+ "entry": [
+  0,
+  72
+ ],
+ "exit": [
+  41,
+  72
+ ],
+ "objects": [
+  {
+   "type": "arena",
+   "x": 2,
+   "y": 54,
+   "w": 38,
+   "h": 18,
+   "props": {
+    "id": "palace_yard",
+    "kind": "combat",
+    "parTime": 29
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 1,
+   "y": 69,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "palace_yard",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 40,
+   "y": 69,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "palace_yard",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 12,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1,
+    "wave": 1,
+    "arena": "palace_yard"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 16,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1,
+    "wave": 1,
+    "arena": "palace_yard"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 36,
+   "y": 71,
+   "props": {
+    "enemy": "battle_mage",
+    "facing": -1,
+    "wave": 1,
+    "arena": "palace_yard"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 6,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "wave": 2,
+    "arena": "palace_yard",
+    "group": "hounds_yard"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 8,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "wave": 2,
+    "arena": "palace_yard",
+    "group": "hounds_yard"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 10,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "wave": 2,
+    "arena": "palace_yard",
+    "group": "hounds_yard"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 12,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1,
+    "wave": 3,
+    "arena": "palace_yard"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 34,
+   "y": 71,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1,
+    "wave": 3,
+    "arena": "palace_yard"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 37,
+   "y": 71,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1,
+    "wave": 3,
+    "arena": "palace_yard"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 26,
+   "y": 71,
+   "props": {
+    "enemy": "knight",
+    "facing": -1,
+    "wave": 3,
+    "arena": "palace_yard"
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   14,
+   71
+  ],
+  [
+   30,
+   71
+  ]
+ ]
+}

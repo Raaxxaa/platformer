@@ -1,0 +1,187 @@
+{
+ "entry": [
+  0,
+  92
+ ],
+ "exit": [
+  89,
+  92
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 20,
+   "y": 103,
+   "props": {
+    "enemy": "rock_golem",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 28,
+   "y": 103,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 40,
+   "y": 101,
+   "props": {
+    "enemy": "rock_golem",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 46,
+   "y": 99,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 53,
+   "y": 101,
+   "props": {
+    "enemy": "rock_golem",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 72,
+   "y": 103,
+   "props": {
+    "enemy": "ram",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 22,
+   "y": 111,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 36,
+   "y": 111,
+   "props": {
+    "enemy": "rock_golem",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 46,
+   "y": 111,
+   "props": {
+    "enemy": "goblin_shaman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 52,
+   "y": 111,
+   "props": {}
+  },
+  {
+   "type": "cursed_chest",
+   "x": 56,
+   "y": 111,
+   "props": {}
+  },
+  {
+   "type": "loot_stand",
+   "x": 60,
+   "y": 111,
+   "props": {
+    "kind": "ability"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 2,
+   "y": 88,
+   "props": {
+    "angle": 90
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 10,
+   "y": 101,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 62,
+   "y": 101,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 84,
+   "y": 90,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   91
+  ],
+  [
+   4,
+   103
+  ],
+  [
+   34,
+   103
+  ],
+  [
+   35,
+   101
+  ],
+  [
+   58,
+   101
+  ],
+  [
+   59,
+   103
+  ],
+  [
+   80,
+   103
+  ],
+  [
+   82,
+   103
+  ],
+  [
+   86,
+   91
+  ],
+  [
+   89,
+   91
+  ]
+ ]
+}
