@@ -1,0 +1,125 @@
+{
+ "entry": [
+  0,
+  110
+ ],
+ "exit": [
+  77,
+  110
+ ],
+ "objects": [
+  {
+   "type": "lucky_block",
+   "x": 6,
+   "y": 107,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 12,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 18,
+   "y": 109,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 28,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 62,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 72,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 34,
+   "y": 109,
+   "props": {
+    "enemy": "royal_executioner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 76,
+   "y": 109,
+   "props": {}
+  },
+  {
+   "type": "timed_door",
+   "x": 56,
+   "y": 116,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "id": "castle_timed",
+    "side": "left",
+    "timeLimit": 135
+   }
+  },
+  {
+   "type": "timed_chest",
+   "x": 64,
+   "y": 118,
+   "props": {
+    "door": "castle_timed"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 4,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   3,
+   109
+  ],
+  [
+   19,
+   109
+  ],
+  [
+   35,
+   109
+  ],
+  [
+   51,
+   109
+  ],
+  [
+   67,
+   109
+  ]
+ ]
+}

@@ -1,0 +1,174 @@
+{
+ "entry": [
+  0,
+  110
+ ],
+ "exit": [
+  105,
+  110
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 66,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 13,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.0
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 18,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.5
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 56,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.25
+   }
+  },
+  {
+   "type": "swinging_blade",
+   "x": 60,
+   "y": 103,
+   "props": {
+    "length": 88,
+    "amplitude": 60,
+    "period": 2.0,
+    "phase": 0.75
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 34,
+   "y": 95,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 46,
+   "y": 95,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 40,
+   "y": 95,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 100,
+   "y": 107,
+   "props": {}
+  },
+  {
+   "type": "key",
+   "x": 105,
+   "y": 100,
+   "props": {}
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   109
+  ],
+  [
+   6,
+   109
+  ],
+  [
+   12,
+   109
+  ],
+  [
+   18,
+   109
+  ],
+  [
+   23,
+   109
+  ],
+  [
+   28,
+   109
+  ],
+  [
+   30,
+   95
+  ],
+  [
+   41,
+   95
+  ],
+  [
+   51,
+   95
+  ],
+  [
+   56,
+   100
+  ],
+  [
+   60,
+   100
+  ],
+  [
+   65,
+   109
+  ],
+  [
+   68,
+   109
+  ],
+  [
+   76,
+   109
+  ],
+  [
+   84,
+   109
+  ],
+  [
+   92,
+   109
+  ],
+  [
+   98,
+   109
+  ]
+ ]
+}

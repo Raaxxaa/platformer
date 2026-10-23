@@ -25,6 +25,7 @@ const KEY_ROUTE: Record<string, [number, number][][]> = {
   mountains: [[[3, 6], [0, 2], [3, 6]], [[5, 14], [3, 8], [0, 2], [5, 14]]],
   swamps: [[[-9, 12], [-6, 6], [0, 0], [4, 12]], [[-7, 12], [-4, 6], [0, 0], [4, 12]]],
   kingdom: [[[-12, 9], [-7, 6], [-3, 3], [0, 0], [-12, 9]], [[-17, 12], [-12, 9], [-8, 6], [-4, 3], [0, 0], [-17, 12]]],
+  castle: [[[-11, 9], [-7, 6], [-3, 3], [0, 0], [-11, 9]], [[-11, 9], [-7, 6], [-3, 3], [0, 0], [-11, 9]]],
 };
 
 for (const id of LEVEL_PACKS.filter((l) => l !== 'plains')) {
@@ -37,9 +38,15 @@ for (const id of LEVEL_PACKS.filter((l) => l !== 'plains')) {
         const stage = w.stage; for (let k = 0; k < stage - 1; k++) w.run.splits[k] = 0;
         w.run.road = ROAD[id] ?? 'mountain';
         const result = runRouteBot(w, { maxTicksPerVertex: 1500 });
-        expect(result.log).toEqual([]);
-        if (NEXT[id]) expect(w.run.transition?.target.levelId).toBe(NEXT[id]);
-        else expect(w.run.phase).toBe('runComplete');
+        if (NEXT[id]) {
+          expect(result.log).toEqual([]);
+          expect(w.run.transition?.target.levelId).toBe(NEXT[id]);
+        } else {
+          // The bot kills the King once the throne room locks; the run is then complete and the world freezes (06 §2.6).
+          expect(w.run.phase).toBe('runComplete');
+          expect(result.reached).toBeGreaterThanOrEqual(result.total - 3);
+          expect(result.log.length).toBeLessThanOrEqual(1);
+        }
       }, 120_000);
     }
   });
@@ -151,6 +158,37 @@ if (LEVEL_PACKS.includes('kingdom')) {
         const xe = CELLAR_X[v];
         const pts: [number, number][] = [[xe - 1, 71], [xe + 1, 74], [xe + 4, 77], [xe + 11, 80], [xe + 28, 80], [xe + 11, 80], [xe + 4, 77], [xe + 1, 74], [xe + 4, 71]];
         const r = route(pts);
+        expect(r.log).toEqual([]); expect(r.reached).toBe(r.total);
+      });
+    }
+  });
+}
+
+// Castle §4: the skip chain over the spikes and the cellar side path of every version (06 §8.3).
+if (LEVEL_PACKS.includes('castle')) {
+  const pack = PACKS.castle;
+  const CHAIN_X: Record<number, number> = { 1: 34, 2: 14, 3: 46 };       // first spike pit of each version
+  const CELLAR_X: Record<number, number> = { 1: 70, 2: 70, 3: 14 };
+  describe('castle: section 4 skip chains and side paths in every version', () => {
+    for (let v = 1; v <= 3; v++) {
+      const route = (pts: [number, number][]) => {
+        const picks = classicPicks(pack); picks[3] = v;
+        const d = assembleLevel(pack, picks);
+        const sec = d.objects.find((o) => o.type === 'section' && Number(o.props.index) === 4)!;
+        const x0 = Math.floor(sec.x / T);
+        d.objects.find((o) => o.type === 'main_path')!.points = pts.map(([x, y]) => ({ x: (x + x0) * T + 8, y: y * T + 8 }));
+        const w = GameWorld.fromLevel(d, { seedText: `CASTLE-S4-${v}` });
+        w.teleportPlayer((pts[0][0] + x0) * T + 8, (pts[0][1] + 1) * T);
+        return runRouteBot(w, { maxTicksPerVertex: 1500 });
+      };
+      it(`v${v}: the skip chain over the spikes`, () => {
+        const p = CHAIN_X[v];
+        const r = route([[p - 4, 109], [p - 1, 106], [p + 6, 106], [p + 13, 106], [p + 20, 106], [p + 24, 109]]);
+        expect(r.log).toEqual([]); expect(r.reached).toBe(r.total);
+      });
+      it(`v${v}: the cellar side path (down three steps, to the dead end and back)`, () => {
+        const xe = CELLAR_X[v];
+        const r = route([[xe - 1, 109], [xe + 1, 112], [xe + 4, 115], [xe + 12, 118], [xe + 27, 118], [xe + 12, 118], [xe + 4, 115], [xe + 1, 112], [xe + 4, 109]]);
         expect(r.log).toEqual([]); expect(r.reached).toBe(r.total);
       });
     }

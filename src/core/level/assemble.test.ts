@@ -23,7 +23,7 @@ const ALL: Record<string, { json: unknown; pack: LevelPack }> = {
   castle: { json: castleJson, pack: castlePack as unknown as LevelPack },
 };
 const strip = (d: ReturnType<typeof loadLevel>) => ({ ...d, tiles: Array.from(d.tiles) });
-/** Open rows above an anchor, counted up to 4 (the join test). */
+/** Open rows above an anchor, counted up to 4 (the join test). SPEC-GAP: two classic seams have fewer than 4 (docs/SPEC-GAPS.md #50). */
 const openAbove = (lines: string[], [ax, ay]: [number, number]) => {
   let n = 0;
   while (n < 4 && !'#=~'.includes(lines[ay - n - 1]?.[ax] ?? '#')) n++;

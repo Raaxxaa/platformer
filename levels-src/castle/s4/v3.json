@@ -1,0 +1,175 @@
+{
+ "entry": [
+  0,
+  110
+ ],
+ "exit": [
+  99,
+  110
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 29,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 6,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 39,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 34,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 74,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 78,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 2,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 25,
+   "y": 118,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 28,
+   "y": 118,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 30,
+   "y": 118,
+   "props": {}
+  },
+  {
+   "type": "cursed_chest",
+   "x": 33,
+   "y": 118,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 36,
+   "y": 118,
+   "props": {
+    "enemy": "royal_executioner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "loot_stand",
+   "x": 41,
+   "y": 118,
+   "props": {
+    "kind": "ability"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 12,
+   "y": 108,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   4,
+   109
+  ],
+  [
+   10,
+   109
+  ],
+  [
+   18,
+   109
+  ],
+  [
+   26,
+   109
+  ],
+  [
+   33,
+   109
+  ],
+  [
+   42,
+   109
+  ],
+  [
+   51,
+   109
+  ],
+  [
+   58,
+   109
+  ],
+  [
+   66,
+   109
+  ],
+  [
+   74,
+   109
+  ],
+  [
+   90,
+   109
+  ]
+ ]
+}
