@@ -51,7 +51,7 @@ def s2_v2():
 
 
 def s2_v3():
-    """Gatehouse: two towers (6 high) joined by a plank bridge, with the street running through the archway below. The crossbowmen shoot from the bridge."""
+    """SPEC-GAP 51: the street under the bridge stays open (a shortcut of about 1.5 s). Gatehouse: two towers (6 high) joined by a plank bridge, with the street running through the archway below. The crossbowmen shoot from the bridge."""
     v = Sec(LV, 2, 'open'); street(v)
     v.fill(56, 58, F - 3, F - 1); v.fill(59, 65, F - 6, F - 1)
     v.fill(83, 89, F - 6, F - 1); v.fill(90, 92, F - 3, F - 1)
