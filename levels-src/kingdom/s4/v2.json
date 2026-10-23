@@ -1,0 +1,162 @@
+{
+ "entry": [
+  0,
+  72
+ ],
+ "exit": [
+  107,
+  72
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 64,
+   "y": 47,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 80,
+   "y": 47,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 20,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 66,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "group": "hounds_s4"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 69,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "group": "hounds_s4"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 72,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "group": "hounds_s4"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 2,
+   "y": 70,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 17,
+   "y": 80,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 21,
+   "y": 80,
+   "props": {
+    "enemy": "battle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 24,
+   "y": 80,
+   "props": {}
+  },
+  {
+   "type": "cursed_chest",
+   "x": 27,
+   "y": 80,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 30,
+   "y": 80,
+   "props": {
+    "enemy": "knight",
+    "facing": -1
+   }
+  },
+  {
+   "type": "loot_stand",
+   "x": 33,
+   "y": 80,
+   "props": {
+    "kind": "ability"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 14,
+   "y": 70,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   10,
+   71
+  ],
+  [
+   26,
+   71
+  ],
+  [
+   42,
+   71
+  ],
+  [
+   58,
+   71
+  ],
+  [
+   74,
+   71
+  ],
+  [
+   90,
+   71
+  ],
+  [
+   106,
+   71
+  ]
+ ]
+}

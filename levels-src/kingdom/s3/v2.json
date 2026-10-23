@@ -1,0 +1,126 @@
+{
+ "entry": [
+  0,
+  72
+ ],
+ "exit": [
+  111,
+  72
+ ],
+ "objects": [
+  {
+   "type": "cannon",
+   "x": 14,
+   "y": 70,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 38,
+   "y": 70,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 62,
+   "y": 70,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 86,
+   "y": 70,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 40,
+   "y": 69,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 64,
+   "y": 69,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 28,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 102,
+   "y": 71,
+   "props": {
+    "enemy": "battle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 50,
+   "y": 69,
+   "props": {}
+  },
+  {
+   "type": "key",
+   "x": 85,
+   "y": 62,
+   "props": {}
+  }
+ ],
+ "mainPath": [
+  [
+   10,
+   71
+  ],
+  [
+   26,
+   71
+  ],
+  [
+   42,
+   71
+  ],
+  [
+   58,
+   71
+  ],
+  [
+   74,
+   71
+  ],
+  [
+   90,
+   71
+  ],
+  [
+   106,
+   71
+  ]
+ ]
+}

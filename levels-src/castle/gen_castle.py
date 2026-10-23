@@ -11,8 +11,13 @@ the floor, swinging blades hang from cantilevered galleries that are part of a t
 """
 import json
 import os
+import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+if not os.environ.get('FORCE_OLD_GEN'):
+    # M11 split this level into section files (s<N>/v1, v2, v3); level.json no longer lists chunks or objects.
+    # This script wrote the original single-chunk layout (v1) and would overwrite the sections' manifest. Kept for history.
+    sys.exit('gen_castle.py: superseded by levels-src/castle/s<N>/ sections (M11); set FORCE_OLD_GEN=1 to run it anyway')
 W, H, F = 640, 144, 110
 SECTIONS = [(1, 0, 30), (2, 30, 130), (3, 130, 236), (4, 236, 336), (5, 336, 378), (6, 378, 502), (7, 502, 580), (8, 580, 640)]
 

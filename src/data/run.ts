@@ -6,4 +6,4 @@ export const RANDOM_SEED = { length: 8, alphabet: 'ABCDEFGHJKLMNPQRSTUVWXYZ23456
 export const LEVEL_FILE: Record<string, string> = { home: 'village_home', crossroads: 'village_crossroads', border: 'village_border', rebel_camp: 'village_rebel_camp' };
 
 /** 06 §8.7: levels whose sections come in versions (a `<id>.pack.json` next to the level). */
-export const LEVEL_PACKS: readonly string[] = ['plains', 'mountains', 'swamps'];
+export const LEVEL_PACKS: readonly string[] = ['plains', 'mountains', 'swamps', 'kingdom'];

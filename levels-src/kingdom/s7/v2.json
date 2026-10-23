@@ -1,0 +1,128 @@
+{
+ "entry": [
+  0,
+  72
+ ],
+ "exit": [
+  79,
+  72
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 56,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "group": "hounds_s7"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 59,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "group": "hounds_s7"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 62,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "group": "hounds_s7"
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 6,
+   "y": 69,
+   "props": {}
+  },
+  {
+   "type": "key_chest",
+   "x": 10,
+   "y": 71,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 26,
+   "y": 71,
+   "props": {
+    "enemy": "battle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 70,
+   "y": 71,
+   "props": {
+    "enemy": "knight",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 76,
+   "y": 71,
+   "props": {}
+  },
+  {
+   "type": "timed_door",
+   "x": 30,
+   "y": 78,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "id": "kingdom_timed",
+    "side": "left",
+    "timeLimit": 130
+   }
+  },
+  {
+   "type": "timed_chest",
+   "x": 40,
+   "y": 80,
+   "props": {
+    "door": "kingdom_timed"
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 30,
+   "y": 70,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   6,
+   71
+  ],
+  [
+   22,
+   71
+  ],
+  [
+   38,
+   71
+  ],
+  [
+   54,
+   71
+  ],
+  [
+   70,
+   71
+  ]
+ ]
+}

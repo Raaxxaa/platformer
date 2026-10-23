@@ -5,7 +5,7 @@ const frames = (page: Page) => page.evaluate(() => new Promise<void>((r) => requ
 const code = (section: number, v: number) => [2, 3, 4, 6, 7].map((s) => (s === section ? v : 1)).join('-');
 
 // Every stage with section versions (06 §8.7): one screenshot per version, with all other sections classic.
-const STAGES = ['plains', 'mountains', 'swamps'];
+const STAGES = ['plains', 'mountains', 'swamps', 'kingdom'];
 for (const level of STAGES) {
   for (const section of [2, 3, 4, 6, 7]) {
     for (const v of [1, 2, 3]) {
