@@ -1,0 +1,172 @@
+{
+ "entry": [
+  0,
+  56
+ ],
+ "exit": [
+  111,
+  56
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 9,
+   "y": 48,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 32,
+   "y": 48,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 55,
+   "y": 48,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 77,
+   "y": 48,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": true
+   }
+  },
+  {
+   "type": "dark_zone",
+   "x": 0,
+   "y": 32,
+   "w": 112,
+   "h": 24,
+   "props": {
+    "lightRadius": 112
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 4,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 16,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 28,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 40,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 52,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 64,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 76,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 88,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 100,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 65,
+   "y": 52,
+   "props": {}
+  },
+  {
+   "type": "key",
+   "x": 100,
+   "y": 43,
+   "props": {}
+  }
+ ],
+ "mainPath": [
+  [
+   3,
+   55
+  ],
+  [
+   20,
+   55
+  ],
+  [
+   45,
+   55
+  ],
+  [
+   70,
+   55
+  ],
+  [
+   91,
+   55
+  ],
+  [
+   111,
+   55
+  ]
+ ]
+}

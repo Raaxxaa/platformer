@@ -1,0 +1,283 @@
+{
+ "entry": [
+  0,
+  56
+ ],
+ "exit": [
+  141,
+  56
+ ],
+ "objects": [
+  {
+   "type": "arena",
+   "x": 60,
+   "y": 36,
+   "w": 40,
+   "h": 20,
+   "props": {
+    "id": "swamp_side",
+    "kind": "side"
+   }
+  },
+  {
+   "type": "dragon_warning",
+   "x": 1,
+   "y": 52,
+   "w": 1,
+   "h": 4,
+   "props": {}
+  },
+  {
+   "type": "guide_arrow",
+   "x": 48,
+   "y": 53,
+   "props": {
+    "angle": 45
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 56,
+   "y": 61,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 6,
+   "y": 57,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "submerged": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 20,
+   "y": 57,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "submerged": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 39,
+   "y": 48,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 14,
+   "y": 51,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 76,
+   "y": 59,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 29,
+   "y": 53,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 103,
+   "y": 63,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1
+   }
+  },
+  {
+   "type": "dark_zone",
+   "x": 0,
+   "y": 32,
+   "w": 114,
+   "h": 33,
+   "props": {
+    "lightRadius": 112
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 4,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 16,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 28,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 40,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 48,
+   "y": 53,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 56,
+   "y": 61,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 68,
+   "y": 61,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 80,
+   "y": 61,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 92,
+   "y": 61,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "firefly",
+   "x": 104,
+   "y": 61,
+   "props": {
+    "radius": 48
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 12,
+   "y": 53,
+   "props": {}
+  },
+  {
+   "type": "key",
+   "x": 121,
+   "y": 43,
+   "props": {}
+  },
+  {
+   "type": "merchant_spot",
+   "x": 131,
+   "y": 55,
+   "props": {}
+  }
+ ],
+ "mainPath": [
+  [
+   23,
+   57
+  ],
+  [
+   28,
+   54
+  ],
+  [
+   29,
+   53
+  ],
+  [
+   30,
+   53
+  ],
+  [
+   34,
+   57
+  ],
+  [
+   47,
+   57
+  ],
+  [
+   51,
+   59
+  ],
+  [
+   55,
+   63
+  ],
+  [
+   64,
+   63
+  ],
+  [
+   75,
+   63
+  ],
+  [
+   90,
+   63
+  ],
+  [
+   109,
+   63
+  ],
+  [
+   112,
+   59
+  ],
+  [
+   116,
+   55
+  ],
+  [
+   141,
+   55
+  ]
+ ]
+}

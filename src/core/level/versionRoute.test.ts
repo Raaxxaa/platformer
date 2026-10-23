@@ -23,6 +23,8 @@ const T = 16;
 /** The detour that picks up a key, as offsets (tiles) from the key, copied from the v1 tests of each level: every version keeps the key's ledge shape. */
 const KEY_ROUTE: Record<string, [number, number][][]> = {
   mountains: [[[3, 6], [0, 2], [3, 6]], [[5, 14], [3, 8], [0, 2], [5, 14]]],
+  swamps: [[[-9, 12], [-6, 6], [0, 0], [4, 12]], [[-7, 12], [-4, 6], [0, 0], [4, 12]]],
+  kingdom: [[[-12, 9], [-7, 6], [-3, 3], [0, 0], [-12, 9]], [[-17, 12], [-12, 9], [-8, 6], [-4, 3], [0, 0], [-17, 12]]],
 };
 
 for (const id of LEVEL_PACKS.filter((l) => l !== 'plains')) {
@@ -115,6 +117,41 @@ if (LEVEL_PACKS.includes('mountains')) {
         expect(roofRuns.length).toBe(2);
         expect(bad).toEqual([]);
         expect(cart.active).toBe(false); expect(w.body.cartId).toBeNull();
+      });
+    }
+  });
+}
+
+// Kingdom §4: the rooftop skip (a stair of balconies, the roofs, back down) and the cellar side path of every version (06 §8.3).
+if (LEVEL_PACKS.includes('kingdom')) {
+  const pack = PACKS.kingdom;
+  const SKIP: Record<number, [number, number][]> = {
+    1: [[4, 71], [8, 68], [12, 65], [16, 62], [20, 59], [24, 56], [28, 53], [32, 50], [37, 47], [48, 47], [56, 47], [68, 47], [75, 47], [86, 47], [93, 71]],
+    2: [[28, 71], [32, 68], [36, 65], [40, 62], [44, 59], [48, 56], [52, 53], [56, 50], [61, 47], [69, 47], [73, 47], [85, 47], [89, 47], [100, 47], [105, 71]],
+    3: [[4, 71], [8, 68], [12, 65], [16, 62], [20, 59], [24, 56], [28, 53], [32, 50], [37, 47], [44, 47], [50, 47], [76, 47], [83, 47], [88, 47], [93, 71]],
+  };
+  const CELLAR_X: Record<number, number> = { 1: 74, 2: 4, 3: 44 };
+  describe('kingdom: section 4 skip routes and side paths in every version', () => {
+    for (let v = 1; v <= 3; v++) {
+      const route = (pts: [number, number][]) => {
+        const picks = classicPicks(pack); picks[3] = v;
+        const d = assembleLevel(pack, picks);
+        const sec = d.objects.find((o) => o.type === 'section' && Number(o.props.index) === 4)!;
+        const x0 = Math.floor(sec.x / T);
+        d.objects.find((o) => o.type === 'main_path')!.points = pts.map(([x, y]) => ({ x: (x + x0) * T + 8, y: y * T + 8 }));
+        const w = GameWorld.fromLevel(d, { seedText: `KINGDOM-S4-${v}` });
+        w.teleportPlayer((pts[0][0] + x0) * T + 8, (pts[0][1] + 1) * T);
+        return runRouteBot(w, { maxTicksPerVertex: 1500 });
+      };
+      it(`v${v}: the rooftop skip (24 tiles up, over the roof gaps, back down)`, () => {
+        const r = route(SKIP[v]);
+        expect(r.log).toEqual([]); expect(r.reached).toBe(r.total);
+      });
+      it(`v${v}: the cellar side path (down three steps, to the dead end and back)`, () => {
+        const xe = CELLAR_X[v];
+        const pts: [number, number][] = [[xe - 1, 71], [xe + 1, 74], [xe + 4, 77], [xe + 11, 80], [xe + 28, 80], [xe + 11, 80], [xe + 4, 77], [xe + 1, 74], [xe + 4, 71]];
+        const r = route(pts);
+        expect(r.log).toEqual([]); expect(r.reached).toBe(r.total);
       });
     }
   });

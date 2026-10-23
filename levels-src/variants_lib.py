@@ -50,6 +50,14 @@ class Sec:
         for x0, x1, top in segs:
             self.ground(x0, x1, top)
 
+    def stamp(self, x0, x1, y0, y1, dx=0, dy=0, skip='.'):
+        """Copies v1's tiles in the box (inclusive) to the same box moved by (dx, dy); `skip` characters are not copied."""
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                c = self.v1_lines[y][x]
+                if c not in skip:
+                    self.g[y + dy][x + dx] = c
+
     def row_str(self, y):
         return ''.join(self.g[y])
 
