@@ -29,7 +29,7 @@ DEFAULT_LEGEND = {
 CENTER_POINTS = {'lucky_block', 'key', 'grapple_point', 'cannon', 'swinging_blade', 'firefly', 'guide_arrow'}
 POINT_TYPES = CENTER_POINTS | {
     'player_start', 'enemy', 'summon_point', 'loot_stand', 'key_chest', 'cursed_chest', 'timed_chest', 'merchant_spot',
-    'minecart', 'shop_item', 'ability_altar', 'shop_flask', 'shop_refill', 'shop_key', 'shop_reroll', 'class_statue',
+    'minecart', 'shop_item', 'ability_altar', 'shop_flask', 'shop_refill', 'shop_key', 'shop_reroll', 'shop_cosmetic', 'class_statue',
     'unlocks_board', 'seed_board', 'checkpoint', 'station_flag', 'item_stand', 'checklist_board', 'armory_label'}
 ZONE_TYPES = {'main_path', 'section', 'hint', 'exit', 'camera_zone', 'dragon_warning', 'dark_zone', 'arena', 'falling_rocks', 'minecart_stop', 'station', 'station_goal', 'respawn'}
 

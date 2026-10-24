@@ -4,6 +4,8 @@ import type { AbilityId, ClassId } from '../core/abilities/types.ts';
 import type { WeaponId } from '../core/combat/types.ts';
 import { TICK_RATE } from '../core/tuning.ts';
 import { defaultTouchSettings } from './touch.ts';
+import { DEFAULT_LOOK } from './cosmetics.ts';
+import { defaultCosmetics } from '../core/cosmetics/look.ts';
 
 export const SAVE_RULES = {
   version: 1, seedMaxLength: 12, trainingStations: 17, historyLimit: 20,
@@ -25,5 +27,6 @@ export function defaultSettings(): SettingsData {
 export function defaultSave(): SaveData {
   return { v: SAVE_RULES.version, settings: defaultSettings(), lastKit: null, lastRoad: 'mountain', typedSeed: null, training: [],
     progress: { levelsReached: ['plains'], stage1Cleared: false, classesDiscovered: [] }, unlocks: { blueprints: [], startWeapons: {} },
-    stats: { runsStarted: 0, runsCompleted: 0, deaths: 0, dragonsKilled: 0 }, pbs: {}, bestSegments: {}, practiceBests: {}, history: [] };
+    stats: { runsStarted: 0, runsCompleted: 0, deaths: 0, dragonsKilled: 0 }, pbs: {}, bestSegments: {}, practiceBests: {}, history: [],
+    look: { ...DEFAULT_LOOK }, cosmetics: defaultCosmetics() };
 }

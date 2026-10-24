@@ -43,6 +43,6 @@ export function interactPrompt(w: GameWorld, t: Interactable): Prompt | null {
 /** The one word on the touch Interact button for objects that have no prompt of their own (07 §8.6). */
 const WORD: Record<string, string> = {
   class_statue: 'Choose', ability_altar: 'Upgrade', merchant_altar: 'Upgrade', shop_item: 'Buy', shop_flask: 'Buy', shop_refill: 'Buy', shop_key: 'Buy', shop_reroll: 'Reroll',
-  inn: 'Sleep', seed_board: 'Seed', unlocks_board: 'Records', training_gate: 'Enter', checklist_board: 'Read', minecart: 'Ride', mirror_spot: 'Look',
+  inn: 'Sleep', shop_cosmetic: 'Buy', seed_board: 'Seed', unlocks_board: 'Records', training_gate: 'Enter', checklist_board: 'Read', minecart: 'Ride', mirror_spot: 'Look',
 };
 export const interactWord = (kind: string): string => WORD[kind] ?? 'Use';

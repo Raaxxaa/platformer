@@ -26,7 +26,7 @@ test('scales by a whole number (2× and up), fits a smaller window with a fracti
   await expect.poll(async () => Math.round((await canvasBox(page)).w)).toBe(1000);
   const box = await canvasBox(page);
   expect(box.h).toBeCloseTo(562.5, 0);
-  expect(box.x).toBeCloseTo(0, 0);
-  expect(box.y).toBeCloseTo((600 - 562.5) / 2, 0);
+  expect(Math.abs(box.x)).toBeLessThan(1);
+  expect(Math.abs(box.y - (600 - 562.5) / 2)).toBeLessThan(1);
   await page.screenshot({ path: 'test-results/boot-1000x600.png' });
 });

@@ -30,5 +30,7 @@ export interface SaveData {
   stats: { runsStarted: number; runsCompleted: number; deaths: number; dragonsKilled: number };
   pbs: Partial<Record<PbKey, PbRecord>>; bestSegments: Partial<Record<PbKey, [number | null, number | null, number | null, number | null]>>;
   practiceBests: Record<string, number>; history: RunRecord[];
+  /** 09 §8 (M13): the hero's look, and which cosmetics are owned / which enemies were met. */
+  look: import('../../data/cosmetics.ts').Look; cosmetics: import('../cosmetics/look.ts').CosmeticsSave;
 }
 export { defaultSettings, defaultSave } from '../../data/save.ts';

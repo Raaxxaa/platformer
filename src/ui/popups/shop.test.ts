@@ -3,7 +3,7 @@ import { arenaWorld } from '../../core/testkit/combatWorld.ts';
 import { serviceTag } from './shop.ts';
 describe('village service tags (07 §6.4)', () => {
   it('shows MAX, Full, Keys full and hides a missing key', () => {
-    const w = arenaWorld(); w.shop = { villageIndex: 1, rerollCount: 2, slots: [], keyInStock: true };
+    const w = arenaWorld(); w.shop = { villageIndex: 1, rerollCount: 2, slots: [], keyInStock: true, cosmeticId: null, cosmeticSold: false };
     w.flask.maxCharges = 4; w.flask.charges = 4; w.econ.keys = 3;
     expect(serviceTag(w, 'shop_flask')).toMatchObject({ word: 'MAX' });
     expect(serviceTag(w, 'shop_refill')).toMatchObject({ word: 'Full' });

@@ -4,11 +4,11 @@ import type { ClassId } from '../abilities/types.ts';
 import { createRunState } from './runState.ts';
 import { beginTransition } from './phases.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { buyFlaskUpgrade, buyKey, refill, rerollShop } from '../economy/shop.ts';
+import { buyCosmetic, buyFlaskUpgrade, buyKey, refill, rerollShop } from '../economy/shop.ts';
 import { openInn } from './roads.ts';
 import { unlockedCatalog } from '../loot/blueprints.ts';
 
-const SERVICES: Record<string, (w: GameWorld) => boolean> = { shop_flask: buyFlaskUpgrade, shop_refill: refill, shop_key: buyKey, shop_reroll: rerollShop };
+const SERVICES: Record<string, (w: GameWorld) => boolean> = { shop_flask: buyFlaskUpgrade, shop_refill: refill, shop_key: buyKey, shop_reroll: rerollShop, shop_cosmetic: buyCosmetic };
 
 export function setupVillage(w: GameWorld): void {
   for (const o of w.level?.objects ?? []) {

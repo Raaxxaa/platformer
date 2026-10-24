@@ -1,17 +1,97 @@
 {
- "levelId": "border", "kind": "village", "stage": 0, "biome": "mountains", "width": 48, "height": 23,
- "chunks": [{ "file": "border.txt", "x": 0, "y": 0 }],
+ "levelId": "border",
+ "kind": "village",
+ "stage": 0,
+ "biome": "mountains",
+ "width": 48,
+ "height": 23,
+ "chunks": [
+  {
+   "file": "border.txt",
+   "x": 0,
+   "y": 0
+  }
+ ],
  "objects": [
-  { "type": "player_start", "x": 3, "y": 19, "props": { "facing": 1 } },
-  { "type": "shop_item", "x": 9, "y": 19, "props": { "slot": 0 } },
-  { "type": "shop_item", "x": 12, "y": 19, "props": { "slot": 1 } },
-  { "type": "shop_item", "x": 15, "y": 19, "props": { "slot": 2 } },
-  { "type": "ability_altar", "x": 19, "y": 19, "props": { "slot": 1 } },
-  { "type": "ability_altar", "x": 22, "y": 19, "props": { "slot": 2 } },
-  { "type": "shop_flask", "x": 26, "y": 19 },
-  { "type": "shop_refill", "x": 29, "y": 19 },
-  { "type": "shop_key", "x": 32, "y": 19 },
-  { "type": "shop_reroll", "x": 35, "y": 19 },
-  { "type": "inn", "x": 41, "y": 16, "w": 3, "h": 4 }
+  {
+   "type": "player_start",
+   "x": 3,
+   "y": 19,
+   "props": {
+    "facing": 1
+   }
+  },
+  {
+   "type": "shop_item",
+   "x": 9,
+   "y": 19,
+   "props": {
+    "slot": 0
+   }
+  },
+  {
+   "type": "shop_item",
+   "x": 12,
+   "y": 19,
+   "props": {
+    "slot": 1
+   }
+  },
+  {
+   "type": "shop_item",
+   "x": 15,
+   "y": 19,
+   "props": {
+    "slot": 2
+   }
+  },
+  {
+   "type": "ability_altar",
+   "x": 19,
+   "y": 19,
+   "props": {
+    "slot": 1
+   }
+  },
+  {
+   "type": "ability_altar",
+   "x": 22,
+   "y": 19,
+   "props": {
+    "slot": 2
+   }
+  },
+  {
+   "type": "shop_flask",
+   "x": 26,
+   "y": 19
+  },
+  {
+   "type": "shop_refill",
+   "x": 29,
+   "y": 19
+  },
+  {
+   "type": "shop_key",
+   "x": 32,
+   "y": 19
+  },
+  {
+   "type": "shop_reroll",
+   "x": 35,
+   "y": 19
+  },
+  {
+   "type": "shop_cosmetic",
+   "x": 38,
+   "y": 19
+  },
+  {
+   "type": "inn",
+   "x": 41,
+   "y": 16,
+   "w": 3,
+   "h": 4
+  }
  ]
 }

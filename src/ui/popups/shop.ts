@@ -1,6 +1,8 @@
 // World-anchored shop UI (07 §6.4). This reads core state; purchases are handled by the core.
 import type Phaser from 'phaser';
 import { interactTarget } from '../../core/abilities/items.ts';
+import { cosmeticHex, cosmeticName } from '../../data/cosmetics.ts';
+import { cosmeticStand } from '../../core/economy/shop.ts';
 import { MERCHANT_LAYOUT, priceOf, upgradePrice } from '../../core/loot/merchant.ts';
 import type { GameWorld } from '../../core/sim/gameWorld.ts';
 import { FLASK, TICK_RATE } from '../../core/tuning.ts';
@@ -12,6 +14,7 @@ import { SHOP_UI as U } from '../../data/shopUi.ts';
 export interface ServiceTag { price: number | null; word: string | null; hidden?: boolean }
 export function serviceTag(w: GameWorld, kind: string, slot = 0): ServiceTag {
   let base = 0, word: string | null = null;
+  if (kind === 'shop_cosmetic') { const c = cosmeticStand(w); return c.word ? { price: null, word: c.word } : { price: c.price, word: null }; }
   if (kind === 'ability_altar' || kind === 'merchant_altar') { const s = w.abilities.slots[slot]; if (!s) return { price: null, word: 'No ability', hidden: true }; if (s.level >= MERCHANT_LAYOUT.maxLevel) word = 'MAX'; else return { price: upgradePrice(w, s.level + 1), word: null }; }
   else if (kind === 'shop_flask') { base = PRICES.flaskUpgrade; if (w.flask.maxCharges >= FLASK.MAX_CHARGES) word = 'MAX'; }
   else if (kind === 'shop_refill') { base = PRICES.flaskRefill; if (w.flask.charges === w.flask.maxCharges) word = 'Full'; }
@@ -24,7 +27,14 @@ export class ShopView {
   private tags = new Map<string, { coin: Phaser.GameObjects.Image; text: Phaser.GameObjects.BitmapText }>();
   private blinkUntil = -1;
   private blinkId: number | null = null;
-  constructor(scene: Phaser.Scene) { this.scene = scene; }
+  /** The visit's cosmetic on its stand: a colored square and its name until ART10's icons (09 §5). */
+  private readonly cosmeticIcon: Phaser.GameObjects.Graphics;
+  private readonly cosmeticLabel: Phaser.GameObjects.BitmapText;
+  constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+    this.cosmeticIcon = scene.add.graphics().setDepth(DEPTH.items + 1);
+    this.cosmeticLabel = scene.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.items + 1).setTint(UI_COLOR.text);
+  }
   update(w: GameWorld, refused = false): void {
     if (!w.shop) return;
     const target = interactTarget(w);
@@ -46,6 +56,13 @@ export class ShopView {
         const ia = w.interactables.find((i) => i.x === o.x && i.kind === o.type);
         tag(`service${o.id}`, o.x, o.y, serviceTag(w, o.type, o.type === 'ability_altar' ? Number(o.props.slot) - 1 : 0), ia?.id ?? -o.id);
       }
+    }
+    const stand = w.level?.objects.find((o) => o.type === 'shop_cosmetic'), cs = cosmeticStand(w);
+    this.cosmeticIcon.clear(); this.cosmeticLabel.setText('');
+    if (stand && cs.id && !cs.word?.startsWith('Coll')) {
+      const size = 12;
+      this.cosmeticIcon.fillStyle(0x0d0b14, 1).fillRect(stand.x - size / 2 - 1, stand.y - 30 - 1, size + 2, size + 2).fillStyle(cosmeticHex(cs.id), 1).fillRect(stand.x - size / 2, stand.y - 30, size, size);
+      this.cosmeticLabel.setText(cosmeticName(cs.id)).setPosition(stand.x, stand.y - 33);
     }
     for (const [key, t] of this.tags) if (!live.has(key)) { t.coin.destroy(); t.text.destroy(); this.tags.delete(key); }
   }

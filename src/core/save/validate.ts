@@ -1,4 +1,5 @@
 import { TOUCH } from '../../data/touch.ts';
+import { validateCosmetics, validateLook } from '../cosmetics/look.ts';
 import { classicLayout, LAYOUT, layoutCode, parseLayoutCode } from '../run/layout.ts';
 import { migratePracticeKey } from '../run/practice.ts';
 // Full save validation (06 §15). Keep good entries; default missing fields. No storage or clock reads.
@@ -176,6 +177,8 @@ export function validateSave(raw: unknown): SaveData {
     if (pbKey(key) && Array.isArray(value) && value.length === RUN.STAGE_COUNT && value.every((tick) => tick === null || integer(tick))) result.bestSegments[key] = [...value] as NonNullable<SaveData['bestSegments'][PbKey]>;
   }
   for (const [key, value] of Object.entries(object(source.practiceBests))) if (practiceKey(key) && integer(value)) result.practiceBests[migratePracticeKey(key)] = value;
+  result.cosmetics = validateCosmetics(source.cosmetics);
+  result.look = validateLook(source.look, result.cosmetics.owned);
   result.history = (Array.isArray(source.history) ? source.history.map(runRecord).filter((entry): entry is RunRecord => entry !== null) : [])
     .sort((a, b) => b.date.localeCompare(a.date)).slice(0, S.historyLimit);
   return result;

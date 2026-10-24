@@ -213,7 +213,6 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.lastViewTime = this.time.now;
     this.events.once('shutdown', () => { this.features.destroy(); this.darkness.destroy(); });
     this.playerView = new PlayerSprite(this, this.bank);
-    if (this.pickedKit) this.playerView.setOutfit(this.pickedKit.cls);
     this.projViews = new ProjectileSprites(this, this.bank);
     this.playerProjViews = new ProjectileSprites(this, this.bank, DEPTH.playerProjectiles);
     this.weaponFx = new WeaponFxView(this);
@@ -310,7 +309,6 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   /** Equips a starting kit at once (03 §3) and keeps it for restarts. */
   equipKit(kit: Kit): void {
     this.pickedKit = kit;
-    this.playerView?.setOutfit(kit.cls);
     this.world.setStartingKit(kit);
     this.onKitEquipped(kit);
   }
