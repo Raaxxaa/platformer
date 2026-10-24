@@ -10,6 +10,7 @@ import { debugEnabled } from './game/debug.ts';
 import { installPortraitGuard } from './ui/touch/portrait.ts';
 import { saveStore } from './game/save/storage.ts';
 import { applyUiSettings } from './ui/inputSettings.ts';
+import { registerServiceWorker } from './ui/touch/pwa.ts';
 import { TouchOverlay } from './ui/touch/TouchOverlay.ts';
 import { setTouchOverlay } from './ui/touch/touchInput.ts';
 
@@ -39,6 +40,7 @@ const game = new Phaser.Game({
   scene: scene === BootScene ? [BootScene, TitleScene, StageScene, VillageScene] : scene === StageScene ? [StageScene, TitleScene, VillageScene] : [scene],
 });
 installPortraitGuard(game);
+registerServiceWorker();
 declare global { interface Window { PHASER_GAME?: Phaser.Game } }
 if (debugEnabled()) window.PHASER_GAME = game;
 

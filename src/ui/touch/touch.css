@@ -29,3 +29,6 @@ html, body { overscroll-behavior: none; touch-action: none; -webkit-user-select:
 .touch-edit { position: absolute; left: 50%; top: calc(var(--sa-t) + 8px); transform: translateX(-50%); display: none; align-items: center; gap: 10px; padding: 6px 10px; background: #1b1826; border: 2px solid #4a4560; border-radius: 6px; color: #f2efe6; font-size: 14px; pointer-events: auto; }
 .touch-edit button { font: inherit; color: #f2efe6; background: #0d0b14; border: 2px solid #f2efe6; border-radius: 4px; padding: 4px 10px; }
 .touch-edit button[data-act="done"] { border-color: #ffd34a; color: #ffd34a; }
+
+/* "Update ready — restart to update" (M12 Task 6). */
+.update-toast { position: fixed; left: 50%; bottom: calc(var(--sa-b) + 10px); transform: translateX(-50%); z-index: 40; padding: 6px 12px; background: #1b1826; border: 2px solid #ffd34a; border-radius: 6px; color: #f2efe6; font: 14px monospace; pointer-events: none; }
