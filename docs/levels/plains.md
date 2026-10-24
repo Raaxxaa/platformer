@@ -229,7 +229,7 @@ Double-jump across two fallen logs over a spiked gully. The **wall-jump shaft is
 ```
 
 ### § 4 v2 — Under the arch
-The tree-top skip runs on branches **below a rock arch**, reached through the same two-trunk shaft. The hollow is entered at the **far end** of the road (a 4-wide drop by the guide arrow) and runs back under the road: archer, bandit, the Brute, the key chest, the cursed chest and the ability stand last, at the far left.
+The tree-top skip runs on branches **below a rock arch**, reached through the same two-trunk shaft. The hollow is entered at the **far end** of the road (a 4-wide drop by the guide arrow) and runs back under the road: archer, bandit, the Brute, the key chest, the cursed chest and the ability stand last, at the far left. **Climbing out:** a ladder of four plank steps (3 tiles apart, staggered left and right) leads up through the entrance.
 ```
         ______________ rock arch ______________
      | |  ==   ==   ==   ==
@@ -239,7 +239,7 @@ The tree-top skip runs on branches **below a rock arch**, reached through the sa
 ```
 
 ### § 4 v3 — Ridge path
-The skip is a **ridge path** on a stone ridge above the road (with planks on its crest). The side path is a **cave under the ridge**, entered by a drop in the middle of the road. The cave holds the archer and bandit on the left, and the Brute, chests and ability stand on the right.
+The skip is a **ridge path** on a stone ridge above the road (with planks on its crest). The side path is a **cave under the ridge**, entered by a drop in the middle of the road. The cave holds the archer and bandit on the left, and the Brute, chests and ability stand on the right. **Climbing out:** the same four-step plank ladder up through the entrance.
 ```
      | |  ==  ==  ==  ==
      | | ______ ridge ______

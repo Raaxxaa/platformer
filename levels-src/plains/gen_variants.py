@@ -167,6 +167,15 @@ def s3_v3():
 
 
 # ---------------------------------------------------------------- § 4 Old Grove
+def hollow_ladder(v, x):
+    """Plank ladder up a hollow's 4-wide entrance (x .. x+3): four one-way steps, each 3 tiles up (one jump), staggered
+    left and right, from the floor (row 51) to just under the road (row 38). v1's hollow had a stair; these have this."""
+    v.fill(x - 2, x + 1, 49, 49, '=')        # step 1, left (3 above where you stand on the floor)
+    v.fill(x + 2, x + 3, 46, 46, '=')        # step 2, right
+    v.fill(x, x + 1, 43, 43, '=')            # step 3, left (inside the shaft)
+    v.fill(x + 2, x + 3, 40, 40, '=')        # step 4, right: two below the road
+
+
 def s4_v2():
     """The tree-top skip runs below a rock arch; the hollow is entered at the far end and runs back under the road."""
     v = V(4)
@@ -176,6 +185,7 @@ def s4_v2():
         v.fill(x0, x1, 27, 27, '=')
     v.fill(88, 91, FLOOR, 43, '.')           # hollow entrance (4 wide)
     v.fill(20, 91, 44, 51, '.')
+    hollow_ladder(v, 88)
     v.put(84, 35, 'g')
     v.hint('dive_slam', 82, 34, 5, 4)
     for x in (17, 20, 23):
@@ -195,6 +205,7 @@ def s4_v3():
         v.fill(x0, x1, 26, 26, '=')
     v.fill(46, 49, FLOOR, 43, '.')           # cave entrance
     v.fill(14, 80, 44, 51, '.')
+    hollow_ladder(v, 46)
     v.put(42, 35, 'g')
     v.hint('dive_slam', 40, 34, 5, 4)
     for x in (12, 15, 18):

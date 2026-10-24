@@ -74,3 +74,43 @@ describe('every Plains version in place (06 §8.7)', async () => {
     });
   }
 });
+
+describe('the Old Grove hollow can be climbed out of (06 §8.5 single-jump limits)', async () => {
+  const { kindAt } = await import('./loadLevel.ts');
+  const { ROUTE } = await import('../tuning.ts');
+  /** Standing cells reachable by single jumps (rise 3 onto a plank, 5 onto ground), falls up to 8 across; 2 tiles of head room. */
+  function reachable(d: ReturnType<typeof assembleLevel>, from: [number, number]): Set<string> {
+    const solid = (k: string) => k === 'solid' || k === 'ice';
+    const stand = (k: string) => solid(k) || k === 'oneway';
+    const feet = (x: number, y: number) => kindAt(d, x, y) === 'empty' && kindAt(d, x, y - 1) === 'empty' && stand(kindAt(d, x, y + 1));
+    const open = (x: number, y0: number, y1: number) => { for (let y = y0; y <= y1; y++) if (solid(kindAt(d, x, y))) return false; return true; };
+    const seen = new Set<string>([from.join()]), todo: [number, number][] = [from];
+    while (todo.length) {
+      const [ax, ay] = todo.pop()!;
+      for (let bx = ax - 8; bx <= ax + 8; bx++) for (let by = ay - 6; by <= ay + 30; by++) {
+        if (seen.has(`${bx},${by}`) || !feet(bx, by)) continue;
+        const rise = ay - by, dx = Math.abs(bx - ax);
+        const max = kindAt(d, bx, by + 1) === 'oneway' ? ROUTE.ONEWAY_RISE : ROUTE.RISE;
+        if (rise > max || (rise > 0 && dx > 4) || (rise <= 0 && dx > 8)) continue;
+        // Head room: straight up in A's column to B's head, and B's own column.
+        if (rise > 0 && !(open(ax, by - 2, ay - 1) && open(bx, by - 2, by))) continue;
+        if (rise <= 0 && !open(bx, by - 2, by)) continue;
+        seen.add(`${bx},${by}`); todo.push([bx, by]);
+      }
+    }
+    return seen;
+  }
+  // v1's hollow (the original) is climbed by wall-jumping its tall left wall, which this single-jump check can't model.
+  for (const v of [2, 3]) {
+    it(`v${v}: from the hollow floor you can reach the road again`, () => {
+      const picks = classicPicks(pack); picks[3] = v;
+      const d = assembleLevel(pack, picks);
+      const s4 = d.objects.find((o) => o.type === 'section' && o.props.index === 4)!;
+      const chest = d.objects.find((o) => o.type === 'key_chest' && o.x >= s4.x && o.x < s4.x + s4.w && o.y > 40 * 16)!;
+      const start: [number, number] = [Math.floor(chest.x / 16), Math.floor(chest.y / 16) - 1];
+      const got = reachable(d, start);
+      const road = [...got].map((k) => k.split(',').map(Number)).filter(([x, y]) => y === 37 && x >= s4.x / 16 && x < (s4.x + s4.w) / 16);
+      expect(road.length, `v${v}: no way back up to the road`).toBeGreaterThan(0);
+    });
+  }
+});
