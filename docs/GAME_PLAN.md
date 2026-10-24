@@ -205,7 +205,7 @@ Your character's appearance has **nothing to do with your class**. Any class can
   - **Possible extra later:** a rare color variant of each accessory with a small chance on later kills, for players who want more to hunt.
 - **Your class still shows:** a thin glow or trim in your current class or hybrid color, so you can still tell your class at a glance.
 - **Fairness:** every race is the same size and has the same hitbox, and everything here is **looks only, with no stats**. That keeps speedrun times comparable.
-- **When:** a later milestone (M12). Until then the player uses the 4 starter looks from the art plan, and any class can use any of them.
+- **When:** M13 (rules: `docs/spec/09-customization.md`). Until then the player uses the 4 starter looks from the art plan, and any class can use any of them.
 
 ---
 
@@ -712,7 +712,8 @@ Each milestone ends with something you can play.
 | M9 | **Stages 3–4 + Dragon** | Border Village, Enemy Kingdom, Rebel Camp, King's Castle, Black Knight, Enemy King, the Dragon event, all 17 abilities, all 19 weapons, Rush meter, timed doors |
 | M10 | **Speedrun extras + polish** | Seeds, practice mode, ghosts, balance |
 | M11 | **Layout variety** | Each section of each stage has several hand-made versions; every run picks a different mix (14.1) |
-| M12 | **Character customization** | Character creator (race, looks, clothing colors), accessory drops from mobs and bosses, collection book (4.5) |
+| M12 | **Phone version** | Play on phones and tablets from the same website: touch controls (stick + buttons with live icons), fills the phone screen, tap menus, install it like an app (works offline) |
+| M13 | **Character customization** | Wardrobe at the Home Village mirror (race, hair, clothes, colors), an accessory from every enemy type, shop-only cosmetics, collection book (4.5) |
 
 **First thing to make fun: M1.** If running and jumping around the empty test level isn't fun, nothing else will be.
 

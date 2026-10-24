@@ -19,6 +19,7 @@ This folder is the **exact** version of `docs/GAME_PLAN.md`. The plan says what 
 | `06-run-levels-save.md` | Run flow, stages, villages, route choice, Dragon spawning, level data format, timer and splits, seeds, death and restart, save data |
 | `07-ui-hud-controls.md` | HUD layout, every screen and popup, fonts, colors, controls and rebinding |
 | `08-art-audio.md` | Art style, palettes, sprite sizes, animation lists, the art and sound generation pipeline, music |
+| `09-customization.md` | Character looks: races, hair, clothes and dye colors, accessories from every enemy, shop cosmetics, the wardrobe and collection (M13). Looks only, no stats |
 
 ## Tech stack (decided)
 
@@ -38,7 +39,7 @@ This folder is the **exact** version of `docs/GAME_PLAN.md`. The plan says what 
 
 - **Pixels** for distance, **seconds** for time. Speeds in **px/s**, accelerations in **px/s²**.
 - **+x is right, +y is down** (Phaser's convention). Jump velocities are negative.
-- **Game resolution: 640 × 360**, scaled up to fill the window by a **whole number** (2×, 3×, 4×...) with black bars if needed. `pixelArt: true`, `roundPixels: true`.
+- **Game resolution: 640 × 360**, scaled up to fill the window by a **whole number** (2×, 3×, 4×...) with black bars if needed. Exception: on touch devices, or when the whole-number scale would be below 2, the game fits the screen with a fractional scale (07 §8.6). `pixelArt: true`, `roundPixels: true`.
 - **Tiles are 16 × 16 px.** The screen is 40 × 22.5 tiles.
 - Angles in degrees, 0° = right, 90° = down.
 

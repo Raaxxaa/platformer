@@ -428,6 +428,7 @@ When 05 §12 says the merchant is present (rolled at stage load), the loader add
 | `shop_refill` | 29 | Press: instant refill (05) |
 | `shop_key` | 32 | Press: buy a key (05). Hidden and inactive when 05's stock has no key |
 | `shop_reroll` | 35 | Press: reroll the 3 items (05) |
+| `shop_cosmetic` | 38 | Press: buy the visit's cosmetic (09 §5; from M13) |
 | `inn` | rect, tiles x 41–43, rows 16–19 | Press: sleep (Crossroads: route choice first, §3) |
 
 - **Sleep:** fade out 0.5 s; at the end of the fade out, HP = max HP (flask unchanged, 02 §7.1); load the next stage; fade in 0.5 s.
@@ -440,7 +441,7 @@ When 05 §12 says the merchant is present (rolled at stage load), the loader add
 | `player_start` | 3 | Facing right. Spawns with `save.lastKit` equipped (or empty-handed on the very first launch) |
 | `training_gate` | rect, tiles x 1–2, rows 16–19 | Enters the Training Yard (§12.4). The first time the player confirms a class at a statue, 07 asks "Try the Training Yard first?" (Yes enters it; No closes) |
 | `class_statue` swordsman, tank, archer, wizard | 9, 13, 17, 21 | Opens the class pick popup (07) for that class: pick one of its starting weapons (the 2 from 03 §3, plus a 3rd once `save.unlocks.startWeapons` has it, 05 §14.3). Confirm → the kit replaces the current loadout at once; `lastKit` saved |
-| `mirror_spot` | 25 | Not interactable yet. The future character mirror (GAME_PLAN 4.5, M12); until then an empty frame |
+| `mirror_spot` | 25 | Opens the wardrobe (09 §6; from M13). Before M13: an empty frame, not interactable |
 | `enemy` `training_dummy` (04 §2.10) | 28 | Hit it to try the kit |
 | `unlocks_board` | 34 | Opens the unlocks / classes discovered page (07) |
 | `seed_board` | 37 | Opens seed entry (07): type a seed or clear it. The board shows the active typed seed |

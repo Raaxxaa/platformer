@@ -134,6 +134,8 @@ All colors are tokens in `src/ui/model/theme.ts`. 08's UI palette must use these
 | `prompt_ps_cross`, `_circle`, `_square`, `_triangle` (tint) | 7 × 7 | 4 |
 | `hud_heart` 10 × 10, `hud_plate_9` 24 × 24 (9-slice, 8 px corners) | — | 2 |
 | Popup skin: `panel_9` 24 × 24 (9-slice, 8 px corners: dark fill, carved border), `panel_9_edge` 24 × 24 (tint: #ffffff border only, drawn over `panel_9` in the grade or class color), `tab_on_9` / `tab_off_9` 16 × 12 (9-slice, 4 px corners), `button_9` / `button_9_sel` 16 × 16 (9-slice, 4 px corners), `cursor` 7 × 7 (points right) | — | 7 |
+| Touch (M12, §8.6): `touch_ring`, `touch_fill` (tint) 64 × 64; `touch_jump`, `touch_dash`, `touch_heal`, `touch_interact`, `touch_pause` 24 × 24 (tint); `touch_stick_base` 96 × 96; `touch_knob` 40 × 40; `rotate_phone` 64 × 48 | — | 10 |
+| Cosmetic icons (M13, 09 §3, §5): `icon_cos_<CosmeticId>` | 16 × 16 | 59 |
 
 All popups, cards and menus (§6, §7) draw their panel with `panel_9` (plus `panel_9_edge` tinted where a colored border is specified) instead of a flat `panel` rectangle, and their selectable items with `button_9` / `button_9_sel` and the `cursor`. Sizes and positions don't change.
 
@@ -667,11 +669,56 @@ interface Bindings {
 interface SettingsData {
   volume: { master: number; music: number; sfx: number };     // 0–100, multiples of 10
   showTimer: boolean; screenShake: boolean; damageNumbers: boolean;
-  promptStyle: 'auto' | 'keyboard' | 'xbox' | 'playstation';
+  promptStyle: 'auto' | 'keyboard' | 'xbox' | 'playstation' | 'touch';
   bindings: Bindings;
+  touch: { mode: 'auto' | 'on' | 'off'; opacity: number /* 20–100 */; size: number /* 80–130 */;
+           leftHanded: boolean; vibration: boolean;
+           layout: Partial<Record<TouchControlId, { x: number; y: number; scale: number }>> };  // §8.6, M12
+  effects: 'high' | 'low';    // 'low' default on touch devices: half the particles, darkness at half resolution
 }
+type TouchControlId = 'stick' | 'jump' | 'attack1' | 'dash' | 'attack2' | 'ability1' | 'ability2' | 'heal'
+  | 'interact' | 'pause';
 ```
 On load, any missing or invalid field takes its default (§7.7, §8.1); a `bindings` object that fails §8.3 validation resets to the defaults as a whole.
+
+
+### 8.6 Touch controls (phones and tablets, M12)
+Phones play in **landscape**. Touch controls are an **HTML overlay above the game canvas** (`src/ui/touch/`, plain DOM, no Phaser), sized in CSS pixels so they stay finger-sized whatever the game's scale. They feed the same per-tick input latch as the keyboard and gamepad (01 §1.2), as a third device `touch`.
+
+**Unit:** `u = clamp(min(innerWidth, innerHeight) / 7.5, 40, 72)` CSS px, times the **Button size** setting (80–130%). On a typical phone in landscape (390 px tall) `u = 52`.
+
+**Left side: floating stick.** A touch that starts in the left 45% of the screen (and not on another control) puts the stick's center there. Dragging moves the knob up to `r = 1.1u` from the center:
+- `moveX = −1/+1` when the horizontal offset is beyond `0.35r`; `moveY = −1` (up) when the offset is more than `0.5r` upward, `+1` (down) when more than `0.5r` downward. So 8 directions, like the D-pad.
+- Lifting the finger releases everything. The stick fades to 30% when untouched and is drawn only while held (plus a faint hint circle at `(1.6u, innerHeight − 1.6u)`).
+
+**Right side: buttons** (circles, distance from the bottom-right corner, `d` = diameter):
+
+| Control | Action (§8.1) | Size `d` | Center (right, bottom) | Icon |
+|---|---|---|---|---|
+| Jump | `jump` | 1.45u | (1.0u, 1.0u) | up arrow |
+| Attack 1 | `attack1` | 1.25u | (2.55u, 0.85u) | weapon slot 1 icon (07 §4.8), grade-colored ring |
+| Dash | `dash` | 1.05u | (1.1u, 2.5u) | dash streak |
+| Attack 2 | `attack2` | 1.05u | (2.6u, 2.3u) | weapon slot 2 icon (dimmed if empty) |
+| Ability 1 | `ability1` | 0.95u | (3.95u, 1.25u) | ability icon + cooldown shade like 07 §4.9 |
+| Ability 2 | `ability2` | 0.95u | (3.85u, 2.6u) | ability icon + cooldown shade |
+| Heal | `heal` | 0.85u | (2.35u, 3.6u) | flask with the charge count |
+| Interact | `interact` | 1.0u | (5.2u, 1.2u) | hand; shown **only** while there is an interact target (07 §5.7), with its prompt word above (`Open`, `Take`, `Buy`…) |
+| Pause | `pause` (tap) / `restart` (hold) | 0.75u | top-right (0.7u, 0.7u from the top) | two bars |
+
+- **Pressing:** a touch that starts on a button sets that action held until the finger lifts; the press counts on the tick it started (01 latching, so a tap shorter than a tick still registers). A finger that slides off a button keeps holding it (no accidental releases); sliding onto another button does nothing. Any number of fingers at once.
+- **Hit area** = the circle grown by 0.15u; where two overlap, the nearest center wins.
+- **Pause / restart:** tapping Pause (released before 0.5 s) opens the pause menu. **Holding** it for 0.5 s is the instant restart (06 §6.2), with the 07 §4.13 ring drawn around the button.
+- **Swap choices** (07 §6.2–6.3) keep working: Attack 1/2 and Ability 1/2 are the slot choices; the item card's option rows can also be tapped.
+- **Menus and popups:** tapping a row selects and confirms it; every menu gets a back arrow (top-left, 0.75u) that does what Back does. Sliders and toggles in settings respond to taps and drags.
+- **Look:** buttons are `panel` circles with a 2 px `text` ring at the **Touch opacity** setting (20–100%, default 55%); a pressed button is drawn at 100% with a `highlight` ring. Cooldown shades and charge counts mirror the HUD (07 §4.9). Art from 08 / ART10 (`touch_*` frames); until then simple shapes.
+- **Prompt style `touch`:** while the last device is touch, prompt glyphs (§8.4) draw the matching button's icon in a small circle instead of a key.
+- **When shown:** setting **Touch controls** `Auto` (default; shown after the first touch, hidden again after a key or pad press), `On`, `Off`.
+- **Left-handed:** mirrors the layout (stick on the right, buttons on the left).
+- **Edit layout** (settings): drag any button to a new place, pinch to resize it (60–150%); `Reset` restores the table above. Saved per device in `settings.touch.layout` (positions as fractions of the screen so rotation and other phones still work).
+- **Vibration** setting (default on where supported): `navigator.vibrate(12)` when the player is hit, 25 on death, 8 on a parry. Never during menus.
+- **Portrait:** when the screen is taller than wide, the game pauses and shows "Turn your phone sideways" with a rotating-phone drawing.
+
+**Phone screen scaling:** 00-README's whole-number scaling gives 1× on most phones (390 / 360). On touch devices, and whenever the whole-number scale would be below 2, the game instead **fits the screen with a fractional scale** (nearest-neighbor, `pixelArt` stays on), centered, with the leftover bars in `ink`. Above 2× on desktop nothing changes.
 
 ---
 

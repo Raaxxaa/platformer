@@ -18,8 +18,9 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | M7.1 | Stage 2: both roads (Caves & Mountains, Dark Forest & Swamps), their enemies and Guardians, Border Village | `M7.1-stage2-two-roads.md` | Done |
 | M9 | **Stages 3–4 (Enemy Kingdom, King's Castle), Black Knight, Enemy King, the Dragon, the other 8 abilities and 11 weapons | Part 1 (abilities): `M9-part1-abilities.md` (done); part 2 (11 weapons): `M9-part2-weapons.md` (done); part 3 (Stage 3 Enemy Kingdom and the Black Knight): `M9-part3-stage3-black-knight.md` (done); part 4 (Stage 4 King's Castle, Enemy King, the Dragon and the run ending): `M9-part4-stage4-king-dragon.md` (done) | Done (2026-10-20) |
 | M10 | Speedrun extras: seeds, practice mode, ghosts, balance checks | `M10-speedrun-extras.md` | Done 2026-10-22 |
-| **M11** | **Layout variety: sections 2, 3, 4, 6, 7 of every stage get 3 versions, picked by the seed** | `M11-layout-variety.md` | **Part A (Plains) and Part B (Mountains, Swamps, Kingdom, Castle) done; waiting for user feedback** |
-| M12 | Character customization: looks, colors, cosmetics from mobs and shops | to write | Planned |
+| M11 | Layout variety: sections 2, 3, 4, 6, 7 of every stage get 3 versions, picked by the seed | `M11-layout-variety.md` | Done |
+| **M12** | **Phone version: touch controls, phone screen scaling, tap menus, installable app (PWA), Low effects** | `M12-phone-version.md` | **Next** |
+| M13 | Character customization: races, looks, clothes and colors, 35 enemy accessories, shop cosmetics, wardrobe, collection | `M13-character-customization.md` | Planned (needs ART10 Part B) |
 
 (M6 and M8 were folded into other milestones: classes moved into M4, and the art pass happens as we go in the ART plans.)
 
@@ -36,4 +37,4 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | ART7 | Stage 2 biomes: Caves & Mountains and Dark Forest & Swamps (tiles, backgrounds, 8 enemies, 2 elites, 2 Guardians, minecart), Border Village (`ART7-stage2-biomes.md`) | Done |
 | ART8 | Stages 3–4, the Black Knight, Enemy King, the Dragon (4 colors), the other abilities and weapons (`ART8-stage3-4-bosses-weapons.md`) | Done |
 | ART9 | Music (`ART9-music.md`) | Done (waiting for the user to listen) |
-| ART10 | Character customization art (races, colors, accessories) | Planned (for M12) |
+| **ART10** | **Part A: touch buttons and app icons (for M12). Part B: layered player (4 races, hair, beards, outfits), 35 accessories, 24 shop cosmetics, wardrobe art (for M13)** (`ART10-phone-and-customization.md`) | **Next** |
