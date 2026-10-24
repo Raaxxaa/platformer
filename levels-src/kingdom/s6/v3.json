@@ -1,0 +1,180 @@
+{
+ "entry": [
+  0,
+  72
+ ],
+ "exit": [
+  141,
+  72
+ ],
+ "objects": [
+  {
+   "type": "merchant_spot",
+   "x": 14,
+   "y": 71,
+   "props": {}
+  },
+  {
+   "type": "lucky_block",
+   "x": 26,
+   "y": 69,
+   "props": {}
+  },
+  {
+   "type": "dragon_warning",
+   "x": 26,
+   "y": 66,
+   "w": 1,
+   "h": 6,
+   "props": {}
+  },
+  {
+   "type": "cannon",
+   "x": 36,
+   "y": 70,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 48,
+   "y": 70,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 122,
+   "y": 70,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "cannon",
+   "x": 128,
+   "y": 70,
+   "props": {
+    "dir": -1,
+    "interval": 3.0
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 38,
+   "y": 69,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 130,
+   "y": 69,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 30,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1
+   }
+  },
+  {
+   "type": "arena",
+   "x": 68,
+   "y": 43,
+   "w": 40,
+   "h": 20,
+   "props": {
+    "id": "gate_hall",
+    "kind": "side"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 80,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 98,
+   "y": 71,
+   "props": {
+    "enemy": "battle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key",
+   "x": 126,
+   "y": 59,
+   "props": {}
+  },
+  {
+   "type": "guide_arrow",
+   "x": 48,
+   "y": 70,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   4,
+   71
+  ],
+  [
+   18,
+   71
+  ],
+  [
+   32,
+   71
+  ],
+  [
+   44,
+   71
+  ],
+  [
+   60,
+   71
+  ],
+  [
+   68,
+   71
+  ],
+  [
+   84,
+   71
+  ],
+  [
+   100,
+   71
+  ],
+  [
+   116,
+   71
+  ],
+  [
+   134,
+   71
+  ]
+ ]
+}

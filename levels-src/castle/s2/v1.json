@@ -1,0 +1,143 @@
+{
+ "entry": [
+  0,
+  110
+ ],
+ "exit": [
+  99,
+  110
+ ],
+ "objects": [
+  {
+   "type": "lucky_block",
+   "x": 8,
+   "y": 107,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 16,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 20,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 24,
+   "y": 109,
+   "props": {
+    "enemy": "royal_guard",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 41,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 50,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 58,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 62,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 66,
+   "y": 109,
+   "props": {
+    "enemy": "living_armor",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 75,
+   "y": 106,
+   "props": {
+    "enemy": "gargoyle",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 84,
+   "y": 109,
+   "props": {
+    "enemy": "castle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 94,
+   "y": 109,
+   "props": {
+    "enemy": "royal_executioner",
+    "facing": -1
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   4,
+   109
+  ],
+  [
+   20,
+   109
+  ],
+  [
+   36,
+   109
+  ],
+  [
+   52,
+   109
+  ],
+  [
+   68,
+   109
+  ],
+  [
+   84,
+   109
+  ]
+ ]
+}

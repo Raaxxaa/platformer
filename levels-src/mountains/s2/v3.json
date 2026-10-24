@@ -1,0 +1,183 @@
+{
+ "entry": [
+  0,
+  164
+ ],
+ "exit": [
+  99,
+  164
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 14,
+   "y": 160,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 17,
+   "y": 160,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 23,
+   "y": 163,
+   "props": {
+    "enemy": "ram",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 40,
+   "y": 158,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 44,
+   "y": 166,
+   "props": {
+    "enemy": "ram",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 53,
+   "y": 160,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 59,
+   "y": 166,
+   "props": {
+    "enemy": "rock_golem",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 61,
+   "y": 160,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 77,
+   "y": 160,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 88,
+   "y": 163,
+   "props": {
+    "enemy": "ram",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 94,
+   "y": 163,
+   "props": {
+    "enemy": "goblin_shaman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 26,
+   "y": 161,
+   "props": {}
+  },
+  {
+   "type": "guide_arrow",
+   "x": 98,
+   "y": 160,
+   "props": {
+    "angle": -90
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   163
+  ],
+  [
+   11,
+   163
+  ],
+  [
+   12,
+   160
+  ],
+  [
+   18,
+   160
+  ],
+  [
+   19,
+   163
+  ],
+  [
+   27,
+   163
+  ],
+  [
+   28,
+   164
+  ],
+  [
+   32,
+   165
+  ],
+  [
+   36,
+   166
+  ],
+  [
+   63,
+   166
+  ],
+  [
+   64,
+   165
+  ],
+  [
+   68,
+   164
+  ],
+  [
+   72,
+   163
+  ],
+  [
+   99,
+   163
+  ]
+ ]
+}

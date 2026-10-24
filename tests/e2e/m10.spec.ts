@@ -65,7 +65,7 @@ test('practice setup is keyboard-usable and starts a stage with the preset loado
   await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowRight');   // Random color, Red
   await frames(page); await page.screenshot({ path: 'test-results/m10-practice-setup-dragon.png' });
   expect(await page.evaluate(() => (window as any).__game.screenState().model.setup)).toEqual({ levelId: 'mountains', cls: 'archer', weapon: 'bow', dragon: 'red', layout: null });
-  await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter');         // Start
+  await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter');         // past the Layout row (Mountains has versions now), Start
   await stageReady(page, 'mountains');
   await frames(page);
   const info = await page.evaluate(() => { const game = (window as any).__game; return { loadout: game.loadout(), practice: game.practice(), world: game.world(), run: game.runState() }; });

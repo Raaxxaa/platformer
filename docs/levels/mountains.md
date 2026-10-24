@@ -117,3 +117,98 @@ D | ==            COLOSSUS            == | D   road > exit
 | Regular total | **10** | **2** | **6** | **2** | **9** | **3** | **4** | **36** |
 
 Four Lucky Blocks, two loot stands, two keys, three key chests, one cursed chest, one timed door/chest, one merchant spot, one combat arena, one empty side arena, one boss arena and one exit. Required keys precede their chest choices along the main route. Screenshots should show all eight sections, the 72-tile climb, the cracked skip, the cart's full descent and the empty side room.
+
+## Versions (M11, 06 §8.7)
+
+Sections 2, 3, 4, 6 and 7 each have **3 versions**. The run's seed picks one per section, so there are 243 different Stage 2 mountain roads. `v1` is the layout above (the "classic" layout). Every version keeps its section's **exact contents** (the same enemies, chests, keys, Lucky Block, stand, cracked wall, side arena, cart and stop, timed room with its 31 blink blocks, falling-rock zones, guide arrows) and joins its neighbours at the same floor row on both edges. Sections 1, 5 and 8 never change. A version's main path is within ±10% of `v1`; the width of every section is exactly `v1`'s, so every combination stays 552 x 176. The versions are built by `levels-src/mountains/gen_variants.py`. Thumbnails: `P` start, `b` bat, `m` Miner, `g` Golem, `r` Ram, `S` Shaman, `L` Lucky, `K` key, `C/Q` chests, `=` one-way, `I` ice.
+
+### § 2 v2 — Quarry terraces
+The road climbs three 2-tile terraces to a quarry floor and steps back down. Each group has its own terrace: two Miners and a Ram first, then a bat and a Ram, then a Miner, Golem and bat on the highest step, then a Miner and Ram. Shaman 1 waits alone on the last low floor.
+```
+                        b        b
+           m m  r  L      r  m g      m   r      S
+ ############ ############ ############ ########
+   floor 164   162          160         162   164
+```
+
+### § 2 v3 — Boulder gully
+The road sinks into a 3-tile gully in 1-tile steps and climbs out again. Two Miners stand on a boulder, the bat and Ram groups work the gully floor, a Miner watches from a shelf over the gully, and the last Miner on a shelf near the exit.
+```
+  m m   L     b       m=====  b        ===m        r   S
+ ######## r ########\                      /###########
+                     \_ r ___ g ________/
+```
+
+### § 3 v2 — Right-hand chimneys
+The six wall-jump channels and five rests are shifted to the right half of the mountain, and the rests are taller (6 rows at the ends). The falling rocks fall on the channels 2, 4 and 6; the key ledge is at the right of the top room.
+```
+                K
+            ____|__  > out at y92
+   ___| !|   |  b |
+  ... six rises, rest rooms 6 / 6 / 3 / 6 / 6 tall
+ in > ______|
+```
+
+### § 3 v3 — Left-hand chimneys
+The zigzag hugs the left wall, with a short first rest and the three middle rests 6 rows tall (the bats and Lucky Block sit there). The top room is long, so the last walk to the exit is longer than the first.
+```
+        K
+ ____   |___________ > out at y92
+ | b |  ... six rises along the left wall
+ in >
+```
+
+### § 4 v2 — Stepped halls
+The same drop shaft, cracked skip and last shaft, but the main tunnel has a raised dais in the middle (a Golem and a bat on it, another Golem beside it). The side route's down shaft is early (left) and its rejoin shaft is not far past the dais, so the side tunnel is a short loop: Miner, Golem, Shaman, the chest, the cursed chest and the ability stand.
+```
+skip:     +++++++++++++++++++++++++++++++++++++ >
+main: >\ g  m     [ g  b  g ]       r  /> arena
+side:    \ m  g  S  C  Q  A  /
+```
+
+### § 4 v3 — Ramp mine
+Instead of the vertical shaft, a **stair of one-tile steps** leads down into the tunnel under the corridor floor (a 2-tile opening at the entry; the cracked wall is still across the gap). The side route starts further on, so the side tunnel is a long straight corridor that rejoins at the shaft that also reaches the skip corridor.
+```
+skip:    +++++++++++++++++++++++++++++ >
+         \_
+main:       \_  g  m   g   b   g  r  / > arena
+side:                 \ m g S  C Q A /
+```
+
+### § 6 v2 — Glacier shelf
+The low cart tunnel and the first gap come early; a long ice shelf hangs over the middle of the rail with the Miner on a shelf past the gap. The track then drops in a short 1:1 run, rests on a flat of 13 tiles (the Ram waits there), falls steeply (2 rows per tile) and settles on the same safe flat before the second tunnel. Merchant, Lucky Block, key ladder, side arena and warning stay as `v1`.
+```
+ L  w         [arena slab]
+ K ice  _____ tunnel _  gap  IIIIIII  m==
+ M   V ####### ####  ## ############\
+                                      \____ r __
+                                              \ steep \___ flat
+```
+
+### § 6 v3 — Steep start
+The first gap is early (col 20) and the tunnel late (cols 30–37); the Miner stands on a shelf near the plaza. The track falls steeply at once, rests on a 10-tile shelf (the Ram), drops 1:1, a short rest, then falls steeply again to the safe flat.
+```
+ L  w         [arena slab]
+ K I I  gap  m ===   tunnel
+ M   V ####  ## ####### \
+                          \_ r _____ \
+                                      \\_ ______
+```
+
+### § 7 v2 — Hanging vault
+The sealed timed room hangs high (rows 128–136) over the middle of the cave. Two one-way landings climb to its door. The Golem stands on a low mound under it. The Lucky Block and two chests are near the start.
+```
+                    [ sealed room  T ]
+            ===   =D
+ L   C  m  C      g ## .   b       r    S >
+ ################################################
+```
+
+### § 7 v3 — Low vault
+The vault sits further along (rows 131–139), reached from a rock step and a short landing. A low shelf near the start holds the Miner; the bat flies over the open floor between.
+```
+                       [ sealed room T ]
+                   ##  ==D
+ L   m    C   b  C  ##   g                  r  S >
+ #####################################################
+```

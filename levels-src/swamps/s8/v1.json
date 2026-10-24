@@ -1,0 +1,77 @@
+{
+ "entry": [
+  0,
+  56
+ ],
+ "exit": [
+  67,
+  56
+ ],
+ "objects": [
+  {
+   "type": "arena",
+   "x": 4,
+   "y": 36,
+   "w": 32,
+   "h": 20,
+   "props": {
+    "id": "queen_nest",
+    "kind": "boss",
+    "boss": "spider_queen",
+    "entry": "left"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 3,
+   "y": 53,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "queen_nest",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 36,
+   "y": 53,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "queen_nest",
+    "role": "exit"
+   }
+  },
+  {
+   "type": "exit",
+   "x": 64,
+   "y": 53,
+   "w": 2,
+   "h": 3,
+   "props": {}
+  }
+ ],
+ "mainPath": [
+  [
+   2,
+   55
+  ],
+  [
+   5,
+   55
+  ],
+  [
+   35,
+   55
+  ],
+  [
+   38,
+   55
+  ],
+  [
+   65,
+   55
+  ]
+ ]
+}

@@ -1,0 +1,170 @@
+{
+ "entry": [
+  0,
+  72
+ ],
+ "exit": [
+  111,
+  72
+ ],
+ "objects": [
+  {
+   "type": "lucky_block",
+   "x": 10,
+   "y": 69,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 18,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 22,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 36,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "group": "hounds_s2"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 39,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "group": "hounds_s2"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 42,
+   "y": 71,
+   "props": {
+    "enemy": "war_hound",
+    "facing": -1,
+    "group": "hounds_s2"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 70,
+   "y": 65,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 78,
+   "y": 65,
+   "props": {
+    "enemy": "crossbowman",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 98,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 102,
+   "y": 71,
+   "props": {
+    "enemy": "soldier",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 106,
+   "y": 71,
+   "props": {
+    "enemy": "battle_mage",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 109,
+   "y": 71,
+   "props": {
+    "enemy": "knight",
+    "facing": -1
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   14,
+   71
+  ],
+  [
+   30,
+   71
+  ],
+  [
+   46,
+   71
+  ],
+  [
+   54,
+   71
+  ],
+  [
+   57,
+   68
+  ],
+  [
+   60,
+   65
+  ],
+  [
+   65,
+   65
+  ],
+  [
+   83,
+   65
+  ],
+  [
+   89,
+   65
+  ],
+  [
+   91,
+   68
+  ],
+  [
+   94,
+   71
+  ],
+  [
+   106,
+   71
+  ]
+ ]
+}

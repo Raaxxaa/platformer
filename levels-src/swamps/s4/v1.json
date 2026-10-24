@@ -1,0 +1,237 @@
+{
+ "entry": [
+  0,
+  56
+ ],
+ "exit": [
+  107,
+  56
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 20,
+   "y": 55,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "submerged": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 46,
+   "y": 55,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "submerged": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 30,
+   "y": 55,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 58,
+   "y": 55,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 70,
+   "y": 51,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 86,
+   "y": 55,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 26,
+   "y": 62,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 44,
+   "y": 65,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 62,
+   "y": 65,
+   "props": {
+    "enemy": "treant",
+    "facing": -1
+   }
+  },
+  {
+   "type": "key_chest",
+   "x": 70,
+   "y": 65,
+   "props": {}
+  },
+  {
+   "type": "cursed_chest",
+   "x": 78,
+   "y": 65,
+   "props": {}
+  },
+  {
+   "type": "loot_stand",
+   "x": 87,
+   "y": 65,
+   "props": {
+    "kind": "ability"
+   }
+  },
+  {
+   "type": "grapple_point",
+   "x": 8,
+   "y": 48,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 16,
+   "y": 47,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 24,
+   "y": 46,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 32,
+   "y": 45,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 40,
+   "y": 44,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 48,
+   "y": 43,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 56,
+   "y": 43,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 64,
+   "y": 43,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 72,
+   "y": 44,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 80,
+   "y": 45,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 88,
+   "y": 46,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 96,
+   "y": 47,
+   "props": {}
+  },
+  {
+   "type": "grapple_point",
+   "x": 104,
+   "y": 48,
+   "props": {}
+  },
+  {
+   "type": "guide_arrow",
+   "x": 4,
+   "y": 53,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 99,
+   "y": 53,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   13,
+   55
+  ],
+  [
+   19,
+   55
+  ],
+  [
+   45,
+   55
+  ],
+  [
+   71,
+   55
+  ],
+  [
+   97,
+   55
+  ],
+  [
+   107,
+   55
+  ]
+ ]
+}

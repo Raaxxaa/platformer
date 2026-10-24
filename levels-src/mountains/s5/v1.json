@@ -1,0 +1,174 @@
+{
+ "entry": [
+  0,
+  92
+ ],
+ "exit": [
+  39,
+  92
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 10,
+   "y": 85,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1,
+    "wave": 1,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 22,
+   "y": 91,
+   "props": {
+    "enemy": "rock_golem",
+    "facing": -1,
+    "wave": 1,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 33,
+   "y": 91,
+   "props": {
+    "enemy": "ram",
+    "facing": -1,
+    "wave": 1,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 17,
+   "y": 81,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1,
+    "wave": 2,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 6,
+   "y": 91,
+   "props": {
+    "enemy": "ram",
+    "facing": -1,
+    "wave": 2,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 32,
+   "y": 91,
+   "props": {
+    "enemy": "ram",
+    "facing": -1,
+    "wave": 2,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 30,
+   "y": 85,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1,
+    "wave": 3,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 11,
+   "y": 91,
+   "props": {
+    "enemy": "rock_golem",
+    "facing": -1,
+    "wave": 3,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 25,
+   "y": 91,
+   "props": {
+    "enemy": "ram",
+    "facing": -1,
+    "wave": 3,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 19,
+   "y": 91,
+   "props": {
+    "enemy": "goblin_shaman",
+    "facing": -1,
+    "wave": 3,
+    "arena": "mountain_combat"
+   }
+  },
+  {
+   "type": "arena",
+   "x": 1,
+   "y": 74,
+   "w": 38,
+   "h": 18,
+   "props": {
+    "id": "mountain_combat",
+    "kind": "combat",
+    "parTime": 24
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 0,
+   "y": 89,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "mountain_combat",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 39,
+   "y": 89,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "mountain_combat",
+    "role": "entry"
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   91
+  ],
+  [
+   1,
+   91
+  ],
+  [
+   20,
+   91
+  ],
+  [
+   38,
+   91
+  ]
+ ]
+}

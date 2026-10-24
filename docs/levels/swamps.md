@@ -114,3 +114,87 @@ Counts include all arena waves. The Queen is the Guardian, separate from the 44 
 ## Object and route checks
 
 Place exactly four Lucky Blocks (sections 2, 3, 6, 7), two free stands (weapon in 1, ability in 4), two keys (3, 6), three key chests (4, 7, 7), one cursed chest (4), one timed door and chest (7), one merchant spot (6), one empty side arena and Dragon warning (6), one combat arena (5), one Queen arena (8), and one exit. Every fork has a main-route arrow. The main line uses neither vines nor a required ability. Dark zones contain fireflies; danger warnings and projectiles draw above darkness. Validate exact counts, water coverage, arena dimensions, the main-path length and movement limits before browser play.
+
+## Versions (M11, 06 §8.7)
+
+Sections 2, 3, 4, 6 and 7 each have **3 versions**. The run's seed picks one per section, so there are 243 different Forest roads. `v1` is the layout above (the "classic" layout). Every version keeps its section's **exact contents** (the same enemies, Lucky Block, key and its ladder, chests, stand, timed door and chest with its 37 blink blocks, the 13 grapple points, dark zone and fireflies, side arena, warning zone, merchant and arrows) and joins its neighbours on floor row 56 at both edges. Sections 1, 5 and 8 never change. Water stays 2 tiles deep over a solid floor. A version's main path is within ±10% of `v1` (all are 98–104%), and every section keeps its width, so every combination stays 700 x 80. The versions are built by `levels-src/swamps/gen_variants.py`. Thumbnails: `~` water, `Z` Zombie, `S` spider, `w` Wisp, `W` Witch, `E` Treant, `=` plank (one-way), `@` blink block.
+
+### § 2 v2 — Cypress islands
+Five wide pools (45 water columns) with dry islands between them. Each of the four dry islands has a raised mound; the Witches and one spider stand on the mounds, the Zombies wait in the pools, and the Lucky Block floats over the first island.
+```
+        w     L      w W S        w W         w S W
+ ____~~~~~~~_____ _/\_ ~~~~ _/\_ ~~~ _/\_ ~~~~ _/\_ ~~~~~ ____ E
+   Z  Z           Z        Z              S
+```
+
+### § 2 v3 — Twin marshes
+Two big marshes (22 columns each), joined by a long dry causeway of 34 tiles with three low stumps. The first group wades the first marsh, the middle groups fight on the causeway (the Witches on stumps), and the last group waits at the far marsh.
+```
+     w      L   W    w   W        w    w W
+ ___~~~~~~~~~~~~~~~~___ _#_ _#_ _#_ ____~~~~~~~~~~~~~~~~___ E
+    Z Z    Z        S                Z    S
+```
+
+### § 3 v2 — Mossy hollow
+Four pools (42 water columns) with a plank across each pool and a hanging spider above its middle. A dry stone block between the second and third pool carries the Lucky Block. The key and its ladder of planks are as in `v1`.
+```
+       S  =====      S  =====     L      S  =====   S  =====    K
+   ~~~~~~~~~~~~    ~~~~~~~~~      ##       ~~~~~~~  ~~~~~~~     =
+ ##############################################################
+```
+
+### § 3 v3 — Stepping logs
+Four pools of different sizes (8, 14, 8, 12 columns), logs of two heights, and a dry block between the third and fourth pool for the Lucky Block. The key's ladder stands four tiles further left, with the same steps.
+```
+   S  ===     S  =======     S ===      L   S  =======      K
+ ~~~~~~      ~~~~~~~~~~~~~~    ~~~~~    ##   ~~~~~~~~~~~      =
+```
+
+### § 4 v2 — Cellar stairs
+The road is solid ground over a cellar. A **plank hatch** (8 tiles) drops into the cellar; inside are the Wisp and Witch, Treant 2, the key chest, the cursed chest and the ability stand. Four 2-tile steps climb back to a second hatch before the arena. The vines above are a flat zigzag.
+```
+vines:       G    G    G    G    G    G    G
+main:  > Z   ==== S   Z  S   w          steps W >
+cellar:        w  W    E   C  Q  A  /4 steps/
+```
+
+### § 4 v3 — Twin bridges
+Two **plank bridges** (29 and 34 tiles) over two cellars, with solid ground between and a low tunnel joining the cellars underneath (the Treant waits in it). The stair back up is at the far end of the second cellar. The vines form two arches, one over each bridge.
+```
+vines:    G G G           G G G
+main: >  Z===S====   Z S  ====w===W===  >
+side:        w W   [ E ]    C  Q  A / steps
+```
+
+### § 6 v2 — Flooded ruin
+Three pools (33 water columns) with a mound for the Witch, a short dry bank, and an underpass with two pits (22 water columns) and two stalactites. The dark zone, fireflies, warning, side arena, planks, steps, key ladder and merchant are as `v1`.
+```
+warning     L        > [empty side arena]
+  Z  w W    Z   w S   \
+ __~~~~~_/\_~~~~~~__~~~~~~~___ steps          steps ___ K
+        \___ ~~~ ___ ~~~~~~~~ ___/  underpass  M
+```
+
+### § 6 v3 — Sunken stumps
+Three pools of different lengths with a stump (the Witch on it) before the longest pool. The underpass has three small pits (22 water columns), two of them crossed on planks.
+```
+warning  L       > [empty side arena]
+  Z    Z W  w S    \
+ ~~~~ __~~~~~~~_#_~~~~~~~~~~~ steps  __~~ ==== ~~ ____ ==~~ steps  K
+```
+
+### § 7 v2 — Cellar vault
+The sealed timed room lies deep (rows 58–67) in the left half of the road, 12 wide and 10 tall. A plank hatch drops you into a 4-wide shaft in front of its door; wall-jump back out. The key chests and Lucky Block are on the road, in view.
+```
+ S  w L  C  ==== E            W  W    C       E >
+######  ##hatch ######################
+        |  [T room]  |
+```
+
+### § 7 v3 — Flat vault
+A wide, low sealed room (16 wide, 6 tall) under the middle of the road with its hatch just before it. Same contents and the same long calm road to the Queen's nest.
+```
+ S  w L  W  C  ==hatch== ...      W  C   E >
+##########   ################################
+              |   [ T room ]    |
+```

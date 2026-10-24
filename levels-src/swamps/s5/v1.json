@@ -1,0 +1,190 @@
+{
+ "entry": [
+  0,
+  56
+ ],
+ "exit": [
+  41,
+  56
+ ],
+ "objects": [
+  {
+   "type": "arena",
+   "x": 2,
+   "y": 38,
+   "w": 38,
+   "h": 18,
+   "props": {
+    "id": "swamp_ruin",
+    "kind": "combat",
+    "parTime": 24
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 1,
+   "y": 53,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "swamp_ruin",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "arena_door",
+   "x": 40,
+   "y": 53,
+   "w": 1,
+   "h": 3,
+   "props": {
+    "arena": "swamp_ruin",
+    "role": "entry"
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 6,
+   "y": 55,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "wave": 1,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 18,
+   "y": 55,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "wave": 1,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 30,
+   "y": 49,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1,
+    "wave": 1,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 7,
+   "y": 55,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "wave": 2,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 18,
+   "y": 51,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1,
+    "wave": 2,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 30,
+   "y": 49,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1,
+    "wave": 2,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 7,
+   "y": 55,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "wave": 3,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 18,
+   "y": 51,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1,
+    "wave": 3,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 30,
+   "y": 49,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1,
+    "wave": 3,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 35,
+   "y": 55,
+   "props": {
+    "enemy": "treant",
+    "facing": -1,
+    "wave": 3,
+    "arena": "swamp_ruin",
+    "submerged": false,
+    "hang": false
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   3,
+   55
+  ],
+  [
+   39,
+   55
+  ],
+  [
+   41,
+   55
+  ]
+ ]
+}

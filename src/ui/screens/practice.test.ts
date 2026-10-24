@@ -60,9 +60,10 @@ describe('practice Layout option (06 §8.7)', () => {
     m.action('down'); m.action('down'); m.action('left'); expect(m.value('s4')).toBe('v3 Ridge path');
     expect(m.setup.layout).toEqual([1, 2, 1, 3, 1, 1, 1, 1]); expect(m.value('layout')).toBe('Custom 2-1-3-1-1'); expect(m.value('best')).toBe('0:50.00');
   });
-  it('is off for stages without versions yet', () => {
+  it('is on for every stage (all five have versions), Random by default', () => {
     const m = new PracticeSetupModel(() => save((d) => { d.progress.levelsReached = ['plains', 'kingdom']; }));
-    m.action('right'); expect(m.value('layout')).toBe('—'); expect(m.selectable).not.toContain('layout'); expect(m.setup.layout).toBeNull();
+    m.action('right'); expect(m.setup.levelId).toBe('kingdom');
+    expect(m.value('layout')).toBe('Random'); expect(m.selectable).toContain('layout'); expect(m.setup.layout).toBeNull();
   });
   it('remembers a custom layout', () => {
     const m = new PracticeSetupModel(() => save(), { levelId: 'plains', cls: 'tank', weapon: 'war_maul', dragon: 'off', layout: [1, 3, 3, 3, 1, 3, 3, 1] });

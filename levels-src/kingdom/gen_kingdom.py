@@ -10,8 +10,13 @@ solid steps up to 3 tiles, so the generated level passes reachLint and routeLint
 """
 import json
 import os
+import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+if not os.environ.get('FORCE_OLD_GEN'):
+    # M11 split this level into section files (s<N>/v1, v2, v3); level.json no longer lists chunks or objects.
+    # This script wrote the original single-chunk layout (v1) and would overwrite the sections' manifest. Kept for history.
+    sys.exit('gen_kingdom.py: superseded by levels-src/kingdom/s<N>/ sections (M11); set FORCE_OLD_GEN=1 to run it anyway')
 W, H, F = 700, 100, 72
 SECTIONS = [(1, 0, 36), (2, 36, 148), (3, 148, 260), (4, 260, 368), (5, 368, 410), (6, 410, 552), (7, 552, 632), (8, 632, 700)]
 

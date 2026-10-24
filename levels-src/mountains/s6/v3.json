@@ -1,0 +1,218 @@
+{
+ "entry": [
+  0,
+  92
+ ],
+ "exit": [
+  129,
+  144
+ ],
+ "objects": [
+  {
+   "type": "lucky_block",
+   "x": 3,
+   "y": 85,
+   "props": {}
+  },
+  {
+   "type": "key",
+   "x": 4,
+   "y": 77,
+   "props": {}
+  },
+  {
+   "type": "merchant_spot",
+   "x": 1,
+   "y": 91,
+   "props": {}
+  },
+  {
+   "type": "dragon_warning",
+   "x": 4,
+   "y": 82,
+   "w": 1,
+   "h": 10,
+   "props": {}
+  },
+  {
+   "type": "arena",
+   "x": 49,
+   "y": 68,
+   "w": 40,
+   "h": 20,
+   "props": {
+    "id": "mountain_side",
+    "kind": "side"
+   }
+  },
+  {
+   "type": "minecart",
+   "x": 7,
+   "y": 91,
+   "props": {
+    "dir": 1
+   }
+  },
+  {
+   "type": "minecart_stop",
+   "x": 129,
+   "y": 140,
+   "w": 1,
+   "h": 4,
+   "props": {}
+  },
+  {
+   "type": "enemy",
+   "x": 11,
+   "y": 87,
+   "props": {
+    "enemy": "goblin_miner",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 62,
+   "y": 103,
+   "props": {
+    "enemy": "ram",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 97,
+   "y": 124,
+   "props": {
+    "enemy": "bat_swarm",
+    "facing": -1
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 5,
+   "y": 87,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 8,
+   "y": 89,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 24,
+   "y": 88,
+   "props": {
+    "angle": -30
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 45,
+   "y": 89,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 109,
+   "y": 129,
+   "props": {
+    "angle": -30
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 128,
+   "y": 140,
+   "props": {
+    "angle": 0
+   }
+  }
+ ],
+ "mainPath": [
+  [
+   0,
+   91
+  ],
+  [
+   8,
+   91
+  ],
+  [
+   19,
+   91
+  ],
+  [
+   22,
+   91
+  ],
+  [
+   29,
+   91
+  ],
+  [
+   38,
+   91
+  ],
+  [
+   41,
+   91
+  ],
+  [
+   49,
+   91
+  ],
+  [
+   56,
+   103
+  ],
+  [
+   66,
+   103
+  ],
+  [
+   74,
+   111
+  ],
+  [
+   84,
+   131
+  ],
+  [
+   89,
+   131
+  ],
+  [
+   99,
+   131
+  ],
+  [
+   107,
+   131
+  ],
+  [
+   110,
+   132
+  ],
+  [
+   113,
+   134
+  ],
+  [
+   128,
+   143
+  ],
+  [
+   129,
+   143
+  ]
+ ]
+}

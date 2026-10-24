@@ -1,0 +1,199 @@
+{
+ "entry": [
+  0,
+  56
+ ],
+ "exit": [
+  111,
+  56
+ ],
+ "objects": [
+  {
+   "type": "enemy",
+   "x": 8,
+   "y": 57,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "submerged": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 12,
+   "y": 57,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "submerged": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 30,
+   "y": 57,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "submerged": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 52,
+   "y": 57,
+   "props": {
+    "enemy": "bog_zombie",
+    "facing": -1,
+    "submerged": true
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 38,
+   "y": 57,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 74,
+   "y": 57,
+   "props": {
+    "enemy": "giant_spider",
+    "facing": -1,
+    "hang": false
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 16,
+   "y": 51,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 60,
+   "y": 51,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 82,
+   "y": 51,
+   "props": {
+    "enemy": "wisp",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 34,
+   "y": 53,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 56,
+   "y": 53,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 78,
+   "y": 53,
+   "props": {
+    "enemy": "swamp_witch",
+    "facing": -1
+   }
+  },
+  {
+   "type": "enemy",
+   "x": 104,
+   "y": 55,
+   "props": {
+    "enemy": "treant",
+    "facing": -1
+   }
+  },
+  {
+   "type": "lucky_block",
+   "x": 24,
+   "y": 53,
+   "props": {}
+  }
+ ],
+ "mainPath": [
+  [
+   4,
+   55
+  ],
+  [
+   28,
+   57
+  ],
+  [
+   33,
+   55
+  ],
+  [
+   36,
+   55
+  ],
+  [
+   38,
+   57
+  ],
+  [
+   52,
+   57
+  ],
+  [
+   55,
+   55
+  ],
+  [
+   58,
+   55
+  ],
+  [
+   60,
+   57
+  ],
+  [
+   74,
+   57
+  ],
+  [
+   77,
+   55
+  ],
+  [
+   80,
+   55
+  ],
+  [
+   82,
+   57
+  ],
+  [
+   111,
+   55
+  ]
+ ]
+}
