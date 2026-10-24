@@ -637,7 +637,7 @@ A practice area through a gate on the left of the Home Village. One path of **17
 - All 4 starting classes are unlocked from the start.
 - Sometimes enemies drop **blueprints** that unlock a new weapon or ability into the loot pool.
 - **No permanent stat boosts**, so runs are always fair to compare for speedrunning.
-- A "classes discovered" page fills in as you get each Connection bonus and hybrid. Beating the King with a class unlocks a third starting weapon for it. Cosmetic accessories come from mob drops and stay in your collection forever (4.5, M12).
+- A "classes discovered" page fills in as you get each Connection bonus and hybrid. Beating the King with a class unlocks a third starting weapon for it. Cosmetic accessories come from mob drops and stay in your collection forever (4.5, M13).
 - Best times are saved on your computer **per starting class** and **per road** (Mountain or Forest).
 
 ---
