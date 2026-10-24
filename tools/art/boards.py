@@ -479,3 +479,6 @@ def build(preview):
     ui_mock(os.path.join(preview, 'ui_mock.png'))
     classes_board(os.path.join(preview, 'style_board_classes.png'))
     loot2_board(os.path.join(preview, 'style_board_loot2.png'))
+    from . import touch
+    root = os.path.join(os.path.dirname(__file__), '..', '..', 'public', 'assets')
+    touch.mock(os.path.join(preview, 'touch_mock.png'), os.path.join(root, 'bg'))

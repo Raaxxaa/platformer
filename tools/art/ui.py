@@ -118,6 +118,8 @@ def build_frames():
     fr.update(I.hud_frames())
     fr.update(I.tint_frames())
     fr.update(skin_frames())
+    from . import touch
+    fr.update(touch.frames())
     return fr
 
 
@@ -125,7 +127,7 @@ def build(assets, preview):
     from PIL import Image
     fr = build_frames()
     for k, img in fr.items():
-        ok = {(255, 255, 255)} if k.startswith(('class_', 'prompt_ps_')) or k == 'panel_9_edge' else P.allowed_ui()
+        ok = {(255, 255, 255)} if k.startswith(('class_', 'prompt_ps_', 'touch_')) or k in ('panel_9_edge', 'rotate_phone') else P.allowed_ui()
         P.check_palette_lock(img, ok, 'ui', k)
     A.pack_atlas('ui', fr, os.path.join(assets, 'ui'), strict=False)
     # preview: every frame on a panel, 5×

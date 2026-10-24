@@ -37,7 +37,10 @@ EXPECTED.update({f'prompt_ps_{k}': (7, 7) for k in ('cross', 'circle', 'square',
 EXPECTED.update({'hud_heart': (10, 10), 'hud_plate_9': (24, 24), 'panel_9': (24, 24), 'panel_9_edge': (24, 24),
                  'tab_on_9': (16, 12), 'tab_off_9': (16, 12), 'button_9': (16, 16), 'button_9_sel': (16, 16),
                  'cursor': (7, 7)})
-TINT = [k for k in EXPECTED if k.startswith(('class_', 'prompt_ps_'))] + ['panel_9_edge']
+EXPECTED.update({'touch_ring': (64, 64), 'touch_fill': (64, 64), 'touch_jump': (24, 24), 'touch_dash': (24, 24),
+                 'touch_heal': (24, 24), 'touch_interact': (24, 24), 'touch_pause': (24, 24),
+                 'touch_stick_base': (96, 96), 'touch_knob': (40, 40), 'rotate_phone': (64, 48)})
+TINT = [k for k in EXPECTED if k.startswith(('class_', 'prompt_ps_', 'touch_'))] + ['panel_9_edge', 'rotate_phone']
 
 
 class UiTest(unittest.TestCase):
@@ -45,8 +48,8 @@ class UiTest(unittest.TestCase):
     def setUpClass(cls):
         cls.fr = U.build_frames()
 
-    def test_all_103_frames(self):
-        self.assertEqual(len(EXPECTED), 103)
+    def test_all_113_frames(self):
+        self.assertEqual(len(EXPECTED), 113)
         self.assertEqual(set(self.fr), set(EXPECTED))
         for k, size in EXPECTED.items():
             self.assertEqual(self.fr[k].size, size, k)
