@@ -112,6 +112,8 @@ export class WaterFx {
 interface Fallback { w: number; h: number; color: number; alpha?: number; ox?: number; oy?: number }
 
 export class Stage2FeatureView {
+  /** Ambient particles drawn at most this many (Low effects: 12, M12 Task 5). */
+  ambientMax = Infinity;
   private readonly scene: Phaser.Scene;
   private readonly railPoints: Rail[];
   private readonly graphics = new Map<number, Phaser.GameObjects.Graphics>();
@@ -224,7 +226,7 @@ export class Stage2FeatureView {
       }
     }
     const fx = this.graphics.get(DEPTH.vfx)!;
-    for (const fly of w.fireflies) {
+    for (const fly of w.fireflies.slice(0, this.ambientMax)) {
       const p = fireflyPosition(fly, viewSeconds);
       if (this.visible(p.x, p.y, S.firefly.size, S.firefly.size)) fx.fillStyle(S.firefly.color).fillRect(Math.round(p.x), Math.round(p.y), S.firefly.size, S.firefly.size);
     }

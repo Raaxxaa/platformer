@@ -1,3 +1,4 @@
+import { getTouchOverlay } from '../ui/touch/touchInput.ts';
 // Shared Records/Settings/portable save navigation. Each caller keeps its own return screen.
 import type Phaser from 'phaser';
 import { RecordsView } from '../ui/screens/records.ts';
@@ -50,6 +51,8 @@ export class MenuScreens {
       onExport: () => this.openCode('export'), onImport: () => this.openCode('import'),
       onFullscreen: () => { if (this.scene.scale.isFullscreen) this.scene.scale.stopFullscreen(); else this.scene.scale.startFullscreen(); },
       onClose: () => { this.settings = null; this.closed(); },
+      // Edit layout: the touch overlay's editor takes the screen, then the settings come back (07 §8.6).
+      onEditLayout: () => { this.settings = null; const o = getTouchOverlay(); if (o) o.startEditing(() => this.openSettings()); else this.openSettings(); },
     });
   }
   private openCode(mode: SaveCodeMode): void {

@@ -33,7 +33,11 @@ import { drawMarkers, VfxDirector, VfxPool, type TickEvent } from '../view/vfx.t
 import { ItemViews } from '../view/yardView.ts';
 import { AbilityView } from '../view/abilityView.ts';
 import { AbilityHud } from '../../ui/hud/abilityHud.ts';
+import { lastDeviceIsTouch } from '../../ui/inputSettings.ts';
 import { getTouchOverlay } from '../../ui/touch/touchInput.ts';
+import { effectsLevel, LOW_EFFECTS } from '../../ui/touch/effects.ts';
+import { isTouchDevice } from '../zoom.ts';
+import { vibrate, vibrationFor } from '../../ui/touch/vibration.ts';
 import { touchHudView } from '../../ui/touch/touchView.ts';
 import { TopHud } from '../../ui/hud/topHud.ts';
 import { LootHud } from '../../ui/hud/lootHud.ts';
@@ -156,6 +160,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   /** Extra drawing after the shared pass (doors, markers, timer...). */
   protected renderExtra(): void {}
   protected extraMenuOpen(): boolean { return false; }
+  /** The death screen has no Back (it asks Retry or Home). */
+  protected deathOpen(): boolean { return false; }
   /** The touch buttons work and show only while a run is being played; menus take taps directly (07 §8.6). */
   protected touchControlsOn(): boolean {
     return !this.pause && !this.classPick && !this.overview && !this.extraMenuOpen() && ['stage', 'village', 'homeVillage'].includes(this.world.run.phase) && this.world.phase === 'stage';
@@ -235,7 +241,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.abilityHud = new AbilityHud(this);
     this.topHud = new TopHud(this);
     this.lootHud = new LootHud(this);
-    this.card = new ItemCardPopup(this);
+    this.card = new ItemCardPopup(this, (a) => this.devices.tap(a));
     this.debug = debugEnabled();
     if (this.debug) installCombatDebugApi(this);
     this.createExtra();
@@ -485,7 +491,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.statMenu.clear();
     this.pauseMenu.blockHeldPad(activeHomePad());
     pauseRun(this.world.run);
-    this.pause = { model: new PauseModel(this.pausePlace()), view: new PauseView(this) };
+    this.pause = { model: new PauseModel(this.pausePlace()), view: new PauseView(this, { tab: (i) => { if (this.pause) this.pause.model.tabIndex = i; }, item: (i) => { if (this.pause?.model.tab === 'MENU') { this.pause.model.cursor = i; this.pauseAction('confirm'); } } }) };
     this.readInput(); // The opening pause press must not become a fresh resume press.
     window.addEventListener('keydown', this.onPauseKey);
   }
@@ -506,7 +512,13 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected render(): void {
     const w = this.world;
     const touch = getTouchOverlay();
-    if (touch) { touch.setGameplay(this.touchControlsOn()); touch.setView(touchHudView(w)); }
+    if (touch) {
+      const on = this.touchControlsOn();
+      touch.setGameplay(on); touch.setView(touchHudView(w));
+      const pulse = vibrationFor(this.frameEvents.map((f) => f.e), getUiSettings().touch, on && lastDeviceIsTouch());
+      if (pulse !== null) vibrate(pulse);
+      touch.setBack(!on && !this.overview && !this.deathOpen() && (!!this.pause || !!this.classPick || this.extraMenuOpen() || w.run.phase === 'statPick'));
+    }
     const warning = saveStore().takeWarning();
     if (warning) this.abilityHud.toast(warning, UI_COLOR.bad, this.time.now, SAVE_RULES.warningSeconds);
     const cam = w.camera;
@@ -575,6 +587,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.features.update(w, [], w.tick / TICK_RATE);
     this.kingdomView.update(w);
     this.castleView.update(w);
+    // Low effects (07 §8.6, M12 Task 5): half the particles, a half-resolution darkness; gameplay is identical.
+    const low = effectsLevel(getUiSettings().touch, isTouchDevice()) === 'low';
+    this.vfx.pool.setMax(low ? LOW_EFFECTS.vfxPool : LOW_EFFECTS.vfxPoolHigh); this.darkness.setStep(low ? 2 : 1); this.features.ambientMax = low ? LOW_EFFECTS.ambientMax : Infinity;
     this.darkness.setVisible(!this.overview);
     this.darkness.update(w, w.tick / TICK_RATE);
     this.itemViews.update(w.groundItems, w.tick);
@@ -593,7 +608,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.sfx.play(reqs, w.tick, { camCenterX: cam.x + this.scale.width / 2, playerX: b.x });
     this.sfx.updateCart(w);
     music.update(this, musicSnapshot(w), w.run.phase === 'paused' || !!this.pause, isSlow(w));
-    this.soundNote.setVisible(this.sfx.locked && !this.overview);
+    this.soundNote.setText(lastDeviceIsTouch() ? 'Tap for sound' : 'Click or press any key for sound').setVisible(this.sfx.locked && !this.overview);
     if (this.debug) g.lineStyle(1, COLOR.hurtbox, 1).strokeRect(left + 0.5, top + 0.5, b.w - 1, b.h - 1);
 
     // Active attack hitboxes: the player's always (M2), the enemies' with ?debug=1. Ability boxes now have

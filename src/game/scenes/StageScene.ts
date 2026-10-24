@@ -290,6 +290,7 @@ export class StageScene extends WorldScene {
     if (first && this.level.id === 'home') this.openHomePanel('training');
   }
   protected override touchControlsOn(): boolean { return super.touchControlsOn() && !this.deathView && !this.practiceResult; }
+  protected override deathOpen(): boolean { return !!this.deathView; }
   protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.menus?.active || this.titleFadeLeft > 0; }
   private requestHome(): void {
     gameSession.endRun(this.world, 'quit');

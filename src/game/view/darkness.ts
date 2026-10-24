@@ -92,6 +92,8 @@ export class DarknessView {
   private zones: ZoneRaster[] = [];
   private destroyed = false;
   private enabled = true;
+  /** 1 = every pixel; 2 = Low effects: the light falloff is computed per 2 × 2 block (a half-resolution darkness, M12 Task 5). */
+  private step: 1 | 2 = 1;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -109,6 +111,8 @@ export class DarknessView {
     scene.events.once('shutdown', this.destroy, this);
   }
 
+  setStep(step: 1 | 2): void { if (step !== this.step) { this.step = step; this.frameKey = ''; } }
+
   update(w: GameWorld, viewSeconds: number): void {
     if (this.destroyed || !this.enabled) return;
     const camera = this.scene.cameras.main, camX = Math.round(camera.scrollX), camY = Math.round(camera.scrollY);
@@ -119,7 +123,7 @@ export class DarknessView {
     }
     this.renderTexture.setVisible(this.zones.length > 0);
     if (this.zones.length === 0) { this.frameKey = ''; return; }
-    const lights = worldLights(w, viewSeconds), frameKey = JSON.stringify([key, lights]);
+    const lights = worldLights(w, viewSeconds), frameKey = JSON.stringify([key, lights, this.step]);
     if (frameKey === this.frameKey) return;
     this.frameKey = frameKey;
     const data = this.pixels.data;
@@ -131,12 +135,17 @@ export class DarknessView {
         const x = light.x - camX, y = light.y - camY;
         const left = Math.max(zone.left, Math.floor(x - light.radius)), right = Math.min(zone.left + zone.width, Math.ceil(x + light.radius));
         const top = Math.max(zone.top, Math.floor(y - light.radius)), bottom = Math.min(zone.top + zone.height, Math.ceil(y + light.radius));
-        for (let py = top; py < bottom; py++) {
-          for (let px = left; px < right; px++) {
-            const i = (py - zone.top) * zone.width + px - zone.left;
-            if (zone.work[i] === 0) continue;
-            const alpha = Math.round(lightAlpha((px + 0.5 - x) ** 2 + (py + 0.5 - y) ** 2, light.radius) * 255);
-            zone.work[i] = Math.min(zone.work[i], alpha);
+        const st = this.step;
+        for (let py = top - (st === 2 ? top % 2 : 0); py < bottom; py += st) {
+          for (let px = left - (st === 2 ? left % 2 : 0); px < right; px += st) {
+            const c = st === 2 ? 1 : 0.5;      // sample at the block's center when blocks are 2 × 2
+            const alpha = Math.round(lightAlpha((px + c - x) ** 2 + (py + c - y) ** 2, light.radius) * 255);
+            for (let by = py; by < py + st; by++) for (let bx = px; bx < px + st; bx++) {
+              if (bx < Math.max(left, zone.left) || bx >= Math.min(right, zone.left + zone.width) || by < Math.max(top, zone.top) || by >= Math.min(bottom, zone.top + zone.height)) continue;
+              const i = (by - zone.top) * zone.width + bx - zone.left;
+              if (zone.work[i] === 0) continue;
+              zone.work[i] = Math.min(zone.work[i], alpha);
+            }
           }
         }
       }

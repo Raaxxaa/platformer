@@ -8,6 +8,8 @@ import { VillageScene } from './game/scenes/VillageScene.ts';
 import { BootScene } from './game/scenes/BootScene.ts';
 import { debugEnabled } from './game/debug.ts';
 import { installPortraitGuard } from './ui/touch/portrait.ts';
+import { saveStore } from './game/save/storage.ts';
+import { applyUiSettings } from './ui/inputSettings.ts';
 import { TouchOverlay } from './ui/touch/TouchOverlay.ts';
 import { setTouchOverlay } from './ui/touch/touchInput.ts';
 
@@ -17,7 +19,9 @@ const q = new URLSearchParams(window.location.search);
 const which = q.get('scene');
 const scene = which === 'movement' ? MovementTestScene : which === 'combat' ? CombatTestScene : q.get('start') ? StageScene : BootScene;
 
-setTouchOverlay(new TouchOverlay());
+const touchOverlay = new TouchOverlay();
+touchOverlay.setLayoutSink((layout) => { saveStore().update((s) => { s.settings.touch.layout = layout; }); applyUiSettings(saveStore().data.settings); });
+setTouchOverlay(touchOverlay);
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',

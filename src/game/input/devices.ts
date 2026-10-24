@@ -113,6 +113,9 @@ export class Devices {
   /** Preserve the physical source until the frame consumes its pressed edge (menu precedence). */
   takePauseKey(): string | null { const code = this.pauseKey; this.pauseKey = null; return code; }
 
+  /** A tap on screen (an item card row): the press is latched like a button that went down and up. */
+  tap(id: ActionId): void { if (!this.enabled) return; noteInputDevice('touch'); this.builder.down(id, 'touch'); this.builder.up(id, 'touch'); }
+
   /** Ignore devices (debug manual mode) and release whatever they held. */
   setEnabled(on: boolean): void {
     this.enabled = on;

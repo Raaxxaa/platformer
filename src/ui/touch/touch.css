@@ -21,3 +21,11 @@ html, body { overscroll-behavior: none; touch-action: none; -webkit-user-select:
 .portrait-phone { width: 44px; height: 76px; border: 4px solid #f2efe6; border-radius: 8px; position: relative; animation: portrait-turn 2.4s ease-in-out infinite; }
 .portrait-phone::after { content: ''; position: absolute; left: 50%; bottom: 6px; width: 10px; height: 3px; margin-left: -5px; background: #f2efe6; }
 @keyframes portrait-turn { 0%, 15% { transform: rotate(0deg); } 55%, 100% { transform: rotate(-90deg); } }
+
+/* The back arrow shown over menus (07 §8.6). */
+.touch-back { position: absolute; display: none; align-items: center; justify-content: center; box-sizing: border-box; border-radius: 50%; border: 2px solid #f2efe6; background: #1b1826; color: #f2efe6; pointer-events: auto; touch-action: none; opacity: 0.85; font-family: monospace; font-weight: bold; }
+
+/* Layout editor toolbar (07 §8.6 Edit layout). */
+.touch-edit { position: absolute; left: 50%; top: calc(var(--sa-t) + 8px); transform: translateX(-50%); display: none; align-items: center; gap: 10px; padding: 6px 10px; background: #1b1826; border: 2px solid #4a4560; border-radius: 6px; color: #f2efe6; font-size: 14px; pointer-events: auto; }
+.touch-edit button { font: inherit; color: #f2efe6; background: #0d0b14; border: 2px solid #f2efe6; border-radius: 4px; padding: 4px 10px; }
+.touch-edit button[data-act="done"] { border-color: #ffd34a; color: #ffd34a; }

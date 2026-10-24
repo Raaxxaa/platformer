@@ -21,6 +21,8 @@ export class TouchOverlay {
   private readonly stickKnob = document.createElement('div');
   private readonly hint = document.createElement('div');
   private readonly ring = document.createElement('div');
+  private readonly back = document.createElement('div');
+  private backOn = false;
   private readonly els = new Map<TouchButtonId, { el: HTMLDivElement; icon: HTMLDivElement; shade: HTMLDivElement; label: HTMLSpanElement; word: HTMLSpanElement }>();
   private atlas: Atlas = {};
   private atlasUrl = '';
@@ -29,12 +31,24 @@ export class TouchOverlay {
   /** Gameplay is running (not a menu): the controls work and are drawn. Menus take taps directly. */
   private gameplay = false;
   private editing = false;
+  private editDone: (() => void) | null = null;
+  private layoutSink: (layout: TouchSettings['layout']) => void = () => {};
+  /** Layout editor: each finger on a button, and the working layout (07 §8.6 Edit layout). */
+  private readonly editPointers = new Map<number, { id: TouchButtonId; dx: number; dy: number; x: number; y: number }>();
+  private pinch: { id: TouchButtonId; d0: number; s0: number } | null = null;
+  private editLayout: TouchSettings['layout'] = {};
+  private readonly toolbar = document.createElement('div');
   private settingsKey = '';
 
   constructor(parent: HTMLElement = document.body) {
     this.root.id = 'touch'; this.root.className = 'touch-root';
     this.stickRing.className = 'touch-ring'; this.stickKnob.className = 'touch-knob'; this.hint.className = 'touch-hint'; this.ring.className = 'touch-hold';
-    this.root.append(this.hint, this.stickRing, this.stickKnob, this.ring);
+    this.back.className = 'touch-back'; this.back.textContent = '◂';
+    this.back.addEventListener('pointerdown', (e) => { e.stopPropagation(); this.pressBack(); });
+    this.toolbar.className = 'touch-edit'; this.toolbar.innerHTML = '<span>Drag buttons · pinch to resize</span><button data-act="reset">Reset</button><button data-act="done">Done</button>';
+    this.toolbar.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.toolbar.addEventListener('click', (e) => { const a = (e.target as HTMLElement).dataset.act; if (a === 'reset') this.resetLayout(); if (a === 'done') this.stopEditing(); });
+    this.root.append(this.hint, this.stickRing, this.stickKnob, this.ring, this.back, this.toolbar);
     for (const def of T.buttons) {
       const el = document.createElement('div'); el.className = `touch-btn touch-${def.id}`;
       const icon = document.createElement('div'); icon.className = 'touch-icon';
@@ -70,8 +84,59 @@ export class TouchOverlay {
     if (this.gameplay && !on) touchModel.releaseAll();
     this.gameplay = on;
   }
-  setView(v: TouchHudView | null): void { this.view = v; touchModel.setInteract(!!v?.interact); }
-  setEditing(on: boolean): void { this.editing = on; }
+  setView(v: TouchHudView | null): void { this.view = v; if (!this.editing) touchModel.setInteract(!!v?.interact); }
+  get isEditing(): boolean { return this.editing; }
+  /** Where the editor saves the layout (main.ts: the save file). */
+  setLayoutSink(fn: (layout: TouchSettings['layout']) => void): void { this.layoutSink = fn; }
+  /** The layout editor (07 §8.6): every button can be dragged and pinched; Done returns to `done`. */
+  startEditing(done: () => void): void {
+    this.editing = true; this.editDone = done; this.editLayout = structuredClone(this.settings.layout);
+    touchModel.releaseAll(); touchModel.setInteract(true);
+  }
+  private stopEditing(): void {
+    this.editing = false; this.editPointers.clear(); this.pinch = null;
+    this.commit();
+    const done = this.editDone; this.editDone = null; done?.();
+  }
+  private resetLayout(): void { this.editLayout = {}; this.commit(); }
+  private commit(): void {
+    this.settings = { ...this.settings, layout: this.editLayout }; touchModel.setSettings(this.settings); this.layoutSink(structuredClone(this.editLayout));
+  }
+  /** Editor pointer handling: the finger picks the nearest button, drags it, and a second finger on it pinches. */
+  private editPointer(type: 'down' | 'move' | 'up', e: PointerEvent): void {
+    e.stopPropagation(); e.preventDefault();
+    const rects = touchModel.rects(), grow = T.hitGrow * touchModel.unit(), w = window.innerWidth, h = window.innerHeight;
+    if (type === 'down') {
+      let best: (typeof rects)[number] | null = null, bd = Infinity;
+      for (const r of rects) { const d = Math.hypot(e.clientX - r.cx, e.clientY - r.cy); if (d <= r.r + grow && d < bd) { best = r; bd = d; } }
+      if (!best) return;
+      this.editPointers.set(e.pointerId, { id: best.id, dx: e.clientX - best.cx, dy: e.clientY - best.cy, x: e.clientX, y: e.clientY });
+      const mine = [...this.editPointers.values()].filter((p) => p.id === best!.id);
+      if (mine.length === 2) {
+        const base = T.buttons.find((b) => b.id === best!.id)!, u = touchModel.unit();
+        this.pinch = { id: best.id, d0: Math.max(1, Math.hypot(mine[0].x - mine[1].x, mine[0].y - mine[1].y)), s0: best.r * 2 / (base.d * u) };
+      }
+      return;
+    }
+    const p = this.editPointers.get(e.pointerId);
+    if (!p) return;
+    if (type === 'up') { this.editPointers.delete(e.pointerId); if (this.pinch?.id === p.id) this.pinch = null; this.commit(); return; }
+    p.x = e.clientX; p.y = e.clientY;
+    const r = rects.find((q) => q.id === p.id)!, base = T.buttons.find((b) => b.id === p.id)!, u = touchModel.unit();
+    const mine = [...this.editPointers.values()].filter((q) => q.id === p.id);
+    let scale = r.r * 2 / (base.d * u), cx = r.cx, cy = r.cy;
+    if (this.pinch && this.pinch.id === p.id && mine.length >= 2) scale = this.pinch.s0 * Math.hypot(mine[0].x - mine[1].x, mine[0].y - mine[1].y) / this.pinch.d0;
+    else { cx = e.clientX - p.dx; cy = e.clientY - p.dy; }
+    scale = Math.min(T.scaleMax, Math.max(T.scaleMin, scale));
+    this.editLayout[p.id] = { x: Math.min(1, Math.max(0, cx / w)), y: Math.min(1, Math.max(0, cy / h)), scale };
+    this.settings = { ...this.settings, layout: this.editLayout }; touchModel.setSettings(this.settings);
+  }
+  /** A menu with a Back is open: show the back arrow (top-left, 0.75u). */
+  setBack(on: boolean): void { this.backOn = on; }
+  /** The back arrow does what Back does: the menus all answer Escape. */
+  private pressBack(): void {
+    for (const type of ['keydown', 'keyup']) window.dispatchEvent(new KeyboardEvent(type, { code: 'Escape', key: 'Escape', bubbles: true }));
+  }
 
   /** Overlay drawn: `On`, or `Auto` after the first touch until a key or pad press (07 §8.6 When shown). */
   get visible(): boolean {
@@ -88,12 +153,13 @@ export class TouchOverlay {
   };
 
   private readonly onDown = (e: PointerEvent) => {
+    if (this.editing) { this.editPointer('down', e); return; }
     if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
     noteInputDevice('touch');
     if (this.live) { touchModel.pointerDown(e.pointerId, e.clientX, e.clientY, performance.now()); }
   };
-  private readonly onMove = (e: PointerEvent) => { if (this.live && (e.pointerType === 'touch' || e.pointerType === 'pen')) { e.preventDefault(); touchModel.pointerMove(e.pointerId, e.clientX, e.clientY); } };
-  private readonly onUp = (e: PointerEvent) => { if (e.pointerType === 'touch' || e.pointerType === 'pen') touchModel.pointerUp(e.pointerId, e.clientX, e.clientY, performance.now()); };
+  private readonly onMove = (e: PointerEvent) => { if (this.editing) { this.editPointer('move', e); return; } if (this.live && (e.pointerType === 'touch' || e.pointerType === 'pen')) { e.preventDefault(); touchModel.pointerMove(e.pointerId, e.clientX, e.clientY); } };
+  private readonly onUp = (e: PointerEvent) => { if (this.editing) { this.editPointer('up', e); return; } if (e.pointerType === 'touch' || e.pointerType === 'pen') touchModel.pointerUp(e.pointerId, e.clientX, e.clientY, performance.now()); };
   private readonly onCancel = (e: PointerEvent) => { if (e.pointerType === 'touch' || e.pointerType === 'pen') touchModel.pointerCancel(e.pointerId, performance.now()); };
 
   private paintIcon(el: HTMLDivElement, frame: string | null): void {
@@ -109,9 +175,17 @@ export class TouchOverlay {
   private draw(): void {
     const key = JSON.stringify(getUiSettings().touch);
     if (key !== this.settingsKey) { this.settingsKey = key; this.setSettings(getUiSettings().touch); }
-    const show = this.visible && (this.gameplay || this.editing);
-    this.root.style.display = show ? 'block' : 'none';
-    if (!show) return;
+    const show = this.editing || (this.visible && this.gameplay);
+    this.toolbar.style.display = this.editing ? 'flex' : 'none';
+    const showBack = this.visible && !this.gameplay && this.backOn;
+    this.root.style.display = show || showBack ? 'block' : 'none';
+    this.back.style.display = showBack ? 'flex' : 'none';
+    if (showBack) {
+      const bu = touchModel.unit(), size = T.backArrow * bu;
+      this.back.style.cssText = `display:flex;left:${touchModel.safe.l + 0.3 * bu}px;top:${touchModel.safe.t + 0.3 * bu}px;width:${size}px;height:${size}px;font-size:${size * 0.6}px`;
+    }
+    for (const o of this.els.values()) if (!show) o.el.style.display = 'none';
+    if (!show) { this.hint.style.display = this.stickRing.style.display = this.stickKnob.style.display = this.ring.style.display = 'none'; return; }
     const u = touchModel.unit();
     this.root.style.setProperty('--u', `${u}px`);
     const now = performance.now(), views = this.view;
