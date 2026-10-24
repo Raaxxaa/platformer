@@ -33,6 +33,8 @@ import { drawMarkers, VfxDirector, VfxPool, type TickEvent } from '../view/vfx.t
 import { ItemViews } from '../view/yardView.ts';
 import { AbilityView } from '../view/abilityView.ts';
 import { AbilityHud } from '../../ui/hud/abilityHud.ts';
+import { getTouchOverlay } from '../../ui/touch/touchInput.ts';
+import { touchHudView } from '../../ui/touch/touchView.ts';
 import { TopHud } from '../../ui/hud/topHud.ts';
 import { LootHud } from '../../ui/hud/lootHud.ts';
 import { LootView } from '../view/lootView.ts';
@@ -154,6 +156,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   /** Extra drawing after the shared pass (doors, markers, timer...). */
   protected renderExtra(): void {}
   protected extraMenuOpen(): boolean { return false; }
+  /** The touch buttons work and show only while a run is being played; menus take taps directly (07 §8.6). */
+  protected touchControlsOn(): boolean {
+    return !this.pause && !this.classPick && !this.overview && !this.extraMenuOpen() && ['stage', 'village', 'homeVillage'].includes(this.world.run.phase) && this.world.phase === 'stage';
+  }
   protected freezesExtraMenuWorld(): boolean { return false; }
   protected pauseMenuCovered(): boolean { return false; }
   protected onPauseSettings(): void {}
@@ -499,6 +505,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   protected render(): void {
     const w = this.world;
+    const touch = getTouchOverlay();
+    if (touch) { touch.setGameplay(this.touchControlsOn()); touch.setView(touchHudView(w)); }
     const warning = saveStore().takeWarning();
     if (warning) this.abilityHud.toast(warning, UI_COLOR.bad, this.time.now, SAVE_RULES.warningSeconds);
     const cam = w.camera;

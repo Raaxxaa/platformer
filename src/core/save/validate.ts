@@ -1,3 +1,4 @@
+import { TOUCH } from '../../data/touch.ts';
 import { classicLayout, LAYOUT, layoutCode, parseLayoutCode } from '../run/layout.ts';
 import { migratePracticeKey } from '../run/practice.ts';
 // Full save validation (06 §15). Keep good entries; default missing fields. No storage or clock reads.
@@ -102,6 +103,22 @@ function runRecord(raw: unknown): RunRecord | null {
 
 const fixedKey = (code: string) => /^(?:Escape|Tab|MetaLeft|MetaRight|ContextMenu|PrintScreen|F(?:[1-9]|1[0-2]))$/.test(code);
 const keyCode = (raw: unknown): raw is string => typeof raw === 'string' && /^(?:Key[A-Z]|Digit[0-9]|Numpad(?:[0-9]|Add|Subtract|Multiply|Divide|Decimal|Enter)|Arrow(?:Left|Right|Up|Down)|(?:Shift|Control|Alt)(?:Left|Right)|Space|Enter|Backspace|CapsLock|Delete|Insert|Home|End|PageUp|PageDown|Comma|Period|Slash|Semicolon|Quote|BracketLeft|BracketRight|Backslash|Minus|Equal|Backquote|Escape)$/.test(raw);
+/** 07 §8.6 / 06 §15: every field is checked on its own; anything missing or out of range keeps its default. */
+function touchSettings(raw: unknown, d: SettingsData['touch']): SettingsData['touch'] {
+  const s = object(raw), out = structuredClone(d), num = (v: unknown, lo: number, hi: number): v is number => typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi;
+  if (has(['auto', 'on', 'off'], s.mode)) out.mode = s.mode;
+  if (num(s.opacity, TOUCH.opacityMin, TOUCH.opacityMax)) out.opacity = Math.round(s.opacity);
+  if (num(s.size, TOUCH.sizeMin, TOUCH.sizeMax)) out.size = Math.round(s.size);
+  if (typeof s.leftHanded === 'boolean') out.leftHanded = s.leftHanded;
+  if (typeof s.vibration === 'boolean') out.vibration = s.vibration;
+  if (s.effects === null || has(['high', 'low'], s.effects)) out.effects = s.effects as SettingsData['touch']['effects'];
+  const layout = object(s.layout);
+  for (const id of TOUCH.buttonIds) {
+    const e = object(layout[id]);
+    if (num(e.x, 0, 1) && num(e.y, 0, 1) && num(e.scale, TOUCH.scaleMin, TOUCH.scaleMax)) out.layout[id] = { x: e.x, y: e.y, scale: e.scale };
+  }
+  return out;
+}
 function settings(raw: unknown, defaults: SettingsData): SettingsData {
   const source = object(raw), volume = object(source.volume), result = defaults;
   for (const key of Object.keys(result.volume) as (keyof SettingsData['volume'])[]) {
@@ -109,6 +126,7 @@ function settings(raw: unknown, defaults: SettingsData): SettingsData {
   }
   for (const key of ['showTimer', 'screenShake', 'damageNumbers'] as const) if (typeof source[key] === 'boolean') result[key] = source[key];
   if (has(['auto', 'keyboard', 'xbox', 'playstation'], source.promptStyle)) result.promptStyle = source.promptStyle;
+  result.touch = touchSettings(source.touch, defaults.touch);
   const bindings = object(source.bindings), keyboard = object(bindings.keyboard), gamepad = object(bindings.gamepad);
   const keys = structuredClone(defaults.bindings.keyboard), pads = { ...defaults.bindings.gamepad }, actions = Object.keys(keys) as ActionId[];
   let keysValid = true, padsValid = true; const usedKeys = new Set<string>(), usedPads = new Set<number>();

@@ -60,3 +60,25 @@ describe('SnapshotBuilder', () => {
     expect([s.moveX, s.moveY]).toEqual([0, 0]);
   });
 });
+
+describe('touch as a third source (07 §8.6)', () => {
+  it('a tap shorter than a tick still registers, and keyboard + touch held together release only when both let go', () => {
+    const b = new SnapshotBuilder();
+    b.down('jump', 'touch'); b.up('jump', 'touch');
+    const s = b.build(); expect(s.jump).toEqual({ held: false, pressed: true, released: true });
+    b.down('dash', 'kb'); b.down('dash', 'touch'); b.build();
+    b.up('dash', 'kb'); expect(b.build().dash).toMatchObject({ held: true, released: false });
+    b.up('dash', 'touch'); expect(b.build().dash).toMatchObject({ held: false, released: true });
+  });
+  it('touch directions merge with the keyboard (latest press wins)', () => {
+    const b = new SnapshotBuilder();
+    b.down('left', 'kb'); b.down('right', 'touch'); expect(b.build().moveX).toBe(1);
+    b.up('right', 'touch'); expect(b.build().moveX).toBe(-1);
+  });
+  it('dash then jump 0.1 s later, by two fingers hopping buttons, are two separate presses (dash-jump)', () => {
+    const b = new SnapshotBuilder();
+    b.down('dash', 'touch'); expect(b.build().dash.pressed).toBe(true); b.up('dash', 'touch'); b.build();
+    for (let i = 0; i < 12; i++) b.build();
+    b.down('jump', 'touch'); const j = b.build(); expect(j.jump.pressed).toBe(true);
+  });
+});

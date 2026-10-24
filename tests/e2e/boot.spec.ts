@@ -16,15 +16,17 @@ test('boots with no page errors', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('scales by a whole number and centers with black bars', async ({ page }) => {
+test('scales by a whole number (2× and up), fits a smaller window with a fractional scale, and centers', async ({ page }) => {
   await page.goto('/?debug=1');
   await page.waitForFunction(() => (window as any).__game?.ready === true);
   expect(await canvasBox(page)).toMatchObject({ w: 1280, h: 720 });
 
   await page.setViewportSize({ width: 1000, height: 600 });
-  await expect.poll(() => canvasBox(page)).toMatchObject({ w: 640, h: 360 });
+  // Below 2× the screen is fitted (07 §8.6): 1000 × 600 gives 1.5625×.
+  await expect.poll(async () => Math.round((await canvasBox(page)).w)).toBe(1000);
   const box = await canvasBox(page);
-  expect(box.x).toBeCloseTo((1000 - 640) / 2, 0);
-  expect(box.y).toBeCloseTo((600 - 360) / 2, 0);
+  expect(box.h).toBeCloseTo(562.5, 0);
+  expect(box.x).toBeCloseTo(0, 0);
+  expect(box.y).toBeCloseTo((600 - 562.5) / 2, 0);
   await page.screenshot({ path: 'test-results/boot-1000x600.png' });
 });

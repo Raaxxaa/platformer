@@ -3,6 +3,7 @@ import type { RunStats, SaveData, SettingsData } from '../core/save/schema.ts';
 import type { AbilityId, ClassId } from '../core/abilities/types.ts';
 import type { WeaponId } from '../core/combat/types.ts';
 import { TICK_RATE } from '../core/tuning.ts';
+import { defaultTouchSettings } from './touch.ts';
 
 export const SAVE_RULES = {
   version: 1, seedMaxLength: 12, trainingStations: 17, historyLimit: 20,
@@ -16,7 +17,7 @@ export const BLUEPRINT_RULES = { eliteChance: 0.02, bossChance: 0.25 } as const;
 export const defaultRunStats = (): RunStats => ({ kills: 0, eliteKills: 0, goldEarned: 0, chestsOpened: 0, luckyBlocksBroken: 0, damageTaken: 0, flasksDrunk: 0 });
 
 export function defaultSettings(): SettingsData {
-  return { volume: { master: 80, music: 70, sfx: 80 }, showTimer: true, screenShake: true, damageNumbers: true, promptStyle: 'auto',
+  return { volume: { master: 80, music: 70, sfx: 80 }, showTimer: true, screenShake: true, damageNumbers: true, promptStyle: 'auto', touch: defaultTouchSettings(),
     bindings: { keyboard: { left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'], up: ['KeyW', 'ArrowUp'], down: ['KeyS', 'ArrowDown'], jump: ['Space', null], dash: ['ShiftLeft', null], attack1: ['KeyJ', null], attack2: ['KeyK', null], ability1: ['KeyU', null], ability2: ['KeyI', null], heal: ['KeyQ', null], interact: ['KeyE', null], restart: ['KeyR', null], pause: ['Escape', 'KeyP'] },
       gamepad: { left: null, right: null, up: null, down: null, jump: 0, interact: 1, attack1: 2, attack2: 3, heal: 4, dash: 5, ability1: 6, ability2: 7, restart: 8, pause: 9 } } };
 }

@@ -142,3 +142,13 @@ describe('run history layout codes (06 §8.7, §15.2)', () => {
     expect(out.history[1].layout.plains).toBe('1-1-1-1-1');
   });
 });
+
+describe('touch settings validation (07 §8.6, 06 §15)', () => {
+  it('old saves get the defaults; each field is range-checked on its own', async () => {
+    const { validateSave } = await import('./validate.ts');
+    expect(validateSave({}).settings.touch).toEqual({ mode: 'auto', opacity: 55, size: 100, leftHanded: false, vibration: true, effects: null, layout: {} });
+    const t = validateSave({ settings: { touch: { mode: 'on', opacity: 10, size: 120, leftHanded: true, vibration: false, effects: 'low',
+      layout: { dash: { x: 0.5, y: 0.3, scale: 1.2 }, jump: { x: 2, y: 0.3, scale: 1 }, nope: { x: 0.1, y: 0.1, scale: 1 } } } } }).settings.touch;
+    expect(t).toEqual({ mode: 'on', opacity: 55, size: 120, leftHanded: true, vibration: false, effects: 'low', layout: { dash: { x: 0.5, y: 0.3, scale: 1.2 } } });
+  });
+});

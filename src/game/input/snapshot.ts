@@ -4,15 +4,15 @@ import { INPUT } from '../../core/tuning.ts';
 
 export type { ButtonId };
 export type DirId = 'left' | 'right' | 'up' | 'down';
-export type Source = 'kb' | 'pad';
+export type Source = 'kb' | 'pad' | 'touch';
 
 /** Directions also have the left stick as a source. */
 type DirSource = Source | 'stick';
 
 const DIR_IDS: readonly DirId[] = ['left', 'right', 'up', 'down'];
 
-interface ButtonTrack { kb: boolean; pad: boolean; pressed: boolean; released: boolean }
-interface DirTrack { kb: boolean; pad: boolean; stick: boolean; stamp: number }
+interface ButtonTrack { kb: boolean; pad: boolean; touch: boolean; pressed: boolean; released: boolean }
+interface DirTrack { kb: boolean; pad: boolean; touch: boolean; stick: boolean; stamp: number }
 
 function isDir(id: ButtonId | DirId): id is DirId {
   return (DIR_IDS as readonly string[]).includes(id);
@@ -24,23 +24,23 @@ export class SnapshotBuilder {
   private pressCounter = 0;
 
   constructor() {
-    for (const id of BUTTON_IDS) this.buttons.set(id, { kb: false, pad: false, pressed: false, released: false });
-    for (const id of DIR_IDS) this.dirs.set(id, { kb: false, pad: false, stick: false, stamp: 0 });
+    for (const id of BUTTON_IDS) this.buttons.set(id, { kb: false, pad: false, touch: false, pressed: false, released: false });
+    for (const id of DIR_IDS) this.dirs.set(id, { kb: false, pad: false, touch: false, stick: false, stamp: 0 });
   }
 
   down(id: ButtonId | DirId, src: Source): void {
     if (isDir(id)) { this.setDir(id, src, true); return; }
     const b = this.buttons.get(id)!;
-    if (!b.kb && !b.pad) b.pressed = true;
+    if (!b.kb && !b.pad && !b.touch) b.pressed = true;
     b[src] = true;
   }
 
   up(id: ButtonId | DirId, src: Source): void {
     if (isDir(id)) { this.setDir(id, src, false); return; }
     const b = this.buttons.get(id)!;
-    const wasHeld = b.kb || b.pad;
+    const wasHeld = b.kb || b.pad || b.touch;
     b[src] = false;
-    if (wasHeld && !b.kb && !b.pad) b.released = true;
+    if (wasHeld && !b.kb && !b.pad && !b.touch) b.released = true;
   }
 
   /** Left stick position; crossing a threshold counts as pressing or releasing that direction. */
@@ -54,10 +54,10 @@ export class SnapshotBuilder {
   /** Lets go of everything, e.g. when the window loses focus. */
   releaseAll(): void {
     for (const b of this.buttons.values()) {
-      if (b.kb || b.pad) b.released = true;
-      b.kb = false; b.pad = false;
+      if (b.kb || b.pad || b.touch) b.released = true;
+      b.kb = false; b.pad = false; b.touch = false;
     }
-    for (const d of this.dirs.values()) { d.kb = false; d.pad = false; d.stick = false; }
+    for (const d of this.dirs.values()) { d.kb = false; d.pad = false; d.touch = false; d.stick = false; }
   }
 
   /** This tick's snapshot; clears the latched pressed/released flags. */
@@ -68,7 +68,7 @@ export class SnapshotBuilder {
     } as InputState;
     for (const id of BUTTON_IDS) {
       const b = this.buttons.get(id)!;
-      const state: ButtonState = { held: b.kb || b.pad, pressed: b.pressed, released: b.released };
+      const state: ButtonState = { held: b.kb || b.pad || b.touch, pressed: b.pressed, released: b.released };
       out[id] = state;
       b.pressed = false; b.released = false;
     }
@@ -77,7 +77,7 @@ export class SnapshotBuilder {
 
   private setDir(id: DirId, src: DirSource, on: boolean): void {
     const d = this.dirs.get(id)!;
-    const wasHeld = d.kb || d.pad || d.stick;
+    const wasHeld = d.kb || d.pad || d.touch || d.stick;
     d[src] = on;
     if (on && !wasHeld) d.stamp = ++this.pressCounter;
   }
@@ -86,8 +86,8 @@ export class SnapshotBuilder {
   private axis(neg: DirId, pos: DirId): -1 | 0 | 1 {
     const n = this.dirs.get(neg)!;
     const p = this.dirs.get(pos)!;
-    const nHeld = n.kb || n.pad || n.stick;
-    const pHeld = p.kb || p.pad || p.stick;
+    const nHeld = n.kb || n.pad || n.touch || n.stick;
+    const pHeld = p.kb || p.pad || p.touch || p.stick;
     if (nHeld && pHeld) return p.stamp > n.stamp ? 1 : -1;
     if (pHeld) return 1;
     if (nHeld) return -1;
