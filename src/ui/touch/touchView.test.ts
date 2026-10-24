@@ -29,3 +29,10 @@ describe('touch HUD view (07 §4.8, §4.9, §5.7)', () => {
     expect(it).toBeDefined(); expect(touchHudView(w).interact).toBe('Take');
   });
 });
+
+describe('the Interact word (07 §8.6)', () => {
+  it('objects without a prompt of their own get a word by kind; a locked chest hides the button', async () => {
+    const { interactWord } = await import('../model/prompt.ts');
+    expect(interactWord('class_statue')).toBe('Choose'); expect(interactWord('inn')).toBe('Sleep'); expect(interactWord('whatever')).toBe('Use');
+  });
+});

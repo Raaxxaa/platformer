@@ -260,6 +260,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       api.classPickOpen = () => this.classPick !== null;
       api.classPickAction = (action: Parameters<ClassPickModel['action']>[0]) => this.classAction(action);
       api.openPause = () => this.openPause();
+      api.touch = () => getTouchOverlay()?.debugState() ?? null;
+      api.effects = () => effectsLevel(getUiSettings().touch, isTouchDevice());
       api.pauseAction = (a: PauseAction) => this.pauseAction(a);
       api.pauseState = () => (this.pause ? { tab: this.pause.model.tab, cursor: this.pause.model.cursor } : null);
       api.enemyAi = () => this.world.enemies.map((e) => ({ id: e.id, def: e.def.id, x: e.x, y: e.y, attack: e.ai.attack ? { phase: e.ai.attack.phase, t: e.ai.attack.t, len: e.ai.attack.len } : null }));

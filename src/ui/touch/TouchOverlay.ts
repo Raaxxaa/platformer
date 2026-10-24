@@ -86,6 +86,8 @@ export class TouchOverlay {
   }
   setView(v: TouchHudView | null): void { this.view = v; if (!this.editing) touchModel.setInteract(!!v?.interact); }
   get isEditing(): boolean { return this.editing; }
+  /** For tests (?debug=1): what the overlay thinks right now. */
+  debugState(): { visible: boolean; gameplay: boolean; editing: boolean; stick: boolean } { return { visible: this.visible, gameplay: this.gameplay, editing: this.editing, stick: !!touchModel.stick }; }
   /** Where the editor saves the layout (main.ts: the save file). */
   setLayoutSink(fn: (layout: TouchSettings['layout']) => void): void { this.layoutSink = fn; }
   /** The layout editor (07 §8.6): every button can be dragged and pinched; Done returns to `done`. */
