@@ -280,6 +280,26 @@
    },
    "trimmed": false
   },
+  "cosmetic_stand_00": {
+   "frame": {
+    "h": 40,
+    "w": 24,
+    "x": 2,
+    "y": 724
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 40,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 40,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "cottage_a_00": {
    "frame": {
     "h": 72,
@@ -820,11 +840,71 @@
    },
    "trimmed": false
   },
+  "mirror_glint_00": {
+   "frame": {
+    "h": 40,
+    "w": 24,
+    "x": 28,
+    "y": 724
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 40,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 40,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "mirror_glint_01": {
+   "frame": {
+    "h": 40,
+    "w": 24,
+    "x": 54,
+    "y": 724
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 40,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 40,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
+  "mirror_glint_02": {
+   "frame": {
+    "h": 40,
+    "w": 24,
+    "x": 80,
+    "y": 724
+   },
+   "rotated": false,
+   "sourceSize": {
+    "h": 40,
+    "w": 24
+   },
+   "spriteSourceSize": {
+    "h": 40,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "trimmed": false
+  },
   "mirror_spot_00": {
    "frame": {
     "h": 40,
     "w": 24,
-    "x": 2,
+    "x": 106,
     "y": 724
    },
    "rotated": false,

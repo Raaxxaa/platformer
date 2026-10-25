@@ -129,3 +129,57 @@ def board(path):
 
 def build(preview):
     board(os.path.join(preview, 'style_board_looks.png'))
+    accessories_board(os.path.join(preview, 'style_board_accessories.png'))
+
+
+def accessories_board(path):
+    """ART10 Task 4-5: the 35 enemy accessories worn by a human (idle), 6 on other races, the 10 shop hats and
+    capes, and every cosmetic icon (59)."""
+    from . import cosmetics as CS
+    Z, INK = 3, (0x1b, 0x18, 0x26)
+    cols = 9
+    cw, ch = 40 * Z + 6, 48 * Z + 16
+    ids = list(CS.ACCESSORIES)
+    W = cols * cw + 8
+    rows = (len(ids) + cols - 1) // cols
+    n_icons = len(ids) + len(CS.SHOP) + 14
+    per = (W - 16) // (16 * 5 + 6)
+    H = 24 + rows * ch + 24 + ch + 24 + 2 * ch + 24 + ((n_icons + per - 1) // per) * (16 * 5 + 4) + 20
+    cv = Image.new('RGBA', (W, H), BG)
+
+    def title(s, y):
+        B.text(cv, s, 8, y, 'rb_large', INK)
+
+    def cell(i, y, cid, look, label=None):
+        im = LK.compose('idle_00', look, accessories=[cid] if cid else []).crop((4, 0, 44, 48))
+        x = 4 + (i % cols) * cw
+        yy = y + (i // cols) * ch
+        _paste(cv, im, x, yy, Z)
+        B.text(cv, label or cid.split('_', 1)[1].replace('_', ' '), x + 2, yy + 48 * Z + 2, 'rb_small', INK)
+    base = dict(outfit='leather', hair='short', hair_color='#5a3a28')
+    y = 6
+    title('The 35 accessories from enemies (worn by a human, idle)', y)
+    y += 24
+    for i, cid in enumerate(ids):
+        cell(i, y, cid, base)
+    y += rows * ch + 6
+    title('On other races (elf, dwarf, orc): head, back and extra items', y)
+    y += 24
+    others = [('acc_wolf', 'elf', 'ranger'), ('acc_stone_colossus', 'dwarf', 'plate'), ('acc_bat_swarm', 'orc', 'robe'),
+              ('acc_goblin_miner', 'dwarf', 'leather'), ('acc_dragon_storm', 'elf', 'leather'),
+              ('acc_enemy_king', 'orc', 'leather')]
+    for i, (cid, race, outfit) in enumerate(others):
+        cell(i, y, cid, dict(base, race=race, outfit=outfit, skin=1 if race != 'orc' else 0, beard='long' if race == 'dwarf' else 'none'),
+             f'{cid.split("_", 1)[1].replace("_", " ")} / {race}')
+    y += ch + 6
+    title('The 10 shop hats and capes', y)
+    y += 24
+    for i, cid in enumerate(CS.SHOP):
+        cell(i, y, cid, base)
+    y += 2 * ch + 6
+    title('Icons (16 x 16): 35 accessories, 10 shop hats and capes, 8 cloth dyes, 6 hair dyes', y)
+    y += 24
+    _f, icons = CS.build_frames()
+    for i, name in enumerate(sorted(icons)):
+        _paste(cv, icons[name], 8 + (i % per) * (16 * 5 + 6), y + (i // per) * (16 * 5 + 4), 5)
+    cv.convert('RGB').save(path)

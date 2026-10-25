@@ -237,6 +237,27 @@ def _castle_lines():
         return []
 
 
+def look_lines():
+    """ART10: the extreme looks (lightest and darkest skin with the lightest and darkest dye, hair and an orc) against
+    every biome's terrain and backgrounds. Informational: a look is the player's choice, so these never fail a test."""
+    from . import look as LK
+    surf = {}
+    for fn in (surfaces, village_surfaces, mountains_surfaces, swamps_surfaces, kingdom_surfaces, castle_surfaces):
+        surf.update(fn())
+    looks = {'look_darkest': dict(skin=5, color_a='#34303c', color_b='#34303c', hair_color='#2a2630'),
+             'look_lightest': dict(skin=0, color_a='#d0ccc4', color_b='#d0ccc4', hair_color='#d0cec8'),
+             'look_orc_grey': dict(race='orc', skin=3, color_a='#7c7c88', color_b='#7c7c88')}
+    ink = P.RAMPS['ink'][0]
+    out = []
+    for name, lk in looks.items():
+        img = LK.compose('idle_00', dict(lk, outfit='leather', hair='short'))
+        m = mean_oklab(img, skip=[ink])
+        for sname, sm in surf.items():
+            d = dist(m, sm)
+            out.append(f'{name} {sname} {d:.3f} {"PASS" if d >= THRESHOLD else "FAIL"}')
+    return out
+
+
 def write_report(preview):
     lines = report_lines()
     with open(os.path.join(preview, 'contrast_report.txt'), 'w', newline='\n') as f:
@@ -244,6 +265,8 @@ def write_report(preview):
         acc = accepted_fails()
         f.write('\n'.join(l + (' (accepted)' if l.endswith('FAIL') and ' '.join(l.split()[:2]) in acc else '')
                           for l in lines) + '\n')
+        f.write('# ART10 extreme looks (informational: a look is the player\'s choice, these never fail a test)\n')
+        f.write('\n'.join(look_lines()) + '\n')
     return lines
 
 

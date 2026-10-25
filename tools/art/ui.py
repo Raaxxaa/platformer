@@ -98,10 +98,13 @@ def skin_frames():
         'button_9': nine(16, 16, 4, [ink, WOOD[2], WOOD[0]], WOOD[1]),
         'button_9_sel': nine(16, 16, 4, [ink, U['highlight'], WOOD[2]], WOOD[1]),
         'cursor': cursor(),
+        # ART10: the wardrobe's mirror-frame panel (a popup skin variant: gold frame, pale glass edge)
+        'panel_mirror_9': nine(24, 24, 8, [ink, P.RAMPS['w_gold'][0], P.RAMPS['w_gold'][2], P.RAMPS['w_gold'][1],
+                                           P.RAMPS['fx_ice'][1], ink], U['panel'], rivet=(2, P.RAMPS['w_gold'][3], WHITE)),
     }
 
 
-NINE = {'hud_plate_9': 8, 'panel_9': 8, 'panel_9_edge': 8, 'tab_on_9': 4, 'tab_off_9': 4, 'button_9': 4,
+NINE = {'panel_mirror_9': 8, 'hud_plate_9': 8, 'panel_9': 8, 'panel_9_edge': 8, 'tab_on_9': 4, 'tab_off_9': 4, 'button_9': 4,
         'button_9_sel': 4}
 
 
@@ -120,6 +123,9 @@ def build_frames():
     fr.update(skin_frames())
     from . import touch
     fr.update(touch.frames())
+    from . import cosmetics
+    fr.update(cosmetics.build_frames()[1])
+    fr.update(cosmetics.tab_icons())
     return fr
 
 
@@ -127,7 +133,8 @@ def build(assets, preview):
     from PIL import Image
     fr = build_frames()
     for k, img in fr.items():
-        ok = {(255, 255, 255)} if k.startswith(('class_', 'prompt_ps_', 'touch_')) or k in ('panel_9_edge', 'rotate_phone') else P.allowed_ui()
+        ok = {(255, 255, 255)} if k.startswith(('class_', 'prompt_ps_', 'touch_')) or k in ('panel_9_edge', 'rotate_phone') else (
+            P.allowed(list(P.RAMPS)) | set(P.UI_COLORS.values()) if k.startswith(('icon_cos_', 'tab_')) else P.allowed_ui())
         P.check_palette_lock(img, ok, 'ui', k)
     A.pack_atlas('ui', fr, os.path.join(assets, 'ui'), strict=False)
     # preview: every frame on a panel, 5×

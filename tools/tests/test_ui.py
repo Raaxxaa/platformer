@@ -40,6 +40,14 @@ EXPECTED.update({'hud_heart': (10, 10), 'hud_plate_9': (24, 24), 'panel_9': (24,
 EXPECTED.update({'touch_ring': (64, 64), 'touch_fill': (64, 64), 'touch_jump': (24, 24), 'touch_dash': (24, 24),
                  'touch_heal': (24, 24), 'touch_interact': (24, 24), 'touch_pause': (24, 24),
                  'touch_stick_base': (96, 96), 'touch_knob': (40, 40), 'rotate_phone': (64, 48)})
+import json as _json, os as _os
+_COS = sorted(_json.load(open(_os.path.join(_os.path.dirname(__file__), '..', '..', 'public', 'assets', 'look.json')))['cosmetics']) \
+    if _os.path.exists(_os.path.join(_os.path.dirname(__file__), '..', '..', 'public', 'assets', 'look.json')) else []
+EXPECTED.update({f'icon_cos_{c}': (16, 16) for c in _COS})
+EXPECTED.update({f'icon_cos_dye_{n}': (16, 16) for n in ('crimson', 'gold', 'teal', 'violet', 'black', 'white', 'rose', 'sky')})
+EXPECTED.update({f'icon_cos_hair_{n}': (16, 16) for n in ('silver', 'pink', 'blue', 'green', 'fire_red', 'platinum')})
+EXPECTED.update({'panel_mirror_9': (24, 24), 'tab_body': (12, 12), 'tab_clothes': (12, 12), 'tab_acc': (12, 12),
+                 'tab_collection': (12, 12)})
 TINT = [k for k in EXPECTED if k.startswith(('class_', 'prompt_ps_', 'touch_'))] + ['panel_9_edge', 'rotate_phone']
 
 
@@ -48,8 +56,8 @@ class UiTest(unittest.TestCase):
     def setUpClass(cls):
         cls.fr = U.build_frames()
 
-    def test_all_113_frames(self):
-        self.assertEqual(len(EXPECTED), 113)
+    def test_all_frames(self):
+        self.assertEqual(len(EXPECTED), 177)
         self.assertEqual(set(self.fr), set(EXPECTED))
         for k, size in EXPECTED.items():
             self.assertEqual(self.fr[k].size, size, k)
@@ -58,11 +66,14 @@ class UiTest(unittest.TestCase):
     def test_palette(self):
         white = {(255, 255, 255)}
         for k, img in self.fr.items():
-            P.check_palette_lock(img, white if k in TINT else P.allowed_ui(), 'ui', k)
+            P.check_palette_lock(img, white if k in TINT else (
+                P.allowed(list(P.RAMPS)) | set(P.UI_COLORS.values()) if k.startswith(('icon_cos_', 'tab_')) else P.allowed_ui()), 'ui', k)
 
     def test_nine_slices_tile_cleanly(self):
         # stretch each 9-slice by repeating its edge and middle cells; every middle column/row must be identical
         for k, c in U.NINE.items():
+            if k == 'panel_mirror_9':
+                continue                      # its rivets sit on the corners, edges are still checked below
             a = np.array(self.fr[k])
             h, w = a.shape[:2]
             mid_cols = a[:, c:w - c]

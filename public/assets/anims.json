@@ -7448,6 +7448,14 @@
   "mode": "once"
  },
  {
+  "key": "cosmetic_stand",
+  "atlas": "objects",
+  "frames": [
+   "cosmetic_stand_00"
+  ],
+  "mode": "once"
+ },
+ {
   "key": "cottage_a",
   "atlas": "objects",
   "frames": [
@@ -7560,6 +7568,17 @@
   ],
   "mode": "loop",
   "fps": 8
+ },
+ {
+  "key": "mirror_glint",
+  "atlas": "objects",
+  "frames": [
+   "mirror_glint_00",
+   "mirror_glint_01",
+   "mirror_glint_02"
+  ],
+  "mode": "loop",
+  "fps": 3
  },
  {
   "key": "mirror_spot",

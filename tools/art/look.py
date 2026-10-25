@@ -572,6 +572,7 @@ def tinted_rgb(img, rgb):
     return Image.fromarray(a.astype(np.uint8), 'RGBA')
 
 
+AIR = {'jump', 'apex', 'fall', 'double', 'wall', 'dive', 'ledge'}
 DEFAULT_LOOK = dict(race='human', skin=2, face='calm', hair='spiky', hair_color='#5a3a28', beard='none',
                     outfit='leather', color_a='#4a5a78', color_b='#6b4a30')
 
@@ -580,10 +581,14 @@ def compose(frame, look=None, trim_colors=((0x42, 0xd9, 0xff), (0xff, 0xa8, 0x3a
     """The full character for one frame name like 'idle_00' as a 48 × 48 RGBA image."""
     lk = dict(DEFAULT_LOOK)
     lk.update(look or {})
-    atl, _pts = layers()
+    atl, pts = layers()
     race, outfit = lk['race'], lk['outfit']
     skin_hex = (COSMETIC.skin_orc if race == 'orc' else COSMETIC.skin)[lk['skin']]
     out = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    from . import cosmetics as CS
+    accs = {CS.ALL[a][0]: a for a in accessories}
+    if accs.get('head') is None and 'hat' in lk:
+        pass
 
     def get(name, key=None):
         return atl.get(name, {}).get(key or frame)
@@ -591,6 +596,16 @@ def compose(frame, look=None, trim_colors=((0x42, 0xd9, 0xff), (0xff, 0xa8, 0x3a
     def put(img):
         if img is not None:
             out.alpha_composite(img)
+    def wear(cid):
+        slot, point, n, _fn = CS.ALL[cid]
+        i = 0 if n == 1 else (2 if frame.split('_')[0] in AIR else (1 if frame.startswith('run') else 0))
+        if n == 2:
+            i = int(frame[-2:]) % 2
+        img = CS.frames_cache()[f'{cid}_{i:02d}']
+        px, py = pts[outfit][frame][point]
+        out.alpha_composite(img, (px - CS.AX, py - CS.AY))
+    if 'back' in accs:
+        wear(accs['back'])
     for img, col, kind in ((get(f'player_skin_{race}'), skin_hex, 'skin'),
                            (get(f'player_outfitA_{outfit}'), lk['color_a'], 'cloth'),
                            (get(f'player_outfitB_{outfit}'), lk['color_b'], 'cloth')):
@@ -604,12 +619,16 @@ def compose(frame, look=None, trim_colors=((0x42, 0xd9, 0xff), (0xff, 0xa8, 0x3a
             put(tinted_rgb(t, col))
     if lk['beard'] != 'none':
         put(tinted(get(f"player_beard_{lk['beard']}"), lk['hair_color']))
-    hat = outfit in ('plate', 'robe', 'ranger')
+    hat = outfit in ('plate', 'robe', 'ranger') or 'head' in accs
     if lk['hair'] != 'bald':
         put(tinted(get(f"player_hair_{lk['hair']}" + ('_hat' if hat else '')), lk['hair_color']))
-    hw = get(f'player_headwear_{outfit}')
+    hw = get(f'player_headwear_{outfit}') if 'head' not in accs else None
     if hw is not None:
         put(tinted(hw, lk['color_b']) if outfit == 'robe' else hw)
+    if 'extra' in accs:
+        wear(accs['extra'])
+    if 'head' in accs:
+        wear(accs['head'])
     return out
 
 
@@ -624,6 +643,11 @@ COSMETIC = _Cosmetic
 # --- atlas output, manifest, anims.json points ---------------------------------------------------------------------
 
 GREY_ATLASES = ('skin', 'outfitA', 'outfitB', 'hair', 'beard')
+
+
+def _cos_manifest():
+    from . import cosmetics
+    return cosmetics.manifest()
 
 
 def _layer_manifest():
@@ -659,6 +683,7 @@ def _layer_manifest():
             'hairShop': colors(list(cc['hair_shop']), list(cc['hair_shop'].values())),
         },
         'atlases': sorted(atl),
+        'cosmetics': _cos_manifest(),
     }
 
 

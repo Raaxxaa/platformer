@@ -335,5 +335,547 @@
   "player_skin_elf",
   "player_skin_human",
   "player_skin_orc"
- ]
+ ],
+ "cosmetics": {
+  "acc_wolf": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_wolf"
+  },
+  "acc_bandit": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_bandit"
+  },
+  "acc_bandit_archer": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_bandit_archer"
+  },
+  "acc_wild_boar": {
+   "slot": "extra",
+   "point": "neck",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_wild_boar"
+  },
+  "acc_bandit_brute": {
+   "slot": "extra",
+   "point": "shoulder",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_bandit_brute"
+  },
+  "acc_great_boar": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_great_boar"
+  },
+  "acc_bat_swarm": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_acc_bat_swarm"
+  },
+  "acc_goblin_miner": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_goblin_miner"
+  },
+  "acc_rock_golem": {
+   "slot": "extra",
+   "point": "shoulder",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_rock_golem"
+  },
+  "acc_ram": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_ram"
+  },
+  "acc_goblin_shaman": {
+   "slot": "extra",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_goblin_shaman"
+  },
+  "acc_stone_colossus": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_stone_colossus"
+  },
+  "acc_bog_zombie": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_acc_bog_zombie"
+  },
+  "acc_giant_spider": {
+   "slot": "extra",
+   "point": "neck",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_giant_spider"
+  },
+  "acc_spiderling": {
+   "slot": "extra",
+   "point": "shoulder",
+   "frames": 2,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "2-frame bob, 1 px",
+   "icon": "icon_cos_acc_spiderling"
+  },
+  "acc_wisp": {
+   "slot": "extra",
+   "point": "head",
+   "frames": 2,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "2-frame bob, 1 px",
+   "icon": "icon_cos_acc_wisp"
+  },
+  "acc_swamp_witch": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_swamp_witch"
+  },
+  "acc_treant": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_acc_treant"
+  },
+  "acc_spider_queen": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_spider_queen"
+  },
+  "acc_soldier": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_soldier"
+  },
+  "acc_crossbowman": {
+   "slot": "back",
+   "point": "back",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_crossbowman"
+  },
+  "acc_war_hound": {
+   "slot": "extra",
+   "point": "neck",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_war_hound"
+  },
+  "acc_battle_mage": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_battle_mage"
+  },
+  "acc_knight": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_acc_knight"
+  },
+  "acc_black_knight": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_black_knight"
+  },
+  "acc_royal_guard": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_royal_guard"
+  },
+  "acc_gargoyle": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_acc_gargoyle"
+  },
+  "acc_castle_mage": {
+   "slot": "extra",
+   "point": "neck",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_castle_mage"
+  },
+  "acc_living_armor": {
+   "slot": "extra",
+   "point": "shoulder",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_living_armor"
+  },
+  "acc_royal_executioner": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_royal_executioner"
+  },
+  "acc_enemy_king": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_acc_enemy_king"
+  },
+  "acc_dragon_red": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_acc_dragon_red"
+  },
+  "acc_dragon_white": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_acc_dragon_white"
+  },
+  "acc_dragon_storm": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_acc_dragon_storm"
+  },
+  "acc_dragon_green": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_acc_dragon_green"
+  },
+  "hat_straw": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_hat_straw"
+  },
+  "hat_beret": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_hat_beret"
+  },
+  "hat_flower": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_hat_flower"
+  },
+  "hat_tricorn": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_hat_tricorn"
+  },
+  "hat_tophat": {
+   "slot": "head",
+   "point": "head",
+   "frames": 1,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "single frame",
+   "icon": "icon_cos_hat_tophat"
+  },
+  "cape_purple": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_cape_purple"
+  },
+  "cape_patched": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_cape_patched"
+  },
+  "cape_starry": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_cape_starry"
+  },
+  "cape_checkered": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_cape_checkered"
+  },
+  "cape_gold": {
+   "slot": "back",
+   "point": "back",
+   "frames": 3,
+   "atlas": "cosmetics",
+   "anchor": [
+    16,
+    16
+   ],
+   "frameRule": "idle / run / air frame by the current anim",
+   "icon": "icon_cos_cape_gold"
+  }
+ }
 }

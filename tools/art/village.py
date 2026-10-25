@@ -463,9 +463,43 @@ def mirror_spot():
     c_hole = np.zeros((40, 24), bool)
     ys, xs = np.mgrid[0:40, 0:24]
     c_hole = ((xs + 0.5 - 12) / 7.2) ** 2 + ((ys + 0.5 - 15.5) / 11) ** 2 <= 1
-    f.L.ids[c_hole] = -1                                           # empty frame: no glass yet
+    glass = f.part('glass', 'fx_ice', 1)
+    f.L.ids[c_hole] = f.L.index[glass]                              # ART10: the glass (a pale blue, with a shine)
     f.rect(10, 28, 4, 9, foot)
     f.rect(5, 36, 14, 4, foot)
+    c = f.done()
+    shine = P.sid(P.RAMPS['white'][0])
+    for (x, y) in ((9, 8), (10, 7), (11, 6), (8, 10), (9, 9), (10, 8)):
+        if c.a[y, x] >= 0:
+            c.a[y, x] = shine
+    return c
+
+
+def mirror_glint(frame):
+    """A diagonal shine that sweeps across the mirror glass, 24 × 40 (drawn over `mirror_spot`), 3 frames."""
+    a = np.full((40, 24), -1, np.int16)
+    ys, xs = np.mgrid[0:40, 0:24]
+    glass = ((xs + 0.5 - 12) / 6.4) ** 2 + ((ys + 0.5 - 15.5) / 10.2) ** 2 <= 1
+    off = [-4, 0, 4][frame]
+    band = np.abs((xs - 12 - off) + (ys - 15.5) * 0.5) <= 1.2
+    a[glass & band] = P.sid(P.RAMPS['white'][0])
+    return R.Canvas(24, 40, a)
+
+
+def cosmetic_stand():
+    """The shop's cosmetic stand (09 §5, tile 38): a wooden dress form wearing a draped cloth, 24 × 40."""
+    f = Fig(24, 40)
+    wood = f.part('wood', 'vl_wood')
+    foot = f.part('foot', 'vl_wood', 1)
+    form = f.part('form', 'vl_plaster')
+    cloth = f.part('cloth', 'fx_heal')
+    gold = f.part('gold', 'w_gold')
+    f.rect(11, 14, 2, 22, foot)
+    f.rect(5, 36, 14, 4, foot)
+    R.fill_polygon(f.L, [(6, 8), (18, 8), (17, 18), (15, 24), (9, 24), (7, 18)], form)
+    R.ellipse(f.L, 11.5, 5, 2.4, 3, wood)
+    R.fill_polygon(f.L, [(4, 9), (12, 7), (20, 9), (21, 20), (16, 17), (12, 24), (8, 17), (3, 20)], cloth)
+    R.ellipse(f.L, 12, 11, 1.1, 1.1, gold)
     return f.done()
 
 
@@ -641,10 +675,12 @@ YARD_ENEMY_ANIMS = [A.anim('sparring_dummy_idle', 'enemies_extra', 1, 'once'),
 def prop_frames():
     fr = {'shop_item_00': shop_item(), 'shop_flask_00': flask(), 'shop_key_00': key_board(),
           'shop_reroll_00': reroll(), 'unlocks_board_00': unlocks_board(), 'seed_board_00': seed_board(),
-          'loot_stand_00': loot_stand(), 'mirror_spot_00': mirror_spot()}
+          'loot_stand_00': loot_stand(), 'mirror_spot_00': mirror_spot(), 'cosmetic_stand_00': cosmetic_stand()}
     for i in range(2):
         fr[f'ability_altar_idle_{i:02d}'] = altar(i)
         fr[f'gate_idle_{i:02d}'] = gate(i)
+    for i in range(3):
+        fr[f'mirror_glint_{i:02d}'] = mirror_glint(i)
     for i in range(4):
         fr[f'shop_refill_idle_{i:02d}'] = cauldron(i)
     for k in ('swordsman', 'tank', 'archer', 'wizard'):
@@ -672,14 +708,14 @@ DUMMY_ANIMS = [A.anim('training_dummy_idle', 'enemies_extra', 1, 'once'),
 
 def anims():
     out = list(DUMMY_ANIMS) + list(YARD_ENEMY_ANIMS) + [A.anim('ability_altar_idle', ATLAS, 2, 'loop', 1), A.anim('gate_idle', ATLAS, 2, 'loop', 2),
-           A.anim('shop_refill_idle', ATLAS, 4, 'loop', 6)]
+           A.anim('shop_refill_idle', ATLAS, 4, 'loop', 6), A.anim('mirror_glint', ATLAS, 3, 'loop', 3)]
     from .bosses import spider_queen
     out += spider_queen.spiderling_frames()[1]
     out.append(A.anim('minecart_roll', ATLAS, 2, 'loop', 8))
     out.append(A.anim('firefly', ATLAS, 4, 'loop', 4))
     out.append(A.anim('grapple_vine', ATLAS, 2, 'loop', 2))
     for k in ('shop_item', 'shop_flask', 'shop_key', 'shop_reroll', 'unlocks_board', 'seed_board', 'loot_stand',
-              'mirror_spot', 'class_statue_swordsman', 'class_statue_tank', 'class_statue_archer',
+              'mirror_spot', 'cosmetic_stand', 'class_statue_swordsman', 'class_statue_tank', 'class_statue_archer',
               'class_statue_wizard', 'station_sign', 'station_flag_grey', 'station_flag_green', 'training_gate', 'cottage_a', 'cottage_b', 'well', 'market_roof', 'inn', 'market_roof_border', 'inn_border', 'market_roof_rebel', 'inn_rebel'):
         out.append(A.anim(k, ATLAS, 1, 'once'))
     from . import objects34
