@@ -163,7 +163,7 @@ export type WorldEvent =
   | { t: 'dragonWarning'; color: 'red' | 'white' | 'storm' | 'green' }
   | { t: 'blueprintFound'; id: BlueprintId }
   | { t: 'startingWeaponUnlocked'; cls: ClassId; weapon: import('../combat/types.ts').WeaponId }
-  | { t: 'openHomePanel'; panel: 'training' | 'seed' | 'records' };
+  | { t: 'openHomePanel'; panel: 'training' | 'seed' | 'records' | 'wardrobe' };
 
 export interface GameWorldOptions {
   grid: TileGrid;

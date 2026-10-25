@@ -16,6 +16,10 @@ import { activeHomePad, HomePanelInput, type HomePanelAction, type HomePanelPad 
 import { menuGlyphs, noteInputDevice } from '../inputSettings.ts';
 import { PromptGlyph, menuPrompt } from '../hud/abilityHud.ts';
 import { PROMPT } from '../../data/prompts.ts';
+import { COSMETIC_TOTAL } from '../../data/cosmetics.ts';
+import { WARDROBE_UI as W } from '../../data/wardrobeUi.ts';
+import { collectionCount, collectionEntries } from '../wardrobe/collection.ts';
+import { drawCollectionGrid } from '../wardrobe/collectionView.ts';
 
 /** Shared direct input, rendering primitives and cleanup for these three menu panels. */
 export abstract class MenuSurface {
@@ -96,6 +100,8 @@ export class RecordsModel {
   tab = 0;
   cell = 0;
   footer = false;
+  /** The LOOKS tab's cursor (M13). */
+  look = 0;
   private readonly getSave: () => SaveData;
   constructor(getSave: () => SaveData) { this.getSave = getSave; }
   get bestRows() { const save = this.getSave(); return CLASS_IDS.map((cls) => ({ cls, name: CLASS_NAME[cls], times: U.records.roads.map((road) => { const pb = save.pbs[`${cls}|${road}`]; return pb ? formatTime(pb.ticks) : '—'; }) })); }
@@ -115,6 +121,7 @@ export class RecordsModel {
         unlocked, ready: isWeapon ? !!WEAPONS[id as WeaponId] : !!ABILITIES[id as AbilityId] };
     });
   }
+  get looks() { const c = this.getSave().cosmetics; return { entries: collectionEntries(c.owned, c.seenEnemies), count: collectionCount(c.owned) }; }
   get starters(): string[] { const save = this.getSave(); return CLASS_IDS.map((cls) => {
     const id = THIRD_START_WEAPON[cls]; return save.unlocks.startWeapons[cls]?.includes(id) ? `${WEAPON_NAME(id)}${WEAPONS[id] ? '' : ` · ${U.records.notReady}`}` : `Beat the King as ${CLASS_NAME[cls]}`;
   }); }
@@ -122,7 +129,13 @@ export class RecordsModel {
   selectCell(index: number): void { this.cell = Math.max(0, Math.min(CLASS_IDS.length * U.records.roads.length - 1, index)); this.footer = false; }
   action(action: HomePanelAction): 'close' | null {
     if (action === 'back' || action === 'confirm' && this.footer) return 'close';
-    if (action === 'left') this.selectTab(this.tab - 1); if (action === 'right') this.selectTab(this.tab + 1);
+    const looks = this.tab === 3 && !this.footer, total = COSMETIC_TOTAL;
+    if (action === 'left') { if (looks && this.look > 0) this.look--; else this.selectTab(this.tab - 1); }
+    if (action === 'right') { if (looks && this.look < total - 1) this.look++; else this.selectTab(this.tab + 1); }
+    if (this.tab === 3) {
+      if (action === 'up') { if (this.footer) this.footer = false; else if (this.look >= W.recordsGrid.cols) this.look -= W.recordsGrid.cols; }
+      if (action === 'down' && !this.footer) { if (this.look + W.recordsGrid.cols < total) this.look += W.recordsGrid.cols; else this.footer = true; }
+    }
     if (this.tab === 0) {
       if (action === 'up') { if (this.footer) this.footer = false; else this.selectCell(this.cell - 1); }
       if (action === 'down' && !this.footer) { if (this.cell === CLASS_IDS.length * U.records.roads.length - 1) this.footer = true; else this.selectCell(this.cell + 1); }
@@ -138,7 +151,7 @@ export class RecordsView extends MenuSurface {
   action(action: HomePanelAction): void { if (!this.enabled || this.closed) return; if (this.model.action(action) === 'close') { this.destroy(); this.callbacks.onClose(); } else this.render(); }
   protected render(): void {
     const m = this.model, rows = m.bestRows, classes = m.classes, unlocks = m.unlocks, starters = m.starters;
-    const glyph = menuGlyphs(); if (!this.beginDraw([m.tab, m.cell, m.footer, rows, m.segments, classes, unlocks, starters, glyph])) return;
+    const glyph = menuGlyphs(); if (!this.beginDraw([m.tab, m.cell, m.footer, rows, m.segments, classes, unlocks, starters, m.tab === 3 ? [m.look, m.looks.entries] : 0, glyph])) return;
     const R = U.records; this.panel(R.panel);
     R.tabs.forEach((label, i) => {
       this.text(R.tabXs[i], R.tabsY, label, m.tab === i ? UI_COLOR.highlight : UI_COLOR.textDim);
@@ -162,6 +175,14 @@ export class RecordsView extends MenuSurface {
         const x = R.gridX + (i % R.gridCols) * R.gridW, y = R.gridY + Math.floor(i / R.gridCols) * R.gridH;
         this.rect(x, y, R.gridW, R.gridH); this.text(x + R.gridW / 2, y + U.cursorGap, entry.name, entry.discovered ? entry.color : UI_COLOR.textOff).setMaxWidth(R.gridW - U.cursorGap);
       });
+    } else if (m.tab === 3) {
+      const { entries, count } = m.looks, G = W.recordsGrid;
+      drawCollectionGrid(this.scene, this.c, entries, G, m.look);
+      for (const cell of entries.map((_, i) => ({ i, x: G.x + (i % G.cols) * G.cell, y: G.y + Math.floor(i / G.cols) * G.cell }))) this.target(cell.x, cell.y, G.cell, G.cell, () => { m.look = cell.i; }, () => {});
+      const e = entries[m.look];
+      this.text(this.scene.scale.width / 2, G.nameY, e.name, e.owned ? UI_COLOR.text : UI_COLOR.textDim);
+      this.text(this.scene.scale.width / 2, G.hintY, e.hint, UI_COLOR.textDim);
+      this.text(this.scene.scale.width / 2, R.hintY + 4, count, UI_COLOR.highlight, true);
     } else {
       unlocks.forEach((entry, i) => {
         const x = R.unlockX + (i % R.unlockCols) * R.unlockW, y = R.unlockY + Math.floor(i / R.unlockCols) * R.unlockH, frame = itemIcon(entry.kind, entry.id);

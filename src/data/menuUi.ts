@@ -4,7 +4,7 @@ export const MENU_UI = {
   depth: 1600, dimDepth: 1500, dimAlpha: 0.60, border: 1, corner: 8, panelFrame: 'panel_9', frameClamp: MAX_FRAME_SECONDS,
   cursorGap: 8, fontSize: 12, domZ: 1000, stick: 0.5,
   records: {
-    panel: [24, 8, 592, 344], tabs: ['BEST RUNS', 'CLASSES', 'UNLOCKS'], tabXs: [136, 320, 504], tabsY: 24, tabW: 176, tabH: 18,
+    panel: [24, 8, 592, 344], tabs: ['BEST RUNS', 'CLASSES', 'UNLOCKS', 'LOOKS'], tabXs: [98, 246, 394, 542], tabsY: 24, tabW: 140, tabH: 18,
     roads: ['mountain', 'forest'], roadNames: ['Mountain road', 'Forest road'], classX: 112, roadXs: [320, 472], headingsY: 66,
     rowsY: 92, rowH: 26, cellW: 144, selectedY: 210, segmentsY: 234, segmentXs: [104, 248, 392, 536],
     gridX: 40, gridY: 96, gridCols: 5, gridW: 112, gridH: 40,
