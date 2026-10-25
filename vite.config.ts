@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import { readdirSync, statSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { buildPrecache } from './src/pwa/precache.ts';
 import { resolve, relative, join } from 'node:path';
 const assetRoot = resolve('public/assets');
@@ -14,7 +14,10 @@ const precachePlugin = {
   closeBundle() {
     const dist = resolve('dist');
     const files = filesBelow(dist).map((p) => ({ path: relative(dist, p).replaceAll('\\', '/'), size: statSync(p).size }));
-    writeFileSync(join(dist, 'precache.json'), JSON.stringify(buildPrecache(files)) + '\n');
+    const list = buildPrecache(files);
+    writeFileSync(join(dist, 'precache.json'), JSON.stringify(list) + '\n');
+    // The browser only looks for a new service worker when sw.js itself changes, so each build stamps its version into it.
+    writeFileSync(join(dist, 'sw.js'), `${readFileSync(join(dist, 'sw.js'), 'utf8')}\n// build ${list.version}\n`);
   },
 };
 function filesBelow(dir: string): string[] {
