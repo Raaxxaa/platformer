@@ -23,6 +23,10 @@ RAMPS = {
     'gray': _hex('#2b2934', '#4b4858', '#76737f', '#a9a6b1', '#dddce2'),
     'skin': _hex('#5e3b30', '#9c6149', '#d4966f', '#f3c8a1'),
     'hair': _hex('#2e1d19', '#563425', '#87573a'),
+    # ART10 (09 §7): the 4 fixed greys of every tinted player layer (skin, cloth A and B, hair, beard). The game multiplies
+    # them by a color. Skin draws with shades 2 and 3 only (its base shade is pure white, so the tint IS the skin color);
+    # cloth and hair use shades 1, 2 and 3 (base 82% of the tint, edges 63% and 100%); back limbs one shade darker.
+    'grey4': _hex('#707070', '#a0a0a0', '#d0d0d0', '#ffffff'),
     'p_cloth': _hex('#1a2140', '#2b3b6c', '#4565a6', '#7b9ed6'),
     'p_leather': _hex('#3b2519', '#6b4127', '#9b6639', '#c9945b'),
     'p_steel': _hex('#3d4351', '#697387', '#9ba7b9', '#d3dbe5'),
@@ -161,6 +165,33 @@ def check_palette_lock(img, allowed_set, atlas, frame=None):
 
 def _num(c):
     return '0x%02x%02x%02x' % c
+
+
+# ART10 (09 §2, §5): the colors the game multiplies the grey layers by. `base` is the color a player sees on most of
+# the cloth; `tint` is what Phaser's multiply tint needs: base / the base shade (capped at 255), so the lightest shade
+# of cloth and hair shows the tint itself.
+GREY_SHADES = [c[0] / 255 for c in RAMPS['grey4']]
+CLOTH_BASE_SHADE = GREY_SHADES[2]          # cloth, hair and beards: base shade = grey 2 of 4
+SKIN_BASE_SHADE = GREY_SHADES[3]           # skin: base shade = pure white
+COSMETIC_COLORS = {
+    'skin': ['#fbe3d0', '#f3c8a1', '#e0a97c', '#c58557', '#9a6140', '#6e4430'],            # human, elf, dwarf
+    'skin_orc': ['#7fb860', '#5a9a40', '#3f7a3a', '#9aa0a6'],                                # 3 greens + 1 grey
+    'hair': ['#2a2630', '#5a3a28', '#8a3a22', '#d0aa48', '#8d8d96', '#d0cec8'],              # black..white
+    'dye': ['#4a5a78', '#6b4a30', '#3a6a40', '#2a3a78', '#7a2a3a', '#c2a878', '#7c7c88', '#6a7030'],
+    'dye_shop': {'crimson': '#b02838', 'gold': '#d4a020', 'teal': '#209a8a', 'violet': '#7a40b8',
+                 'black': '#34303c', 'white': '#d0ccc4', 'rose': '#e87898', 'sky': '#58a8e8'},
+    'hair_shop': {'silver': '#c0c4d0', 'pink': '#e870a8', 'blue': '#3a70d8', 'green': '#48b048',
+                  'fire_red': '#e03a18', 'platinum': '#d0ccb8'},
+}
+DYE_NAMES = ['slate', 'brown', 'forest', 'navy', 'maroon', 'sand', 'grey', 'olive']
+HAIR_NAMES = ['black', 'brown', 'auburn', 'blond', 'grey', 'white']
+
+
+def tint_for(base_hex, kind='cloth'):
+    """The multiply tint that makes the base shade of a grey layer come out as `base_hex` (kind: 'skin' or 'cloth')."""
+    shade = SKIN_BASE_SHADE if kind == 'skin' else CLOTH_BASE_SHADE
+    r, g, b = (int(base_hex[i:i + 2], 16) for i in (1, 3, 5))
+    return '#%02x%02x%02x' % tuple(min(255, int(round(v / shade))) for v in (r, g, b))
 
 
 def write_ts(path):

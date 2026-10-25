@@ -9,6 +9,7 @@ sys.path.insert(0, TOOLS)
 
 from art import palette  # noqa: E402
 from art import touch  # noqa: E402
+from art import look  # noqa: E402
 from art import atlas, boards, build_player, build_world, contrast, fonts, items, npcs, projectiles, style_board, ui, vfx, village, weapons  # noqa: E402
 from art.enemies import plains as enemies_plains  # noqa: E402
 from art.enemies import mountains as enemies_mountains  # noqa: E402
@@ -31,7 +32,8 @@ def build(root=ROOT):
     palette.write_ts(os.path.join(out, 'palette.generated.ts'))
     palette.write_json(os.path.join(assets, 'palette.json'))
     anims = []
-    anims += build_player.build(assets, preview)
+    anims += look.annotate(build_player.build(assets, preview))
+    look.build(assets, preview)
     anims += weapons.build(assets, preview)
     anims += enemies_plains.build(assets, preview)
     anims += great_boar.build(assets, preview)
