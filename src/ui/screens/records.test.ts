@@ -14,7 +14,7 @@ describe('records menu (07 §7.5)', () => {
     const m = new RecordsModel(defaultSave); m.action('left'); expect(m.tab).toBe(0);
     for (let i = 0; i < 8; i++) m.action('down'); expect(m.footer).toBe(true); expect(m.action('confirm')).toBe('close');
     m.action('up'); expect(m.footer).toBe(false); expect(m.cell).toBe(7);
-    m.action('right'); m.action('right'); m.action('right'); expect(m.tab).toBe(2); expect(m.footer).toBe(true);
+    m.action('right'); m.action('right'); m.action('right'); m.action('right'); m.action('right'); expect(m.tab).toBe(3); expect(m.footer).toBe(true);
     expect(m.action('back')).toBe('close');
   });
   it('shows names/colors only for discovered bonds/hybrids in a10-entry grid', () => {
@@ -32,5 +32,12 @@ describe('records menu (07 §7.5)', () => {
     expect(m.unlocks.find((entry) => entry.id === 'flail')).toMatchObject({ name: '???', unlocked: false });
     expect(m.starters[1]).toContain('Giant Axe'); expect(m.starters[1]).not.toContain('Not ready'); expect(m.starters[0]).toBe('Beat the King as Swordsman');
     save.unlocks.blueprints.push('flail'); expect(m.unlocks.find((entry) => entry.id === 'flail')?.unlocked).toBe(true);
+  });
+  it('has a LOOKS tab: the collection, a counter, and a cursor that moves through all 59', () => {
+    const save = defaultSave(); save.cosmetics.owned = ['acc_wolf'];
+    const m = new RecordsModel(() => save); m.selectTab(3); m.footer = false;
+    expect(m.looks.entries).toHaveLength(59); expect(m.looks.count).toBe('1 / 59');
+    m.action('right'); expect(m.look).toBe(1); m.action('down'); expect(m.look).toBe(11);
+    m.look = 58; m.action('down'); expect(m.footer).toBe(true);
   });
 });

@@ -12,6 +12,9 @@ import { ANCHOR, ANIM, DEPTH, OVERLAY, TRIM_TINT, VFX, WEAPON_FRAME } from '../.
 import { AnimClock, runFps, timeFrame, walkFps } from './animClock.ts';
 import type { AnimBank } from './animBank.ts';
 import { trimTints } from './trims.ts';
+import { OUTFIT_ATLAS } from '../../data/cosmetics.ts';
+import { drawLook } from './PlayerLook.ts';
+import { getLook } from './lookState.ts';
 import { castRt } from '../../core/abilities/abilitySystem.ts';
 import { yardDummyFrame, pickEnemyAnim, pickPlayerAnim, type Lookup, type PlayerAnimState } from './pickAnim.ts';
 
@@ -59,6 +62,9 @@ export class PlayerSprite {
   private readonly weapon: Phaser.GameObjects.Sprite;
   private readonly smear: Phaser.GameObjects.Sprite;
   private readonly overlay: Phaser.GameObjects.Sprite;
+  /** The look's placeholder layers (09 §7): the back accessory behind the body, everything else in front (ART10 replaces them). */
+  private readonly lookBehind: Phaser.GameObjects.Graphics;
+  private readonly lookFront: Phaser.GameObjects.Graphics;
   private readonly clock = new AnimClock();
   private get: Lookup;
   private readonly bank: AnimBank;
@@ -78,6 +84,8 @@ export class PlayerSprite {
     this.smear = scene.add.sprite(0, 0, 'weapon_greatsword', 'atk_greatsword_1_smear').setVisible(false);
     this.overlay = scene.add.sprite(0, 0, body, 'idle_00').setTint(OVERLAY.hitFlash.color).setTintMode(Phaser.TintModes.FILL);
     for (const s of [this.body, ...this.trims, this.overlay]) feet(s).setDepth(DEPTH.player);
+    this.lookBehind = scene.add.graphics().setDepth(DEPTH.player - 0.1);
+    this.lookFront = scene.add.graphics().setDepth(DEPTH.player + 0.3);
     for (const s of [this.weapon, this.smear]) s.setOrigin(WEAPON_FRAME.anchorX / WEAPON_FRAME.w, WEAPON_FRAME.anchorY / WEAPON_FRAME.h);
   }
 
@@ -121,10 +129,14 @@ export class PlayerSprite {
     const name = this.get(p.key)!.frames[p.frame];
     this.frameName = name;
     this.anim = { key: p.key, frame: p.frame };
+    // The outfit is the look's, not the class's (09 §2); the class shows in the trims.
+    const look = getLook();
+    this.setOutfit(OUTFIT_ATLAS[look.outfit]);
     const flip = b.facing < 0;
     const blink = w.health.iframeTicks > 0 && Math.floor(w.tick / COMBAT.IFRAME_BLINK_TICKS) % 2 === 0;
     const alpha = blink ? 0.4 : 1;
     this.body.setFrame(name).setPosition(b.x, b.y).setFlipX(flip).setAlpha(alpha);
+    drawLook(this.lookBehind, this.lookFront, look, { x: b.x, y: b.y, flip, alpha, anim: p.key });
     const tints = trimTints(w.classState);
     this.trims.forEach((t, i) => t.setFrame(`${i === 0 ? 'a' : 'b'}/${name}`).setPosition(b.x, b.y).setFlipX(flip).setAlpha(alpha).setTint(tints[i]));
     // Weapon + smear (08 §4.2): behind the body on `weaponBehind` frames, else above trim B.
@@ -142,11 +154,12 @@ export class PlayerSprite {
 
   setVisible(on: boolean): void {
     for (const s of [this.body, ...this.trims]) s.setVisible(on);
+    this.lookBehind.setVisible(on); this.lookFront.setVisible(on);
     if (!on) for (const s of [this.weapon, this.smear, this.overlay]) s.setVisible(false);
   }
 
   destroy(): void {
-    for (const s of [this.body, ...this.trims, this.weapon, this.smear, this.overlay]) s.destroy();
+    for (const s of [this.body, ...this.trims, this.weapon, this.smear, this.overlay, this.lookBehind, this.lookFront]) s.destroy();
   }
 }
 

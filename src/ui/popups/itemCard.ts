@@ -26,8 +26,11 @@ export class ItemCardPopup {
   private w = 0;
   private shownAt = 0;
 
-  constructor(scene: Phaser.Scene) {
-    this.scene = scene;
+  /** A tap on an option row or the bottom line presses that action (07 §6.1, §8.6). */
+  private readonly onAction: (a: ActionId) => void;
+
+  constructor(scene: Phaser.Scene, onAction: (a: ActionId) => void = () => {}) {
+    this.scene = scene; this.onAction = onAction;
     this.c = scene.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH.hud - 2).setVisible(false);
   }
 
@@ -43,7 +46,10 @@ export class ItemCardPopup {
     return { x: x + glyph.width + C.pad, text: value.replace(/^\[[^\]]*\]\s*/, '') };
   }
 
+  /** A transparent tap area over a row (card coordinates); `widest` is the card width, known after the rows are laid out. */
+  private rowZones: { y: number; action: ActionId }[] = [];
   private build(v: ItemCardView): void {
+    this.rowZones = [];
     this.c.removeAll(true);
     const border = v.grade ? GRADE_COLOR[v.grade] : colorOf(v.cls ?? 'none');
     this.c.add(this.scene.add.image(C.icon[0], C.icon[1], 'ui', itemIcon(v.kind, v.id)).setOrigin(0));
@@ -68,6 +74,7 @@ export class ItemCardPopup {
       widest = Math.max(widest, C.row3[0] + b.width);
     }
     for (const o of v.options) {
+      if (o.action) this.rowZones.push({ y, action: o.action });
       const prefix = this.prefix(C.row3[0], y, o.text, o.action, o.after === null ? UI_COLOR.textDim : UI_COLOR.text);
       let x: number = prefix.x;
       const option = prefix.text, arrow = o.after ? option.lastIndexOf('→') : -1;
@@ -82,11 +89,17 @@ export class ItemCardPopup {
       widest = Math.max(widest, x);
       y += C.rowStep;
     }
+    if (v.bottomAction) this.rowZones.push({ y, action: v.bottomAction });
     const bottomColor = v.bottomTone === 'bad' ? UI_COLOR.bad : UI_COLOR.highlight, bottom = this.prefix(C.row3[0], y, v.bottom, v.bottomAction, bottomColor);
     widest = Math.max(widest, bottom.x + this.text(bottom.x, y, bottom.text, bottomColor).width);
     this.w = Math.min(C.maxW, Math.max(C.minW, widest + 8));
     this.h = y + C.bottomPad;
     badge.setX(this.w - C.pad);
+    for (const r of this.rowZones) {
+      const z = this.scene.add.rectangle(0, r.y - 1, this.w, C.rowStep + 2).setOrigin(0).setInteractive({ useHandCursor: true });
+      z.on('pointerdown', (p: Phaser.Input.Pointer) => { if (p.button === 0) this.onAction(r.action); });
+      this.c.add(z);
+    }
     const bg = box(this.scene, SKIN.panel, 0, 0, this.w, this.h, SKIN.corner.panel, { edge: border });
     for (const o of bg) { o.setScrollFactor(1); this.c.addAt(o, 0); }
   }

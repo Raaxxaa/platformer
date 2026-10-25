@@ -1,9 +1,12 @@
 // The combat world: player, combat state, enemies, hit groups, RNG streams and camera.
 // Each tick runs 02 §2.1's order.
+import type { EnemyId } from '../enemies/types.ts';
 import { practiceDragon, practiceLoadout, type PracticeSetup } from '../run/practice.ts';
 import { PRACTICE_PRESET, PRACTICE_STAGE } from '../../data/practice.ts';
 import { setupMerchant, type MerchantState } from '../loot/merchant.ts';
 import { layoutCode } from '../run/layout.ts';
+import { newCosmeticState, type CosmeticState } from '../cosmetics/unlocks.ts';
+import { stepSeenEnemies } from '../cosmetics/hooks.ts';
 import type { Picks } from '../level/assemble.ts';
 import type { StageLevelId } from '../../data/levelRules.ts';
 import { stepLucky, type LuckyBlock } from '../loot/lucky.ts';
@@ -146,6 +149,9 @@ export type WorldEvent =
   | { t: 'purchase'; what: string; price: number }
   | { t: 'cantAfford' }
   | { t: 'chestLocked' }
+  /** M13 (09 §3–§5): a cosmetic is now owned (`kill`: first kill of the type, `shop`: bought), and an enemy type was met. */
+  | { t: 'cosmeticUnlocked'; id: string; source: 'kill' | 'shop' }
+  | { t: 'enemySeen'; enemy: EnemyId }
   | { t: 'loadLevel'; levelId: LevelData['id']; stage: RunState['stage'] }
   | { t: 'enterVillage'; villageId: LevelData['id'] }
   | { t: 'stageStarted'; levelId: LevelData['id']; stage: RunState['stage'] }
@@ -157,13 +163,15 @@ export type WorldEvent =
   | { t: 'dragonWarning'; color: 'red' | 'white' | 'storm' | 'green' }
   | { t: 'blueprintFound'; id: BlueprintId }
   | { t: 'startingWeaponUnlocked'; cls: ClassId; weapon: import('../combat/types.ts').WeaponId }
-  | { t: 'openHomePanel'; panel: 'training' | 'seed' | 'records' };
+  | { t: 'openHomePanel'; panel: 'training' | 'seed' | 'records' | 'wardrobe' };
 
 export interface GameWorldOptions {
   grid: TileGrid;
   /** 06 §8.7: the section versions this level was assembled from, and whether they were chosen (debug, practice)
    *  rather than rolled from the seed. */
   layout?: Picks; layoutForced?: boolean;
+  /** The save's collection at world creation (09 §8). */
+  cosmetics?: { owned: readonly string[]; seenEnemies: readonly EnemyId[] };
   spawn: { x: number; y: number };
   facing?: 1 | -1;
   seedText?: string;
@@ -254,6 +262,8 @@ export class GameWorld {
   bodies!: Bodies;
   run!: RunState;
   readonly records: RunRecords;
+  /** M13: owned cosmetics and met enemy types, mirrored from the save at world creation; only unlock bookkeeping reads it (09 §1). */
+  readonly cosmetics: CosmeticState;
   /** Outlives reset until the browser session persists each old-run snapshot once. */
   readonly pendingRunEnds: RunEndSnapshot[] = [];
   arenas = new Map<string, ArenaRt>();
@@ -311,6 +321,7 @@ export class GameWorld {
 
   constructor(opts: GameWorldOptions) {
     this.opts = opts;
+    this.cosmetics = newCosmeticState(opts.cosmetics?.owned, opts.cosmetics?.seenEnemies);
     this.records = { pbs: structuredClone(opts.records?.pbs ?? {}), bestSegments: structuredClone(opts.records?.bestSegments ?? {}) };
     this.grid = opts.grid;
     this.stage = opts.stage ?? 1;
@@ -322,7 +333,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; dragon?: GameWorldOptions['dragon']; layout?: Picks; layoutForced?: boolean }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; dragon?: GameWorldOptions['dragon']; layout?: Picks; layoutForced?: boolean; cosmetics?: GameWorldOptions['cosmetics'] }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -334,7 +345,7 @@ export class GameWorld {
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
       records: opts.records, practice: opts.practice, practiceSetup: opts.practiceSetup,
-      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon, layout: opts.layout, layoutForced: opts.layoutForced,
+      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon, layout: opts.layout, layoutForced: opts.layoutForced, cosmetics: opts.cosmetics,
       loadout: opts.practiceSetup ? practiceLoadout(opts.practiceSetup) : (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
@@ -939,6 +950,7 @@ export class GameWorld {
     resolvePlayerHits(this);
     resolveEnemyHits(this);
     // 8. Statuses (none in M2). 9. Deaths.
+    stepSeenEnemies(this);
     processDeaths(this);
     stepBossPhases(this);
     stepDiveImpact(this);

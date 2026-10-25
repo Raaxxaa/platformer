@@ -29,6 +29,9 @@ import { debugSeed, randomSeed } from '../seed.ts';
 import { captureWorld, type WorldCarry } from '../../core/run/session.ts';
 import { gameSession } from '../session.ts';
 import { saveStore } from '../save/storage.ts';
+import { TRIM_TINT } from '../../data/art.ts';
+import { WardrobeView } from '../../ui/wardrobe/WardrobeView.ts';
+import { setPreviewLook } from '../view/lookState.ts';
 import { HomePanels, type HomePanelKind } from '../../ui/home/homePanels.ts';
 import type { Kit } from '../../ui/popups/classPickModel.ts';
 import { VillageView } from '../view/villageView.ts';
@@ -82,6 +85,8 @@ export class StageScene extends WorldScene {
   private bossTitle!: Phaser.GameObjects.BitmapText;
   private yard: YardView | null = null;
   private homePanel: HomePanels | null = null;
+  private wardrobe: WardrobeView | null = null;
+  private introChecked = false;
   private carry: WorldCarry | undefined;
   private leaving = false;
   private fade!: Phaser.GameObjects.Graphics;
@@ -112,7 +117,7 @@ export class StageScene extends WorldScene {
   init(data?: { level?: string; carry?: WorldCarry; titleFade?: boolean; practice?: PracticeSetup }): void {
     this.chosen = data?.level ?? null; this.practice = data?.practice ?? null; this.practiceResult = null; this.practiceAt = -1; this.ghostView = null; this.recorder.reset(); this.lastWorldTick = 0;
     this.deathView = null; this.deathCause = 'hazard'; this.titleFadeLeft = data?.titleFade ? FRONT_UI.title.fadeSeconds : 0;
-    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.victory = null; this.victoryAt = -1; this.labels = []; this.doorText.clear();
+    this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.wardrobe = null; this.introChecked = false; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.victory = null; this.victoryAt = -1; this.labels = []; this.doorText.clear();
   }
 
   preload(): void {
@@ -217,6 +222,9 @@ export class StageScene extends WorldScene {
     api.enemyDraw = (id: number) => this.enemyDrawMode(id);
     api.loadout = () => structuredClone({ weapons: this.world.combat.slots, abilities: this.world.abilities.slots });
     api.homePanel = () => this.homePanel?.model.kind ?? null;
+    api.wardrobe = () => this.wardrobe?.active ? { tab: this.wardrobe.model.tab, zone: this.wardrobe.model.zone, intro: this.wardrobe.model.intro, look: { ...this.wardrobe.model.look } } : null;
+    api.wardrobeAction = (action: Parameters<WardrobeView['action']>[0]) => this.wardrobe?.action(action);
+    api.openWardrobe = () => this.openWardrobe(false);
     api.homeAction = (action: Parameters<HomePanels['action']>[0]) => this.homePanel?.action(action);
     api.openHomePanel = (kind: HomePanelKind) => this.openHomePanel(kind);
     api.levelObjects = (type: string) => this.level.objects.filter((o) => o.type === type).map((o) => ({ x: o.x, y: o.y, w: o.w, h: o.h, props: o.props }));
@@ -289,7 +297,9 @@ export class StageScene extends WorldScene {
     saveStore().update((s) => { s.lastKit = { ...kit }; });
     if (first && this.level.id === 'home') this.openHomePanel('training');
   }
-  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.menus?.active || this.titleFadeLeft > 0; }
+  protected override touchControlsOn(): boolean { return super.touchControlsOn() && !this.deathView && !this.practiceResult; }
+  protected override deathOpen(): boolean { return !!this.deathView; }
+  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.wardrobe?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.menus?.active || this.titleFadeLeft > 0; }
   private requestHome(): void {
     gameSession.endRun(this.world, 'quit');
     this.runSoFar?.destroy(); this.runSoFar = null; this.victory?.destroy(); this.victory = null;
@@ -358,6 +368,17 @@ export class StageScene extends WorldScene {
       onTraining: () => this.enterTraining(), onClose: () => { this.homePanel?.destroy(); this.homePanel = null; this.clearMenuInput(); },
     }, randomSeed);
   }
+  /** The mirror (09 §6): the character creator. `intro` is the one-time "Make your hero" before the first class pick. */
+  private openWardrobe(intro: boolean): void {
+    if (this.wardrobe?.active) return;
+    const s = saveStore().data, done = () => { saveStore().update((d) => { d.cosmetics.wardrobeIntroDone = true; }); };
+    this.wardrobe = new WardrobeView(this, s.look, s.cosmetics.owned, s.cosmetics.seenEnemies, intro, {
+      trim: TRIM_TINT[this.pickedKit?.cls ?? 'none'],
+      onPreview: (look) => setPreviewLook(look),
+      onConfirm: (look) => { saveStore().update((d) => { d.look = look; }); setPreviewLook(null); },
+      onClose: () => { done(); this.wardrobe = null; this.clearMenuInput(); },
+    });
+  }
   private enterTraining(): void { gameSession.trainingReturn = this.level.id === 'home' ? 'home' : 'title'; this.goLevel('training_yard'); }
   private goLevel(level: string, carry?: WorldCarry): void {
     if (this.leaving) return; this.leaving = true;
@@ -372,6 +393,13 @@ export class StageScene extends WorldScene {
     this.devices?.setEnabled(!this.manual && !this.menus?.active && this.titleFadeLeft === 0);
     this.titleFadeLeft = Math.max(0, this.titleFadeLeft - Math.min(UI_FRAME_SECONDS, delta / 1000));
     this.timerBlock?.advance(delta / 1000, !!this.pause);
+    if (!this.introChecked && this.level.id === 'home' && this.world.run.phase === 'homeVillage' && this.titleFadeLeft === 0) {
+      this.introChecked = true;
+      const q = new URLSearchParams(window.location.search);
+      // Tests that start in the village with ?debug=1 skip the one-time intro unless they ask for it (&intro=1).
+      if (!saveStore().data.cosmetics.wardrobeIntroDone && (q.get('debug') !== '1' || q.get('intro') === '1')) this.openWardrobe(true);
+    }
+    if (this.wardrobe?.active) { this.wardrobe.setEnabled(!this.pause); this.wardrobe.update(delta / 1000); }
     if (this.homePanel?.active) { this.homePanel.setEnabled(!this.pause); this.homePanel.update(delta / 1000); }
     this.routeChoice?.setEnabled(!this.pause); this.routeChoice?.update(delta / 1000);
     this.runSoFar?.update(delta / 1000);
@@ -418,7 +446,7 @@ export class StageScene extends WorldScene {
       else { this.goLevel(w.run.transition.target.levelId, captureWorld(w)); return; }
     }
     for (const { e } of this.frameEvents) if (e.t === 'openHomePanel') {
-      if (e.panel === 'training') this.enterTraining(); else this.openHomePanel(e.panel);
+      if (e.panel === 'training') this.enterTraining(); else if (e.panel === 'wardrobe') this.openWardrobe(false); else this.openHomePanel(e.panel);
     }
     const transition = w.run.transition;
     this.fade?.setVisible(w.run.phase === 'transition' || this.titleFadeLeft > 0).setAlpha(this.titleFadeLeft > 0 ? this.titleFadeLeft / FRONT_UI.title.fadeSeconds : transition ? (transition.part === 'out' ? 1 - transition.left / RUN.FADE_TICKS : transition.left / (transition.kind === 'restart' ? RUN.RESTART_FADE_TICKS : RUN.FADE_TICKS)) : 0);
@@ -440,7 +468,7 @@ export class StageScene extends WorldScene {
     }
     // Hint, timer, split popup, boss bar, stage clear.
     const target = this.level.kind === 'village' ? interactTarget(w) : null;
-    const sign: readonly PromptPart[] = w.villageMessage || w.training?.sign ? [w.villageMessage ?? w.training!.sign!] : target && 'use' in target ? interactPrompt(w, target) ? [] : [{ action: 'interact' }, ` ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label}`] : w.activeHint && !saveStore().data.progress.stage1Cleared ? HINT_PARTS[w.activeHint] : [];
+    const sign: readonly PromptPart[] = w.villageMessage || w.training?.sign ? [w.villageMessage ?? w.training!.sign!] : target && 'use' in target ? interactPrompt(w, target) ? [] : [{ action: 'interact' }, ` ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label === 'wardrobe' ? 'Look' : target.label}`] : w.activeHint && !saveStore().data.progress.stage1Cleared ? HINT_PARTS[w.activeHint] : [];
     this.hintText.removeAll(true);
     if (!this.overview) promptLine(this, this.hintText, this.scale.width / 2, this.scale.height - U.hintBottom - PROMPT.height, sign);
     this.yard?.update(w);

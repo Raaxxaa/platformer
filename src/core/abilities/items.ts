@@ -53,7 +53,7 @@ const INTERACT_STATES = new Set(['ground', 'air', 'crawl', 'slide', 'dash', 'wal
 export const itemRect = (it: GroundItem): Rect => it.shopSlot !== undefined || it.merchantSlot !== undefined
   ? { x: it.x - ITEM.interactW / 2, y: it.y - ITEM.interactH, w: ITEM.interactW, h: ITEM.interactH }
   : { x: it.x - ITEM.box / 2, y: it.y - ITEM.box, w: ITEM.box, h: ITEM.box };
-const GROUND_OBJECTS = new Set(['ability_altar', 'merchant_altar', 'shop_flask', 'shop_refill', 'shop_key', 'shop_reroll', 'inn', 'class_statue', 'seed_board', 'unlocks_board', 'training_gate']);
+const GROUND_OBJECTS = new Set(['ability_altar', 'merchant_altar', 'shop_flask', 'shop_refill', 'shop_key', 'shop_reroll', 'shop_cosmetic', 'inn', 'class_statue', 'seed_board', 'unlocks_board', 'training_gate', 'mirror_spot']);
 const needsGround = (o: GroundItem | Interactable) => 'use' in o ? GROUND_OBJECTS.has(o.kind) : o.shopSlot !== undefined || o.merchantSlot !== undefined;
 const villageState = (w: GameWorld) => w.body.state === 'ground' || w.body.state === 'crawl';
 const objRect = (o: Interactable): Rect => {

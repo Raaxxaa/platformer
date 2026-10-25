@@ -4,7 +4,7 @@ export const MENU_UI = {
   depth: 1600, dimDepth: 1500, dimAlpha: 0.60, border: 1, corner: 8, panelFrame: 'panel_9', frameClamp: MAX_FRAME_SECONDS,
   cursorGap: 8, fontSize: 12, domZ: 1000, stick: 0.5,
   records: {
-    panel: [24, 8, 592, 344], tabs: ['BEST RUNS', 'CLASSES', 'UNLOCKS'], tabXs: [136, 320, 504], tabsY: 24, tabW: 176, tabH: 18,
+    panel: [24, 8, 592, 344], tabs: ['BEST RUNS', 'CLASSES', 'UNLOCKS', 'LOOKS'], tabXs: [98, 246, 394, 542], tabsY: 24, tabW: 140, tabH: 18,
     roads: ['mountain', 'forest'], roadNames: ['Mountain road', 'Forest road'], classX: 112, roadXs: [320, 472], headingsY: 66,
     rowsY: 92, rowH: 26, cellW: 144, selectedY: 210, segmentsY: 234, segmentXs: [104, 248, 392, 536],
     gridX: 40, gridY: 96, gridCols: 5, gridW: 112, gridH: 40,
@@ -14,8 +14,12 @@ export const MENU_UI = {
   },
   settings: {
     panel: [112, 16, 416, 300], titleY: 28, rowsY: 56, rowH: 16, labelX: 160, valueX: 480, rowW: 336,
-    rows: ['controls', 'master', 'sfx', 'timer', 'shake', 'icons', 'fullscreen', 'export', 'import', 'back'],
-    labels: { controls: 'Controls ▸', master: 'Master volume', sfx: 'SFX volume', timer: 'Show timer', shake: 'Screen shake', icons: 'Button icons', fullscreen: 'Fullscreen', export: 'Export save ▸', import: 'Import save ▸', back: 'Back' },
+    rows: ['controls', 'master', 'sfx', 'timer', 'shake', 'icons', 'touch', 'fullscreen', 'export', 'import', 'back'],
+    /** The touch page (07 §7.7, §8.6): opened by the `touch` row. */
+    touchRows: ['mode', 'opacity', 'size', 'hand', 'vibe', 'effects', 'layout', 'tback'],
+    touchLabels: { mode: 'Touch controls', opacity: 'Touch opacity', size: 'Button size', hand: 'Left-handed', vibe: 'Vibration', effects: 'Effects', layout: 'Edit layout ▸', tback: 'Back' },
+    modeNames: { auto: 'Auto', on: 'On', off: 'Off' }, opacityStep: 5, sizeStep: 10,
+    labels: { controls: 'Controls ▸', master: 'Master volume', sfx: 'SFX volume', timer: 'Show timer', shake: 'Screen shake', icons: 'Button icons', touch: 'Touch controls ▸', fullscreen: 'Fullscreen', export: 'Export save ▸', import: 'Import save ▸', back: 'Back' },
     styles: ['auto', 'keyboard', 'xbox', 'playstation'], styleNames: ['Auto', 'Keyboard', 'Xbox', 'PlayStation'],
     volumeCells: 10, cell: 6, cellGap: 2, barX: 370, barY: 2, minusX: 350, plusX: 488, stepW: 14,
     hintY: 270, controlsRowsY: 64, controlsRowH: 14, controlsBackY: 280,

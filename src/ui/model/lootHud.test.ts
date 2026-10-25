@@ -31,3 +31,9 @@ describe('loot HUD model (07 §4.7, §6.8, §6.10)', () => {
     expect(toastFor({ t: 'blueprintFound', id: 'scythe' })).toEqual({ text: 'Blueprint: Scythe\nUnlocked next run', tone: 'highlight', s: 3.0 });
   });
 });
+
+describe('cosmetic toasts (09 §3, M13)', () => {
+  it('an unlock shows `New look: <name>` in highlight for 3 s', () => {
+    expect(toastFor({ t: 'cosmeticUnlocked', id: 'acc_wolf', source: 'kill' })).toEqual({ text: 'New look: Wolf-pelt hood', tone: 'highlight', s: 3.0 });
+  });
+});

@@ -1,3 +1,4 @@
+import { getTouchOverlay } from '../ui/touch/touchInput.ts';
 // Shared Records/Settings/portable save navigation. Each caller keeps its own return screen.
 import type Phaser from 'phaser';
 import { RecordsView } from '../ui/screens/records.ts';
@@ -28,7 +29,7 @@ export class MenuScreens {
     if (this.practice) { const m = this.practice.model; return { screen: 'practice', model: { cursor: m.cursor, setup: { ...m.setup }, levels: m.levels, best: m.best, seed: m.seedText, selectable: m.selectable } }; }
     if (this.code) { const m = this.code.model; return { screen: m.mode, model: { stage: m.stage, cursor: m.cursor, error: m.error, confirming: m.confirming, notice: m.notice } }; }
     if (this.settings) { const m = this.settings.model; return { screen: 'settings', model: { cursor: m.cursor, rows: [...m.rows], controlsOpen: m.controlsOpen } }; }
-    if (this.records) { const m = this.records.model; return { screen: 'records', model: { tab: m.tab, cell: m.cell, footer: m.footer } }; }
+    if (this.records) { const m = this.records.model; return { screen: 'records', model: { tab: m.tab, cell: m.cell, footer: m.footer, look: m.look } }; }
     return { screen: null, model: null };
   }
   action(action: HomePanelAction): void { (this.code ?? this.settings ?? this.records ?? this.practice)?.action(action); }
@@ -50,6 +51,8 @@ export class MenuScreens {
       onExport: () => this.openCode('export'), onImport: () => this.openCode('import'),
       onFullscreen: () => { if (this.scene.scale.isFullscreen) this.scene.scale.stopFullscreen(); else this.scene.scale.startFullscreen(); },
       onClose: () => { this.settings = null; this.closed(); },
+      // Edit layout: the touch overlay's editor takes the screen, then the settings come back (07 §8.6).
+      onEditLayout: () => { this.settings = null; const o = getTouchOverlay(); if (o) o.startEditing(() => this.openSettings()); else this.openSettings(); },
     });
   }
   private openCode(mode: SaveCodeMode): void {

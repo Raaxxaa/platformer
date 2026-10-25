@@ -5,6 +5,8 @@ import type Phaser from 'phaser';
 import { FONTS } from '../../data/animKeys.ts';
 import { UI_COLOR } from '../../data/uiText.ts';
 import { HOME_UI as U } from '../../data/homeUi.ts';
+import { isTouchDevice } from '../../game/zoom.ts';
+import { closePhoneKeyboard, openPhoneKeyboard } from '../touch/phoneKeyboard.ts';
 import { fixedMenuAction, menuConfirmKey, menuGlyphs, noteInputDevice } from '../inputSettings.ts';
 import { promptLine } from '../promptLine.ts';
 export { configureMenuBindings } from '../inputSettings.ts';
@@ -184,7 +186,7 @@ export class HomePanels {
     if (this.closed) return;
     this.closed = true; this.input.clear();
     window.removeEventListener('keydown', this.keyDown); window.removeEventListener('keyup', this.keyUp);
-    this.c.destroy(); this.dim.destroy();
+    closePhoneKeyboard(); this.c.destroy(); this.dim.destroy();
   }
   private text(x: number, y: number, value: string, color: number = UI_COLOR.text, large = false, centered = true): Phaser.GameObjects.BitmapText {
     const text = this.scene.add.bitmapText(x, y, large ? FONTS.large : FONTS.small, value).setTint(color).setOrigin(centered ? 0.5 : 0, 0);
@@ -199,11 +201,17 @@ export class HomePanels {
       this.c.add(this.scene.add.nineslice(x, y, 'ui', U.panelFrame, w, h, U.corner, U.corner, U.corner, U.corner).setOrigin(0));
     } else this.rect(x, y, w, h);
   }
-  private target(x: number, y: number, w: number, h: number, index: number, confirm = true): void {
+  /** A tap on a seed box opens the phone's keyboard (M12 Task 4); typing goes through the same model as keys. */
+  private openKeyboard(): void {
+    if (!isTouchDevice()) return;
+    openPhoneKeyboard({ text: (ch) => this.action({ text: ch }), backspace: () => this.action('backspace'), enter: () => { this.model.select(this.model.boxes.length); this.draw(); } });
+  }
+  private target(x: number, y: number, w: number, h: number, index: number, confirm = true, tapped?: () => void): void {
     const area = this.scene.add.rectangle(x, y, w, h).setOrigin(0).setScrollFactor(0).setInteractive({ useHandCursor: true });
     area.on('pointerover', () => { if (this.enabled) { this.model.select(index); this.draw(); } });
     area.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (!this.enabled || pointer.button !== 0) return;
+      tapped?.();
       this.model.select(index); if (confirm) this.action('confirm'); else this.draw();
     }); this.c.add(area);
   }
@@ -216,7 +224,7 @@ export class HomePanels {
       const startX = x + (w - (S.length * (S.boxW + S.boxGap) - S.boxGap)) / 2;
       m.boxes.forEach((char, i) => {
         const xx = startX + i * (S.boxW + S.boxGap); this.rect(xx, y + S.boxesY, S.boxW, S.boxH, m.cursor === i, UI_COLOR.ink);
-        this.text(xx + S.boxW / 2, y + S.boxesY + U.border, char); this.target(xx, y + S.boxesY, S.boxW, S.boxH, i, false);
+        this.text(xx + S.boxW / 2, y + S.boxesY + U.border, char); this.target(xx, y + S.boxesY, S.boxW, S.boxH, i, false, () => this.openKeyboard());
       });
       const actionsX = x + (w - (S.buttons.length * (S.actionW + S.actionGap) - S.actionGap)) / 2;
       S.buttons.forEach((label, i) => {

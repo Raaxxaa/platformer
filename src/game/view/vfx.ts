@@ -27,6 +27,9 @@ export class VfxPool {
   private readonly gfx: Phaser.GameObjects.Graphics;
   private readonly scene: Phaser.Scene;
   private readonly bank: AnimBank;
+  /** The pool cap: 256, or 128 with Low effects (M12 Task 5). */
+  private max: number = VFX.max;
+  setMax(n: number): void { this.max = n; while (this.list.length > n) this.remove(0); }
   constructor(scene: Phaser.Scene, bank: AnimBank) {
     this.scene = scene;
     this.bank = bank;
@@ -34,7 +37,7 @@ export class VfxPool {
   }
 
   private add(fx: Fx): void {
-    if (this.list.length >= VFX.max) this.remove(0);          // the oldest is recycled
+    if (this.list.length >= this.max) this.remove(0);          // the oldest is recycled
     this.list.push(fx);
     const k = fx.kind === 'anim' ? fx.key : fx.kind;
     this.spawned[k] = (this.spawned[k] ?? 0) + 1;

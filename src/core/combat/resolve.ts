@@ -1,4 +1,5 @@
 // 02 §2.1 steps 7a, 7b and 9: hit resolution and deaths.
+import { unlockCosmeticOnKill } from '../cosmetics/hooks.ts';
 import { lootOnKill } from '../loot/sources.ts';
 import { addGoldTenths, killGoldTenths } from '../economy/gold.ts';
 import { blueprintOnKill, grantKingUnlocks } from '../loot/blueprintItems.ts';
@@ -187,6 +188,7 @@ export function processDeaths(w: GameWorld): void {
       greedy: e.killedBy?.perk === 'greedy',
     }), 'kill');
     w.events.push({ t: 'kill', enemyId: e.id, tier });
+    unlockCosmeticOnKill(w, e);
     lootOnKill(w, e);
     blueprintOnKill(w, e);
     if (e.def.id === 'enemy_king') grantKingUnlocks(w);

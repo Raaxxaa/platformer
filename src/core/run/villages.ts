@@ -4,11 +4,11 @@ import type { ClassId } from '../abilities/types.ts';
 import { createRunState } from './runState.ts';
 import { beginTransition } from './phases.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { buyFlaskUpgrade, buyKey, refill, rerollShop } from '../economy/shop.ts';
+import { buyCosmetic, buyFlaskUpgrade, buyKey, refill, rerollShop } from '../economy/shop.ts';
 import { openInn } from './roads.ts';
 import { unlockedCatalog } from '../loot/blueprints.ts';
 
-const SERVICES: Record<string, (w: GameWorld) => boolean> = { shop_flask: buyFlaskUpgrade, shop_refill: refill, shop_key: buyKey, shop_reroll: rerollShop };
+const SERVICES: Record<string, (w: GameWorld) => boolean> = { shop_flask: buyFlaskUpgrade, shop_refill: refill, shop_key: buyKey, shop_reroll: rerollShop, shop_cosmetic: buyCosmetic };
 
 export function setupVillage(w: GameWorld): void {
   for (const o of w.level?.objects ?? []) {
@@ -17,8 +17,8 @@ export function setupVillage(w: GameWorld): void {
     if (SERVICES[o.type]) w.interactables.push({ id: w.newId(), kind: o.type, label: o.type, x: o.x, y: o.y,
       use: (ww) => { const before = ww.events.length; if (!SERVICES[o.type](ww) && !ww.events.slice(before).some((e) => e.t === 'cantAfford')) ww.events.push({ t: 'cantAfford' }); } });
     if (o.type === 'class_statue') w.interactables.push(classStatue(w, o.props.cls as ClassId, o.x, o.y));
-    if (['training_gate', 'seed_board', 'unlocks_board'].includes(o.type)) {
-      const panel = o.type === 'training_gate' ? 'training' : o.type === 'seed_board' ? 'seed' : 'records';
+    if (['training_gate', 'seed_board', 'unlocks_board', 'mirror_spot'].includes(o.type)) {
+      const panel = o.type === 'training_gate' ? 'training' : o.type === 'seed_board' ? 'seed' : o.type === 'mirror_spot' ? 'wardrobe' : 'records';
       w.interactables.push({ id: w.newId(), kind: o.type, label: panel, x: o.w ? o.x + o.w / 2 : o.x, y: o.h ? o.y + o.h : o.y,
         w: o.w || undefined, h: o.h || undefined, use: (ww) => ww.events.push({ t: 'openHomePanel', panel }) });
     }

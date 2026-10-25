@@ -49,14 +49,22 @@ export const gameSession = {
     }
     // SPEC-GAP: does practice Random pick a new layout on Retry? No: it keeps its layout (its best and ghost belong to it).
     const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout || (!!practice && !!layout), seeded: carry?.run.seeded ?? seed !== null,
-      startKit, carry, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
+      startKit, carry, cosmetics: save.cosmetics, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
       nextRunUnlocks: () => saveStore().data.unlocks.blueprints, dragon, practice: !!practice, practiceSetup: practice ?? undefined });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
     return w;
   },
+  /** 09 §3–§5 (M13): a new cosmetic or a met enemy type is saved at once, in practice runs too. */
+  persistCosmetics(w: GameWorld): void {
+    for (const e of w.events) {
+      if (e.t === 'cosmeticUnlocked') saveStore().update((s) => { if (!s.cosmetics.owned.includes(e.id)) s.cosmetics.owned.push(e.id); });
+      if (e.t === 'enemySeen') saveStore().update((s) => { if (!s.cosmetics.seenEnemies.includes(e.enemy)) s.cosmetics.seenEnemies.push(e.enemy); });
+    }
+  },
   events(w: GameWorld): void {
+    this.persistCosmetics(w);
     // Practice owns a separate best-time write path (06 §14); no normal-run save event is allowed.
     if (w.opts.practice) { this.practiceEvents(w); return; }
     this.flushRunEnds(w);

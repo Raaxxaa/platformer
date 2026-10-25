@@ -1,5 +1,8 @@
 // Settings for built features. Controls are a current-binding view until M10.
 import type Phaser from 'phaser';
+import { TOUCH } from '../../data/touch.ts';
+import { effectsLevel } from '../touch/effects.ts';
+import { isTouchDevice } from '../../game/zoom.ts';
 import type { ActionId, SettingsData } from '../../core/save/schema.ts';
 import { MENU_UI as U } from '../../data/menuUi.ts';
 import { SAVE_RULES } from '../../data/save.ts';
@@ -11,12 +14,16 @@ import { keyLabel, menuGlyphs, shownPromptStyle } from '../inputSettings.ts';
 import { PromptGlyph } from '../hud/abilityHud.ts';
 
 export type SettingsRow = typeof U.settings.rows[number];
-export type SettingsCommand = { type: 'change'; settings: SettingsData } | { type: 'export' | 'import' | 'fullscreen' | 'close' };
-export interface SettingsCallbacks { onChange(settings: SettingsData): void; onExport(): void; onImport(): void; onFullscreen(): void; onClose(): void }
+export type SettingsCommand = { type: 'change'; settings: SettingsData } | { type: 'export' | 'import' | 'fullscreen' | 'layout' | 'close' };
+export interface SettingsCallbacks { onChange(settings: SettingsData): void; onExport(): void; onImport(): void; onFullscreen(): void; onClose(): void; onEditLayout?(): void }
+export type TouchRow = typeof U.settings.touchRows[number];
 export class SettingsModel {
-  readonly rows = U.settings.rows;
   cursor = 0;
   controlsOpen = false;
+  /** The touch page is open (07 §8.6 settings); `savedCursor` is where the main page's cursor was. */
+  touchOpen = false;
+  private savedCursor = 0;
+  get rows(): readonly string[] { return this.touchOpen ? U.settings.touchRows : U.settings.rows; }
   private readonly getSettings: () => SettingsData;
   constructor(getSettings: () => SettingsData) { this.getSettings = getSettings; }
   snapshot(): SettingsData { return structuredClone(this.getSettings()); }
@@ -27,11 +34,32 @@ export class SettingsModel {
     const volume = Math.max(0, Math.min(SAVE_RULES.volumeMax, rounded)); if (next.volume[row] === volume) return null;
     next.volume[row] = volume; return { type: 'change', settings: next };
   }
+  /** The touch page's actions: cycle or step each value, open the layout editor, Back to the main page. */
+  private touchAction(action: HomePanelAction): SettingsCommand | null {
+    const S = U.settings, rows = S.touchRows;
+    const back = (): null => { this.touchOpen = false; this.cursor = this.savedCursor; return null; };
+    if (action === 'back') return back();
+    if (action === 'up') this.select(this.cursor - 1);
+    if (action === 'down') this.select(this.cursor + 1);
+    const row = rows[this.cursor], delta = action === 'left' ? -1 : action === 'right' ? 1 : 0, next = this.snapshot(), t = next.touch;
+    if (action !== 'confirm' && !delta) return null;
+    const step = delta || 1;
+    if (row === 'tback') return action === 'confirm' ? back() : null;
+    if (row === 'layout') return action === 'confirm' ? { type: 'layout' } : null;
+    if (row === 'mode') { const modes = ['auto', 'on', 'off'] as const; t.mode = modes[(modes.indexOf(t.mode) + step + modes.length) % modes.length]; }
+    else if (row === 'opacity') { const v = Math.max(TOUCH.opacityMin, Math.min(TOUCH.opacityMax, t.opacity + step * S.opacityStep)); if (v === t.opacity) return null; t.opacity = v; }
+    else if (row === 'size') { const v = Math.max(TOUCH.sizeMin, Math.min(TOUCH.sizeMax, t.size + step * S.sizeStep)); if (v === t.size) return null; t.size = v; }
+    else if (row === 'hand') t.leftHanded = !t.leftHanded;
+    else if (row === 'vibe') t.vibration = !t.vibration;
+    else if (row === 'effects') t.effects = effectsLevel(t, isTouchDevice()) === 'high' ? 'low' : 'high';
+    return { type: 'change', settings: next };
+  }
   action(action: HomePanelAction): SettingsCommand | null {
     if (this.controlsOpen) { if (action === 'back' || action === 'confirm') this.controlsOpen = false; return null; }
+    if (this.touchOpen) return this.touchAction(action);
     if (action === 'back') return { type: 'close' };
     if (action === 'up') this.select(this.cursor - 1); if (action === 'down') this.select(this.cursor + 1);
-    const row = this.rows[this.cursor], delta = action === 'left' ? -1 : action === 'right' ? 1 : 0, next = this.snapshot();
+    const row = this.rows[this.cursor] as typeof U.settings.rows[number], delta = action === 'left' ? -1 : action === 'right' ? 1 : 0, next = this.snapshot();
     if ((row === 'master' || row === 'sfx') && delta) return this.setVolume(next.volume[row] + delta * SAVE_RULES.volumeStep);
     const booleanKey = row === 'timer' ? 'showTimer' : row === 'shake' ? 'screenShake' : null;
     if (booleanKey && (delta || action === 'confirm')) {
@@ -44,6 +72,7 @@ export class SettingsModel {
     }
     if (action !== 'confirm') return null;
     if (row === 'controls') { this.controlsOpen = true; return null; }
+    if (row === 'touch') { this.touchOpen = true; this.savedCursor = this.cursor; this.cursor = 0; return null; }
     if (row === 'export' || row === 'import' || row === 'fullscreen') return { type: row };
     return row === 'back' ? { type: 'close' } : null;
   }
@@ -59,12 +88,13 @@ export class SettingsView extends MenuSurface {
     else if (command.type === 'export') this.callbacks.onExport();
     else if (command.type === 'import') this.callbacks.onImport();
     else if (command.type === 'fullscreen') this.callbacks.onFullscreen();
+    else if (command.type === 'layout') { this.destroy(); this.callbacks.onEditLayout?.(); }
     else { this.destroy(); this.callbacks.onClose(); }
   }
   action(action: HomePanelAction): void { if (!this.enabled || this.closed) return; this.dispatch(this.model.action(action)); this.render(); }
   protected render(): void {
-    const m = this.model, settings = m.snapshot(), glyph = menuGlyphs(); if (!this.beginDraw([m.cursor, m.controlsOpen, settings, glyph])) return;
-    const S = U.settings; this.panel(S.panel); this.text(this.scene.scale.width / 2, S.titleY, m.controlsOpen ? 'CONTROLS · READ ONLY' : 'SETTINGS', UI_COLOR.text, true);
+    const m = this.model, settings = m.snapshot(), glyph = menuGlyphs(); if (!this.beginDraw([m.cursor, m.controlsOpen, m.touchOpen, settings, glyph])) return;
+    const S = U.settings; this.panel(S.panel); this.text(this.scene.scale.width / 2, S.titleY, m.controlsOpen ? 'CONTROLS · READ ONLY' : m.touchOpen ? 'TOUCH CONTROLS' : 'SETTINGS', UI_COLOR.text, true);
     if (m.controlsOpen) {
       (Object.keys(S.controlNames) as ActionId[]).forEach((id, i) => {
         const y = S.controlsRowsY + i * S.controlsRowH, keys = settings.bindings.keyboard[id].filter((key) => key !== null).map((key) => keyLabel(key)).join(' / '), pad = settings.bindings.gamepad[id];
@@ -79,7 +109,8 @@ export class SettingsView extends MenuSurface {
       this.text(this.scene.scale.width / 2, S.controlsBackY, '▸ Back', UI_COLOR.highlight);
       this.target(S.labelX, S.controlsBackY, S.rowW, S.rowH, () => {}, () => this.action('back')); return;
     }
-    m.rows.forEach((id, i) => {
+    if (m.touchOpen) { this.renderTouch(m, settings); return; }
+    (m.rows as readonly (typeof S.rows[number])[]).forEach((id, i) => {
       const y = S.rowsY + i * S.rowH, selected = m.cursor === i;
       if (selected) this.text(S.labelX - U.cursorGap, y, '▸', UI_COLOR.highlight);
       this.text(S.labelX, y, S.labels[id], selected ? UI_COLOR.highlight : UI_COLOR.text, false, 'left');
@@ -102,5 +133,26 @@ export class SettingsView extends MenuSurface {
       }
     });
     this.hint(this.scene.scale.width / 2, S.hintY, ['↑↓ Select   ←→ Change   ', { menu: 'confirm' }, ' Choose   ', { menu: 'back' }, ' Back']);
+  }
+  /** The touch page: one row per setting, `< value >` on the selected one (taps pick a row; ◂ ▸ step it). */
+  private renderTouch(m: SettingsModel, settings: SettingsData): void {
+    const S = U.settings, t = settings.touch, mid = this.scene.scale.width / 2;
+    const value: Record<TouchRow, string> = {
+      mode: S.modeNames[t.mode], opacity: `${t.opacity}%`, size: `${t.size}%`, hand: t.leftHanded ? 'On' : 'Off', vibe: t.vibration ? 'On' : 'Off',
+      effects: effectsLevel(t, isTouchDevice()) === 'high' ? 'High' : 'Low', layout: '', tback: '',
+    };
+    S.touchRows.forEach((id, i) => {
+      const y = S.rowsY + i * S.rowH, selected = m.cursor === i;
+      if (selected) this.text(S.labelX - U.cursorGap, y, '▸', UI_COLOR.highlight);
+      this.text(S.labelX, y, S.touchLabels[id], selected ? UI_COLOR.highlight : UI_COLOR.text, false, 'left');
+      this.target(S.labelX - U.cursorGap, y, S.rowW - 60, S.rowH, () => m.select(i), () => this.action('confirm'));
+      if (value[id]) this.text(S.valueX, y, selected ? `◂ ${value[id]} ▸` : value[id], selected ? UI_COLOR.highlight : UI_COLOR.textDim, false, 'right');
+      if (value[id]) {
+        // Tap targets for the step arrows (the whole value is also a "next" tap).
+        this.target(S.valueX - 70, y, 36, S.rowH, () => m.select(i), () => this.action('left'));
+        this.target(S.valueX - 34, y, 34, S.rowH, () => m.select(i), () => this.action('right'));
+      }
+    });
+    this.hint(mid, S.hintY, ['↑↓ Select   ←→ Change   ', { menu: 'confirm' }, ' Choose   ', { menu: 'back' }, ' Back']);
   }
 }

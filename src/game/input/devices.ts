@@ -4,6 +4,7 @@ import { SnapshotBuilder, type ButtonId, type DirId } from './snapshot.ts';
 import { defaultSettings, type SettingsData } from '../../core/save/schema.ts';
 import { noteInputDevice } from '../../ui/inputSettings.ts';
 import { PROMPT } from '../../data/prompts.ts';
+import { touchModel } from '../../ui/touch/touchInput.ts';
 
 type ActionId = ButtonId | DirId;
 export function bindingsToKeys(bindings: SettingsData['bindings']): Map<string, ActionId> {
@@ -87,6 +88,7 @@ export class Devices {
     this.downCodes.clear();
     this.padHeld.clear();
     this.pauseKey = null;
+    touchModel.releaseAll();
   };
   private keyboardHeld(id: ActionId): boolean {
     for (const code of this.downCodes) if (this.keyBindings.get(code) === id) return true;
@@ -98,6 +100,11 @@ export class Devices {
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
     window.addEventListener('blur', this.onBlur);
+    // Touch is a third device (07 §8.6): the overlay's pointers become the same latched presses.
+    touchModel.attach({
+      down: (id) => { if (!this.enabled) return; noteInputDevice('touch'); this.builder.down(id, 'touch'); },
+      up: (id) => this.builder.up(id, 'touch'),
+    });
   }
   setBindings(bindings: SettingsData['bindings']): void {
     const key = JSON.stringify(bindings); if (key === this.bindingsKey) return;
@@ -105,6 +112,9 @@ export class Devices {
   }
   /** Preserve the physical source until the frame consumes its pressed edge (menu precedence). */
   takePauseKey(): string | null { const code = this.pauseKey; this.pauseKey = null; return code; }
+
+  /** A tap on screen (an item card row): the press is latched like a button that went down and up. */
+  tap(id: ActionId): void { if (!this.enabled) return; noteInputDevice('touch'); this.builder.down(id, 'touch'); this.builder.up(id, 'touch'); }
 
   /** Ignore devices (debug manual mode) and release whatever they held. */
   setEnabled(on: boolean): void {
@@ -140,5 +150,6 @@ export class Devices {
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
     window.removeEventListener('blur', this.onBlur);
+    touchModel.attach(null);
   }
 }

@@ -222,8 +222,21 @@
      "y": 320
     },
     {
-     "height": 64,
+     "height": 0,
      "id": 11,
+     "name": "",
+     "point": true,
+     "properties": [],
+     "rotation": 0,
+     "type": "shop_cosmetic",
+     "visible": true,
+     "width": 0,
+     "x": 616,
+     "y": 320
+    },
+    {
+     "height": 64,
+     "id": 12,
      "name": "",
      "properties": [],
      "rotation": 0,
@@ -253,7 +266,7 @@
   }
  ],
  "nextlayerid": 5,
- "nextobjectid": 12,
+ "nextobjectid": 13,
  "orientation": "orthogonal",
  "properties": [
   {

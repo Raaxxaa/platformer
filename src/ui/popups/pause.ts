@@ -21,8 +21,11 @@ export class PauseView {
   private c: Phaser.GameObjects.Container;
   private key = '';
 
-  constructor(scene: Phaser.Scene) {
-    this.scene = scene;
+  /** Taps (07 §8.6): a tab, or a menu row (select and confirm). */
+  private readonly taps: { tab(i: number): void; item(i: number): void };
+
+  constructor(scene: Phaser.Scene, taps: { tab(i: number): void; item(i: number): void } = { tab: () => {}, item: () => {} }) {
+    this.scene = scene; this.taps = taps;
     this.c = scene.add.container(0, 0).setScrollFactor(0).setDepth(STAT_PICK_UI.pauseDepth);
   }
 
@@ -32,6 +35,12 @@ export class PauseView {
     const o = this.scene.add.bitmapText(P.panel[0] + x, P.panel[1] + y, font, s).setTint(color);
     this.c.add(o);
     return o;
+  }
+  /** A transparent tap area in panel coordinates. */
+  private zone(x: number, y: number, w: number, h: number, fn: () => void): void {
+    const z = this.scene.add.rectangle(P.panel[0] + x, P.panel[1] + y, w, h).setOrigin(0).setScrollFactor(0).setInteractive({ useHandCursor: true });
+    z.on('pointerdown', (p: Phaser.Input.Pointer) => { if (p.button === 0) fn(); });
+    this.c.add(z);
   }
   private img(x: number, y: number, frame: string, tint?: number) {
     const o = this.scene.add.image(P.panel[0] + x, P.panel[1] + y, 'ui', frame).setOrigin(0);
@@ -58,6 +67,7 @@ export class PauseView {
       for (const o of box(this.scene, on ? SKIN.tabOn : SKIN.tabOff, px + x, py + P.tabY, P.tabW, P.tabH, SKIN.corner.tab,
         { fill: on ? UI_COLOR.panelBorder : UI_COLOR.panel, edge: on ? UI_COLOR.highlight : UI_COLOR.panelBorder })) this.c.add(o);
       this.t(x + P.tabW / 2, P.tabY + 3, tab, on ? UI_COLOR.highlight : UI_COLOR.textDim).setOrigin(0.5, 0);
+      this.zone(x, P.tabY, P.tabW, P.tabH, () => this.taps.tab(i));
     });
     if (m.tab === 'MENU') this.menu(m, info);
     else if (m.tab === 'LOADOUT') this.loadout(w);
@@ -75,6 +85,7 @@ export class PauseView {
       const y = P.itemsY + i * P.itemStep;
       this.t(pw / 2, y, label, color).setOrigin(0.5, 0);
       if (sel) this.t(pw / 2 - 60 - P.cursorDx, y, '▸', UI_COLOR.highlight);
+      if (!it.disabled) this.zone(pw / 2 - 90, y - 2, 180, P.itemStep, () => this.taps.item(i));
     });
   }
 
