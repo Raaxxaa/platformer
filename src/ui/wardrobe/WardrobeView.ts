@@ -5,7 +5,8 @@ import { TRIM_TINT } from '../../data/art.ts';
 import { OUTFIT_ATLAS, type CosmeticId, type Look } from '../../data/cosmetics.ts';
 import { UI_COLOR } from '../../data/uiText.ts';
 import { WARDROBE_UI as W } from '../../data/wardrobeUi.ts';
-import { drawLook } from '../../game/view/PlayerLook.ts';
+import type { AnimDef } from '../../game/view/animClock.ts';
+import { LookRig } from '../../game/view/LookRig.ts';
 import type { HomePanelAction } from '../home/homePanels.ts';
 import { menuGlyphs } from '../inputSettings.ts';
 import { MenuSurface } from '../screens/records.ts';
@@ -22,30 +23,22 @@ export interface WardrobeCallbacks {
   trim: number;
 }
 
-/** Preview frames per animation (names in the class-outfit atlas). */
-const PREVIEW_FRAMES: Record<PreviewAnim, { prefix: string; count: number; loop: boolean }> = {
-  idle: { prefix: 'idle', count: 6, loop: true }, run: { prefix: 'run', count: 8, loop: true },
-  jump: { prefix: 'jump', count: 2, loop: true }, attack: { prefix: W.preview.weaponFrame, count: 5, loop: true },
-};
+/** The anim each preview button plays (the greatsword swing for the attack). */
+const PREVIEW_KEYS: Record<PreviewAnim, string> = { idle: 'idle', run: 'run', jump: 'jump', attack: 'atk_greatsword_1' };
 
 export class WardrobeView extends MenuSurface {
   readonly model: WardrobeModel;
   private readonly cb: WardrobeCallbacks;
   private readonly owned: readonly CosmeticId[];
   private readonly seen: readonly EnemyId[];
-  private readonly body: Phaser.GameObjects.Sprite;
-  private readonly trims: Phaser.GameObjects.Sprite[];
-  private readonly behind: Phaser.GameObjects.Graphics;
-  private readonly front: Phaser.GameObjects.Graphics;
+  private readonly rig: LookRig;
+  private readonly anims: AnimDef[];
   private time = 0;
   constructor(scene: Phaser.Scene, look: Look, owned: readonly CosmeticId[], seen: readonly EnemyId[], intro: boolean, cb: WardrobeCallbacks) {
     super(scene);
     this.model = new WardrobeModel(look, owned, { intro }); this.cb = cb; this.owned = owned; this.seen = seen;
-    const P = W.preview, d = P.depth;
-    this.behind = scene.add.graphics().setScrollFactor(0).setDepth(d - 0.1);
-    this.body = scene.add.sprite(P.x, P.y, `player_${OUTFIT_ATLAS[look.outfit]}`, 'idle_00').setScrollFactor(0).setDepth(d).setScale(P.scale);
-    this.trims = ['a', 'b'].map((l) => scene.add.sprite(P.x, P.y, `player_${OUTFIT_ATLAS[look.outfit]}_trim`, `${l}/idle_00`).setScrollFactor(0).setDepth(d).setScale(P.scale).setTint(cb.trim));
-    this.front = scene.add.graphics().setScrollFactor(0).setDepth(d + 0.3);
+    this.rig = new LookRig(scene, W.preview.depth, { screen: true, scale: W.preview.scale });
+    this.anims = (scene.cache.json.get('anims') ?? []) as AnimDef[];
     this.cb.onPreview(this.model.look);
     this.render(); this.animate();
   }
@@ -68,27 +61,23 @@ export class WardrobeView extends MenuSurface {
   }
 
   private animate(): void {
-    const m = this.model, l = m.look, P = W.preview, a = PREVIEW_FRAMES[m.anim];
-    const frame = `${a.prefix}_${String(Math.floor(this.time * P.fps) % a.count).padStart(2, '0')}`;
-    const atlas = `player_${OUTFIT_ATLAS[l.outfit]}`;
-    const tex = this.scene.textures.get(atlas), key = tex.has(frame) ? frame : `idle_00`;
-    this.body.setTexture(atlas, key);
-    this.trims.forEach((t, i) => t.setTexture(`${atlas}_trim`, `${'ab'[i]}/${key}`).setTint(this.cb.trim));
-    // Feet anchor (08 §4.1): origin at the feet of the 48 × 48 frame.
-    for (const s of [this.body, ...this.trims]) s.setOrigin(0.5, (s.frame.height - 2) / s.frame.height);
-    drawLook(this.behind, this.front, l, { x: P.x, y: P.y, flip: false, alpha: 1, scale: P.scale, anim: m.anim === 'attack' ? 'idle' : m.anim });
+    const m = this.model, l = m.look, P = W.preview, key = PREVIEW_KEYS[m.anim], atlas = `player_${OUTFIT_ATLAS[l.outfit]}`;
+    const def = this.anims.find((a) => a.atlas === atlas && a.key === key) ?? this.anims.find((a) => a.atlas === atlas && a.key === 'idle');
+    const n = def?.frames.length ?? 1, i = Math.floor(this.time * (def?.fps ?? P.fps)) % n;
+    this.rig.draw(l, { x: P.x, y: P.y, flip: false, alpha: 1, frame: def?.frames[i] ?? 'idle_00', anim: def?.key ?? 'idle', points: def?.points?.[i], trims: [this.cb.trim, this.cb.trim], t: this.time });
   }
 
   protected render(): void {
     const m = this.model, glyph = menuGlyphs(), entries = collectionEntries(this.owned, this.seen);
     if (!this.beginDraw([m.tab, m.zone, m.row, m.cell, m.anim, m.footer, m.look, this.owned.length, glyph])) return;
-    this.panel(W.panel);
+    this.panel(W.panel, W.panelFrame);
     this.text(W.preview.x, W.titleY, m.intro ? W.introTitle : W.title, UI_COLOR.text, true);
     const T = W.tabs;
     WARDROBE_TABS.forEach((t, i) => {
       const x = T.x + i * T.w, sel = m.tab === t, focus = m.zone === 'tabs' && sel;
       this.rect(x, T.y, T.w, T.h, focus, sel ? UI_COLOR.ink : UI_COLOR.panel);
-      this.text(x + T.w / 2, T.y + 4, TAB_LABEL[t], sel ? UI_COLOR.highlight : UI_COLOR.textDim);
+      if (this.scene.textures.get('ui').has(T.icons[i])) this.c.add(this.scene.add.image(x + T.w / 2, T.y + T.iconY, 'ui', T.icons[i]).setOrigin(0.5, 0).setAlpha(sel ? 1 : 0.6));
+      this.text(x + T.w / 2, T.y + T.labelY, TAB_LABEL[t], sel ? UI_COLOR.highlight : UI_COLOR.textDim);
       this.target(x, T.y, T.w, T.h, () => { m.zone = 'tabs'; }, () => { m.setTab(t); m.zone = 'rows'; });
     });
     if (m.tab === 'collection') this.renderCollection(entries); else this.renderRows();
@@ -144,6 +133,6 @@ export class WardrobeView extends MenuSurface {
   destroy(): void {
     if (this.closed) return;
     super.destroy(); this.cb.onPreview(null);
-    this.body.destroy(); for (const t of this.trims) t.destroy(); this.behind.destroy(); this.front.destroy();
+    this.rig.destroy();
   }
 }

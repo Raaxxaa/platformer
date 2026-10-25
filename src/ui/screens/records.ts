@@ -69,9 +69,9 @@ export abstract class MenuSurface {
     const g = this.scene.add.graphics(); g.fillStyle(fill, 1).fillRect(x, y, w, h);
     g.lineStyle(U.border, selected ? UI_COLOR.highlight : UI_COLOR.panelBorder, 1).strokeRect(x + U.border / 2, y + U.border / 2, w - U.border, h - U.border); this.c.add(g);
   }
-  protected panel(bounds: readonly [number, number, number, number]): void {
+  protected panel(bounds: readonly [number, number, number, number], frame: string = U.panelFrame): void {
     const [x, y, w, h] = bounds;
-    if (this.scene.textures.exists('ui') && this.scene.textures.get('ui').has(U.panelFrame)) this.c.add(this.scene.add.nineslice(x, y, 'ui', U.panelFrame, w, h, U.corner, U.corner, U.corner, U.corner).setOrigin(0));
+    if (this.scene.textures.exists('ui') && this.scene.textures.get('ui').has(frame)) this.c.add(this.scene.add.nineslice(x, y, 'ui', frame, w, h, U.corner, U.corner, U.corner, U.corner).setOrigin(0));
     else this.rect(x, y, w, h);
   }
   protected target(x: number, y: number, w: number, h: number, select: () => void, confirm: () => void): void {

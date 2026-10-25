@@ -1,7 +1,7 @@
 // Loot HUD text (07 §4.7 effects row, §6.8 banners, §6.10 toasts, §9.3 lines). Pure; the HUD views draw it.
 import type { EconomyState } from '../../core/economy/gold.ts';
 import type { WorldEvent } from '../../core/sim/gameWorld.ts';
-import { cosmeticName } from '../../data/cosmetics.ts';
+import { cosmeticIcon, cosmeticName } from '../../data/cosmetics.ts';
 import { TICK_RATE } from '../../core/tuning.ts';
 import { LUCKY, type CurseId, type LuckyId } from '../../data/loot.ts';
 import { CURSE_LINE, LUCKY_LINE, LOOT_HUD, WEAPON_NAME } from '../../data/uiText.ts';
@@ -37,14 +37,14 @@ export function bannerFor(ev: WorldEvent): Banner | null {
   return null;
 }
 
-export interface Toast { text: string; tone: LootTone; s: number }
+export interface Toast { text: string; tone: LootTone; s: number; icon?: string }
 /** §6.10 loot toasts. */
 export function toastFor(ev: WorldEvent): Toast | null {
   const S = LOOT_HUD.toastS;
   if (ev.t === 'keysFull') return { text: 'Keys full (3)', tone: 'textDim', s: S.keysFull };
   if (ev.t === 'lockpickUsed') return { text: 'Lockpick used', tone: 'text', s: S.lockpick };
   if (ev.t === 'purchase') return { text: `−${ev.price}`, tone: 'textDim', s: S.purchase };
-  if (ev.t === 'cosmeticUnlocked') return { text: `New look: ${cosmeticName(ev.id)}`, tone: 'highlight', s: S.cosmetic };
+  if (ev.t === 'cosmeticUnlocked') return { text: `New look: ${cosmeticName(ev.id)}`, tone: 'highlight', s: S.cosmetic, icon: cosmeticIcon(ev.id) };
   if (ev.t === 'blueprintFound') return { text: `Blueprint: ${WEAPON_NAME(ev.id as import('../../core/combat/types.ts').WeaponId)}\nUnlocked next run`, tone: 'highlight', s: S.blueprint };
   return null;
 }

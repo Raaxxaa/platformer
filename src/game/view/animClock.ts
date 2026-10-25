@@ -4,7 +4,9 @@ import { TICK_RATE } from '../../core/tuning.ts';
 
 export type AnimMode = 'loop' | 'once' | 'phase' | 'speed';
 export interface AnimSegment { phase: string; frames: number[]; loopFps?: number; byVy?: boolean }
-export interface AnimDef { key: string; atlas: string; frames: string[]; mode: AnimMode; fps?: number; segments?: AnimSegment[]; weaponBehind?: number[] }
+export interface AnimDef { key: string; atlas: string; frames: string[]; mode: AnimMode; fps?: number; segments?: AnimSegment[]; weaponBehind?: number[];
+  /** Player anims (ART10): attachment points per frame, in frame pixels. */
+  points?: Partial<Record<'head' | 'back' | 'neck' | 'shoulder', [number, number]>>[] }
 
 /** `loop` / `once`: frame index after `t` seconds in the anim. */
 export function timeFrame(def: AnimDef, t: number): number {

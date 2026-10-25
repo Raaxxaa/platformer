@@ -88,6 +88,8 @@ export const SHOP_BY_ID: ReadonlyMap<CosmeticId, ShopCosmetic> = new Map(SHOP_CO
 /** The accessory slot an id wears in, or null (dyes aren't worn, they unlock colors). */
 export function slotOf(id: CosmeticId): AccessorySlot | null { return ACCESSORY_BY_ID.get(id)?.slot ?? SHOP_BY_ID.get(id)?.slot ?? null; }
 export function cosmeticName(id: CosmeticId): string { return ACCESSORY_BY_ID.get(id)?.name ?? SHOP_BY_ID.get(id)?.name ?? id; }
+/** The `ui` atlas icon of a cosmetic (ART10; hyphens are not allowed in frame names). */
+export const cosmeticIcon = (id: CosmeticId): string => `icon_cos_${id.replace(/-/g, '_')}`;
 export const cosmeticHex = (id: CosmeticId): number => ACCESSORY_BY_ID.get(id)?.hex ?? SHOP_BY_ID.get(id)?.hex ?? 0x8a8a96;
 
 /** 09 §2 defaults (first launch, and the fallback for any bad saved option). */

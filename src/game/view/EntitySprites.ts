@@ -8,12 +8,12 @@ import { COMBAT, ENEMY, TICK_RATE } from '../../core/tuning.ts';
 import { CASTLE } from '../../data/castle.ts';
 import { DRAGON } from '../../data/dragon.ts';
 import { DUMMY_FRAMES, YARD_DUMMY_FRAMES } from '../../data/animKeys.ts';
-import { ANCHOR, ANIM, DEPTH, OVERLAY, TRIM_TINT, VFX, WEAPON_FRAME } from '../../data/art.ts';
+import { ANCHOR, ANIM, DEPTH, OVERLAY, VFX, WEAPON_FRAME } from '../../data/art.ts';
 import { AnimClock, runFps, timeFrame, walkFps } from './animClock.ts';
 import type { AnimBank } from './animBank.ts';
 import { trimTints } from './trims.ts';
 import { OUTFIT_ATLAS } from '../../data/cosmetics.ts';
-import { drawLook } from './PlayerLook.ts';
+import { LookRig } from './LookRig.ts';
 import { getLook } from './lookState.ts';
 import { castRt } from '../../core/abilities/abilitySystem.ts';
 import { yardDummyFrame, pickEnemyAnim, pickPlayerAnim, type Lookup, type PlayerAnimState } from './pickAnim.ts';
@@ -57,14 +57,9 @@ export interface PlayerViewEvents { lastDoubleJumpTick: number; lastWallJumpTick
 
 /** Player: body, trim A, trim B, weapon, smear, flipped together, plus a solid-fill overlay (08 §4.2, §5.3). */
 export class PlayerSprite {
-  private readonly body: Phaser.GameObjects.Sprite;
-  private readonly trims: Phaser.GameObjects.Sprite[];
+  private readonly rig: LookRig;
   private readonly weapon: Phaser.GameObjects.Sprite;
   private readonly smear: Phaser.GameObjects.Sprite;
-  private readonly overlay: Phaser.GameObjects.Sprite;
-  /** The look's placeholder layers (09 §7): the back accessory behind the body, everything else in front (ART10 replaces them). */
-  private readonly lookBehind: Phaser.GameObjects.Graphics;
-  private readonly lookFront: Phaser.GameObjects.Graphics;
   private readonly clock = new AnimClock();
   private get: Lookup;
   private readonly bank: AnimBank;
@@ -77,15 +72,9 @@ export class PlayerSprite {
   constructor(scene: Phaser.Scene, bank: AnimBank) {
     this.bank = bank;
     this.get = bank.player(this.outfit);
-    const body = `player_${this.outfit}`, trim = `${body}_trim`;
-    this.body = scene.add.sprite(0, 0, body, 'idle_00');
-    this.trims = ['a', 'b'].map((l) => scene.add.sprite(0, 0, trim, `${l}/idle_00`).setTint(TRIM_TINT.none));
+    this.rig = new LookRig(scene);
     this.weapon = scene.add.sprite(0, 0, 'weapon_greatsword', 'atk_greatsword_1_00').setVisible(false);
     this.smear = scene.add.sprite(0, 0, 'weapon_greatsword', 'atk_greatsword_1_smear').setVisible(false);
-    this.overlay = scene.add.sprite(0, 0, body, 'idle_00').setTint(OVERLAY.hitFlash.color).setTintMode(Phaser.TintModes.FILL);
-    for (const s of [this.body, ...this.trims, this.overlay]) feet(s).setDepth(DEPTH.player);
-    this.lookBehind = scene.add.graphics().setDepth(DEPTH.player - 0.1);
-    this.lookFront = scene.add.graphics().setDepth(DEPTH.player + 0.3);
     for (const s of [this.weapon, this.smear]) s.setOrigin(WEAPON_FRAME.anchorX / WEAPON_FRAME.w, WEAPON_FRAME.anchorY / WEAPON_FRAME.h);
   }
 
@@ -94,10 +83,6 @@ export class PlayerSprite {
     if (outfit === this.outfit) return;
     this.outfit = outfit;
     this.get = this.bank.player(outfit);
-    const body = `player_${outfit}`;
-    this.body.setTexture(body, 'idle_00');
-    this.overlay.setTexture(body, 'idle_00');
-    for (const t of this.trims) t.setTexture(`${body}_trim`);
   }
 
   static animState(w: GameWorld, ev: PlayerViewEvents): PlayerAnimState {
@@ -135,10 +120,10 @@ export class PlayerSprite {
     const flip = b.facing < 0;
     const blink = w.health.iframeTicks > 0 && Math.floor(w.tick / COMBAT.IFRAME_BLINK_TICKS) % 2 === 0;
     const alpha = blink ? 0.4 : 1;
-    this.body.setFrame(name).setPosition(b.x, b.y).setFlipX(flip).setAlpha(alpha);
-    drawLook(this.lookBehind, this.lookFront, look, { x: b.x, y: b.y, flip, alpha, anim: p.key });
     const tints = trimTints(w.classState);
-    this.trims.forEach((t, i) => t.setFrame(`${i === 0 ? 'a' : 'b'}/${name}`).setPosition(b.x, b.y).setFlipX(flip).setAlpha(alpha).setTint(tints[i]));
+    const hurtAgo0 = w.health.iframeTicks > 0 ? COMBAT.HURT_IFRAMES_TICKS - w.health.iframeTicks : Number.MAX_SAFE_INTEGER;
+    const points = (this.get(p.key) ?? this.get('idle'))?.points?.[p.frame] ?? this.get('idle')?.points?.[0];
+    this.rig.draw(look, { x: b.x, y: b.y, flip, alpha, frame: name, anim: p.key, points, trims: tints, t: w.tick / TICK_RATE, flash: hurtAgo0 < OVERLAY.hitFlash.minTicks ? OVERLAY.hitFlash.color : null });
     // Weapon + smear (08 §4.2): behind the body on `weaponBehind` frames, else above trim B.
     const wl = p.weapon;
     this.weapon.setVisible(!!wl);
@@ -148,18 +133,16 @@ export class PlayerSprite {
         .setDepth(wl.behind ? DEPTH.player - 0.5 : DEPTH.player + 0.5);
       if (wl.smear) this.smear.setTexture(wl.atlas, wl.smear).setPosition(b.x, b.y).setFlipX(flip).setDepth(DEPTH.player + 0.6);
     }
-    const hurtAgo = w.health.iframeTicks > 0 ? COMBAT.HURT_IFRAMES_TICKS - w.health.iframeTicks : Number.MAX_SAFE_INTEGER;
-    this.overlay.setFrame(name).setPosition(b.x, b.y).setFlipX(flip).setDepth(DEPTH.player + 0.7).setVisible(hurtAgo < OVERLAY.hitFlash.minTicks);
   }
 
   setVisible(on: boolean): void {
-    for (const s of [this.body, ...this.trims]) s.setVisible(on);
-    this.lookBehind.setVisible(on); this.lookFront.setVisible(on);
-    if (!on) for (const s of [this.weapon, this.smear, this.overlay]) s.setVisible(false);
+    this.rig.setVisible(on);
+    if (!on) for (const s of [this.weapon, this.smear]) s.setVisible(false);
   }
 
   destroy(): void {
-    for (const s of [this.body, ...this.trims, this.weapon, this.smear, this.overlay, this.lookBehind, this.lookFront]) s.destroy();
+    this.rig.destroy();
+    for (const s of [this.weapon, this.smear]) s.destroy();
   }
 }
 

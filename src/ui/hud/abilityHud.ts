@@ -67,7 +67,7 @@ const colorOf = (k: ClassColorKey): number =>
   k === 'none' ? UI_COLOR.textDim : k === 'neutral' ? CLASS_COLOR.neutral : (CLASS_COLOR as Record<string, number>)[k] ?? HYBRID_COLOR[k as HybridId];
 
 interface Flash { color: number; until: number }
-interface Toast { text: Phaser.GameObjects.BitmapText; born: number; until: number }
+interface Toast { text: Phaser.GameObjects.BitmapText; icon?: Phaser.GameObjects.Image; born: number; until: number }
 
 export class AbilityHud {
   private scene: Phaser.Scene;
@@ -114,16 +114,17 @@ export class AbilityHud {
     this.flashes[i] = { color, until: now + s * 1000 };
   }
 
-  toast(text: string, color: number, now: number, seconds: number = L.toastS): void {
+  toast(text: string, color: number, now: number, seconds: number = L.toastS, icon?: string): void {
     const t = this.scene.add.bitmapText(0, 0, FONTS.small, text).setOrigin(1, 1).setRightAlign().setTint(color).setScrollFactor(0).setDepth(DEPTH.hud + 2)
       .setMaxWidth(L.toastMaxW);
-    this.toasts.push({ text: t, born: now, until: now + seconds * 1000 });
-    while (this.toasts.length > L.toastMax) this.toasts.shift()!.text.destroy();
+    const img = icon && this.scene.textures.get('ui').has(icon) ? this.scene.add.image(0, 0, 'ui', icon).setOrigin(1, 1).setScrollFactor(0).setDepth(DEPTH.hud + 2) : undefined;
+    this.toasts.push({ text: t, icon: img, born: now, until: now + seconds * 1000 });
+    while (this.toasts.length > L.toastMax) { const old = this.toasts.shift()!; old.text.destroy(); old.icon?.destroy(); }
   }
 
   private all(): Phaser.GameObjects.Components.Visible[] {
     return [...this.plate, this.g, ...this.icons, ...this.classIcons, ...this.prompts.map((prompt) => prompt.container), ...this.digits, this.line1, this.line2, this.linkIcon, this.linkText,
-      this.fizzle, ...this.toasts.map((t) => t.text)];
+      this.fizzle, ...this.toasts.map((t) => t.text), ...this.toasts.flatMap((t) => (t.icon ? [t.icon] : []))];
   }
 
   /** `now` in ms (real time). `shown` false hides it all (the debug overview zooms the camera out). */
@@ -213,12 +214,14 @@ export class AbilityHud {
     this.fizzle.setVisible(this.fizzleUntil > now).setPosition(b.x, b.y - b.h - L.fizzleLift);
 
     // Toasts, newest at the bottom.
-    this.toasts = this.toasts.filter((t) => { if (t.until > now) return true; t.text.destroy(); return false; });
+    this.toasts = this.toasts.filter((t) => { if (t.until > now) return true; t.text.destroy(); t.icon?.destroy(); return false; });
     let ty = L.toastBottom;
     for (let i = this.toasts.length - 1; i >= 0; i--) {
       const t = this.toasts[i];
-      t.text.setPosition(L.toastRight, ty).setAlpha(Math.min(1, (t.until - now) / (L.toastFadeS * 1000)));
-      ty -= t.text.height + L.toastGap;
+      const fade = Math.min(1, (t.until - now) / (L.toastFadeS * 1000));
+      t.text.setPosition(L.toastRight, ty).setAlpha(fade);
+      t.icon?.setPosition(L.toastRight - t.text.width - 2, ty).setAlpha(fade);
+      ty -= Math.max(t.text.height, t.icon?.height ?? 0) + L.toastGap;
     }
   }
 }

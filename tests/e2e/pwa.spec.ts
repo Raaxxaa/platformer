@@ -21,6 +21,6 @@ test('after one load the game starts with the network off', async ({ page, conte
 test('the manifest and icons are served', async ({ request }) => {
   const m = await request.get('/manifest.webmanifest'); expect(m.ok()).toBe(true);
   expect((await m.json()).display).toBe('fullscreen');
-  expect((await request.get('/app/icon-512.png')).ok()).toBe(true);
+  expect((await request.get('/assets/app/icon-512.png')).ok()).toBe(true);
   expect((await request.get('/precache.json')).ok()).toBe(true);
 });

@@ -11,6 +11,7 @@ export class VillageView {
   private gatePrompt: Phaser.GameObjects.BitmapText;
   private seedLabel: Phaser.GameObjects.BitmapText | null = null;
   private keyProp: Phaser.GameObjects.Image | null = null;
+  private glint: Phaser.GameObjects.Image | null = null;
   constructor(scene: Phaser.Scene, level: LevelData) {
     const add = (atlas: string, frame: string, x: number, y: number) => {
       if (scene.textures.get(atlas).has(frame)) scene.add.image(x, y, atlas, frame).setOrigin(0.5, 1).setDepth(DEPTH.doors);
@@ -31,14 +32,16 @@ export class VillageView {
     }
     for (const o of level.objects) {
       const x = o.w ? o.x + o.w / 2 : o.x, y = o.h ? o.y + o.h : o.y;
-      const frame = o.type === 'class_statue' ? `class_statue_${o.props.cls}_00` : ({ mirror_spot: 'mirror_spot_00', training_gate: 'training_gate_00', unlocks_board: 'unlocks_board_00', seed_board: 'seed_board_00', exit: 'gate_idle_00', shop_item: 'shop_item_00', ability_altar: 'ability_altar_idle_00', shop_flask: 'shop_flask_00', shop_refill: 'shop_refill_idle_00', shop_reroll: 'shop_reroll_00' } as Record<string, string>)[o.type];
+      const frame = o.type === 'class_statue' ? `class_statue_${o.props.cls}_00` : ({ mirror_spot: 'mirror_spot_00', training_gate: 'training_gate_00', unlocks_board: 'unlocks_board_00', seed_board: 'seed_board_00', exit: 'gate_idle_00', shop_item: 'shop_item_00', ability_altar: 'ability_altar_idle_00', shop_flask: 'shop_flask_00', shop_refill: 'shop_refill_idle_00', shop_reroll: 'shop_reroll_00', shop_cosmetic: 'cosmetic_stand_00' } as Record<string, string>)[o.type];
       if (frame) add('objects', frame, x, y);
+      if (o.type === 'mirror_spot' && scene.textures.get('objects').has('mirror_glint_00')) this.glint = scene.add.image(x, y, 'objects', 'mirror_glint_00').setOrigin(0.5, 1).setDepth(DEPTH.doors + 0.1);
       if (o.type === 'shop_key') this.keyProp = scene.add.image(x, y, 'objects', 'shop_key_00').setOrigin(0.5, 1).setDepth(DEPTH.doors);
       if (o.type === 'seed_board') this.seedLabel = scene.add.bitmapText(x, y - scene.textures.get('objects').get('seed_board_00').height - VILLAGE.promptY, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.items);
     }
     this.gatePrompt = scene.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.hud).setTint(UI_COLOR.bad);
   }
   update(w: GameWorld, seed: string | null): void {
+    this.glint?.setFrame(`mirror_glint_0${Math.floor((w.tick / 120) * 3) % 3}`);
     this.keyProp?.setVisible(!!w.shop?.keyInStock);
     this.gatePrompt.setText(w.villageMessage ?? '');
     const half = this.gatePrompt.width / 2;

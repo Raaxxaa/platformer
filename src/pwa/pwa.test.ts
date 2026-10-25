@@ -8,7 +8,7 @@ describe('installable app (M12 Task 6)', () => {
     expect(manifest).toMatchObject({ name: 'RUSHBLADE', display: 'fullscreen', orientation: 'landscape', theme_color: '#0d0b14', background_color: '#0d0b14', start_url: './', scope: './' });
     for (const icon of manifest.icons) { expect(icon.src.startsWith('/')).toBe(false); expect(existsSync(`public/${icon.src}`), icon.src).toBe(true); }
     expect(manifest.icons.map((i: { sizes: string }) => i.sizes)).toEqual(expect.arrayContaining(['192x192', '512x512']));
-    expect(existsSync('public/app/apple-touch-icon.png')).toBe(true);
+    expect(existsSync('public/assets/app/apple-touch-icon.png')).toBe(true);
   });
   it('index.html links the manifest and the iPhone settings; the viewport is phone-ready', () => {
     const html = readFileSync('index.html', 'utf8');

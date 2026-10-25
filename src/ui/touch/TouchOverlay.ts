@@ -7,13 +7,12 @@ import { getUiSettings, lastDeviceIsTouch, noteInputDevice } from '../inputSetti
 import { touchModel } from './touchInput.ts';
 import type { TouchButtonId } from './touchModel.ts';
 import type { TouchHudView, TouchSlotView } from './touchView.ts';
+import { backgroundCss, loadUiAtlas, maskCss, uiFrame } from './uiAtlas.ts';
 import './touch.css';
 
 const HEX = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
-type Atlas = Record<string, { frame: { x: number; y: number; w: number; h: number } }>;
-
-/** Shapes for the buttons until ART10's `touch_*` frames land (07 §8.6 Look). */
-const GLYPH: Partial<Record<TouchButtonId, string>> = { jump: '▲', dash: '»', heal: '', interact: '', pause: '❚❚' };
+/** The white ART10 icon each fixed button wears (07 §3.4 Touch row); the four weapon/ability buttons show live icons. */
+const GLYPH: Partial<Record<TouchButtonId, string>> = { jump: 'touch_jump', dash: 'touch_dash', heal: 'touch_heal', interact: 'touch_interact', pause: 'touch_pause' };
 
 export class TouchOverlay {
   private readonly root = document.createElement('div');
@@ -23,9 +22,7 @@ export class TouchOverlay {
   private readonly ring = document.createElement('div');
   private readonly back = document.createElement('div');
   private backOn = false;
-  private readonly els = new Map<TouchButtonId, { el: HTMLDivElement; icon: HTMLDivElement; shade: HTMLDivElement; label: HTMLSpanElement; word: HTMLSpanElement }>();
-  private atlas: Atlas = {};
-  private atlasUrl = '';
+  private readonly els = new Map<TouchButtonId, { el: HTMLDivElement; fill: HTMLDivElement; rim: HTMLDivElement; glyph: HTMLDivElement; key: string; icon: HTMLDivElement; shade: HTMLDivElement; label: HTMLSpanElement; word: HTMLSpanElement }>();
   private settings!: TouchSettings;
   private view: TouchHudView | null = null;
   /** Gameplay is running (not a menu): the controls work and are drawn. Menus take taps directly. */
@@ -51,12 +48,14 @@ export class TouchOverlay {
     this.root.append(this.hint, this.stickRing, this.stickKnob, this.ring, this.back, this.toolbar);
     for (const def of T.buttons) {
       const el = document.createElement('div'); el.className = `touch-btn touch-${def.id}`;
+      const fill = document.createElement('div'); fill.className = 'touch-fill'; const rim = document.createElement('div'); rim.className = 'touch-rim';
+      const glyph = document.createElement('div'); glyph.className = 'touch-glyph';
       const icon = document.createElement('div'); icon.className = 'touch-icon';
       const shade = document.createElement('div'); shade.className = 'touch-shade';
-      const label = document.createElement('span'); label.className = 'touch-label'; label.textContent = GLYPH[def.id] ?? '';
+      const label = document.createElement('span'); label.className = 'touch-label'; label.textContent = '';
       const word = document.createElement('span'); word.className = 'touch-word';
-      el.append(icon, shade, label, word); this.root.append(el);
-      this.els.set(def.id, { el, icon, shade, label, word });
+      el.append(fill, shade, rim, glyph, icon, label, word); this.root.append(el);
+      this.els.set(def.id, { el, fill, rim, glyph, key: '', icon, shade, label, word });
     }
     parent.append(this.root);
     this.setSettings(touchModel.settings);
@@ -74,10 +73,7 @@ export class TouchOverlay {
     requestAnimationFrame(frame);
   }
 
-  private loadAtlas(): void {
-    this.atlasUrl = new URL('assets/ui/ui.png', document.baseURI).href;
-    fetch(new URL('assets/ui/ui.json', document.baseURI)).then((r) => r.json()).then((j) => { this.atlas = j.frames as Atlas; }).catch(() => {});
-  }
+  private loadAtlas(): void { loadUiAtlas(); }
   setSettings(s: TouchSettings): void { this.settings = s; touchModel.setSettings(s); this.root.style.setProperty('--touch-opacity', String(s.opacity / 100)); }
   /** The game says whether a run is being played (true) or a menu has the screen (false). */
   setGameplay(on: boolean): void {
@@ -164,14 +160,9 @@ export class TouchOverlay {
   private readonly onUp = (e: PointerEvent) => { if (this.editing) { this.editPointer('up', e); return; } if (e.pointerType === 'touch' || e.pointerType === 'pen') touchModel.pointerUp(e.pointerId, e.clientX, e.clientY, performance.now()); };
   private readonly onCancel = (e: PointerEvent) => { if (e.pointerType === 'touch' || e.pointerType === 'pen') touchModel.pointerCancel(e.pointerId, performance.now()); };
 
-  private paintIcon(el: HTMLDivElement, frame: string | null): void {
-    const f = frame ? this.atlas[frame]?.frame : null;
-    if (!f) { el.style.backgroundImage = 'none'; return; }
-    const px = 'calc(var(--u) * 0.62)', k = `calc(${px} / ${f.w})`;
-    el.style.backgroundImage = `url(${this.atlasUrl})`;
-    el.style.backgroundSize = `calc(${k} * 974) calc(${k} * 160)`;
-    el.style.backgroundPosition = `calc(${k} * -${f.x}) calc(${k} * -${f.y})`;
-    el.style.width = px; el.style.height = px;
+  private paintIcon(el: HTMLDivElement, frame: string | null, d: number): void {
+    const px = Math.round(d * 0.62);
+    el.style.cssText = `${backgroundCss(frame, px)}width:${px}px;height:${px}px`;
   }
 
   private draw(): void {
@@ -197,11 +188,20 @@ export class TouchOverlay {
       o.el.style.display = r ? 'flex' : 'none';
       if (!r) continue;
       o.el.style.left = `${r.cx - r.r}px`; o.el.style.top = `${r.cy - r.r}px`; o.el.style.width = `${r.r * 2}px`; o.el.style.height = `${r.r * 2}px`;
-      o.el.classList.toggle('held', touchModel.isHeld(id));
+      const held = touchModel.isHeld(id), d = r.r * 2;
+      o.el.classList.toggle('held', held);
+      const sv = this.view, slot0: TouchSlotView | null = !sv ? null : id === 'attack1' ? sv.attack1 : id === 'attack2' ? sv.attack2 : id === 'ability1' ? sv.ability1 : id === 'ability2' ? sv.ability2 : null;
+      const ringColor = held ? '#ffd34a' : slot0?.ring != null ? HEX(slot0.ring) : '#f2efe6', gf = GLYPH[id], gpx = Math.round(d * 0.5);
+      const ck = `${Math.round(d)}|${ringColor}|${gf}|${uiFrame('touch_ring') ? 1 : 0}`;
+      if (ck !== o.key) {
+        o.key = ck;
+        o.fill.style.cssText = `${maskCss('touch_fill', d)}background:#1b1826`;
+        o.rim.style.cssText = `${maskCss('touch_ring', d)}background:${ringColor}`;
+        o.glyph.style.cssText = gf ? `${maskCss(gf, gpx)}width:${gpx}px;height:${gpx}px;background:#f2efe6` : 'display:none';
+      }
       const slot: TouchSlotView | null = !views ? null : id === 'attack1' ? views.attack1 : id === 'attack2' ? views.attack2 : id === 'ability1' ? views.ability1 : id === 'ability2' ? views.ability2 : null;
       if (slot) {
-        this.paintIcon(o.icon, slot.icon);
-        o.el.style.borderColor = slot.ring !== null && !touchModel.isHeld(id) ? HEX(slot.ring) : '';
+        this.paintIcon(o.icon, slot.icon, r.r * 2);
         o.el.classList.toggle('dim', slot.dim);
         o.shade.style.height = `${Math.round(slot.shade * 100)}%`;
         o.label.textContent = slot.shade > 0 ? String(slot.seconds) : slot.maxCharges > 1 ? String(slot.charges) : '';
@@ -212,11 +212,11 @@ export class TouchOverlay {
     // Stick: faint hint circle while untouched, ring and knob while held.
     const s = touchModel.stick, u1 = u;
     const hx = this.settings.leftHanded ? window.innerWidth - touchModel.safe.r - T.stickHint[0] * u1 : touchModel.safe.l + T.stickHint[0] * u1;
-    this.hint.style.cssText = `display:${s ? 'none' : 'block'};left:${hx - 1.1 * u1}px;top:${window.innerHeight - touchModel.safe.b - T.stickHint[1] * u1 - 1.1 * u1}px;width:${2.2 * u1}px;height:${2.2 * u1}px`;
+    this.hint.style.cssText = `display:${s ? 'none' : 'block'};left:${hx - 1.1 * u1}px;top:${window.innerHeight - touchModel.safe.b - T.stickHint[1] * u1 - 1.1 * u1}px;width:${2.2 * u1}px;height:${2.2 * u1}px;${maskCss('touch_stick_base', 2.2 * u1)}background:#f2efe6`;
     this.stickRing.style.display = this.stickKnob.style.display = s ? 'block' : 'none';
     if (s) {
-      this.stickRing.style.cssText = `display:block;left:${s.cx - s.r}px;top:${s.cy - s.r}px;width:${s.r * 2}px;height:${s.r * 2}px`;
-      this.stickKnob.style.cssText = `display:block;left:${s.kx - 0.45 * u1}px;top:${s.ky - 0.45 * u1}px;width:${0.9 * u1}px;height:${0.9 * u1}px`;
+      this.stickRing.style.cssText = `display:block;left:${s.cx - s.r}px;top:${s.cy - s.r}px;width:${s.r * 2}px;height:${s.r * 2}px;${maskCss('touch_stick_base', s.r * 2)}background:#f2efe6`;
+      this.stickKnob.style.cssText = `display:block;left:${s.kx - 0.45 * u1}px;top:${s.ky - 0.45 * u1}px;width:${0.9 * u1}px;height:${0.9 * u1}px;${maskCss('touch_knob', 0.9 * u1)}`;
     }
     // The Pause hold ring (07 §4.13): fills toward the 0.5 s restart.
     const hold = touchModel.pauseHold(now), p = byId.get('pause');

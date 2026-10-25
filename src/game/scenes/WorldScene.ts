@@ -597,7 +597,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.abilityHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
     this.topHud.update(topHudView(w), this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
     this.lootView.update(w, this.frameEvents);
-    this.lootHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview, (t, c, s) => this.abilityHud.toast(t, c, this.time.now, s));
+    this.lootHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview, (t, c, s, icon) => this.abilityHud.toast(t, c, this.time.now, s, icon));
     // The item card over the interact target, or the item an open swap choice is about (07 §6.1–6.3).
     const choiceId = w.weaponSwapChoice?.itemId ?? (w.abilities.swapChoice ? Number(w.abilities.swapChoice.itemId) : null);
     const tgt = choiceId !== null ? w.groundItems.find((i) => i.id === choiceId) ?? null : interactTarget(w);

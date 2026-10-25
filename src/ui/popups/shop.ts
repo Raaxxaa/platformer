@@ -1,7 +1,7 @@
 // World-anchored shop UI (07 §6.4). This reads core state; purchases are handled by the core.
 import type Phaser from 'phaser';
 import { interactTarget } from '../../core/abilities/items.ts';
-import { cosmeticHex, cosmeticName } from '../../data/cosmetics.ts';
+import { cosmeticIcon, cosmeticName } from '../../data/cosmetics.ts';
 import { cosmeticStand } from '../../core/economy/shop.ts';
 import { MERCHANT_LAYOUT, priceOf, upgradePrice } from '../../core/loot/merchant.ts';
 import type { GameWorld } from '../../core/sim/gameWorld.ts';
@@ -28,11 +28,11 @@ export class ShopView {
   private blinkUntil = -1;
   private blinkId: number | null = null;
   /** The visit's cosmetic on its stand: a colored square and its name until ART10's icons (09 §5). */
-  private readonly cosmeticIcon: Phaser.GameObjects.Graphics;
+  private readonly cosmeticIcon: Phaser.GameObjects.Image;
   private readonly cosmeticLabel: Phaser.GameObjects.BitmapText;
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    this.cosmeticIcon = scene.add.graphics().setDepth(DEPTH.items + 1);
+    this.cosmeticIcon = scene.add.image(0, 0, 'ui', 'icon_cos_acc_wolf').setDepth(DEPTH.items + 1).setVisible(false);
     this.cosmeticLabel = scene.add.bitmapText(0, 0, FONTS.small, '').setOrigin(0.5, 1).setDepth(DEPTH.items + 1).setTint(UI_COLOR.text);
   }
   update(w: GameWorld, refused = false): void {
@@ -58,11 +58,10 @@ export class ShopView {
       }
     }
     const stand = w.level?.objects.find((o) => o.type === 'shop_cosmetic'), cs = cosmeticStand(w);
-    this.cosmeticIcon.clear(); this.cosmeticLabel.setText('');
+    this.cosmeticIcon.setVisible(false); this.cosmeticLabel.setText('');
     if (stand && cs.id && !cs.word?.startsWith('Coll')) {
-      const size = 12;
-      this.cosmeticIcon.fillStyle(0x0d0b14, 1).fillRect(stand.x - size / 2 - 1, stand.y - 30 - 1, size + 2, size + 2).fillStyle(cosmeticHex(cs.id), 1).fillRect(stand.x - size / 2, stand.y - 30, size, size);
-      this.cosmeticLabel.setText(cosmeticName(cs.id)).setPosition(stand.x, stand.y - 33);
+      this.cosmeticIcon.setFrame(cosmeticIcon(cs.id)).setPosition(stand.x, stand.y - 38).setVisible(true);
+      this.cosmeticLabel.setText(cosmeticName(cs.id)).setPosition(stand.x, stand.y - 48);
     }
     for (const [key, t] of this.tags) if (!live.has(key)) { t.coin.destroy(); t.text.destroy(); this.tags.delete(key); }
   }

@@ -30,7 +30,7 @@ export class LootHud {
   }
 
   /** `toast` hands loot toasts to the shared bottom-right list (07 §6.10). */
-  update(w: GameWorld, events: readonly WorldEvent[], now: number, shown: boolean, toast: (text: string, color: number, s: number) => void): void {
+  update(w: GameWorld, events: readonly WorldEvent[], now: number, shown: boolean, toast: (text: string, color: number, s: number, icon?: string) => void): void {
     for (const e of events) {
       const b = bannerFor(e);
       if (b) {
@@ -39,7 +39,7 @@ export class LootHud {
         this.banner = { born: now, until: now + b.s * 1000 };
       }
       const t = toastFor(e);
-      if (t) toast(t.text, toneColor(t.tone), t.s);
+      if (t) toast(t.text, toneColor(t.tone), t.s, t.icon);
     }
     // Banner: in over 0.1 s moving down 6 px, out over the last 0.3 s.
     const age = (now - this.banner.born) / 1000, left = (this.banner.until - now) / 1000;
