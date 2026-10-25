@@ -8,6 +8,7 @@ ROOT = os.path.dirname(TOOLS)
 sys.path.insert(0, TOOLS)
 
 from art import palette  # noqa: E402
+from art import touch  # noqa: E402
 from art import atlas, boards, build_player, build_world, contrast, fonts, items, npcs, projectiles, style_board, ui, vfx, village, weapons  # noqa: E402
 from art.enemies import plains as enemies_plains  # noqa: E402
 from art.enemies import mountains as enemies_mountains  # noqa: E402
@@ -46,6 +47,7 @@ def build(root=ROOT):
     build_world.build(assets, preview)
     world34.build(assets, preview)
     ui.build(assets, preview)
+    touch.write_app_icons(os.path.join(assets, 'app'))
     fonts.build(os.path.join(assets, 'fonts'))
     fonts.sample(os.path.join(preview, 'font_sample.png'))
     anims += items.build(assets, preview)
