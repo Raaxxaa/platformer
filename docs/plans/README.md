@@ -31,6 +31,9 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 
 ## Art (art chat)
 
+**All art is on hold (2026-11-04)** until the user picks a clear art style. Builders keep using placeholders (reused frames or simple shapes) for anything new, so code work isn't blocked.
+
+
 | Plan | What | Status |
 |---|---|---|
 | ART1 | Style board: player outfits, Stage 1 enemies, Plains | Done |
@@ -44,5 +47,5 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | ART9 | Music (`ART9-music.md`) | Done (waiting for the user to listen) |
 | ART10 | Touch buttons and app icons; layered player (4 races, hair, beards, outfits), 35 accessories, 24 shop cosmetics, wardrobe art (`ART10-phone-and-customization.md`) | Done |
 | **ART11** | **New-move poses and streaks for all 19 weapons, juggle effects, Daily and Boss Rush icons, move sounds** (`ART11-new-moves.md`) | **Next** |
-| ART12 | Mountain rework: Dragon nest, labyrinth torches and decor, bigger falling-rock warning (`ART12-mountain-rework.md`) | Planned (after ART11) |
-| ART13 | New art style (waiting for the user's examples) | To write |
+| ART12 | Mountain rework: Dragon nest, labyrinth torches and decor, bigger falling-rock warning (`ART12-mountain-rework.md`) | **On hold** until the new art style is chosen |
+| ART13 | New art style (waiting for the user's examples). **Comes first** when art resumes; ART11 and ART12 will then be drawn in the new style | To write |
