@@ -201,13 +201,7 @@
      "height": 192,
      "id": 78,
      "name": "",
-     "properties": [
-      {
-       "name": "interval",
-       "type": "int",
-       "value": 2
-      }
-     ],
+     "properties": [],
      "rotation": 0,
      "type": "falling_rocks",
      "visible": true,
@@ -219,13 +213,7 @@
      "height": 192,
      "id": 79,
      "name": "",
-     "properties": [
-      {
-       "name": "interval",
-       "type": "int",
-       "value": 2
-      }
-     ],
+     "properties": [],
      "rotation": 0,
      "type": "falling_rocks",
      "visible": true,
@@ -237,13 +225,7 @@
      "height": 192,
      "id": 80,
      "name": "",
-     "properties": [
-      {
-       "name": "interval",
-       "type": "int",
-       "value": 2
-      }
-     ],
+     "properties": [],
      "rotation": 0,
      "type": "falling_rocks",
      "visible": true,
@@ -1011,7 +993,7 @@
     },
     {
      "height": 0,
-     "id": 22,
+     "id": 23,
      "name": "",
      "point": true,
      "properties": [],
@@ -1024,7 +1006,7 @@
     },
     {
      "height": 0,
-     "id": 23,
+     "id": 24,
      "name": "",
      "point": true,
      "properties": [
@@ -1043,7 +1025,7 @@
     },
     {
      "height": 0,
-     "id": 25,
+     "id": 26,
      "name": "",
      "point": true,
      "properties": [
@@ -1062,7 +1044,7 @@
     },
     {
      "height": 0,
-     "id": 26,
+     "id": 27,
      "name": "",
      "point": true,
      "properties": [
@@ -1081,7 +1063,7 @@
     },
     {
      "height": 0,
-     "id": 27,
+     "id": 28,
      "name": "",
      "point": true,
      "properties": [
@@ -1100,7 +1082,7 @@
     },
     {
      "height": 0,
-     "id": 37,
+     "id": 38,
      "name": "",
      "point": true,
      "properties": [],
@@ -1113,7 +1095,7 @@
     },
     {
      "height": 0,
-     "id": 38,
+     "id": 39,
      "name": "",
      "point": true,
      "properties": [],
@@ -1126,7 +1108,7 @@
     },
     {
      "height": 0,
-     "id": 39,
+     "id": 40,
      "name": "",
      "point": true,
      "properties": [
@@ -1215,7 +1197,7 @@
     },
     {
      "height": 0,
-     "id": 48,
+     "id": 47,
      "name": "",
      "point": true,
      "properties": [
@@ -1234,7 +1216,7 @@
     },
     {
      "height": 0,
-     "id": 49,
+     "id": 48,
      "name": "",
      "point": true,
      "properties": [
@@ -1253,7 +1235,7 @@
     },
     {
      "height": 0,
-     "id": 50,
+     "id": 49,
      "name": "",
      "point": true,
      "properties": [
@@ -1272,7 +1254,7 @@
     },
     {
      "height": 0,
-     "id": 51,
+     "id": 50,
      "name": "",
      "point": true,
      "properties": [],
@@ -1285,7 +1267,7 @@
     },
     {
      "height": 0,
-     "id": 52,
+     "id": 51,
      "name": "",
      "point": true,
      "properties": [
@@ -1304,7 +1286,7 @@
     },
     {
      "height": 0,
-     "id": 53,
+     "id": 52,
      "name": "",
      "point": true,
      "properties": [
@@ -1323,7 +1305,7 @@
     },
     {
      "height": 0,
-     "id": 54,
+     "id": 53,
      "name": "",
      "point": true,
      "properties": [
@@ -1342,7 +1324,7 @@
     },
     {
      "height": 0,
-     "id": 55,
+     "id": 54,
      "name": "",
      "point": true,
      "properties": [],
@@ -1355,7 +1337,7 @@
     },
     {
      "height": 0,
-     "id": 57,
+     "id": 56,
      "name": "",
      "point": true,
      "properties": [],
@@ -1368,7 +1350,7 @@
     },
     {
      "height": 0,
-     "id": 61,
+     "id": 60,
      "name": "",
      "point": true,
      "properties": [
@@ -1387,7 +1369,7 @@
     },
     {
      "height": 0,
-     "id": 64,
+     "id": 63,
      "name": "",
      "point": true,
      "properties": [
@@ -1406,7 +1388,7 @@
     },
     {
      "height": 0,
-     "id": 69,
+     "id": 68,
      "name": "",
      "point": true,
      "properties": [
@@ -1425,7 +1407,7 @@
     },
     {
      "height": 0,
-     "id": 71,
+     "id": 70,
      "name": "",
      "point": true,
      "properties": [],
@@ -1438,7 +1420,7 @@
     },
     {
      "height": 0,
-     "id": 72,
+     "id": 71,
      "name": "",
      "point": true,
      "properties": [
@@ -1457,7 +1439,7 @@
     },
     {
      "height": 0,
-     "id": 73,
+     "id": 72,
      "name": "",
      "point": true,
      "properties": [
@@ -1799,6 +1781,30 @@
      "point": true,
      "properties": [
       {
+       "name": "enemy",
+       "type": "string",
+       "value": "ram"
+      },
+      {
+       "name": "facing",
+       "type": "int",
+       "value": -1
+      }
+     ],
+     "rotation": 0,
+     "type": "enemy",
+     "visible": true,
+     "width": 0,
+     "x": 2440,
+     "y": 1472
+    },
+    {
+     "height": 0,
+     "id": 16,
+     "name": "",
+     "point": true,
+     "properties": [
+      {
        "name": "arena",
        "type": "string",
        "value": "mountain_combat"
@@ -1828,7 +1834,7 @@
     },
     {
      "height": 0,
-     "id": 16,
+     "id": 17,
      "name": "",
      "point": true,
      "properties": [
@@ -1862,7 +1868,7 @@
     },
     {
      "height": 0,
-     "id": 17,
+     "id": 18,
      "name": "",
      "point": true,
      "properties": [
@@ -1896,7 +1902,7 @@
     },
     {
      "height": 0,
-     "id": 18,
+     "id": 19,
      "name": "",
      "point": true,
      "properties": [
@@ -1930,7 +1936,7 @@
     },
     {
      "height": 0,
-     "id": 19,
+     "id": 20,
      "name": "",
      "point": true,
      "properties": [
@@ -1964,7 +1970,7 @@
     },
     {
      "height": 0,
-     "id": 20,
+     "id": 21,
      "name": "",
      "point": true,
      "properties": [
@@ -1998,7 +2004,7 @@
     },
     {
      "height": 0,
-     "id": 21,
+     "id": 22,
      "name": "",
      "point": true,
      "properties": [
@@ -2032,7 +2038,7 @@
     },
     {
      "height": 0,
-     "id": 24,
+     "id": 25,
      "name": "",
      "point": true,
      "properties": [
@@ -2056,7 +2062,7 @@
     },
     {
      "height": 0,
-     "id": 28,
+     "id": 29,
      "name": "",
      "point": true,
      "properties": [
@@ -2080,7 +2086,7 @@
     },
     {
      "height": 0,
-     "id": 29,
+     "id": 30,
      "name": "",
      "point": true,
      "properties": [
@@ -2104,7 +2110,7 @@
     },
     {
      "height": 0,
-     "id": 30,
+     "id": 31,
      "name": "",
      "point": true,
      "properties": [
@@ -2128,7 +2134,7 @@
     },
     {
      "height": 0,
-     "id": 31,
+     "id": 32,
      "name": "",
      "point": true,
      "properties": [
@@ -2152,7 +2158,7 @@
     },
     {
      "height": 0,
-     "id": 32,
+     "id": 33,
      "name": "",
      "point": true,
      "properties": [
@@ -2176,7 +2182,7 @@
     },
     {
      "height": 0,
-     "id": 33,
+     "id": 34,
      "name": "",
      "point": true,
      "properties": [
@@ -2200,7 +2206,7 @@
     },
     {
      "height": 0,
-     "id": 34,
+     "id": 35,
      "name": "",
      "point": true,
      "properties": [
@@ -2224,7 +2230,7 @@
     },
     {
      "height": 0,
-     "id": 35,
+     "id": 36,
      "name": "",
      "point": true,
      "properties": [
@@ -2248,7 +2254,7 @@
     },
     {
      "height": 0,
-     "id": 36,
+     "id": 37,
      "name": "",
      "point": true,
      "properties": [
@@ -2269,30 +2275,6 @@
      "width": 0,
      "x": 3432,
      "y": 1792
-    },
-    {
-     "height": 0,
-     "id": 40,
-     "name": "",
-     "point": true,
-     "properties": [
-      {
-       "name": "enemy",
-       "type": "string",
-       "value": "bat_swarm"
-      },
-      {
-       "name": "facing",
-       "type": "int",
-       "value": -1
-      }
-     ],
-     "rotation": 0,
-     "type": "enemy",
-     "visible": true,
-     "width": 0,
-     "x": 2312,
-     "y": 1824
     },
     {
      "height": 0,
@@ -2344,31 +2326,7 @@
     },
     {
      "height": 0,
-     "id": 47,
-     "name": "",
-     "point": true,
-     "properties": [
-      {
-       "name": "enemy",
-       "type": "string",
-       "value": "bat_swarm"
-      },
-      {
-       "name": "facing",
-       "type": "int",
-       "value": -1
-      }
-     ],
-     "rotation": 0,
-     "type": "enemy",
-     "visible": true,
-     "width": 0,
-     "x": 2312,
-     "y": 2208
-    },
-    {
-     "height": 0,
-     "id": 56,
+     "id": 55,
      "name": "",
      "point": true,
      "properties": [
@@ -2392,7 +2350,7 @@
     },
     {
      "height": 0,
-     "id": 58,
+     "id": 57,
      "name": "",
      "point": true,
      "properties": [
@@ -2416,7 +2374,7 @@
     },
     {
      "height": 0,
-     "id": 59,
+     "id": 58,
      "name": "",
      "point": true,
      "properties": [
@@ -2440,7 +2398,7 @@
     },
     {
      "height": 0,
-     "id": 60,
+     "id": 59,
      "name": "",
      "point": true,
      "properties": [
@@ -2464,7 +2422,7 @@
     },
     {
      "height": 0,
-     "id": 62,
+     "id": 61,
      "name": "",
      "point": true,
      "properties": [
@@ -2488,7 +2446,7 @@
     },
     {
      "height": 0,
-     "id": 63,
+     "id": 62,
      "name": "",
      "point": true,
      "properties": [
@@ -2512,7 +2470,7 @@
     },
     {
      "height": 0,
-     "id": 65,
+     "id": 64,
      "name": "",
      "point": true,
      "properties": [
@@ -2536,7 +2494,7 @@
     },
     {
      "height": 0,
-     "id": 66,
+     "id": 65,
      "name": "",
      "point": true,
      "properties": [
@@ -2560,7 +2518,7 @@
     },
     {
      "height": 0,
-     "id": 67,
+     "id": 66,
      "name": "",
      "point": true,
      "properties": [
@@ -2584,7 +2542,7 @@
     },
     {
      "height": 0,
-     "id": 68,
+     "id": 67,
      "name": "",
      "point": true,
      "properties": [
@@ -2608,14 +2566,14 @@
     },
     {
      "height": 0,
-     "id": 70,
+     "id": 69,
      "name": "",
      "point": true,
      "properties": [
       {
        "name": "enemy",
        "type": "string",
-       "value": "ram"
+       "value": "bat_swarm"
       },
       {
        "name": "facing",
@@ -2632,14 +2590,14 @@
     },
     {
      "height": 0,
-     "id": 74,
+     "id": 73,
      "name": "",
      "point": true,
      "properties": [
       {
        "name": "enemy",
        "type": "string",
-       "value": "ram"
+       "value": "bat_swarm"
       },
       {
        "name": "facing",
@@ -2656,7 +2614,7 @@
     },
     {
      "height": 0,
-     "id": 75,
+     "id": 74,
      "name": "",
      "point": true,
      "properties": [
@@ -2680,7 +2638,7 @@
     },
     {
      "height": 0,
-     "id": 76,
+     "id": 75,
      "name": "",
      "point": true,
      "properties": [
@@ -2704,7 +2662,7 @@
     },
     {
      "height": 0,
-     "id": 77,
+     "id": 76,
      "name": "",
      "point": true,
      "properties": [
@@ -2724,6 +2682,30 @@
      "visible": true,
      "width": 0,
      "x": 2024,
+     "y": 2624
+    },
+    {
+     "height": 0,
+     "id": 77,
+     "name": "",
+     "point": true,
+     "properties": [
+      {
+       "name": "enemy",
+       "type": "string",
+       "value": "ram"
+      },
+      {
+       "name": "facing",
+       "type": "int",
+       "value": 1
+      }
+     ],
+     "rotation": 0,
+     "type": "enemy",
+     "visible": true,
+     "width": 0,
+     "x": 2168,
      "y": 2624
     }
    ],

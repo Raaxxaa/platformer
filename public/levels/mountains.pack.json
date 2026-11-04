@@ -515,7 +515,7 @@
      },
      {
       "props": {
-       "enemy": "ram",
+       "enemy": "bat_swarm",
        "facing": -1
       },
       "type": "enemy",
@@ -533,7 +533,7 @@
      },
      {
       "props": {
-       "enemy": "ram",
+       "enemy": "bat_swarm",
        "facing": -1
       },
       "type": "enemy",
@@ -860,7 +860,7 @@
      },
      {
       "props": {
-       "enemy": "ram",
+       "enemy": "bat_swarm",
        "facing": -1
       },
       "type": "enemy",
@@ -878,7 +878,7 @@
      },
      {
       "props": {
-       "enemy": "ram",
+       "enemy": "bat_swarm",
        "facing": -1
       },
       "type": "enemy",
@@ -1221,7 +1221,7 @@
      },
      {
       "props": {
-       "enemy": "ram",
+       "enemy": "bat_swarm",
        "facing": -1
       },
       "type": "enemy",
@@ -1239,7 +1239,7 @@
      },
      {
       "props": {
-       "enemy": "ram",
+       "enemy": "bat_swarm",
        "facing": -1
       },
       "type": "enemy",
@@ -1566,21 +1566,21 @@
     "objects": [
      {
       "props": {
-       "enemy": "bat_swarm",
-       "facing": -1
+       "enemy": "ram",
+       "facing": 1
       },
       "type": "enemy",
-      "x": 12,
-      "y": 137
+      "x": 3,
+      "y": 163
      },
      {
       "props": {
-       "enemy": "bat_swarm",
+       "enemy": "ram",
        "facing": -1
       },
       "type": "enemy",
-      "x": 12,
-      "y": 113
+      "x": 20,
+      "y": 91
      },
      {
       "props": {},
@@ -1596,9 +1596,7 @@
      },
      {
       "h": 12,
-      "props": {
-       "interval": 2
-      },
+      "props": {},
       "type": "falling_rocks",
       "w": 4,
       "x": 13,
@@ -1606,9 +1604,7 @@
      },
      {
       "h": 12,
-      "props": {
-       "interval": 2
-      },
+      "props": {},
       "type": "falling_rocks",
       "w": 4,
       "x": 5,
@@ -1616,9 +1612,7 @@
      },
      {
       "h": 12,
-      "props": {
-       "interval": 2
-      },
+      "props": {},
       "type": "falling_rocks",
       "w": 4,
       "x": 13,
@@ -1922,21 +1916,21 @@
     "objects": [
      {
       "props": {
-       "enemy": "bat_swarm",
-       "facing": -1
+       "enemy": "ram",
+       "facing": 1
       },
       "type": "enemy",
-      "x": 13,
-      "y": 137
+      "x": 3,
+      "y": 163
      },
      {
       "props": {
-       "enemy": "bat_swarm",
+       "enemy": "ram",
        "facing": -1
       },
       "type": "enemy",
-      "x": 13,
-      "y": 113
+      "x": 20,
+      "y": 91
      },
      {
       "props": {},
@@ -1952,9 +1946,7 @@
      },
      {
       "h": 12,
-      "props": {
-       "interval": 2
-      },
+      "props": {},
       "type": "falling_rocks",
       "w": 4,
       "x": 16,
@@ -1962,9 +1954,7 @@
      },
      {
       "h": 12,
-      "props": {
-       "interval": 2
-      },
+      "props": {},
       "type": "falling_rocks",
       "w": 4,
       "x": 16,
@@ -1972,9 +1962,7 @@
      },
      {
       "h": 12,
-      "props": {
-       "interval": 2
-      },
+      "props": {},
       "type": "falling_rocks",
       "w": 4,
       "x": 16,
@@ -2278,21 +2266,21 @@
     "objects": [
      {
       "props": {
-       "enemy": "bat_swarm",
-       "facing": -1
+       "enemy": "ram",
+       "facing": 1
       },
       "type": "enemy",
-      "x": 7,
-      "y": 137
+      "x": 3,
+      "y": 163
      },
      {
       "props": {
-       "enemy": "bat_swarm",
+       "enemy": "ram",
        "facing": -1
       },
       "type": "enemy",
-      "x": 7,
-      "y": 113
+      "x": 20,
+      "y": 91
      },
      {
       "props": {},
@@ -2308,9 +2296,7 @@
      },
      {
       "h": 12,
-      "props": {
-       "interval": 2
-      },
+      "props": {},
       "type": "falling_rocks",
       "w": 4,
       "x": 10,
@@ -2318,9 +2304,7 @@
      },
      {
       "h": 12,
-      "props": {
-       "interval": 2
-      },
+      "props": {},
       "type": "falling_rocks",
       "w": 4,
       "x": 10,
@@ -2328,9 +2312,7 @@
      },
      {
       "h": 12,
-      "props": {
-       "interval": 2
-      },
+      "props": {},
       "type": "falling_rocks",
       "w": 4,
       "x": 10,

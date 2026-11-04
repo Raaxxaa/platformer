@@ -13,8 +13,8 @@ const d = loadLevel(mountainJson);
 const of = (type: string) => d.objects.filter((o) => o.type === type);
 const EXPECTED: Record<number, Record<string, number>> = {
   1: {},
-  2: { bat_swarm: 2, goblin_miner: 4, rock_golem: 1, ram: 3, goblin_shaman: 1 },
-  3: { bat_swarm: 2 },
+  2: { bat_swarm: 4, goblin_miner: 4, rock_golem: 1, ram: 1, goblin_shaman: 1 },
+  3: { ram: 2 },
   4: { bat_swarm: 1, goblin_miner: 2, rock_golem: 4, ram: 1, goblin_shaman: 1 },
   5: { bat_swarm: 1, goblin_miner: 2, rock_golem: 2, ram: 4, goblin_shaman: 1 },
   6: { bat_swarm: 1, goblin_miner: 1, ram: 1 },

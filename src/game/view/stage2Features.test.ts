@@ -26,8 +26,10 @@ describe('Stage2 feature drawing data (08 §9.3,§9.5,§11)',()=>{
   });
   it('draws hazard floor warnings and fixed Snare/Queen markers above darkness',()=>{
     const w=new GameWorld({grid:gridFromRects(40,25,[{x0:0,y0:20,x1:39,y1:24,kind:'solid'}]),spawn:{x:200,y:320}});
-    w.fallingRocks.markers.push({id:1,zoneId:1,x:200,floorY:320,topY:0,ticks:72});
-    expect(featureMarkers(w)).toContainEqual({x:200,y:320,w:16});
+    w.fallingRocks.markers.push({id:1,zoneId:1,x:200,floorY:320,topY:0,ticks:120});
+    expect(featureMarkers(w)).toContainEqual({x:200,y:320,w:4});          // M17: a fresh warning is 25% wide
+    w.fallingRocks.markers[0].ticks=0;
+    expect(featureMarkers(w)).toContainEqual({x:200,y:320,w:16});         // and full width when the rock drops
     const e=w.spawnExtra({enemy:'treant',x:400,y:320,facing:-1});e.swamp!.marker={x:200,y:320};e.ai.attack={def:e.def.attacks[0],phase:'tele',t:1,len:96,groupId:null,moved:0,hitDone:false};
     expect(featureMarkers(w)).toContainEqual({x:200,y:320,w:40});
   });

@@ -162,7 +162,8 @@ def climb(shafts, heights, margins, rocks):
     path.append([23, 91])
     v.path = path
     mid = lambda k: (min(shafts[k - 1], shafts[k]) + max(shafts[k - 1], shafts[k]) + 3) // 2      # centre of room k
-    ob = {0: (mid(2), L[2] - 3), 1: (mid(4), L[4] - 3), 2: (mid(3), L[3] - 2), 3: (s5 + 5, 85)}
+    # M17: no flyers on the climb; its two Rams stand on flat ground in the base room and the top room.
+    ob = {0: (3, 163), 1: (20, 91), 2: (mid(3), L[3] - 2), 3: (s5 + 5, 85)}
     for j, k in enumerate(rocks):
         ob[4 + j] = (shafts[k], L[k + 1], 4, 12)
     for k in range(5):
