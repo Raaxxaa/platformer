@@ -35,7 +35,7 @@ export const COMBAT_ARENA = { minW: 34, maxW: 40, minH: 14, maxH: 20, doors: 2, 
 /** Stage2 road differences and gimmicks (06 §8.2–8.5, §9.4). */
 export const STAGE2_LEVEL = {
   regulars: { mountains:[0,10,2,8,9,3,4,0], swamps:[0,12,4,8,9,7,4,0] },
-  climb:60, cartRun:120, waterFraction:.30,waterSections:[2,3,6],darkSections:[3,6],
+  climb:60, labyrinth:120, labyrinthTop:92, waterFraction:.30,waterSections:[2,3,6],darkSections:[3,6],
   sideWidth:40,sideHeight:20,warningDistance:640,
 } as const;
 

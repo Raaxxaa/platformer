@@ -99,6 +99,25 @@ export function drawGuideArrows(scene: Phaser.Scene, objects: LevelObject[]): vo
   }
 }
 
+/** M17 Mountain caves: wall torches on the labyrinth's main route and the Dragon nest's decoration (06 §8.9, §9.4).
+ * ART12 draws them (`torch_00`, `nest_00`, ...); until then they are simple shapes. Decoration only. */
+export function drawCaveDecor(scene: Phaser.Scene, objects: LevelObject[]): void {
+  const atlas = scene.textures.exists('objects') ? scene.textures.get('objects') : null;
+  for (const o of objects) {
+    const frame = CAVE_DECOR[o.type];
+    if (!frame) continue;
+    if (atlas?.has(frame)) { scene.add.image(o.x, o.y, 'objects', frame).setOrigin(0.5, o.type === 'torch' ? 0.5 : 1).setDepth(DEPTH.doors - 1); continue; }
+    const g = scene.add.graphics().setDepth(DEPTH.doors - 1);
+    if (o.type === 'torch') { g.fillStyle(0x5a3a24).fillRect(o.x - 1, o.y - 2, 3, 8); g.fillStyle(0xff7a2e).fillRect(o.x - 2, o.y - 7, 5, 5); g.fillStyle(0xffd86b).fillRect(o.x - 1, o.y - 6, 3, 3); }
+    if (o.type === 'nest') { g.fillStyle(0x6e4731).fillEllipse(o.x, o.y - 5, 72, 12); g.fillStyle(0x3d2a1e).fillEllipse(o.x, o.y - 7, 52, 6); }
+    if (o.type === 'eggshells') { g.fillStyle(0xeeeae0).fillTriangle(o.x - 6, o.y, o.x - 2, o.y - 6, o.x + 1, o.y); g.fillTriangle(o.x + 2, o.y, o.x + 5, o.y - 4, o.x + 8, o.y); }
+    if (o.type === 'bones') { g.fillStyle(0xd9d2b8).fillRect(o.x - 10, o.y - 3, 20, 3); g.fillRect(o.x - 4, o.y - 8, 3, 8); }
+    if (o.type === 'scorch') g.fillStyle(0x1d1a24, 0.7).fillEllipse(o.x, o.y - 1, 48, 6);
+    if (o.type === 'coin_pile') { g.fillStyle(0xd8a82a).fillTriangle(o.x - 12, o.y, o.x, o.y - 10, o.x + 12, o.y); g.fillStyle(0xffd34a).fillRect(o.x - 2, o.y - 7, 3, 2); }
+  }
+}
+const CAVE_DECOR: Record<string, string> = { torch: 'torch_00', nest: 'nest_00', eggshells: 'eggshells_00', bones: 'bones_00', scorch: 'scorch_00', coin_pile: 'coin_pile_00' };
+
 /**
  * Arena and timed doors: a cap, middle pieces and a bottom, 16 px wide (08 §8). Opening and closing slide 48 px
  * in 0.15 s (view time). The timed door's cap shows its lamps: pending, open or missed.

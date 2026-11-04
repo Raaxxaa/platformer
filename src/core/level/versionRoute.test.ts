@@ -22,7 +22,7 @@ const T = 16;
 
 /** The detour that picks up a key, as offsets (tiles) from the key, copied from the v1 tests of each level: every version keeps the key's ledge shape. */
 const KEY_ROUTE: Record<string, [number, number][][]> = {
-  mountains: [[[3, 6], [0, 2], [3, 6]], [[5, 14], [3, 8], [0, 2], [5, 14]]],
+  mountains: [[[3, 6], [0, 2], [3, 6]], [[5, 17], [4, 13], [2, 1], [0, 1], [5, 17]]],
   swamps: [[[-9, 12], [-6, 6], [0, 0], [4, 12]], [[-7, 12], [-4, 6], [0, 0], [4, 12]]],
   kingdom: [[[-12, 9], [-7, 6], [-3, 3], [0, 0], [-12, 9]], [[-17, 12], [-12, 9], [-8, 6], [-4, 3], [0, 0], [-17, 12]]],
   castle: [[[-11, 9], [-7, 6], [-3, 3], [0, 0], [-11, 9]], [[-11, 9], [-7, 6], [-3, 3], [0, 0], [-11, 9]]],
@@ -80,50 +80,39 @@ for (const id of LEVEL_PACKS.filter((l) => l !== 'plains')) {
   });
 }
 
-// The Mountains cart ride (06 §8.3: ≥ 120 tiles, two gaps, two low tunnels): every Section 6 version is ridden with one jump per gap.
+// The Mountains §6 cave labyrinth (M17; 06 §8.3, §8.9): no cart, a long marked route, and the nest sealed from the caves.
 if (LEVEL_PACKS.includes('mountains')) {
   const pack = PACKS.mountains;
-  describe('mountains: the minecart ride of every Section 6 version', () => {
+  describe('mountains: the Dragon nest and the cave labyrinth of every Section 6 version', () => {
     for (let v = 1; v <= pack.sections[5].length; v++) {
-      it(`s6 v${v}: boards, jumps both gaps, passes both low tunnels and reaches its stop`, () => {
+      it(`s6 v${v}: no minecart, a labyrinth of 120+ tiles with torches, the nest sealed by 3+ tiles of rock`, () => {
         const picks = classicPicks(pack); picks[5] = v;
-        const level = assembleLevel(pack, picks);
-        const start = level.objects.find((o) => o.type === 'player_start')!, anchor = level.objects.find((o) => o.type === 'minecart')!;
-        start.x = anchor.x; start.y = anchor.y;
-        const g = levelGrid(level);
-        const w = GameWorld.fromLevel(level, { seedText: 'VERSION-CART' }), cart = w.minecarts[0], initialX = cart.x;
-        stepSpec(w, { interact: true }); expect(w.body.cartId).toBe(cart.id);
-        let jumpLeft = 0, jumps = 0, crashes = 0, lastGapCol = -99;
-        const roofRuns: number[] = [], bad: string[] = [];
-        let inTunnel = false;
-        for (let i = 0; i < 2400 && cart.active; i++) {
-          w.health.iframeTicks = 1000;
-          const f = Math.floor(cart.y / T), col = Math.floor(cart.x / T);
-          // A catch-floor gap ahead: the track drops 7 or more tiles for a few columns, then the rail returns.
-          const drop = (c: number) => { let r = f; while (r < f + 14 && g.kindAt(c, r) === 'empty') r++; return r - f; };
-          for (let c = col + 2; c <= col + 4 && jumpLeft <= 0; c++) {
-            if (drop(c) >= 7 && [1, 2, 3, 4, 5].some((k) => drop(c + k) <= 4) && c - lastGapCol > 8) { jumpLeft = 40; lastGapCol = c }
-          }
-          const events = stepSpec(w, { jump: jumpLeft-- > 0 });
-          jumps += events.filter((e) => e.t === 'move' && e.e === 'cartJump').length;
-          crashes += events.filter((e) => e.t === 'move' && e.e === 'cartCrash').length;
-          // Roofed columns under the cart: the cart must be riding below the roof.
-          let roof = -1;
-          for (let c = Math.floor((cart.x - cart.w / 2) / T); c <= Math.floor((cart.x + cart.w / 2) / T); c++) {
-            if (g.kindAt(c, Math.floor(cart.y / T) - 2) === 'solid') roof = Math.floor(cart.y / T) - 2;
-          }
-          if (roof >= 0) {
-            if (!inTunnel) { roofRuns.push(i); inTunnel = true; }
-            if (w.body.cartId !== cart.id || cart.y - cart.h < (roof + 1) * T) bad.push(`${(cart.x / T).toFixed(1)},${(cart.y / T).toFixed(1)}`);
-          } else inTunnel = false;
+        const level = assembleLevel(pack, picks), g = levelGrid(level);
+        const sec = level.objects.find((o) => o.type === 'section' && Number(o.props.index) === 6)!;
+        const inSec = (o: { x: number; y: number }) => o.x >= sec.x && o.x < sec.x + sec.w;
+        expect(level.objects.some((o) => o.type === 'minecart' || o.type === 'minecart_stop')).toBe(false);
+        const torches = level.objects.filter((o) => o.type === 'torch' && inSec(o)).sort((a, b) => a.x - b.x);
+        expect(torches.length).toBeGreaterThanOrEqual(10);
+        const pts = level.objects.find((o) => o.type === 'main_path')!.points!.filter((p) => inSec(p) && p.y >= 92 * T);
+        let len = 0; for (let k = 1; k < pts.length; k++) len += Math.hypot(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y) / T;
+        expect(len).toBeGreaterThanOrEqual(120);
+        // Every open cell of the caves (rows >= 92) is at least 4 cells from every open cell of the nest (rows 66-87).
+        const arena = level.objects.find((o) => o.type === 'arena' && o.props.kind === 'side')!;
+        const ax0 = arena.x / T - 9, ax1 = (arena.x + arena.w) / T + 8, sx0 = sec.x / T, sx1 = (sec.x + sec.w) / T;
+        const nest: [number, number][] = [], caves: [number, number][] = [];
+        for (let y = 66; y < 88; y++) for (let x = ax0; x < ax1; x++) if (g.kindAt(x, y) !== 'solid') nest.push([x, y]);
+        for (let y = 92; y < 144; y++) for (let x = sx0; x < sx1; x++) if (g.kindAt(x, y) !== 'solid') caves.push([x, y]);
+        const near = caves.filter(([cx, cy]) => nest.some(([nx, ny]) => Math.max(Math.abs(cx - nx), Math.abs(cy - ny)) < 4));
+        expect(near).toEqual([]);
+        // Tunnel B (drop through the one-way floor under the hole) also reaches the merchant hall: a flood fill of open cells.
+        const merchant = level.objects.find((o) => o.type === 'merchant_spot' && inSec(o))!;
+        const hole = pts[0], seen = new Set<string>(), todo: [number, number][] = [[Math.floor(hole.x / T), 109]];
+        while (todo.length) {
+          const [x, y] = todo.pop()!, key = `${x},${y}`;
+          if (seen.has(key) || y < 105 || y > 112 || g.kindAt(x, y) === 'solid') continue;
+          seen.add(key); todo.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
         }
-        const stop = level.objects.find((o) => o.type === 'minecart_stop')!;
-        expect(jumps).toBe(2); expect(crashes).toBe(1);
-        expect(cart.x, `x ${cart.x / T} y ${cart.y / T}`).toBeGreaterThanOrEqual(stop.x - cart.w / 2 - 1);
-        expect(cart.x - initialX).toBeGreaterThanOrEqual(120 * T);
-        expect(roofRuns.length).toBe(2);
-        expect(bad).toEqual([]);
-        expect(cart.active).toBe(false); expect(w.body.cartId).toBeNull();
+        expect(seen.has(`${Math.floor(merchant.x / T)},112`)).toBe(true);
       });
     }
   });

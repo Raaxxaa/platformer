@@ -10,28 +10,28 @@
  "objects": [
   {
    "type": "lucky_block",
-   "x": 3,
-   "y": 85,
+   "x": 28,
+   "y": 100,
    "props": {}
   },
   {
    "type": "key",
-   "x": 4,
-   "y": 77,
+   "x": 103,
+   "y": 95,
    "props": {}
   },
   {
    "type": "merchant_spot",
-   "x": 1,
-   "y": 91,
+   "x": 96,
+   "y": 112,
    "props": {}
   },
   {
    "type": "dragon_warning",
-   "x": 4,
-   "y": 82,
+   "x": 3,
+   "y": 84,
    "w": 1,
-   "h": 10,
+   "h": 8,
    "props": {}
   },
   {
@@ -46,25 +46,9 @@
    }
   },
   {
-   "type": "minecart",
-   "x": 7,
-   "y": 91,
-   "props": {
-    "dir": 1
-   }
-  },
-  {
-   "type": "minecart_stop",
-   "x": 129,
-   "y": 140,
-   "w": 1,
-   "h": 4,
-   "props": {}
-  },
-  {
    "type": "enemy",
-   "x": 22,
-   "y": 87,
+   "x": 50,
+   "y": 100,
    "props": {
     "enemy": "goblin_miner",
     "facing": -1
@@ -72,8 +56,8 @@
   },
   {
    "type": "enemy",
-   "x": 64,
-   "y": 104,
+   "x": 70,
+   "y": 112,
    "props": {
     "enemy": "ram",
     "facing": -1
@@ -81,8 +65,8 @@
   },
   {
    "type": "enemy",
-   "x": 104,
-   "y": 123,
+   "x": 122,
+   "y": 141,
    "props": {
     "enemy": "bat_swarm",
     "facing": -1
@@ -90,8 +74,40 @@
   },
   {
    "type": "guide_arrow",
-   "x": 5,
-   "y": 87,
+   "x": 35,
+   "y": 85,
+   "props": {
+    "angle": 90
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 39,
+   "y": 99,
+   "props": {
+    "angle": 0
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 79,
+   "y": 99,
+   "props": {
+    "angle": 90
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 110,
+   "y": 110,
+   "props": {
+    "angle": 90
+   }
+  },
+  {
+   "type": "guide_arrow",
+   "x": 126,
+   "y": 141,
    "props": {
     "angle": 0
    }
@@ -105,36 +121,124 @@
    }
   },
   {
-   "type": "guide_arrow",
-   "x": 35,
-   "y": 88,
-   "props": {
-    "angle": -30
-   }
+   "type": "nest",
+   "x": 69,
+   "y": 87,
+   "props": {}
   },
   {
-   "type": "guide_arrow",
-   "x": 45,
-   "y": 89,
-   "props": {
-    "angle": 0
-   }
+   "type": "eggshells",
+   "x": 75,
+   "y": 87,
+   "props": {}
   },
   {
-   "type": "guide_arrow",
-   "x": 109,
-   "y": 129,
-   "props": {
-    "angle": -30
-   }
+   "type": "bones",
+   "x": 55,
+   "y": 87,
+   "props": {}
   },
   {
-   "type": "guide_arrow",
-   "x": 128,
-   "y": 140,
-   "props": {
-    "angle": 0
-   }
+   "type": "scorch",
+   "x": 61,
+   "y": 87,
+   "props": {}
+  },
+  {
+   "type": "coin_pile",
+   "x": 85,
+   "y": 87,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 34,
+   "y": 92,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 36,
+   "y": 99,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 46,
+   "y": 99,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 56,
+   "y": 99,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 66,
+   "y": 99,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 76,
+   "y": 99,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 81,
+   "y": 105,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 85,
+   "y": 111,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 95,
+   "y": 111,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 104,
+   "y": 111,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 111,
+   "y": 115,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 112,
+   "y": 125,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 112,
+   "y": 135,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 114,
+   "y": 142,
+   "props": {}
+  },
+  {
+   "type": "torch",
+   "x": 124,
+   "y": 142,
+   "props": {}
   }
  ],
  "mainPath": [
@@ -143,67 +247,43 @@
    91
   ],
   [
-   8,
+   11,
    91
   ],
   [
-   25,
-   91
+   12,
+   89
   ],
   [
-   26,
-   91
+   21,
+   89
+  ],
+  [
+   22,
+   87
   ],
   [
    33,
-   91
+   87
   ],
   [
-   38,
-   91
+   35,
+   100
   ],
   [
-   41,
-   91
+   80,
+   100
   ],
   [
-   48,
-   91
+   82,
+   112
   ],
   [
-   49,
-   91
-  ],
-  [
-   70,
-   110
-  ],
-  [
-   71,
-   111
-  ],
-  [
-   79,
-   111
-  ],
-  [
-   99,
-   131
-  ],
-  [
-   107,
-   131
-  ],
-  [
-   110,
-   132
+   111,
+   112
   ],
   [
    113,
-   134
-  ],
-  [
-   128,
    143
   ],
   [

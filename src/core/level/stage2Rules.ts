@@ -26,8 +26,11 @@ export function stage2Errors(d:LevelData):string[]{
     const section=sections.find(s=>Number(s.props.index)===6);
     let ice=false;
     if(section)for(let y=section.y/TILE_SIZE;y<(section.y+section.h)/TILE_SIZE;y++)for(let x=section.x/TILE_SIZE;x<(section.x+section.w)/TILE_SIZE;x++)ice ||= kindAt(d,x,y)==='ice';
-    const carts=inSection('minecart',6),stops=inSection('minecart_stop',6);
-    if(!ice||!carts.some(cart=>stops.some(stop=>stop.x-cart.x>=S.cartRun*TILE_SIZE)))errors.push(`mountains: section 6 needs ice and a minecart route of at least ${S.cartRun} tiles`);
+    // M17 (06 §8.3, §8.9): no minecart; the main route winds through a cave labyrinth of at least S.labyrinth tiles inside the mountain.
+    const route=d.objects.find(o=>o.type==='main_path')?.points?.filter(p=>section&&contains(section,p.x,p.y))??[];
+    let inside=0;
+    for(let i=1;i<route.length;i++){const a=route[i-1],b=route[i];if(Math.min(a.y,b.y)>=(section?.y??0)+S.labyrinthTop*TILE_SIZE)inside+=Math.hypot(b.x-a.x,b.y-a.y)/TILE_SIZE;}
+    if(!ice||inSection('minecart',6).length>0||inside<S.labyrinth)errors.push(`mountains: section 6 needs ice, no minecart and a cave labyrinth of at least ${S.labyrinth} tiles`);
   }else{
     for(const index of S.waterSections){
       const s=sections.find(s=>Number(s.props.index)===index);if(!s)continue;

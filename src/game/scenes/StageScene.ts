@@ -8,7 +8,7 @@ import { timedDoorTimeLeft } from '../../core/run/timedDoors.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
-import { DoorViews, drawGuideArrows } from '../view/levelView.ts';
+import { DoorViews, drawCaveDecor, drawGuideArrows } from '../view/levelView.ts';
 import { YardView } from '../view/yardView.ts';
 import { STAGE_UI } from '../../data/stageUi.ts';
 import { HUD_COLOR, UI_COLOR } from '../../data/uiText.ts';
@@ -164,7 +164,7 @@ export class StageScene extends WorldScene {
         .setOrigin(0.5).setDepth(DEPTH.terrain + 6));
     }
     this.doorViews = new DoorViews(this);
-    drawGuideArrows(this, this.level.objects);
+    drawGuideArrows(this, this.level.objects); drawCaveDecor(this, this.level.objects);
     this.hintText = this.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH.hud);
     this.timerBlock = new TimerBlock(this);
     this.bossBarGfx = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud);

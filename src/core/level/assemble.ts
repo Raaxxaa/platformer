@@ -25,7 +25,7 @@ const SPECIAL: Record<string, [string, string, Props]> = {
   '%': ['.', 'collapsing_platform', { oneWay: false }], '&': ['.', 'collapsing_platform', { oneWay: true }],
   '+': ['.', 'cracked_wall', {}], '@': ['#', 'blink_block', {}],
 };
-const CENTER = new Set(['lucky_block', 'key', 'grapple_point', 'cannon', 'swinging_blade', 'firefly', 'guide_arrow']);
+const CENTER = new Set(['lucky_block', 'key', 'grapple_point', 'cannon', 'swinging_blade', 'firefly', 'guide_arrow', 'torch']);
 
 export const classicPicks = (p: LevelPack): Picks => p.sections.map(() => 1);
 

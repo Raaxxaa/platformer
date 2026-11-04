@@ -43,10 +43,9 @@ describe('Stage2 feature drawing data (08 §9.3,§9.5,§11)',()=>{
     w.tick=100;fx.update(w,[]);expect(fx.list).toHaveLength(0);
   });
 
-  it('draws real Mountain rails through the last supported column before the cart stop',()=>{
-    const d=loadLevel(mountainJson),points=rails(levelGrid(d),d.objects),stop=d.objects.find(o=>o.type==='minecart_stop')!;
-    expect(points.at(-1)).toEqual({x:stop.x-16,y:144*16});
-    expect(points.some(p=>p.x===325*16||p.x===326*16)).toBe(false);
+  it('draws no rails on the Mountain road since the minecart was removed (M17)',()=>{
+    const d=loadLevel(mountainJson);
+    expect(rails(levelGrid(d),d.objects)).toEqual([]);
   });
 
   it('keeps a Queen target fixed and makes the final18warningticks solid cream',()=>{

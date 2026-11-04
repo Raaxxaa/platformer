@@ -40,56 +40,7 @@ def s2_v3():
     return v
 
 
-# ------------------------------------------------------------------ § 6 Ice peaks and minecart descent (130 x 176, rail row 92 -> 144)
-def s6_descent(v, segs):
-    """Rewrites the cart track from col 51 to the last col of `segs`: segs = [(columns, rows dropped per column)], from the
-    rail at row 92. Cols 90+ (the safe flat, tunnel 2, gap 2, last slope) stay as v1. Returns the corner vertices."""
-    col, row = 50, 92
-    pts = [[col, row - 1]]
-    for n, d in segs:
-        for _ in range(n):
-            col += 1
-            row += d
-            v.carve(col, col, 93, row - 1)
-            v.fill(col, col, row, v.h - 1)
-        pts.append([col, row - 1])
-    assert col == 89 and row == 132, (col, row)
-    return pts
-
-
-def s6_front(v, tunnel, gap, shelf, shelf_miner, ice):
-    """The rail line from the plaza to the arena: the low tunnel (8 cols, roof row 90), the 2-wide gap over its catch floor,
-    the Miner's shelf and extra ice ledges (cols), all moved from v1's place (tunnel 26-33, gap 39-40, shelf 21-23)."""
-    v.fill(26, 33, 90, 90, '.')
-    v.fill(21, 23, 88, 88, '.')
-    v.fill(39, 40, 92, 99, '#')
-    v.fill(tunnel, tunnel + 7, 90, 90, '#')
-    v.carve(gap, gap + 1, 92, 99)
-    v.fill(shelf, shelf + 2, 88, 88, '=')
-    for x0, x1, y in ice:
-        v.fill(x0, x1, y, y, 'I')
-    v.mv(7, shelf_miner, 87)
-
-
-def s6_v2():
-    """Glacier shelf: tunnel and gap come early, a long ice shelf hangs over the middle of the rail; the track drops in a short
-    steep run, a long flat rest and a steeper fall."""
-    v = Sec(LV, 6, 'v1')
-    s6_front(v, 14, 31, 36, 37, [(22, 29, 87)])
-    pts = s6_descent(v, [(8, 1), (13, 0), (14, 2), (4, 1)])
-    v.mvs({8: (66, 99), 9: (96, 124), 12: (34, 88)})
-    v.path = [[0, 91], [8, 91], [13, 91], [22, 91], [30, 91], [33, 91], [36, 91], [49, 91]] + pts[1:] + [[99, 131], [107, 131], [110, 132], [113, 134], [128, 143], [129, 143]]
-    return v
-
-
-def s6_v3():
-    """Steep start: the gap comes first (col 20), the tunnel late (cols 30-37), then a steep drop, a rest, and a second drop."""
-    v = Sec(LV, 6, 'v1')
-    s6_front(v, 30, 20, 10, 11, [(13, 17, 86)])
-    pts = s6_descent(v, [(6, 2), (10, 0), (8, 1), (10, 2), (5, 0)])
-    v.mvs({8: (62, 103), 9: (97, 124), 12: (24, 88)})
-    v.path = [[0, 91], [8, 91], [19, 91], [22, 91], [29, 91], [38, 91], [41, 91], [49, 91]] + pts[1:] + [[99, 131], [107, 131], [110, 132], [113, 134], [128, 143], [129, 143]]
-    return v
+# § 6 (the Dragon's nest and the cave labyrinth, all three versions) is built by gen_s6.py (M17).
 
 
 # ------------------------------------------------------------------ § 7 Crystal cave loot (80 x 176, floor 144, open sky)
@@ -231,7 +182,7 @@ def s4_v3():
 
 def main():
     only = sys.argv[1:]
-    table = {2: (s2_v2, s2_v3), 3: (s3_v2, s3_v3), 4: (s4_v2, s4_v3), 6: (s6_v2, s6_v3), 7: (s7_v2, s7_v3)}
+    table = {2: (s2_v2, s2_v3), 3: (s3_v2, s3_v3), 4: (s4_v2, s4_v3), 7: (s7_v2, s7_v3)}
     for sec, fns in table.items():
         if only and str(sec) not in only:
             continue
