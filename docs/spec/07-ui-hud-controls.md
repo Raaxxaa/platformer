@@ -176,6 +176,20 @@ Every layout box (for text: the cap box) stays inside x 8–632, y 8–352; only
 | Alert | centered at 320, y 10 and 28 | max width 248 | §6.9 |
 | Restart ring | center (320, 156) | 18 × 18 | §4.13 |
 
+### 4.1a HUD groups, new default layout and the layout editor (M17, playtest change)
+The HUD is three **groups** that move as a whole; inside a group everything keeps the §4.1 arrangement:
+
+| Group | What's in it (§4.1 rows) | §4.1 box (x, y, w, h) | **New default** (top-left of the box) |
+|---|---|---|---|
+| `vitals` | top HUD plate, heart, HP bar and text, Rush, statuses, flask, gold, keys, Lockpick, effect boxes | (4, 4, 216, 72) | (4, 4): top-left, unchanged |
+| `slots` | bottom HUD plate, class name lines, slot prompts, link bars, weapon and ability boxes, class icons, level pips | (4, 280, 128, 76) | **(504, 4): top-right** (the user asked for the weapon and ability bar there) |
+| `timer` | run timer, segment line, info line (right-aligned) | (472, 8, 160, 44) | **(472, 300): bottom-right** |
+
+- Toasts (§6.10) move to the **bottom-left** (left-aligned at x 8, bottom at 352) so they don't hit the timer.
+- **On touch devices** (07 §8.6 overlay shown) the default `timer` is **top-center** (box centered on x 320 at y 8), and alerts (§6.9) move down to y 44 and 62. The buttons cover the bottom corners, so nothing of the HUD defaults there.
+- **Layout editor** (Settings → HUD layout, and Pause → Settings): shows the HUD over a dimmed game frame. Pick a group (tab, or tap it); place it with the presets **Top-left, Top-center, Top-right, Bottom-left, Bottom-right**, or move it by 4 px steps with the arrows or by dragging; **Reset** restores the defaults. A group can't leave the 8 px safe area or cover the boss bar's area (bottom-center 320 × 40); overlapping another group shows both outlines in `bad` and Confirm is refused until fixed.
+- Saved per device in `settings.hud: Partial<Record<'vitals' | 'slots' | 'timer', { x: number; y: number }>>` (06 §15; missing = default for the device type).
+
 ### 4.2 HP bar
 - Fill width = `hp <= 0 ? 0 : max(1, round(158 × hp / maxHp))`. The bar width never changes with max HP.
 - Color `hp`. While `hp ≤ 25%` of max, the fill and the HP text pulse between `hp` and `hpLow` at 2 Hz.
@@ -675,6 +689,7 @@ interface SettingsData {
            leftHanded: boolean; vibration: boolean;
            layout: Partial<Record<TouchControlId, { x: number; y: number; scale: number }>> };  // §8.6, M12
   effects: 'high' | 'low';    // 'low' default on touch devices: half the particles, darkness at half resolution
+  hud: Partial<Record<'vitals' | 'slots' | 'timer', { x: number; y: number }>>;   // §4.1a, M17
 }
 type TouchControlId = 'stick' | 'jump' | 'attack1' | 'dash' | 'attack2' | 'ability1' | 'ability2' | 'heal'
   | 'interact' | 'pause';

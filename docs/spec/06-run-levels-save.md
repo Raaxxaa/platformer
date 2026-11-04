@@ -289,7 +289,7 @@ Every stage chains these 8 sections, in order (GAME_PLAN 7.5). Length = main pat
 | Level | Max size (W × H tiles) | Gimmicks and where |
 |---|---|---|
 | `plains` | 800 × 96 (main path 710–790 after the §8.6 spacing) | Teaches moves (`hint` zones, §13.3). §3: open fields, first gaps, first wall-jump shaft, first slide tunnel. §4: tree-top skip route (wall jumps, dash-jumps) above the ground main path. §6: forest canopy with one-way branches. Spike pits only from §3 on. |
-| `mountains` | 560 × 176 | §3: vertical climb of ≥ 60 tiles with `falling_rocks`. §4: skip through a `cracked_wall` or grapple points. §6: icy peaks (ice tiles), then a minecart ride of ≥ 120 tiles down into the caves. |
+| `mountains` | 560 × 176 | §3: vertical climb of ≥ 60 tiles with `falling_rocks`; **no flying enemies in §3** (its 2 regulars are Rams on flat ground at the bottom and top of the climb, never on the climb itself). §4: skip through a `cracked_wall` or grapple points. §6: icy peaks (ice tiles) up to the summit, where the **Dragon's nest** (the side arena, §9.4) is a cave in the peak, entered only from the peak path; then a **cave labyrinth** of ≥ 120 tiles inside the mountain down to §7 (§8.9). **No minecart** (removed after playtesting). |
 | `swamps` | 720 × 96 | Swamp water covers ≥ 30% of the floor length in §2, §3, §6. `dark_zone`s with fireflies in §3 and §6. Grapple-vine skip route in §4. |
 | `kingdom` | 720 × 112 | §4: town streets (main) vs rooftops (skip, 20–30 tiles above). ≥ 3 cannons each in §3 and §6. Crossbowmen on walls and rooftops. |
 | `castle` | 640 × 144 | Spike floors, ≥ 4 swinging blades and ≥ 3 collapsing bridges across §3 and §6. A cannon gallery in §6. Wall-jump towers. |
@@ -343,6 +343,24 @@ Each stage keeps its 8 sections in order, but some sections have **3 hand-made v
 - **Personal bests** stay per class and road (§5.3): learning the versions is part of the game, as in Dead Cells. Run history and the summary show the layout code.
 - Hint zones (§13.4) exist only in Stage 1 `v1` sections and the Training Yard; `v2`/`v3` of Plains sections keep the same hints in the same order (a new player can get any version).
 
+### 8.9 The Mountain cave labyrinth (replaces the minecart, playtest change)
+Mountains §6, all three versions (06 §8.7; `v1` is redrawn too):
+- From the icy peaks the path enters the mountain and winds **down through a labyrinth of tunnels** to the §7 exit: **3 routes** that split and rejoin, at least **2 of them complete**; the others end in **dead-end nooks**. The main route is marked: wall torches every 12 tiles and a guide arrow at every junction it takes. Other routes are darker (no torches).
+- The nooks hold the section's **Lucky Block #3** and **Key #2** (the key after a hard-jump nook, ≤ 8 s detour, 06 §8.4), so exploring pays.
+- The **merchant spot** sits in a wide cave hall on the main route (its 112 px rule, §11.3).
+- The 3 regulars of §6 (mountains road column, §8.2) are in the tunnels, never at a blind drop.
+- **The Dragon's nest cannot be reached from the labyrinth:** solid rock at least 3 tiles thick everywhere between them.
+- Main-path length, movement limits (§8.5) and the ±10% version rule (§8.7) still apply; `routeLint` follows the main route.
+
+
+### 8.10 More variety per seed (M18, playtest change: "seeds feel the same")
+On top of the section versions (§8.7), each seed now also moves things **inside** a version. Counts never change; only places do.
+- **Object spots:** in every version, each Lucky Block, key, key chest, cursed chest and loot stand has **2 or 3 candidate spots** (the level source marks them with a `spotGroup` id; the first spot is the old one). Rules for spots: same section, reachable within that object's detour limit (§8.4), and not on the main path's only route for keys.
+- **Enemy formations:** every version has **2 enemy formations** (A = today's, B = new) with the same enemies per type, elites and packs, placed differently (and keeping §8.6 spacing in Stage 1).
+- **Picking:** the `layout` stream (§8.7) first makes its 25 section draws (unchanged, so old seeds keep their versions), then, per stage and section in the same order, one draw for the formation (`A`/`B`) and one draw per `spotGroup` in id order. Always all draws, for every stage and road.
+- The layout code (§8.7) gets the formation letter: `2a-1b-3a-3a-2b`.
+
+
 ## 9. Arenas, doors and the side arena
 
 ### 9.1 Shared
@@ -371,6 +389,7 @@ Each stage keeps its 8 sections in order, but some sections have **3 hand-made v
 - Joined to the main path by one opening 3 tiles tall at floor level. No doors, never locks, no camera zone.
 - A detour into it and back without fighting costs ≤ 4 s.
 - **With the Dragon:** 04 §13.3 runs it. **Without the Dragon** (assumption, GAME_PLAN 15.3 #2): the arena is empty.
+- **Mountains:** the side arena is the **Dragon's nest**, a cave inside the summit with a wide opening to the sky on its far wall, rock walls and ceiling all round (never a box floating in the air). Without the Dragon it still looks lived in: a nest of branches with eggshells, bones, scorch marks and a glinting pile of coins (decoration only, 08). It is entered only from the peak path.
 - `dragon_warning` zone: across the main path, at least 640 px before the side arena opening.
 
 ### 9.5 Timed doors (section 7)
@@ -398,7 +417,7 @@ Hazards are not enemies (04 §14): not targetable, no kill credit, **not stage-s
 | Hazard | Behavior | Damage | Player KB |
 |---|---|---|---|
 | `cannon` | Fires a ball in `dir` every `interval` (default 3.0 s), only while its point is inside the camera view expanded by 160 px. The first shot comes `offset` s (default 1.0) after it first enters that area. The muzzle flashes for the last **0.6 s** before each shot (telegraph). Ball: 12 × 12, 300 px/s, straight, stops at solid tiles and solid bodies (passes one-way), vanishes after `range` px (default 960) | 20 | `240, −180` along travel |
-| `falling_rocks` (zone) | While the player's center is inside the zone: 0.3 s after entering, then every `interval` (default 2.0 s), mark the floor below the player's x (clamped 8 px inside the zone) for **0.6 s**, then drop a 16 × 16 rock from the zone's top edge at 360 px/s. It passes one-way platforms and shatters on solid tiles or bodies | 18 | 02 default |
+| `falling_rocks` (zone) | While the player's center is inside the zone: 0.6 s after entering, then every `interval` (default **3.0 s**), mark the floor below the player's x (clamped 8 px inside the zone) for **1.0 s** with a growing shadow and trickling dust from above (08), then drop a 16 × 16 rock from the zone's top edge at **240 px/s**. (Slowed after playtesting: the climb was too hard.) Boss rockfalls (Great Boar, Stone Colossus) keep their own numbers (04). It passes one-way platforms and shatters on solid tiles or bodies | 18 | 02 default |
 | `swinging_blade` | Pendulum from the pivot point. `θ(t) = amplitude × sin(2π × (t / period + phase))`, 0° = straight down, positive = toward +x. Blade center = pivot + `length × (sin θ, cos θ)`. Box 20 × 20 at the blade center. `t` = the stage's world time (seconds, × `worldTimeScale`). Rehit 0.5 s. Defaults: `length` 64 px, `amplitude` 60°, `period` 2.0 s, `phase` 0 | 20 | `260, −200` away from the blade center |
 
 ---
@@ -621,7 +640,32 @@ One run a day that everyone gets the same: same seed, same class and weapon, sam
 - It is a typed-seed run, so it **never writes PBs or best segments** (§5.3). It writes `save.daily[YYYYMMDD] = { official: {result, ticks, stageReached}, bestTicks, attempts }` (the last 60 days are kept), counts in stats and history (`mode: 'daily'`), and unlocks work as in normal runs. Assist (§5.4) is allowed and shown on the result.
 - **Result screen:** time or the stage reached, splits, the kit, and a **Share** button that copies a text like
   `RUSHBLADE Daily 2026-11-04 · Tank (War Maul) · Forest · 8:42.13 · 🟩🟩🟥🟩` (one square per split: green if faster than your best daily split on any day with the same road, red if slower, grey if none; `(assist)` added when assisted; `💀 Stage 3` for a death).
-- **Online leaderboard:** not in M15 (GitHub Pages has no server). The share text is how players compare. A leaderboard needs a free online service and is a later decision.
+- **Online leaderboard (M18):** see §14.3.
+- **Daily twist (M18):** every daily has one **twist**, drawn from the seed (stream `daily`, third draw: `twist = TWISTS[floor(r3 × 10)]`). It shows on the title row, the run start banner and the result.
+
+| Twist | Effect for that run |
+|---|---|
+| `golden_hour` | Lucky Blocks always give a buff |
+| `glass_cannon` | You deal +50% damage and take +50% |
+| `elite_patrol` | One extra elite of the stage's type in §2 of every stage |
+| `heavy_pockets` | Double gold; shop and merchant prices ×1.5 |
+| `swift` | +20% move speed for you **and** every enemy |
+| `blood_moon` | Enemies have +25% HP; flask fill per kill ×2 |
+| `rush_hour` | Rush can't drop below level 1 |
+| `arsenal` | Start with a random B-grade weapon (from the seed) in weapon slot 2 |
+| `dragon_day` | The Dragon is always present (stage and color still from the seed) |
+| `classic` | No twist |
+
+- **Seed challenge (practice for the daily):** Title → Daily → **Any seed**. Type any seed, or pick one of the last 30 days. It plays exactly like a daily (kit, twist and layout from that seed) but **never** counts as an official daily or goes to the leaderboard. Keeps its own best per seed in `save.seedBests` (last 50 seeds).
+
+
+### 14.3 Online daily leaderboard (M18)
+- **Service:** a free Supabase project (Postgres + HTTP API) owned by the user. The game talks to it with `fetch` and the project's public anon key (public by design; the database rules below are what protect it). The URL and key are in `src/data/online.ts`; with no URL configured, the leaderboard is hidden and nothing is sent.
+- **Table** `daily_scores`: `id bigint identity`, `day text` (`YYYYMMDD`), `name text` (3–12 characters `A–Z a–z 0–9 _`), `ticks int` (finished official runs only), `class text`, `weapon text`, `road text`, `assist bool`, `created_at timestamptz default now()`. Rules (row-level security): anyone may **insert** and **select**; nobody may update or delete. A unique index on `(day, name)` keeps one entry per name per day.
+- **What is sent:** only the **official** daily attempt (§14.1), only if it **finished**, and only once. Assisted runs are sent with `assist = true` and listed separately. Nothing else leaves the device (no save data, no email, no ids).
+- **Name:** asked the first time a score could be sent (`Your leaderboard name`), stored in `settings.online.name`; `settings.online.enabled` (default on once a name is chosen; a Settings toggle turns it off).
+- **Screens:** the daily result shows `#rank of N` and the top 10 for the day with your row highlighted; Title → Daily → **Leaderboard** shows any of the last 30 days (top 50). Offline or a failed request: a small `Leaderboard unavailable` and the score is queued and retried on the next launch (only that one row).
+- **Honesty note:** there is no cheat protection beyond the rules above (a determined person could post a fake time). It's meant for friends; a replay check could come later.
 
 ### 14.2 Boss rush (M15)
 Every boss back to back, against the clock. **Unlocked** after the Enemy King has been beaten once in a normal or daily run (`save.progress.kingBeaten`; on an old save, true if `stats.runsCompleted > 0`).

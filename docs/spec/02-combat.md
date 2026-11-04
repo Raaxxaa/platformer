@@ -542,7 +542,7 @@ Damage and poise round half up. Launch (§4.4) applies to small and medium targe
 - The War Maul and Storm Hammer have special dives (§10.5).
 
 ### 9.8 Projectiles (shared rules)
-- A projectile spawns at `+12, −18` from the feet, in the facing direction. If that point is inside a solid tile, the projectile runs its `onWall` behavior on the spot.
+- A projectile spawns at `+12, −10` from the feet (changed from −18 after playtesting: arrows flew over Wolves, whose hurtbox is only 16 px tall; every enemy's hurtbox now overlaps the shot line, Spiderlings included), in the facing direction. If that point is inside a solid tile, the projectile runs its `onWall` behavior on the spot.
 - Speed is constant unless `gravity` or `homing` is set.
 - `range` is the distance traveled. When it reaches its range, the projectile vanishes, or explodes if its type explodes.
 - Angles: 0° is horizontal in the facing direction, and a negative angle tilts upward.
@@ -639,12 +639,12 @@ All projectiles are kind `shot`.
 
 | Id | Speed | Range | Box w×h | Gravity | Pierce | onWall | Dmg | KB `x,y` | Poise | Stop | Special |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| arrow | 600 | 320 | 12×4 | 0 | 0 | vanish | 12 | 80,−10 | 8 | 0.025 | |
-| arrow_charged | 800 | 480 | 16×4 | 0 | all | vanish | 32 | 160,−20 | 25 | 0.05 | charged |
-| bolt | 720 | 400 | 14×4 | 0 | 0 | vanish | 29 | 280,−40 | 30 | 0.05 | Pin |
+| arrow | 600 | 320 | 12×6 | 0 | 0 | vanish | 12 | 80,−10 | 8 | 0.025 | |
+| arrow_charged | 800 | 480 | 16×6 | 0 | all | vanish | 32 | 160,−20 | 25 | 0.05 | charged |
+| bolt | 720 | 400 | 14×6 | 0 | 0 | vanish | 29 | 280,−40 | 30 | 0.05 | Pin |
 | cannonball | 520 | 360 | 10×10 | 0 | 0 | explode | 30 (blast) | 260,−120 | 35 | 0.075 | explodes on enemy contact; blast 56×56; heavy-weapon shot |
 | javelin | 560 | 1.5 s life | 20×4 | 300 | 1 (hits 2) | stick | 25 | 200,−40 | 30 | 0.05 | wall platform |
-| knife | 640 | 240 | 8×4 | 0 | 0 | vanish | 5 | 40,0 | 4 | 0.025 | |
+| knife | 640 | 240 | 8×6 | 0 | 0 | vanish | 5 | 40,0 | 4 | 0.025 | |
 | staff_bolt | 480 | 280 | 8×8 | 0 | 0 | vanish | 13 | 60,−10 | 8 | 0.025 | |
 | orb | 300 | 320 | 14×14 | 0 | 0 | explode | 40 (blast) | 220,−120 | 40 | 0.075 | charged; explodes on enemy contact; blast 80×80 |
 | wand_shot | 420 | 240 | 6×6 | 0 | 0 | vanish | 10 | 40,0 | 5 | 0.025 | homing: radius 96, 180°/s |
