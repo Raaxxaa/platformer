@@ -27,7 +27,7 @@ describe('settings menu (07 §7.7)', () => {
     m.select(5); for (let i = 0; i < 3; i++) { const next = m.action('right'); if (next?.type === 'change') settings = next.settings; }
     expect(settings.promptStyle).toBe('playstation'); expect(m.action('right')).toBeNull();
   });
-  it('opens current controls read-only, Back returns, and top/bottom do not wrap', () => {
+  it('opens the Controls page, Back returns, and top/bottom do not wrap', () => {
     const m = new SettingsModel(defaultSettings); m.action('up'); expect(m.cursor).toBe(0);
     expect(m.action('confirm')).toBeNull(); expect(m.controlsOpen).toBe(true); m.action('left'); expect(m.controlsOpen).toBe(true);
     expect(m.action('back')).toBeNull(); expect(m.controlsOpen).toBe(false);
@@ -64,5 +64,25 @@ describe('touch settings page (07 §8.6, M12 Task 5)', () => {
     for (let i = 0; i < 6; i++) t.apply('down');
     expect(t.m.action('confirm')).toEqual({ type: 'layout' });
     t.apply('down'); expect(t.m.action('confirm')).toBeNull(); expect(t.m.touchOpen).toBe(false); expect(t.m.cursor).toBe(6);
+  });
+  it('Controls page (07 §7.8): capture a key, Escape cancels, a refused clear flashes, Reset restores defaults', () => {
+    let settings = defaultSettings();
+    const m = new SettingsModel(() => settings); m.action('confirm');
+    for (let i = 0; i < 4; i++) m.action('down');                 // Jump, Key 1
+    expect(m.controls.action).toBe('jump');
+    m.action('confirm'); expect(m.controls.capture).toMatchObject({ action: 'jump', col: 0 });
+    expect(m.capturedKey('Escape', 1)).toBeNull(); expect(m.controls.capture).toBeNull();
+    m.action('confirm');
+    const c = m.capturedKey('KeyK', 1)!; expect(c.type).toBe('change');
+    if (c.type !== 'change') throw Error('no change'); settings = c.settings;
+    expect(settings.bindings.keyboard.jump[0]).toBe('KeyK'); expect(settings.bindings.keyboard.attack2[0]).toBe('Space');
+    expect(m.clearCell(2)).toBeNull(); expect(m.controls.flash).toMatchObject({ action: 'jump', col: 0 });   // Jump's only key
+    m.action('confirm'); m.tick(4); expect(m.controls.capture).not.toBeNull(); m.tick(9); expect(m.controls.capture).toBeNull();                              // 5 s without a press cancels
+    m.action('right'); m.action('right'); m.action('confirm');                                           // the gamepad cell
+    const p = m.capturedPad(3, 11)!; if (p.type !== 'change') throw Error('no pad change'); settings = p.settings;
+    expect(settings.bindings.gamepad.jump).toBe(3); expect(settings.bindings.gamepad.attack2).toBe(0);
+    for (let i = 0; i < 20; i++) m.action('down');
+    m.action('up'); const r = m.action('confirm')!;                                                     // Reset to defaults
+    if (r.type !== 'change') throw Error('no reset'); expect(r.settings.bindings).toEqual(defaultSettings().bindings);
   });
 });

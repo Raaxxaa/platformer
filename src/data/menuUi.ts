@@ -23,6 +23,9 @@ export const MENU_UI = {
     styles: ['auto', 'keyboard', 'xbox', 'playstation'], styleNames: ['Auto', 'Keyboard', 'Xbox', 'PlayStation'],
     volumeCells: 10, cell: 6, cellGap: 2, barX: 370, barY: 2, minusX: 350, plusX: 488, stepW: 14,
     hintY: 270, controlsRowsY: 64, controlsRowH: 14, controlsBackY: 280,
+    /** The Controls page (07 §7.8): a wider panel, columns, capture timeout and the refused-cell flash. */
+    controls: { panel: [24, 8, 592, 344] as const, titleY: 18, headY: 38, rowsY: 56, rowH: 16, nameX: 40, colXs: [240, 340, 460] as const, cellW: 92,
+      resetY: 286, backY: 304, hintY: 324, captureS: 5.0, flashS: 0.3, heads: ['Key 1', 'Key 2', 'Gamepad'] as const },
     controlNames: { left: 'Left', right: 'Right', up: 'Up', down: 'Down', jump: 'Jump', dash: 'Dash', attack1: 'Attack 1', attack2: 'Attack 2', ability1: 'Ability 1', ability2: 'Ability 2', heal: 'Heal', interact: 'Interact', restart: 'Restart (hold)', pause: 'Pause' },
   },
   saveCode: {
