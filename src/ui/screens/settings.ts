@@ -16,8 +16,8 @@ import { defaultSettings } from '../../data/save.ts';
 import { PromptGlyph } from '../hud/abilityHud.ts';
 
 export type SettingsRow = typeof U.settings.rows[number];
-export type SettingsCommand = { type: 'change'; settings: SettingsData } | { type: 'export' | 'import' | 'fullscreen' | 'layout' | 'close' };
-export interface SettingsCallbacks { onChange(settings: SettingsData): void; onExport(): void; onImport(): void; onFullscreen(): void; onClose(): void; onEditLayout?(): void }
+export type SettingsCommand = { type: 'change'; settings: SettingsData } | { type: 'export' | 'import' | 'fullscreen' | 'layout' | 'hudLayout' | 'close' };
+export interface SettingsCallbacks { onChange(settings: SettingsData): void; onExport(): void; onImport(): void; onFullscreen(): void; onClose(): void; onEditLayout?(): void; onEditHud?(): void }
 export type TouchRow = typeof U.settings.touchRows[number];
 /** The Controls page (07 §7.8): rows are the 14 actions, then Reset to defaults and Back; columns Key 1, Key 2, Gamepad. */
 export class ControlsModel {
@@ -142,6 +142,7 @@ export class SettingsModel {
     }
     if (action !== 'confirm') return null;
     if (row === 'controls') { this.controlsOpen = true; return null; }
+    if (row === 'hud') return { type: 'hudLayout' };
     if (row === 'touch') { this.touchOpen = true; this.savedCursor = this.cursor; this.cursor = 0; return null; }
     if (row === 'export' || row === 'import' || row === 'fullscreen') return { type: row };
     return row === 'back' ? { type: 'close' } : null;
@@ -159,6 +160,7 @@ export class SettingsView extends MenuSurface {
     else if (command.type === 'import') this.callbacks.onImport();
     else if (command.type === 'fullscreen') this.callbacks.onFullscreen();
     else if (command.type === 'layout') { this.destroy(); this.callbacks.onEditLayout?.(); }
+    else if (command.type === 'hudLayout') { this.destroy(); this.callbacks.onEditHud?.(); }
     else { this.destroy(); this.callbacks.onClose(); }
   }
   action(action: HomePanelAction): void { if (!this.enabled || this.closed) return; this.dispatch(this.model.action(action)); this.render(); }

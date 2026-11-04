@@ -29,6 +29,9 @@ export class LootHud {
     this.b2 = scene.add.bitmapText(cx, U.bannerY[1], FONTS.small, '').setOrigin(0.5, 0).setScrollFactor(0).setDepth(DEPTH.hud + 3);
   }
 
+  /** The parts in the `vitals` group (07 §4.1a): the Lockpick icon and the effects row. */
+  groupObjects(): { x: number; y: number }[] { return [this.g, this.lockpick, ...this.icons, ...this.labels] as unknown as { x: number; y: number }[]; }
+
   /** `toast` hands loot toasts to the shared bottom-right list (07 §6.10). */
   update(w: GameWorld, events: readonly WorldEvent[], now: number, shown: boolean, toast: (text: string, color: number, s: number, icon?: string) => void): void {
     for (const e of events) {

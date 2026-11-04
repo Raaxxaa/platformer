@@ -22,7 +22,10 @@ export interface TouchSettings {
   effects: 'high' | 'low' | null; layout: Partial<Record<TouchButtonKey, TouchLayoutEntry>>;
 }
 export interface SettingsData { volume: { master: number; music: number; sfx: number }; showTimer: boolean; screenShake: boolean; damageNumbers: boolean;
-  promptStyle: 'auto' | 'keyboard' | 'xbox' | 'playstation'; touch: TouchSettings; bindings: { keyboard: Record<ActionId, [string | null, string | null]>; gamepad: Record<ActionId, number | null> } }
+  promptStyle: 'auto' | 'keyboard' | 'xbox' | 'playstation'; touch: TouchSettings;
+  /** 07 §4.1a (M17): moved HUD groups; a missing group uses the device's default. */
+  hud: Partial<Record<'vitals' | 'slots' | 'timer', { x: number; y: number }>>;
+  bindings: { keyboard: Record<ActionId, [string | null, string | null]>; gamepad: Record<ActionId, number | null> } }
 export interface SaveData {
   v: 1; settings: SettingsData; lastKit: StartKit | null; lastRoad: Road; typedSeed: string | null; training: number[];
   progress: { levelsReached: string[]; stage1Cleared: boolean; classesDiscovered: (BondId | HybridId)[] };

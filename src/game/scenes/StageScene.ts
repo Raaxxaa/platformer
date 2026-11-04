@@ -45,6 +45,8 @@ import { VICTORY_UI, victoryData } from '../../ui/screens/victory.ts';
 import { cancelRoad, chooseRoad } from '../../core/run/roads.ts';
 import { beginTransition } from '../../core/run/phases.ts';
 import { TimerBlock } from '../../ui/hud/timerBlock.ts';
+import { shiftGroup } from '../../ui/hud/hudGroups.ts';
+import { offsetOf } from '../../ui/model/hudLayout.ts';
 import { SAVE_RULES } from '../../data/save.ts';
 import { dropBlueprint } from '../../core/loot/blueprintItems.ts';
 import type { BlueprintId } from '../../core/loot/blueprints.ts';
@@ -278,6 +280,7 @@ export class StageScene extends WorldScene {
     return PauseView.info(this.world.run.stage || Math.max(1, this.world.run.splits.filter((s) => s !== null).length), this.world.run.runTicks, this.world.run.seeded ? this.world.run.seedText : null);
   }
   protected pauseMenuCovered(): boolean { return !!this.menus?.active; }
+  protected override hudEditorOpen(): boolean { return this.menus?.snapshot().screen === 'hudLayout'; }
   protected freezesExtraMenuWorld(): boolean { return this.titleFadeLeft > 0 || this.menus?.snapshot().screen === 'records'; }
   protected onPauseSettings(): void { this.menus.openSettings(); this.clearMenuInput(); }
   /** Quitting, or leaving the Training Yard: back to the start screen (M4.1 Task 2). */
@@ -474,6 +477,7 @@ export class StageScene extends WorldScene {
     this.yard?.update(w);
     if (this.frameEvents.some(({ e }) => e.t === 'leftTraining')) { if (gameSession.trainingReturn === 'home') this.goLevel('home'); else this.toTitle(); return; }
     this.timerBlock.draw(w, saveStore().data.settings.showTimer, !!this.overview, this.frameEvents.map(({ e }) => e));
+    const tm = offsetOf('timer', this.hudLayout().timer); shiftGroup(this.timerBlock.groupObjects(), tm.dx, tm.dy);
     const bar = w.bossBar;
     const bg = this.bossBarGfx.clear();
     if (bar && !this.overview) {

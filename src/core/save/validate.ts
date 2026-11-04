@@ -128,6 +128,11 @@ function settings(raw: unknown, defaults: SettingsData): SettingsData {
   for (const key of ['showTimer', 'screenShake', 'damageNumbers'] as const) if (typeof source[key] === 'boolean') result[key] = source[key];
   if (has(['auto', 'keyboard', 'xbox', 'playstation'], source.promptStyle)) result.promptStyle = source.promptStyle;
   result.touch = touchSettings(source.touch, defaults.touch);
+  result.hud = {};
+  if (source.hud && typeof source.hud === 'object') for (const g of ['vitals', 'slots', 'timer'] as const) {
+    const p = (source.hud as Record<string, unknown>)[g] as { x?: unknown; y?: unknown } | undefined;
+    if (p && typeof p.x === 'number' && typeof p.y === 'number' && Number.isFinite(p.x) && Number.isFinite(p.y)) result.hud[g] = { x: p.x, y: p.y };
+  }
   const bindings = object(source.bindings), keyboard = object(bindings.keyboard), gamepad = object(bindings.gamepad);
   const keys = structuredClone(defaults.bindings.keyboard), pads = { ...defaults.bindings.gamepad }, actions = Object.keys(keys) as ActionId[];
   let keysValid = true, padsValid = true; const usedKeys = new Set<string>(), usedPads = new Set<number>();

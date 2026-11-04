@@ -52,6 +52,8 @@ export class TimerBlock {
   private readonly title: Phaser.GameObjects.BitmapText;
   private readonly line: Phaser.GameObjects.BitmapText[];
   private lastTicks = 0;
+  /** The `timer` group's parts (07 §4.1a). */
+  groupObjects(): { x: number; y: number }[] { return [this.time, this.segment, this.info]; }
   constructor(scene: Phaser.Scene) {
     const text = (x: number, y: number, large = false) => scene.add.bitmapText(x, y, large ? FONTS.large : FONTS.small, '').setScrollFactor(0).setDepth(DEPTH.hud);
     this.time = text(...U.timer, true).setOrigin(1, 0).setTint(UI_COLOR.text); this.segment = text(...U.segment).setOrigin(1, 0).setTint(UI_COLOR.textDim);

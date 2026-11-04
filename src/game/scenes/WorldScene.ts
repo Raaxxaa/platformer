@@ -40,6 +40,9 @@ import { isTouchDevice } from '../zoom.ts';
 import { vibrate, vibrationFor } from '../../ui/touch/vibration.ts';
 import { touchHudView } from '../../ui/touch/touchView.ts';
 import { TopHud } from '../../ui/hud/topHud.ts';
+import { shiftGroup } from '../../ui/hud/hudGroups.ts';
+import { hudDraft } from '../../ui/hud/hudPreview.ts';
+import { offsetOf, resolveHud, type HudLayout } from '../../ui/model/hudLayout.ts';
 import { LootHud } from '../../ui/hud/lootHud.ts';
 import { LootView } from '../view/lootView.ts';
 import { ItemCardPopup } from '../../ui/popups/itemCard.ts';
@@ -168,6 +171,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   }
   protected freezesExtraMenuWorld(): boolean { return false; }
   protected pauseMenuCovered(): boolean { return false; }
+  protected hudEditorOpen(): boolean { return false; }
   protected onPauseSettings(): void {}
   protected onKitEquipped(_kit: Kit): void {}
 
@@ -406,6 +410,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       if (!this.pauseMenuCovered() && paused.input.pause.pressed && menuPauseAllowed(paused.pauseKey)) { this.closePause(); this.render(); return; }
       this.pause.model.tick(this.time.now);
       this.pause.view.draw(this.pause.model, this.world, this.pauseInfo());
+      this.pause.view.setVisible(!this.hudEditorOpen());
       this.render();
       return;
     }
@@ -598,6 +603,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.topHud.update(topHudView(w), this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
     this.lootView.update(w, this.frameEvents);
     this.lootHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview, (t, c, s, icon) => this.abilityHud.toast(t, c, this.time.now, s, icon));
+    // 07 §4.1a: move the HUD groups to their saved (or default) places.
+    const hud = this.hudLayout(), v = offsetOf('vitals', hud.vitals), sl = offsetOf('slots', hud.slots);
+    shiftGroup([...this.topHud.groupObjects(), ...this.lootHud.groupObjects()], v.dx, v.dy);
+    shiftGroup(this.abilityHud.groupObjects(), sl.dx, sl.dy);
     // The item card over the interact target, or the item an open swap choice is about (07 §6.1–6.3).
     const choiceId = w.weaponSwapChoice?.itemId ?? (w.abilities.swapChoice ? Number(w.abilities.swapChoice.itemId) : null);
     const tgt = choiceId !== null ? w.groundItems.find((i) => i.id === choiceId) ?? null : interactTarget(w);
@@ -743,6 +752,9 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       `Time ${formatTime(w.runTicks)}${this.manual ? '  [manual]' : ''}`,
     ];
   }
+
+  /** The HUD layout for this device (07 §4.1a): saved places over the defaults (top-center timer with touch controls). */
+  protected hudLayout(): HudLayout { return hudDraft() ?? resolveHud(getUiSettings().hud, isTouchDevice()); }
 
   private drawHud(): void {
     // The M1 text readout, now only with ?hudtext=1 (07's HUD replaced it).

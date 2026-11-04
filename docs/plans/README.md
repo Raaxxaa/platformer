@@ -24,7 +24,7 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | M14 | Assist mode (slower speed, less damage, extra flask, longer doors) and polish from the SPEC-GAP answers (full run summary, Wolf pacing, parry buzz, hero on more screens)** | `M14-assist-and-polish.md` | Planned (3rd) |
 | M15 | Smash-style moves (Launcher, up air attack, juggles, dash attack), Daily challenge with share text, Boss Rush | `M15-moves-daily-bossrush.md` | Planned (4th) |
 | M16 | iPhone and Mac app for the user (Capacitor) | `M16-apple-apps.md` | Done (guide: `docs/apple-app.md`; the user runs the Mac steps) |
-| M17 | Playtest fixes: bow vs wolves, easier mountain climb, Dragon nest, cave labyrinth instead of the minecart; key rebinding; movable HUD (weapons/abilities top-right) | `M17-playtest-fixes-controls.md` | Planned (2nd) |
+| M17 | Playtest fixes: bow vs wolves, easier mountain climb, Dragon nest, cave labyrinth instead of the minecart; key rebinding; movable HUD (weapons/abilities top-right) | `M17-playtest-fixes-controls.md` | Done |
 | M18 | Seed variety (object spots, enemy formations), daily twists, seed challenge, online daily leaderboard | `M18-seeds-daily-leaderboard.md` | Planned (5th, after M15) |
 
 (M6 and M8 were folded into other milestones: classes moved into M4, and the art pass happens as we go in the ART plans.)
