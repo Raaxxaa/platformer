@@ -26,10 +26,10 @@ function tap(w: GameWorld, spec: InputSpec, wait: number): WorldEvent[] {
 }
 
 describe('player projectiles (02 §9.8, §10.4)', () => {
-  it('spawn at +12, −18 from the feet; fly at their speed; vanish at their range; track distance', () => {
+  it('spawn at +12, −10 from the feet; fly at their speed; vanish at their range; track distance', () => {
     const w = setup('bow');
     const p = firePlayerProjectile(w, 0, 99, 'arrow', 0)!;
-    expect([p.x, p.y]).toEqual([w.body.x + 12, w.body.y - 18]);
+    expect([p.x, p.y]).toEqual([w.body.x + 12, w.body.y - 10]);
     run(w, {}, 10);
     expect(p.traveled).toBeCloseTo(50);
     run(w, {}, 53);
