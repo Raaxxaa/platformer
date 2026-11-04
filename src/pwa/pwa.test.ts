@@ -22,3 +22,11 @@ describe('installable app (M12 Task 6)', () => {
     expect(buildPrecache([{ path: 'index.html', size: 11 }, { path: 'assets/a.png', size: 3 }, { path: 'assets/b.js', size: 7 }]).version).not.toBe(a.version);
   });
 });
+
+describe('the app build (M16 Task 1)', () => {
+  it('uses relative asset paths, so the same dist/ works on GitHub Pages and inside the iPhone/Mac app', async () => {
+    const { readFileSync } = await import('node:fs');
+    expect(readFileSync('vite.config.ts', 'utf8')).toMatch(/base: '\.\/'/);
+    expect(readFileSync('index.html', 'utf8').replace('src="/src/main.ts"', '')).not.toMatch(/(src|href)="\//);
+  });
+});
