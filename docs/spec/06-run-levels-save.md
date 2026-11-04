@@ -611,6 +611,27 @@ Class element: Swordsman `fire`, Tank `lightning`, Archer `wind`, Wizard `lightn
 - **Storing:** on `practiceBestSaved`, write that attempt's samples to `localStorage` key `rushblade.ghosts` as JSON `{ v: 1, ghosts: Partial<Record<PracticeKey, { ticks: number; data: string }>> }` (`ticks` = the new best), replacing the key's old ghost. It is kept **outside** `SaveData` so the export code stays small (§15.3): not exported, imported or backed up. Reads and writes are wrapped in try/catch; a failure means no ghost, with no warning.
 - **Playback:** in a practice attempt, if a ghost exists for `${levelId}|${class}` and its `ticks` equals `save.practiceBests` for that key, draw sample `floor(stageTicks / 2)` as the player **body sprite only** (no trim, weapon or smear, 08 §4.2) at **alpha 0.4**, just below the player. It has no collision, hitboxes, sounds or interaction and does not affect the core. After its last sample it disappears. A ghost whose `ticks` does not match (e.g. after a save import) is ignored.
 
+
+### 14.1 Daily challenge (M15)
+One run a day that everyone gets the same: same seed, same class and weapon, same layouts, same Dragon roll.
+- **Title → Daily.** The day is the **UTC date** (so players everywhere share it); the seed text is `DAILY-YYYYMMDD` (§7).
+- **The kit comes from the seed:** stream `daily` (scope `'run'`): `class = ['swordsman','tank','archer','wizard'][floor(r1 × 4)]`, then `weapon = that class's 2 starting weapons[floor(r2 × 2)]` (03 §3; never the unlockable third). The player's own look (09) is used.
+- It is a normal full run from Stage 1 (no Home Village: the run starts at the Stage 1 start with that kit). The player chooses the road at the Crossroads inn as usual.
+- **Attempts:** unlimited. The **first** attempt of the day (finished or died) is the day's **official** result; the **best** finished time is also kept. Restarting in the first 30 s of the first attempt doesn't use it up.
+- It is a typed-seed run, so it **never writes PBs or best segments** (§5.3). It writes `save.daily[YYYYMMDD] = { official: {result, ticks, stageReached}, bestTicks, attempts }` (the last 60 days are kept), counts in stats and history (`mode: 'daily'`), and unlocks work as in normal runs. Assist (§5.4) is allowed and shown on the result.
+- **Result screen:** time or the stage reached, splits, the kit, and a **Share** button that copies a text like
+  `RUSHBLADE Daily 2026-11-04 · Tank (War Maul) · Forest · 8:42.13 · 🟩🟩🟥🟩` (one square per split: green if faster than your best daily split on any day with the same road, red if slower, grey if none; `(assist)` added when assisted; `💀 Stage 3` for a death).
+- **Online leaderboard:** not in M15 (GitHub Pages has no server). The share text is how players compare. A leaderboard needs a free online service and is a later decision.
+
+### 14.2 Boss rush (M15)
+Every boss back to back, against the clock. **Unlocked** after the Enemy King has been beaten once in a normal or daily run (`save.progress.kingBeaten`; on an old save, true if `stats.runsCompleted > 0`).
+- **Title → Boss Rush.** Choose a kit `(class, weapon)`, and **Dragon** `off` / `random color` / a color.
+- **Order:** Great Boar → Stone Colossus → Spider Queen → (the Dragon, if on) → Black Knight → Enemy King. Each fight happens in that boss's own arena (the boss-arena section of its level; the Dragon in the side arena of `mountains`), with that boss's stage scaling (00-README).
+- **Loadout:** the practice **Stage 4 preset** (§14) for the kit, plus the class's **second M4 ability** at Lv3 in slot 2, and an empty weapon slot 2. HP 100, no stat upgrades, no perks, no gold or loot (bosses drop nothing here).
+- **Between fights:** a 1.0 s fade (not timed); flask charges refilled to max; HP +50% of max (capped at max). Ability charges full. Rush and statuses reset.
+- **Time** = the sum of each fight's ticks, from the first tick of control in the arena to the boss's death tick. Splits per boss. Death or restart → the result screen with how far you got; Retry starts again from the Great Boar.
+- **Best:** `save.bossRushBests[`${class}|${dragon ? 'dragon' : 'no_dragon'}`]` (ticks and splits), written only by non-assisted attempts. History `mode: 'bossRush'`. No unlocks, blueprints or accessories come from boss rush (accessories need a real kill in a run or practice; 09 §3).
+
 ---
 
 ## 15. Save data

@@ -39,7 +39,7 @@ interface Look {
 - The `plate` helmet and `robe` hat count as built-in headwear: choosing a `head` accessory replaces them (the outfit's hat layer hides).
 
 ## 3. Accessories from enemies
-The **first time the player kills an enemy type**, they get its accessory, always. Kills count in normal runs, typed-seed runs and practice; not the Training Yard's dummies and straw targets. Summons count (Spiderlings). The Dragon gives one accessory **per color**.
+The **first time the player kills an enemy type**, they get its accessory, always. Kills count in normal runs, typed-seed runs, daily runs and practice (not boss rush); not the Training Yard's dummies and straw targets. Summons count (Spiderlings). The Dragon gives one accessory **per color**.
 
 | Enemy | Accessory | Slot |
 |---|---|---|

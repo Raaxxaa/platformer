@@ -485,6 +485,47 @@ The value is clamped to `[floor, 300]`, where the floor is 0, or 200 under Overd
 - Landing in the middle of an attack does not cancel it. The ground move cap applies from the moment of landing.
 - **Down + weapon button in the air** is a dive slam (§9.7) instead of a combo step. 01 decides when a dive is allowed.
 
+### 9.6a Up attacks, juggles and dash attacks (M15, "Smash-style" moves)
+Three moves every weapon gets on top of its combo. They use the weapon's **step 1** numbers (02 §10.2) and its **weight** (02 §1, `light` / `medium` / `heavy`), so no weapon needs its own table. They count as weapon attacks for everything else (grade, match, element, perks, hit streak, Rush, hybrids).
+
+**1. Launcher (ground up attack):** Up + weapon button on the ground. An upward swing that **Launches** small and medium enemies (§4.4), so you can jump after them.
+
+| Weight | Start | Active | Recov | Box `dx,dy,w,h` | Damage | KB `x,y` | Poise | Stop |
+|---|---|---|---|---|---|---|---|---|
+| light | 0.10 | 0.08 | 0.22 | `10,−30,30,36` | step 1 × 1.2 | 40, −380 | step 1 × 1.5 | 0.05 |
+| medium | 0.14 | 0.10 | 0.26 | `12,−32,36,40` | step 1 × 1.2 | 40, −380 | step 1 × 1.5 | 0.05 |
+| heavy | 0.22 | 0.12 | 0.34 | `14,−34,44,44` | step 1 × 1.2 | 40, −400 | step 1 × 1.5 | 0.075 |
+
+Damage and poise round half up. Launch (§4.4) applies to small and medium targets; large enemies and bosses take the knockback (bosses: none, as usual). Move cap during it: the weapon's attack move cap (§9.3). The combo resets after it.
+
+**2. Up air attack:** Up + weapon button in the air (not a dive: Down still makes a dive slam, §9.6).
+
+| Weight | Start | Active | Recov | Box | Damage | KB | Poise | Stop |
+|---|---|---|---|---|---|---|---|---|
+| light | 0.08 | 0.08 | 0.18 | `4,−34,30,26` | step 1 × 1.0 | 20, −300 | step 1 | 0.05 |
+| medium | 0.10 | 0.10 | 0.22 | `4,−34,30,26` | step 1 × 1.0 | 20, −300 | step 1 | 0.05 |
+| heavy | 0.16 | 0.12 | 0.28 | `4,−36,40,30` | step 1 × 1.0 | 20, −320 | step 1 | 0.075 |
+
+- Launches small and medium enemies like the Launcher.
+- **Hop:** on its first active tick the player gets `vy = min(vy, −140)` px/s, **once per airtime** (reset on touching ground or a wall; the Iron Fists uppercut hop shares this once-per-airtime flag). This is a small extra lift for chasing a launched enemy, like Smash's up-air.
+
+**3. Juggles:** a direct hit from the player on an enemy that is **in the air because of a Launch** refreshes the Launch: the enemy's `vy = min(vy, −160)` and it can't act until it lands + 0.2 s. Each such hit is a **juggle hit**: `juggleCount += 1` on that enemy (reset when it lands) and the hit gets **+0.10 per juggle** in 02's additive pool (§3.1 step 4), up to **+0.40** (4 juggles). After the 4th juggle hit the enemy is no longer refreshed and falls (no infinite combos). Bosses are never launched, so never juggled.
+
+**4. Dash attack (Rushing Strike):** a weapon button pressed during a dash, or within 0.10 s after it ends (same trigger as the Spear lunge, §10.5), for every **melee** weapon that doesn't already have its own dash move (not the Spear, whose lunge stays; not the Shield; the Katana's charged dash-slash stays as its charged attack and the Rushing Strike is its tap).
+- The dash ends; the player keeps the dash's `vx` through the startup and active ticks, then the normal decel.
+
+| Weight | Start | Active | Recov | Box | Damage | KB | Poise | Stop |
+|---|---|---|---|---|---|---|---|---|
+| light | 0.04 | 0.10 | 0.22 | step 1 box, `w + 8` | step 1 × 1.3 | 220, −60 | step 1 × 1.5 | 0.05 |
+| medium | 0.04 | 0.10 | 0.26 | step 1 box, `w + 8` | step 1 × 1.3 | 220, −60 | step 1 × 1.5 | 0.05 |
+| heavy | 0.06 | 0.12 | 0.32 | step 1 box, `w + 8` | step 1 × 1.3 | 260, −80 | step 1 × 1.5 | 0.075 |
+
+- It counts as a `dashAttack` for Rush (+5, §8.2). No i-frames after the dash ends (the dash's own i-frames end with it).
+
+**Ranged weapons** (Bow, Crossbow, Hand Cannon, Javelin, Throwing Knives, Staff, Wand): Up + button (ground or air) fires their normal tap shot **straight up** (angle −90° from `0, −30`). They have no Launcher, up air attack or dash attack. **Spell Tome:** its step-1 blast is placed above (`0, −40`, same size). **Storm Hammer:** Up + button is still the throw when it's ready (§11); otherwise it is the Launcher (ground) or up air attack.
+
+**Inputs:** "Up" = `moveY = −1` on the press tick (keyboard W/↑, D-pad or stick up, touch stick up). Charge weapons (§9.4) don't charge from these moves.
+
 ### 9.7 Dive slam damage (movement and bounce: 01)
 
 | | Light or medium weapon | Heavy weapon |

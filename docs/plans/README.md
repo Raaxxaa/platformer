@@ -22,6 +22,7 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | M12 | Phone version: touch controls, phone screen scaling, tap menus, installable app (PWA), Low effects | `M12-phone-version.md` | Done |
 | M13 | Character customization: races, looks, clothes and colors, 35 enemy accessories, shop cosmetics, wardrobe, collection | `M13-character-customization.md` | Done |
 | **M14** | **Assist mode (slower speed, less damage, extra flask, longer doors) and polish from the SPEC-GAP answers (full run summary, Wolf pacing, parry buzz, hero on more screens)** | `M14-assist-and-polish.md` | **Next** |
+| M15 | Smash-style moves (Launcher, up air attack, juggles, dash attack), Daily challenge with share text, Boss Rush | `M15-moves-daily-bossrush.md` | Planned (after M14) |
 
 (M6 and M8 were folded into other milestones: classes moved into M4, and the art pass happens as we go in the ART plans.)
 
@@ -39,3 +40,5 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | ART8 | Stages 3–4, the Black Knight, Enemy King, the Dragon (4 colors), the other abilities and weapons (`ART8-stage3-4-bosses-weapons.md`) | Done |
 | ART9 | Music (`ART9-music.md`) | Done (waiting for the user to listen) |
 | ART10 | Touch buttons and app icons; layered player (4 races, hair, beards, outfits), 35 accessories, 24 shop cosmetics, wardrobe art (`ART10-phone-and-customization.md`) | Done |
+| **ART11** | **New-move poses and streaks for all 19 weapons, juggle effects, Daily and Boss Rush icons, move sounds** (`ART11-new-moves.md`) | **Next** |
+| ART12 | New art style (waiting for the user's examples) | To write |
