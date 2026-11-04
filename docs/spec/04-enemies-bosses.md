@@ -166,7 +166,7 @@ special states: spawnIn, hanging, submerged, stone, channel, dazed, perched/pass
 | Bandit Brute | Club Swing | x ≤ 48 | 0.55 | 0.12 | 0.55 | 1.4 | 18 | `26,−20,44,36` | 260, −160 | |
 | | Overhead Smash | x ≤ 56 | 0.80 | 0.10 | 0.80 | 3.5 | 22 | `30,−12,40,24` + `brute_wave` | 300, −240 | wave forward |
 
-- **Wolf:** after any attack it backs off to its preferred band (72–112) and paces. It does not turn during the leap; the leap box ends on landing.
+- **Wolf:** after any attack it backs off to its preferred band (72–112) and paces: it walks (60 px/s) toward one end of the band, then the other, turning after `0.6 + rng × 0.4` s (`enemyAI` stream) or at the band's edge, always facing the player. It does not turn during the leap; the leap box ends on landing.
 - **Bandit Archer:** if `distX < 96` and it can step back, it walks away at `walk`; if cornered, it uses Kick.
 - **Wild Boar Charge:** does not turn while charging. The box stays active for the whole run and hits the player at most once. Ends when 0.90 s pass (then Rec), at a ledge (skids to a stop, then Rec), or at a wall: then **dazed** for 1.2 s (cannot act, takes damage normally; not a 02 control effect) instead of Rec. Emits `camera.shake(2, 0.15)` on a wall.
 - **Bandit Brute:** the Overhead Smash wave spawns at `+24, 0` on Act start.
@@ -303,7 +303,7 @@ special states: spawnIn, hanging, submerged, stone, channel, dazed, perched/pass
 | `arcane_bolt` | Castle Mage | straight | 240 | 8×8 | 300 px | 10 | vanish | |
 | `shockwave` | bosses | floor wave | per attack | 16×16 | per attack | per attack | stops | jumpable |
 | `falling_rock` | Great Boar, Stone Colossus | falling | 420 | 18×18 | — | 15 / 16 | shatters | floor marker |
-| `venom_glob` | Spider Queen | arc, T 0.8 | — | 10×10 | — | 15 | puddle 48×8, 2.0 s | Poisoned +1 |
+| `venom_glob` | Spider Queen | arc, T 0.8 (own speed cap 420 px/s, so it reaches its target up to 320 px away) | — | 10×10 | — | 15 | puddle 48×8, 2.0 s | Poisoned +1 |
 | `dark_wave` | Black Knight | floor wave | 300 | 20×32 | 480 px | 18 | stops | jumpable (peak 56) |
 | `royal_orb` | Enemy King | straight, homing r 200, 45°/s | 160 | 12×12 | 3.0 s life | 15 | vanish | |
 | `falling_sword` | Enemy King | falling | 600 | 12×32 | — | 18 | stays 0.5 s (no hits), vanishes | floor marker |

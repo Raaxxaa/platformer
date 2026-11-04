@@ -629,8 +629,8 @@ Slow everything except you.
 | 4 | 4.5 |
 | 5 | 5.0 |
 
-- For `durationS` (player ticks), every **non-player** entity runs at **×0.35** speed: enemies and bosses (multiply into 02's enemy `timeScale`, which already scales movement and all AI timers), enemy projectiles (speed and life timers ×0.35), enemy status timers, and level hazards and their timers (cannons, swinging blades, falling rocks, collapsing platform timers). The core exposes this as `worldTimeScale` (0.35 while Time Slow runs, else 1.0); 01, 04 and 06 objects multiply their speeds and timers by it.
-- **Not slowed:** the player, the run timer, timed doors (they use the run timer), player-owned things (projectiles, Turret, boulder, zones, bolts, Blade Flurry, the thrown Storm Hammer), the minecart, Lucky Block buff/debuff timers, the Rush meter.
+- For `durationS` (player ticks), every **non-player** entity runs at **×0.35** speed: enemies and bosses (multiply into 02's enemy `timeScale`, which already scales movement and all AI timers), enemy projectiles (speed and life timers ×0.35), and level hazards and their timers (cannons, swinging blades, falling rocks, collapsing platform timers). The core exposes this as `worldTimeScale` (0.35 while Time Slow runs, else 1.0); 01, 04 and 06 objects multiply their speeds and timers by it.
+- **Not slowed:** the player, the run timer, enemy status timers (burn, poison, chill, frozen: they keep their normal length, so Time Slow does not stretch a freeze), timed doors (they use the run timer), player-owned things (projectiles, Turret, boulder, zones, bolts, Blade Flurry, the thrown Storm Hammer), the minecart, Lucky Block buff/debuff timers, the Rush meter.
 - Recasting (only possible with cooldown bonuses) restarts the duration; it does not stack.
 - **Linked:** duration ×1.5.
 

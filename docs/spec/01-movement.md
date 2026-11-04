@@ -661,7 +661,7 @@ Camera math is a pure function in `src/core/camera.ts` (updated every tick, test
 - **Active bounds** = the level rectangle, unless the player is inside a camera zone (`CameraZoneDef { x, y, w, h, mode: 'always' | 'whileLocked' }`). `always` zones apply whenever the player's center is inside. `whileLocked` zones (arenas, boss arenas) apply only while 06 reports that arena locked. The Dragon side arena has no locking zone.
 - When the active bounds change, each edge of the clamp rectangle moves linearly from the old to the new value over 0.4 s.
 - **Snap** (no smoothing, no blend, look-ahead reset): stage start, after restart, after sleeping at an inn, scene changes, and any single-tick player move larger than 160 px.
-- The camera never shows outside the active bounds (before shake). Shake can show up to 8 px beyond; the Phaser layer fills that with the biome background color.
+- The camera never shows outside the active bounds (before shake). If the active bounds are smaller than the 640 × 360 view (the Plains arena is 608 × 288), the camera centers on them and holds still; the area around is level art (the arena's walls, floor and ceiling). Shake can show up to 8 px beyond; the Phaser layer fills that with the biome background color.
 - The camera has no effect on gameplay.
 
 ### 14.4 Screen shake

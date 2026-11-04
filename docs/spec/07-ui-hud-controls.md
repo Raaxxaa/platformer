@@ -148,7 +148,7 @@ Every layout box (for text: the cap box) stays inside x 8–632, y 8–352; only
 
 | Element | Position | Size | Notes |
 |---|---|---|---|
-| HUD plates | top (4, 4) 196 × 48 · bottom (4, 280) 128 × 76 | 9-slice | `hud_plate_9` at alpha 0.75 behind the top-left and bottom-left groups, so they read on any background (after playtesting) |
+| HUD plates | top (4, 4) 216 × 48 · bottom (4, 280) 128 × 76 | 9-slice | `hud_plate_9` at alpha 0.75 behind the top-left and bottom-left groups, so they read on any background (after playtesting) |
 | Heart icon | (8, 9) | 10 × 10 | `hud_heart` |
 | HP bar frame | (20, 8) | 160 × 12 | 1 px `ink` border; fill area 158 × 10 at (21, 9). Made bigger after playtesting so HP is easy to see |
 | HP text | (184, 10) | — | `87/100` |
@@ -792,7 +792,7 @@ Curses: `one_hit` `You die in one hit until 10 kills` · `no_heal` `Can't drink 
 Unit tests (Vitest) on `src/ui/model/` and `src/core/` unless marked e2e.
 
 1. HP fill width: 50/100 → 79 px; 1/208 → 1 px; 0/100 → 0 px; 100/100 → 158 px.
-2. Rush fills: value 150 → [38, 19, 0]; 299 → [38, 38, 37]; 300 → [38, 38, 38] with the level-3 blink on.
+2. Rush fills: value 150 → [46, 23, 0]; 299 → [46, 46, 45]; 300 → [46, 46, 46] with the level-3 blink on.
 3. Flask fill: 500 tenths → 22 px; 999 → 43 px; 1000 → 44 px.
 4. Ability shade: `rechargeLeft` 480 of `cooldownTicks` 960 → 8 px; with `rechargeRate` 1.25 the label is `4`.
 5. Debuff sub-label: 5400 ticks → `45`; 1 tick → `1`. The effects list orders curse, then debuffs by first application, then buffs.

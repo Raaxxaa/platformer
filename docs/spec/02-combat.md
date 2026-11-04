@@ -101,7 +101,7 @@ Where the numbers live in code: sections 2–9, 11 and 12 go in `src/core/tuning
 ### 3.3 Enemy → player
 `damage = Math.floor(A × Π incoming multipliers + 0.5)` (round half up, as §3.1 step 7), with a minimum of 1.
 - **A** is the attack's damage **at the current stage** as computed by 04. Stage scaling is applied in 04, not here.
-- The incoming multipliers are: block **0.25** (§12), Glass Bones (05), and damage-taken stat upgrades (05).
+- The incoming multipliers are: block **0.25** (§12), Glass Bones (05), damage-taken stat upgrades (05), and Assist mode's Damage taken (06 §5.4).
 - If a one-hit curse is active (05), damage = current HP.
 - Hazards (spikes and so on, from 01) and the player's own damage-over-time effects (§5.4) go through this same formula.
 
@@ -203,7 +203,7 @@ Screen-shake requests:
 1. If the player is invulnerable, ignore the hit. Sources of invulnerability are: dash and slide i-frames (01), hurt i-frames, parry i-frames, the Katana dash-slash, the Spear lunge, and ability i-frames (03).
    - **Source `hazard`** (spikes in 01 §13.4, level hazards in 06 §10): only hurt i-frames count, including Second Wind's 2.0 s (05). Dash, slide, parry, weapon-move and ability i-frames do **not** protect from hazards (01 §7.2, 03 §8.1).
 2. Riposte stance: 03 handles the hit.
-3. If a shield parry applies (§12), parry and stop here.
+3. If a shield parry applies (§12), parry and stop here. Emit `parry` (07 vibration, 08 `parry_flash`). A Riposte block (03 §8.4) also emits `parry`.
 4. If a shield block applies (§12), the block multiplier is used in step 5, and steps 7–10 follow §12 instead.
 5. Compute damage (§3.3) and subtract it from HP.
 6. If HP ≤ 0: if Second Wind is available, 05 applies it and the pipeline continues at step 7 (Second Wind's 2.0 s invulnerability replaces step 8's i-frames). Otherwise the player dies (06) and the pipeline stops. The death cause passed to 06 is the attacking enemy's id for a direct hit, `'spikes'` for spikes, `'hazard'` for a level hazard, and the status id for a damage-over-time tick.

@@ -57,3 +57,21 @@ Build chats list here anything the spec didn't answer (or that looked wrong), wh
 | 54 | `src/ui/wardrobe/wardrobeModel.ts`, 09 §6 | 09 does not say what the Back key does in the wardrobe, what Random may pick, or what happens to the beard when the race changes. | Back closes and **throws the changes away** (use Confirm to keep them). Random picks any owned option, and a slot can come out as None. Changing race keeps the skin in range and sets that race's default beard (09 §2). |
 | 55 | `src/game/scenes/StageScene.ts`, 09 §7 | 09 §7 says the class pick, run summary and death screen "use the same look", but none of these screens draws the hero in this build. | Only the world player and the wardrobe preview wear the look. The practice ghost stays a silhouette as written. |
 | 56 | `src/game/view/LookRig.ts` (ART10 SPEC-GAP 11) | Dwarves have no lower head: every race shares one head point, so hair, beards and hats sit the same on all four. | Left as the art ships it; a per-race 1 px offset would need a design call. |
+
+## Design chat answers (2026-11-04)
+
+Everything not listed under "Change" is **accepted as built**; the spec now says what the build does where that mattered. Changes are built in `docs/plans/M14-assist-and-polish.md`.
+
+**Accepted as built:** 4, 7 (camera rule added to 01 §14.3), 8, 9, 11 (07 test checklist fixed to 46 px), 14, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 30, 31, 32, 33, 34, 36, 37, 38, 39, 40, 42 (the Lv5 stun makes up for the lower damage), 43, 44, 45, 46, 47 (a real balance pass waits for playtest numbers), 48, 49, 50, 51 (the street shortcut under the gatehouse stays: speed is rewarded, and it runs under crossbow fire), 54, 56.
+**Accepted, spec changed to match the build:** 20 (Time Slow no longer slows enemy status timers: 03 §11.4).
+**Placeholder kept until the story is decided:** 35 (the Enemy King's title).
+
+**Change (M14):**
+- **5** Wolf pacing: walks back and forth inside its band (04 §3, now written out).
+- **10** Top HUD plate widened to 216 px so the HP text fits (07 §4.1).
+- **15** Venom Spit gets its own arc speed cap of 420 px/s so all three globs reach their targets (04 §8).
+- **41** Full run summary of 07 §7.11 (splits with deltas and best-segment stars, chests, Lucky Blocks, flasks, damage taken, classes discovered): track the missing counters.
+- **52** A `parry` event on a successful shield parry and on a Riposte block (02 §5.2 step 3); the phone buzzes on it.
+- **55** The hero's look also shows on the class pick preview, the death screen and the run summary (small portrait).
+
+**Art chat questions (`docs/art/SPEC-GAPS-art.md`):** all accepted as built. The contrast report FAILs (10, 15, 19, 22: the player against the mountain, village and kingdom backdrops, armored enemies against grey castle walls, the white and storm Dragons) are **accepted by the design chat for the user**: enemies stay readable through their colored details and telegraph flashes; revisit only if a playtester finds someone hard to see. Code follow-ups go in M14: art 20 (Crossbowman aim frames), 22 (Dragon Wing Hop pose), 23 (Throne Beam length and the Enemy King's phase-3 aura), 26 (music ducking under big roars and the jackpot).

@@ -182,6 +182,27 @@ Rolled once at run start on the `dragon` stream with scope `run` (§7.2). **Alwa
 - **PB update:** on run complete, if the run counts (below) and there is no PB for the key or `splits[4] < pb.ticks`, replace the PB with this run's splits. Emit `pbSaved`.
 - **Runs that never write PBs or best segments:** typed-seed runs (assumption, §7.1), practice runs. They still compare against the PBs.
 
+
+### 5.4 Assist mode (M14)
+For players who find the game too hard (playtest feedback). Off by default. Settings → **Assist** (07 §7.7) has four options:
+
+| Option | Values | Effect |
+|---|---|---|
+| **Game speed** | 100% · 85% · 70% | The whole game runs slower in real time: the fixed-step loop advances `120 × speed` ticks per real second. Nothing in the simulation changes (same ticks, same rules), so it stays deterministic |
+| **Damage taken** | 100% · 75% · 50% | One more incoming multiplier (02 §3.3) on every enemy and hazard hit. Minimum damage stays 1. The one-hit curse (05 §8) still kills |
+| **Extra flask charge** | off · on | +1 max flask charge at run start, on top of flask upgrades (max 5 with it) |
+| **Longer timed doors** | off · on | Timed-door limits ×1.5 (§9.5) |
+
+- **Locking:** Damage taken, Extra flask charge and Longer timed doors are copied into `RunState.assist` at run start and stay fixed for that run; changing them during a run (from Pause → Settings) applies from the next run, and the settings screen says so. Game speed can change at any time.
+- **An assisted run** is one where any option was not at its default at run start, or Game speed was below 100% at any moment. It:
+  - shows `ASSIST` in small `textDim` under the run timer (07 §4.11);
+  - **never writes** personal bests or best segments (like typed-seed runs, §5.3), but still compares against them;
+  - is saved in history with `assist: true` and shown with an `A` tag in records;
+  - **still counts** for everything else: unlocks, blueprints, the third starting weapon, accessories (09), discovered classes, stats.
+- **Practice mode** has the same options in its setup screen; assisted practice doesn't write practice bests.
+- **Offer:** after the player's **5th death before ever beating the Great Boar** (`progress.stage1Cleared` false), the death screen shows once: `Finding it hard? Assist mode can slow the game down and soften hits. (Settings → Assist)`. Saved as `progress.assistOffered`.
+- **Data:** `RunState.assist: { damageTaken: 1 | 0.75 | 0.5; extraFlask: boolean; longerDoors: boolean; slowedEver: boolean }`; `SaveData.settings.assist: { speed: 1 | 0.85 | 0.7; damageTaken: 1 | 0.75 | 0.5; extraFlask: boolean; longerDoors: boolean }`; `RunRecord.assist: boolean`.
+
 ---
 
 ## 6. Death and instant restart

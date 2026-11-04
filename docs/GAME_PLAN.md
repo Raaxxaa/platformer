@@ -757,7 +757,7 @@ Each milestone ends with something you can play.
 | **Stat upgrades** | The pick-1-of-3 pool after each boss | About 12 options |
 | **Gold drops** | How much gold a stage gives, to set the prices in 9.3 | Aim for 400–600 per stage, tune in playtesting |
 | **Tutorial** | How new players learn the moves | **Decided:** a Training Yard next to the Home Village with 17 practice stations on dummies (9.3), and Stage 1 still teaches as you play |
-| **Accessibility** | Options for players who struggle | Assist mode (slower game speed, extra flask charge). Assist runs don't count for best times |
+| **Accessibility** | Options for players who struggle | **Decided (M14):** Assist mode: game speed 85%/70%, less damage taken, an extra flask charge, longer timed doors. Assisted runs don't set best times but unlock everything (06 §5.4) |
 
 ### 15.3 Quick checks on my guesses
 1. **Road choice:** you pick the Mountain or Forest road at the Crossroads Village (what I wrote). Or should it be random?
