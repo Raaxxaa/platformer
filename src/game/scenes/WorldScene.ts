@@ -256,6 +256,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       // M4 (plan "Global Constraints"): classes, abilities and weapons.
       api.abilityRuntime = () => structuredClone({ ...this.world.abilities, cast: this.world.abilities.cast ? { slot: this.world.abilities.cast.slot, startTick: this.world.abilities.cast.startTick, linked: this.world.abilities.cast.linked } : null });
       api.classState = () => structuredClone(this.world.classState);
+      api.health = () => ({ ...this.world.health });
       api.setKit = (cls: ClassId, weapon: WeaponId) => this.equipKit({ cls, weapon });
       api.giveAbility = (slot: 0 | 1, id: AbilityId | null, level: AbilityLevel = 1) => { this.world.abilities.slots[slot] = id ? newAbility(id, level) : null; this.world.refreshClassState(); };
       api.giveWeapon = (slot: 0 | 1, id: WeaponId) => { this.world.combat.slots[slot] = newWeapon(id); this.world.refreshClassState(); };

@@ -1,5 +1,6 @@
 // M3 stage scene: loads public/levels/<id>.json and plays it, with doors, loot markers, hints, the boss bar,
 // the run timer, the split popup and the temporary stage-clear screen.
+import { hurtPlayer } from '../../core/combat/health.ts';
 import Phaser from 'phaser';
 import { killEnemy } from '../../core/combat/resolve.ts';
 import { loadLevel, type LevelData } from '../../core/level/loadLevel.ts';
@@ -52,7 +53,7 @@ import { dropBlueprint } from '../../core/loot/blueprintItems.ts';
 import type { BlueprintId } from '../../core/loot/blueprints.ts';
 import { abilityPool, weaponPool } from '../../core/loot/roll.ts';
 import { MenuScreens } from '../menuScreens.ts';
-import { DeathView } from '../../ui/screens/death.ts';
+import { shouldOfferAssist, DeathView } from '../../ui/screens/death.ts';
 import { getUiSettings } from '../../ui/inputSettings.ts';
 import type { HomePanelAction } from '../../ui/home/homePanels.ts';
 import { FRONT_UI } from '../../data/frontUi.ts';
@@ -210,6 +211,7 @@ export class StageScene extends WorldScene {
     api.screenState = () => this.menus.active ? this.menus.snapshot() : this.practiceResult ? { screen: 'practiceResult', model: { cursor: this.practiceResult.model.cursor, canConfirm: this.practiceResult.model.canConfirm } } : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
     api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else if (this.practiceResult) this.practiceResult.action(action); else this.deathView?.action(action); };
     api.timerBlock = () => this.timerBlock.snapshot();
+    api.hurtPlayer = (damageA: number) => hurtPlayer(this.world, { kind: 'enemyHit', enemyId: 0, enemyDefId: 'bandit', damageA, attackerCx: this.world.body.x + 40, melee: true });
     api.practice = () => this.practice ? { setup: { ...this.practice }, clear: this.world.practiceClear ? { ...this.world.practiceClear } : null, resultOpen: !!this.practiceResult,
       ghost: { loaded: this.ghostView?.samples?.length ?? 0, shown: this.ghostView?.shown ?? false, recorded: this.recorder.samples.length }, dragon: { ...this.world.run.dragon } } : null;
     api.dropBlueprint = (id: BlueprintId) => dropBlueprint(this.world, id, this.world.body.x, this.world.body.y);
@@ -427,7 +429,9 @@ export class StageScene extends WorldScene {
     if (!deathVisible) { this.deathView?.destroy(); this.deathView = null; }
     if (deathVisible) {
       this.overlay.setVisible(false); this.overlayText.setVisible(false);
-      if (!this.deathView) this.deathView = new DeathView(this, { stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCode(w.opts.layout) : undefined }, (result) => {
+      const offer = !this.deathView && !this.practice && shouldOfferAssist(saveStore().data);
+      if (offer) saveStore().update((s) => { s.progress.assistOffered = true; });
+      if (!this.deathView) this.deathView = new DeathView(this, { assistOffer: offer, stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCode(w.opts.layout) : undefined }, (result) => {
         this.deathView?.destroy(); this.deathView = null; this.clearMenuInput();
         if (result === 'restart') w.restart(); else if (result === 'home') this.requestHome(); else this.toTitle();
       });

@@ -7,9 +7,16 @@ import type { HomePanelAction } from '../home/homePanels.ts';
 import { MenuSurface } from './records.ts';
 import { DeathModel, deathCause } from './front.ts';
 import { SAVE_RULES } from '../../data/save.ts';
+import { ASSIST } from '../../data/assist.ts';
 export interface DeathDetails { stage: number; levelId: string; section: number; runTicks: number; cause: string; seed: string;
   /** 06 §8.7: this stage's layout code. */
-  layout?: string }
+  layout?: string;
+  /** 06 §5.4: the one-time Assist offer. */
+  assistOffer?: boolean }
+/** The Assist offer shows once, at the 5th death before the Great Boar was ever beaten (06 §5.4). */
+export const shouldOfferAssist = (s: { stats: { deaths: number }; progress: { stage1Cleared: boolean; assistOffered?: boolean } }): boolean =>
+  !s.progress.stage1Cleared && !s.progress.assistOffered && s.stats.deaths >= ASSIST.offerAfterDeaths;
+export const ASSIST_OFFER = ['Finding it hard? Assist mode can slow the game down', 'and soften hits. (Settings → Assist)'];
 export class DeathView extends MenuSurface {
   private readonly details: DeathDetails;
   private readonly choose: (result: typeof U.deathCommands[number]) => void;
@@ -22,6 +29,7 @@ export class DeathView extends MenuSurface {
     this.text(this.scene.scale.width / 2, D.titleY, 'YOU DIED', UI_COLOR.bad, true);
     const d = this.details, biome = U.biomes[d.levelId as keyof typeof U.biomes] ?? d.levelId;
     [`Stage ${d.stage} · ${biome} · Section ${d.section} of ${SAVE_RULES.maxSection}`, formatTime(d.runTicks), deathCause(d.cause), `Seed ${d.seed}${d.layout ? ` · Layout ${d.layout}` : ''}`].forEach((line, i) => this.text(this.scene.scale.width / 2, D.infoY + i * D.lineH, line, UI_COLOR.textDim));
+    if (d.assistOffer) ASSIST_OFFER.forEach((line, i) => this.text(this.scene.scale.width / 2, D.rowsY - 34 + i * 11, line, UI_COLOR.highlight));
     U.deathRows.forEach((label, i) => {
       const x = (this.scene.scale.width - D.rowW) / 2, y = D.rowsY + i * D.rowStep;
       this.text(this.scene.scale.width / 2, y, `${m.cursor === i ? '▸ ' : ''}${label}`, m.cursor === i ? UI_COLOR.highlight : UI_COLOR.text);
