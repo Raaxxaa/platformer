@@ -11,6 +11,8 @@ export interface RunStats { kills: number; eliteKills: number; goldEarned: numbe
 export interface RunRecord { date: string; startClass: ClassId; startWeapon: WeaponId; road: Road | null; seedText: string; seeded: boolean;
   /** 06 §5.4 (M14): an assisted run (shown with an `A` tag in records). */
   assist?: boolean;
+  /** 06 §14 (M15): a Daily or Boss Rush run. */
+  mode?: 'daily' | 'bossRush';
   result: 'complete' | 'death' | 'restart' | 'quit'; stageReached: 1 | 2 | 3 | 4; sectionReached: number; runTicks: number; splits: (number | null)[];
   cause: string | null; dragon: 'absent' | 'skipped' | 'escaped' | 'killed'; kit: KitSummary; stats: RunStats;
   /** 06 §8.7 layout code per stage, e.g. `2-1-3-3-2`; runs saved before M11 read as all `1`. */
@@ -38,6 +40,8 @@ export interface SaveData {
   stats: { runsStarted: number; runsCompleted: number; deaths: number; dragonsKilled: number };
   pbs: Partial<Record<PbKey, PbRecord>>; bestSegments: Partial<Record<PbKey, [number | null, number | null, number | null, number | null]>>;
   practiceBests: Record<string, number>; history: RunRecord[];
+  /** 06 §14.1 (M15): Daily challenge attempts by UTC day. */
+  daily: import('../run/daily.ts').DailyBook;
   /** 09 §8 (M13): the hero's look, and which cosmetics are owned / which enemies were met. */
   look: import('../../data/cosmetics.ts').Look; cosmetics: import('../cosmetics/look.ts').CosmeticsSave;
 }

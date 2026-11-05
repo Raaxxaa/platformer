@@ -24,6 +24,8 @@ export const isAssisted = (r: RunState): boolean =>
 
 export interface RunState {
   assist: RunAssist;
+  /** 06 §14.1 (M15): the UTC day (`YYYYMMDD`) of a Daily challenge run. */
+  daily?: string;
   phase: RunPhase;
   pausedFrom: Exclude<RunPhase, 'paused'> | null;
   transition: RunTransition | null;

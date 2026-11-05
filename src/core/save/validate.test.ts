@@ -35,10 +35,15 @@ describe('save shape validation (06 §15)', () => {
     save.history = [history()]; expect(validateSave(save)).toEqual(save);
   });
   it.each([null, [], 42, 'save'])('rejects invalid root %j instead of importing it as an empty save', (raw) => { expect(() => validateSave(raw)).toThrow(); });
+  it('keeps well-formed daily entries and drops broken ones (M15)', () => {
+    const ok = { official: { result: 'death', ticks: 5000, stageReached: 2, splits: [3000, null, null, null], road: 'forest', assist: false }, bestTicks: null, attempts: 2 };
+    const save = validateSave({ daily: { '20261105': ok, bad: ok, '20261104': { attempts: 'x' }, '20261103': { ...ok, official: { result: 'win' } } } });
+    expect(save.daily).toEqual({ '20261105': ok, '20261103': { official: null, bestTicks: null, attempts: 2 } });
+  });
   it('rejects a newer save with the dedicated error', () => { expect(() => validateSave({ v: 2 })).toThrow(NewerSaveVersionError); });
-  it('deduplicates training1–17, discoveries and reached stage IDs, with Plains always available', () => {
-    const save = validateSave({ training: [1, 1, 17, 0, 18, 2.5, '2'], progress: { levelsReached: ['castle', 'castle', 'home', 'bad'], classesDiscovered: ['iron_will', 'arcane_archer', 'iron_will', 'tank', 'bad'] } });
-    expect(save.training).toEqual([1, 17]); expect(save.progress.levelsReached).toEqual(['plains', 'castle']); expect(save.progress.classesDiscovered).toEqual(['iron_will', 'arcane_archer']);
+  it('deduplicates training1–19, discoveries and reached stage IDs, with Plains always available', () => {
+    const save = validateSave({ training: [1, 1, 19, 0, 20, 2.5, '2'], progress: { levelsReached: ['castle', 'castle', 'home', 'bad'], classesDiscovered: ['iron_will', 'arcane_archer', 'iron_will', 'tank', 'bad'] } });
+    expect(save.training).toEqual([1, 19]); expect(save.progress.levelsReached).toEqual(['plains', 'castle']); expect(save.progress.classesDiscovered).toEqual(['iron_will', 'arcane_archer']);
   });
   it('keeps every real blueprint, including unbuilt ones; drops nonblueprints and bad IDs individually', () => {
     const all = ['scythe', 'flail', 'hand_cannon', 'javelin', 'spell_tome', 'riposte', 'boulder_toss', 'turret', 'time_slow'];

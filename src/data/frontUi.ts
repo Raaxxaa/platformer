@@ -6,8 +6,12 @@ export const FRONT_UI = {
   death: { heroX: 150, heroY: 236, titleY: 100, infoY: 126, lineH: 12, rowsY: 200, rowStep: 16, rowW: 160, rowH: 14, guardSeconds: 0.25 },
   // SPEC-GAP 43: where does Practice go? Last, so the earlier row numbers stay the same. (07 §7.3)
   // Practice (07 §7.3) is last so the earlier row numbers stay the same.
-  titleRows: ['Play', 'Training Yard', 'Records', 'Settings', 'Practice'], titleCommands: ['play', 'training', 'records', 'settings', 'practice'],
+  // M15: Daily sits between Play and Training Yard (06 §14.1). Debug `titleChoose(i)` keeps the old numbers (`titleLegacy`).
+  titleRows: ['Play', 'Daily', 'Training Yard', 'Records', 'Settings', 'Practice'], titleCommands: ['play', 'daily', 'training', 'records', 'settings', 'practice'],
+  titleLegacy: ['play', 'training', 'records', 'settings', 'practice', 'daily'],
   deathRows: ['Restart', 'Change class', 'Title'], deathCommands: ['restart', 'home', 'title'],
+  // M15: a Daily death adds Share (06 §14.1).
+  deathShareRows: ['Restart', 'Change class', 'Title', 'Share'], deathShareCommands: ['restart', 'home', 'title', 'share'], sharedText: 'Copied!',
   biomes: { plains: 'Plains & Forest', mountains: 'Caves & Mountains', swamps: 'Dark Forest & Swamps', kingdom: 'Enemy Kingdom', castle: "King's Castle" },
   causes: { hazard: 'Killed by a trap', spikes: 'Killed by spikes', burning: 'Burned', poisoned: 'Poisoned' },
   newer: "Save is from a newer version — progress won't be saved",

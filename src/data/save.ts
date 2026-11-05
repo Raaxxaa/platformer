@@ -9,7 +9,7 @@ import { DEFAULT_LOOK } from './cosmetics.ts';
 import { defaultCosmetics } from '../core/cosmetics/look.ts';
 
 export const SAVE_RULES = {
-  version: 1, seedMaxLength: 12, trainingStations: 17, historyLimit: 20,
+  version: 1, seedMaxLength: 12, trainingStations: 19, historyLimit: 20,
   historyMinTicks: 30 * TICK_RATE, importMaxLength: 1_000_000, warningSeconds: 5.0,
   kitSlots: 2, abilityMaxLevel: 5, maxSection: 8, volumeMax: 100, volumeStep: 10, padMax: 15, padDpadStart: 12,
 } as const;
@@ -28,6 +28,6 @@ export function defaultSettings(): SettingsData {
 export function defaultSave(): SaveData {
   return { v: SAVE_RULES.version, settings: defaultSettings(), lastKit: null, lastRoad: 'mountain', typedSeed: null, training: [],
     progress: { levelsReached: ['plains'], stage1Cleared: false, classesDiscovered: [] }, unlocks: { blueprints: [], startWeapons: {} },
-    stats: { runsStarted: 0, runsCompleted: 0, deaths: 0, dragonsKilled: 0 }, pbs: {}, bestSegments: {}, practiceBests: {}, history: [],
+    stats: { runsStarted: 0, runsCompleted: 0, deaths: 0, dragonsKilled: 0 }, pbs: {}, bestSegments: {}, practiceBests: {}, history: [], daily: {},
     look: { ...DEFAULT_LOOK }, cosmetics: defaultCosmetics() };
 }

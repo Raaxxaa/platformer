@@ -16,11 +16,15 @@ import type { RunRecord } from '../core/save/schema.ts';
 import { WEAPONS } from '../data/weapons.ts';
 import { STARTING_KITS } from '../data/classes.ts';
 import { WEAPON_NAME } from '../data/uiText.ts';
+import { recordDailyEnd } from '../core/run/daily.ts';
+import type { StartKit } from '../core/save/schema.ts';
 export const gameSession = {
   trainingReturn: 'title' as 'home' | 'title',
   kitNotice: null as string | null,
   /** The last practice setup, so `Retry` and `Change setup` come back to it (06 §14). */
   practiceSetup: null as PracticeSetup | null,
+  /** 06 §14.1 (M15): set while a Daily challenge is being played (Title → Daily); Play clears it. */
+  daily: null as { day: string; seed: string; kit: StartKit } | null,
   takeKitNotice(): string | null { const text = this.kitNotice; this.kitNotice = null; return text; },
   /** A confirmed import replaces comparisons too; live gear, run state and its frozen pool stay intact. */
   refreshRecords(w: GameWorld): void {
@@ -33,8 +37,9 @@ export const gameSession = {
     const save = saveStore().data;
     const homeTransition = carry?.run.transition?.target.phase === 'homeVillage' ? structuredClone(carry.run.transition) : null;
     if (homeTransition) carry = undefined;
-    const seed = carry?.run.seedText ?? debugSeed ?? save.typedSeed;
-    let startKit = practice ? { cls: practice.cls, weapon: practice.weapon } : carry?.run.startKit ?? (level.kind !== 'stage' ? save.lastKit : null);
+    const daily = !practice && this.daily && level.kind === 'stage' ? this.daily : null;
+    const seed = carry?.run.seedText ?? daily?.seed ?? debugSeed ?? save.typedSeed;
+    let startKit = practice ? { cls: practice.cls, weapon: practice.weapon } : carry?.run.startKit ?? daily?.kit ?? (level.kind !== 'stage' ? save.lastKit : null);
     this.kitNotice = null;
     if (startKit && !WEAPONS[startKit.weapon]) {
       // SPEC-GAP: How should this build load a valid saved lastKit whose unlocked weapon is not implemented yet?
@@ -51,7 +56,7 @@ export const gameSession = {
     // SPEC-GAP: does practice Random pick a new layout on Retry? No: it keeps its layout (its best and ghost belong to it).
     const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout || (!!practice && !!layout), seeded: carry?.run.seeded ?? seed !== null,
       startKit, carry, cosmetics: save.cosmetics, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
-      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, assist: () => saveStore().data.settings.assist, dragon, practice: !!practice, practiceSetup: practice ?? undefined });
+      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, assist: () => saveStore().data.settings.assist, dragon, practice: !!practice, practiceSetup: practice ?? undefined, daily: daily?.day });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
@@ -103,13 +108,14 @@ export const gameSession = {
     }
   },
   flushRunEnds(w: GameWorld): void {
-    for (const ended of w.pendingRunEnds.splice(0)) saveStore().update((s) => { appendHistory(s, ended, saveDate()); });
+    for (const ended of w.pendingRunEnds.splice(0)) saveStore().update((s) => { appendHistory(s, ended, saveDate()); s.daily = recordDailyEnd(s.daily, ended); });
   },
   endRun(w: GameWorld, result: RunRecord['result'], cause: string | null = null): void {
     const ended = captureRunEnd(w, result, cause); if (!ended) return;
     w.run.endRecorded = true;
     saveStore().update((s) => {
       appendHistory(s, ended, saveDate());
+      s.daily = recordDailyEnd(s.daily, ended);
       if (result === 'death') s.stats.deaths++;
       if (result === 'complete') s.stats.runsCompleted++;
     });

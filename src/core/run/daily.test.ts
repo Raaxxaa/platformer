@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRunState } from './runState.ts';
-import { bestDailySegments, dailyDay, dailyKit, dailySeed, dailyShareText, recordDaily, type DailyResult } from './daily.ts';
+import { bestDailySegments, dailyDay, dailyKit, dailySeed, dailyShareText, recordDaily, recordDailyEnd, type DailyResult } from './daily.ts';
 
 describe('Daily challenge (06 §14.1)', () => {
   it('the UTC date gives the seed DAILY-YYYYMMDD on every device', () => {
@@ -37,5 +37,15 @@ describe('Daily challenge (06 §14.1)', () => {
       .toBe('RUSHBLADE Daily 2026-11-04 · Tank (War Maul) · Mountain · 💀 Stage 3 · ⬜⬜');
     expect(dailyShareText('20261104', kit, done(62533, { assist: true }), [null, null, null, null]).endsWith('(assist)')).toBe(true);
     expect(bestDailySegments({ a: { official: done(4000), bestTicks: null, attempts: 1 } }, 'forest')).toEqual([1000, 1000, 1000, 1000]);
+  });
+});
+
+describe('recordDailyEnd', () => {
+  const base = { mode: 'daily', seedText: 'DAILY-20261105', runTicks: 9000, stageReached: 2, splits: [4000, null, null, null], road: 'forest' as const };
+  it('ignores normal runs; a death becomes official; a quick restart does not', () => {
+    expect(recordDailyEnd({}, { ...base, mode: undefined, result: 'death' })).toEqual({});
+    expect(recordDailyEnd({}, { ...base, result: 'restart', runTicks: 100 })['20261105']?.official ?? null).toBeNull();
+    const b = recordDailyEnd({}, { ...base, result: 'death' });
+    expect(b['20261105'].official).toMatchObject({ result: 'death', stageReached: 2, ticks: 9000 });
   });
 });

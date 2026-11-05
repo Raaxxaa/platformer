@@ -1,5 +1,8 @@
 // M3 stage scene: loads public/levels/<id>.json and plays it, with doors, loot markers, hints, the boss bar,
 // the run timer, the split popup and the temporary stage-clear screen.
+import { dailyShareFor } from '../../core/run/daily.ts';
+import { shareText, lastShared } from '../../ui/share.ts';
+import { isAssisted } from '../../core/run/runState.ts';
 import { hurtPlayer } from '../../core/combat/health.ts';
 import Phaser from 'phaser';
 import { killEnemy } from '../../core/combat/resolve.ts';
@@ -118,7 +121,7 @@ export class StageScene extends WorldScene {
   /** The level the start screen chose (else the URL decides). */
   private chosen: string | null = null;
   init(data?: { level?: string; carry?: WorldCarry; titleFade?: boolean; practice?: PracticeSetup }): void {
-    this.chosen = data?.level ?? null; this.practice = data?.practice ?? null; this.practiceResult = null; this.practiceAt = -1; this.ghostView = null; this.recorder.reset(); this.lastWorldTick = 0;
+    this.chosen = data?.level ?? null; if (this.chosen === 'home') gameSession.daily = null; this.practice = data?.practice ?? null; this.practiceResult = null; this.practiceAt = -1; this.ghostView = null; this.recorder.reset(); this.lastWorldTick = 0;
     this.deathView = null; this.deathCause = 'hazard'; this.titleFadeLeft = data?.titleFade ? FRONT_UI.title.fadeSeconds : 0;
     this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.wardrobe = null; this.introChecked = false; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.victory = null; this.victoryAt = -1; this.labels = []; this.doorText.clear();
   }
@@ -211,7 +214,12 @@ export class StageScene extends WorldScene {
     api.screenState = () => this.menus.active ? this.menus.snapshot() : this.practiceResult ? { screen: 'practiceResult', model: { cursor: this.practiceResult.model.cursor, canConfirm: this.practiceResult.model.canConfirm } } : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
     api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else if (this.practiceResult) this.practiceResult.action(action); else this.deathView?.action(action); };
     api.timerBlock = () => this.timerBlock.snapshot();
-    api.hurtPlayer = (damageA: number) => hurtPlayer(this.world, { kind: 'enemyHit', enemyId: 0, enemyDefId: 'bandit', damageA, attackerCx: this.world.body.x + 40, melee: true });
+    api.hurtPlayer = (damageA: number) => {
+      const w = this.world, all = w.events, n = all.length;
+      const dealt = hurtPlayer(w, { kind: 'enemyHit', enemyId: 0, enemyDefId: 'bandit', damageA, attackerCx: w.body.x + 40, melee: true });
+      if (all.length > n) { w.events = all.slice(n); gameSession.events(w); w.events = all; }   // debug-only: save what this hit caused (a death)
+      return dealt;
+    };
     api.practice = () => this.practice ? { setup: { ...this.practice }, clear: this.world.practiceClear ? { ...this.world.practiceClear } : null, resultOpen: !!this.practiceResult,
       ghost: { loaded: this.ghostView?.samples?.length ?? 0, shown: this.ghostView?.shown ?? false, recorded: this.recorder.samples.length }, dragon: { ...this.world.run.dragon } } : null;
     api.dropBlueprint = (id: BlueprintId) => dropBlueprint(this.world, id, this.world.body.x, this.world.body.y);
@@ -221,6 +229,7 @@ export class StageScene extends WorldScene {
     api.routeChoice = () => this.routeChoice ? { cursor: this.routeChoice.model.cursor, road: this.routeChoice.model.road } : null;
     api.routeAction = (action: Parameters<RouteChoiceView['action']>[0]) => this.routeChoice?.action(action);
     api.summaryAction = (action: Parameters<RunSoFarView['action']>[0]) => (this.runSoFar ?? this.victory)?.action(action);
+    api.lastShared = () => lastShared; api.deathRows = () => this.deathView ? [...this.deathView.model.rows] : null;
     api.victory = () => this.victory ? { lines: this.victory.model.lines, cursor: this.victory.model.cursor } : null;
     api.restartRun = () => this.world.restart();
     api.enemyDraw = (id: number) => this.enemyDrawMode(id);
@@ -322,7 +331,7 @@ export class StageScene extends WorldScene {
     else if (!this.victory) {                                   // the King's 1.5 s death animation plays first, then the summary opens (06 §2.6)
       this.victoryAt = this.victoryAt < 0 ? this.time.now : this.victoryAt;
       if (this.time.now - this.victoryAt >= VICTORY_UI.deathAnimSeconds * 1000) {
-        this.victory = new RunSoFarView(this, victoryData(w), { onRestart: () => { this.victory?.destroy(); this.victory = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
+        this.victory = new RunSoFarView(this, { ...victoryData(w), share: dailyShareFor(saveStore().data.daily, w.run, 'complete', isAssisted(w.run)) ?? undefined }, { onShare: (t) => { void shareText(t); }, onRestart: () => { this.victory?.destroy(); this.victory = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
         this.victory.setEnabled(false);                         // inputs are ignored for the first 1.0 s (07 §7.11)
       }
     }
@@ -431,7 +440,9 @@ export class StageScene extends WorldScene {
       this.overlay.setVisible(false); this.overlayText.setVisible(false);
       const offer = !this.deathView && !this.practice && shouldOfferAssist(saveStore().data);
       if (offer) saveStore().update((s) => { s.progress.assistOffered = true; });
-      if (!this.deathView) this.deathView = new DeathView(this, { assistOffer: offer, stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCode(w.opts.layout) : undefined }, (result) => {
+      if (!this.deathView) this.deathView = new DeathView(this, { assistOffer: offer, stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCode(w.opts.layout) : undefined,
+        share: dailyShareFor(saveStore().data.daily, w.run, 'death', isAssisted(w.run)) ?? undefined }, (result) => {
+        if (result === 'share') { const t = dailyShareFor(saveStore().data.daily, w.run, 'death', isAssisted(w.run)); if (t) void shareText(t); return; }
         this.deathView?.destroy(); this.deathView = null; this.clearMenuInput();
         if (result === 'restart') w.restart(); else if (result === 'home') this.requestHome(); else this.toTitle();
       });

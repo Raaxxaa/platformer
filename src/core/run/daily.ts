@@ -72,3 +72,21 @@ export function bestDailySegments(book: DailyBook, road: Road | null): (number |
   }
   return best;
 }
+
+/** A Daily run's end (history snapshot) into `save.daily` (06 §14.1). Quits count like restarts. */
+export function recordDailyEnd(book: DailyBook, ended: { mode?: string; seedText: string; result: string; runTicks: number; stageReached: number; splits: (number | null)[]; road: Road | null; assist?: boolean }): DailyBook {
+  if (ended.mode !== 'daily' || !ended.seedText.startsWith('DAILY-')) return book;
+  const day = ended.seedText.slice(6);
+  if (ended.result === 'restart' || ended.result === 'quit') return recordDaily(book, day, { result: 'restart', ticks: ended.runTicks });
+  return recordDaily(book, day, { result: ended.result === 'complete' ? 'complete' : 'death', ticks: ended.runTicks, stageReached: ended.stageReached,
+    splits: [...ended.splits], road: ended.road, assist: ended.assist === true });
+}
+
+/** The share text for a Daily run as it ends (death or finish), compared against the other days' best splits. */
+export function dailyShareFor(book: DailyBook, run: { daily?: string; seedText: string; startKit: { cls: ClassId; weapon: WeaponId } | null; runTicks: number; stage: number;
+  splits: (number | null)[]; road: Road | null }, result: 'complete' | 'death', assist: boolean): string | null {
+  if (!run.daily || !run.startKit) return null;
+  const others: DailyBook = { ...book }; delete others[run.daily];
+  const r: DailyResult = { result, ticks: run.runTicks, stageReached: Math.max(1, run.stage), splits: [...run.splits], road: run.road, assist };
+  return dailyShareText(run.daily, run.startKit, r, bestDailySegments(others, run.road));
+}

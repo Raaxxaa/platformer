@@ -11,8 +11,9 @@ import { BLUEPRINT_IDS, defaultRunStats, defaultSave, SAVE_RULES as S, SAVE_STAG
 import { RUN } from '../tuning.ts';
 import type { AbilityId, BondId, ClassId, HybridId } from '../abilities/types.ts';
 import type { WeaponId, WeaponInstance } from '../combat/types.ts';
-import type { ActionId, KitSummary, PbKey, PbRecord, RunRecord, RunStats, SaveData, SettingsData } from './schema.ts';
+import type { ActionId, KitSummary, PbKey, PbRecord, Road, RunRecord, RunStats, SaveData, SettingsData } from './schema.ts';
 import { migrateSave } from './migrate.ts';
+import { DAILY } from '../run/daily.ts';
 
 type Obj = Record<string, unknown>;
 const object = (raw: unknown): Obj => typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? raw as Obj : {};
@@ -98,7 +99,7 @@ function runRecord(raw: unknown): RunRecord | null {
     || !(h.cause === null || text(h.cause)) || !has(['absent', 'skipped', 'escaped', 'killed'], h.dragon) || !gear || !stats) return null;
   if ((h.result === 'restart' || h.result === 'quit') && h.runTicks < S.historyMinTicks) return null;
   if (h.result === 'complete' && (h.road === null || h.stageReached !== RUN.STAGE_COUNT || times.includes(null) || h.runTicks !== times.at(-1))) return null;
-  return { date: h.date, startClass: h.startClass, startWeapon: h.startWeapon, road: h.road, seedText: h.seedText, seeded: h.seeded, ...(h.assist === true ? { assist: true } : {}),
+  return { date: h.date, startClass: h.startClass, startWeapon: h.startWeapon, road: h.road, seedText: h.seedText, seeded: h.seeded, ...(h.assist === true ? { assist: true } : {}), ...(h.mode === 'daily' || h.mode === 'bossRush' ? { mode: h.mode } : {}),
     result: h.result, stageReached: h.stageReached as RunRecord['stageReached'], sectionReached: h.sectionReached, runTicks: h.runTicks,
     splits: times, cause: h.cause, dragon: h.dragon, kit: gear, stats, layout: layoutField(h.layout) };
 }
@@ -190,9 +191,31 @@ export function validateSave(raw: unknown): SaveData {
     if (pbKey(key) && Array.isArray(value) && value.length === RUN.STAGE_COUNT && value.every((tick) => tick === null || integer(tick))) result.bestSegments[key] = [...value] as NonNullable<SaveData['bestSegments'][PbKey]>;
   }
   for (const [key, value] of Object.entries(object(source.practiceBests))) if (practiceKey(key) && integer(value)) result.practiceBests[migratePracticeKey(key)] = value;
+  result.daily = validateDaily(source.daily);
   result.cosmetics = validateCosmetics(source.cosmetics);
   result.look = validateLook(source.look, result.cosmetics.owned);
   result.history = (Array.isArray(source.history) ? source.history.map(runRecord).filter((entry): entry is RunRecord => entry !== null) : [])
     .sort((a, b) => b.date.localeCompare(a.date)).slice(0, S.historyLimit);
   return result;
+}
+
+function dailyResult(v: unknown): import('../run/daily.ts').DailyResult | null {
+  const r = object(v);
+  if ((r.result !== 'complete' && r.result !== 'death') || !integer(r.ticks) || !integer(r.stageReached) || (r.stageReached as number) < 1 || (r.stageReached as number) > RUN.STAGE_COUNT) return null;
+  if (!Array.isArray(r.splits) || r.splits.length !== RUN.STAGE_COUNT || !r.splits.every((t) => t === null || integer(t))) return null;
+  if (r.road !== null && !road(r.road)) return null;
+  return { result: r.result, ticks: r.ticks as number, stageReached: r.stageReached as number, splits: [...r.splits] as (number | null)[], road: r.road as Road | null, assist: r.assist === true };
+}
+function validateDaily(v: unknown): import('../run/daily.ts').DailyBook {
+  const out: import('../run/daily.ts').DailyBook = {};
+  for (const [day, raw] of Object.entries(object(v))) {
+    if (!/^\d{8}$/.test(day)) continue;
+    const e = object(raw);
+    if (!integer(e.attempts)) continue;
+    const official = e.official === null || e.official === undefined ? null : dailyResult(e.official);
+    out[day] = { official, bestTicks: integer(e.bestTicks) ? e.bestTicks as number : null, attempts: e.attempts as number };
+  }
+  const days = Object.keys(out).sort();
+  for (const d of days.slice(0, Math.max(0, days.length - DAILY.keepDays))) delete out[d];
+  return out;
 }

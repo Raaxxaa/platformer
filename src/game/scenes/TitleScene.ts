@@ -15,13 +15,23 @@ import { activeHomePad, type HomePanelAction, type HomePanelPad } from '../../ui
 import type { PracticeSetup } from '../../core/run/practice.ts';
 import { MenuSurface } from '../../ui/screens/records.ts';
 import { TitleModel } from '../../ui/screens/front.ts';
-export const TITLE_CHOICES = U.titleRows.map((label, i) => ({ label, level: i === 0 ? 'home' : i === 1 ? 'training_yard' : null }));
+import { dailyDay, dailyKit, dailySeed } from '../../core/run/daily.ts';
+import { CLASS_NAME } from '../../data/classes.ts';
+import { WEAPON_NAME } from '../../data/uiText.ts';
+import { formatTime } from '../../core/time.ts';
+export type TitleCommand = typeof U.titleCommands[number];
+/** The Daily row: today's kit and, once played, the official result (06 §14.1). */
+export function dailyRowLabel(now = new Date()): string {
+  const day = dailyDay(now), kit = dailyKit(dailySeed(day)), off = saveStore().data.daily[day]?.official;
+  const result = off ? (off.result === 'complete' ? ` · ${formatTime(off.ticks)}` : ` · Stage ${off.stageReached}`) : '';
+  return `Daily · ${CLASS_NAME[kit.cls]} (${WEAPON_NAME(kit.weapon)})${result}`;
+}
 class TitleView extends MenuSurface {
-  private readonly choose: (index: number) => void;
+  private readonly choose: (cmd: TitleCommand) => void;
   readonly model = new TitleModel();
   private seconds = 0;
   private swallowGesture: string | null = null;
-  constructor(scene: Phaser.Scene, choose: (index: number) => void) {
+  constructor(scene: Phaser.Scene, choose: (cmd: TitleCommand) => void) {
     super(scene); this.choose = choose; window.addEventListener('keydown', this.gestureKey, true); window.addEventListener('keyup', this.gestureUp, true); scene.input.on('pointerdown', this.gesturePointer); this.render();
   }
   protected allowKey(event: KeyboardEvent): boolean { return event.code !== this.swallowGesture; }
@@ -36,7 +46,7 @@ class TitleView extends MenuSurface {
     if (this.model.step === 1 && pad?.buttons.some((button) => button.pressed)) { this.model.gesture(); this.input.blockHeldPad(pad); this.render(); return; }
     super.update(seconds, pad);
   }
-  action(action: HomePanelAction): void { if (!this.enabled || this.closed) return; const result = this.model.action(action); if (result) this.choose(U.titleCommands.indexOf(result)); this.render(); }
+  action(action: HomePanelAction): void { if (!this.enabled || this.closed) return; const result = this.model.action(action); if (result) this.choose(result); this.render(); }
   override destroy(): void { window.removeEventListener('keydown', this.gestureKey, true); window.removeEventListener('keyup', this.gestureUp, true); this.scene.input.off('pointerdown', this.gesturePointer); super.destroy(); }
   protected render(): void {
     const m = this.model, T = U.title, blink = Math.floor(this.seconds * T.blinkHz * 2) % 2 === 0;
@@ -45,7 +55,7 @@ class TitleView extends MenuSurface {
     if (m.step === 1) { if (blink) this.text(this.scene.scale.width / 2, T.promptY, 'Press any button'); }
     else U.titleRows.forEach((label, i) => {
       const x = (this.scene.scale.width - T.rowW) / 2, y = T.rowsY + i * T.rowStep;
-      this.text(this.scene.scale.width / 2, y, `${m.cursor === i ? '▸ ' : ''}${label}`, m.cursor === i ? UI_COLOR.highlight : UI_COLOR.text);
+      this.text(this.scene.scale.width / 2, y, `${m.cursor === i ? '▸ ' : ''}${U.titleCommands[i] === 'daily' ? dailyRowLabel() : label}`, m.cursor === i ? UI_COLOR.highlight : UI_COLOR.text);
       this.target(x, y, T.rowW, T.rowH, () => { m.cursor = i; }, () => this.action('confirm'));
     });
     this.text(T.version[0], T.version[1], 'v0.0.0', UI_COLOR.textOff, false, 'right');
@@ -67,13 +77,13 @@ export class TitleScene extends Phaser.Scene {
     const keyboard = (navigator as Navigator & { keyboard?: { getLayoutMap(): Promise<Map<string, string>> } }).keyboard;
     void keyboard?.getLayoutMap().then(setKeyboardLayout).catch(() => {});
     for (let i = 0; i < 3; i++) this.add.image(0, 0, `bg_plains_${i}`).setOrigin(0).setScrollFactor(0);
-    this.titleView = new TitleView(this, (index) => this.choose(index));
+    this.titleView = new TitleView(this, (cmd) => this.run(cmd));
     this.screens = new MenuScreens(this, () => { if (!this.screens.active) this.titleView.setEnabled(true); });
     this.fade = this.add.graphics().setScrollFactor(0).setDepth(U.fadeDepth).fillStyle(UI_COLOR.ink).fillRect(0, 0, this.scale.width, this.scale.height).setVisible(false);
     this.events.once('shutdown', () => { this.titleView.destroy(); this.screens.destroy(); });
-    if (this.openPracticeOnCreate) this.choose(4);
+    if (this.openPracticeOnCreate) this.run('practice');
     if (debugEnabled()) window.__game = { ready: true, title: true, titleCursor: () => this.titleView.model.cursor,
-      titleChoose: (i: number) => this.choose(i), save: () => structuredClone(saveStore().data),
+      titleChoose: (i: number) => this.choose(i), titleRun: (cmd: TitleCommand) => this.run(cmd), save: () => structuredClone(saveStore().data),
       screenState: () => this.screens.active ? this.screens.snapshot() : { screen: 'title', model: { step: this.titleView.model.step, cursor: this.titleView.model.cursor } },
       screenAction: (action: HomePanelAction) => { if (this.screens.active) this.screens.action(action); else this.titleView.action(action); },
       appliedSettings: () => structuredClone(getUiSettings()),
@@ -94,13 +104,22 @@ export class TitleScene extends Phaser.Scene {
     this.scene.start('Stage', { level: setup.levelId, practice: setup });
   }
   /** Legacy debug entry points retain the Play / Yard indices. */
-  choose(index: number): void {
-    if (this.fadeLeft > 0 || index < 0 || index >= U.titleRows.length) return;
+  choose(index: number): void { const cmd = U.titleLegacy[index]; if (cmd) this.run(cmd); }
+  run(cmd: TitleCommand): void {
+    if (this.fadeLeft > 0) return;
     this.titleView.model.step = 2; this.titleView.setEnabled(false);
-    if (index === 2) { this.screens.openRecords(); return; }
-    if (index === 3) { this.screens.openSettings(); return; }
-    if (index === 4) { this.screens.openPractice(gameSession.practiceSetup, (setup) => this.startPractice(setup)); return; }
-    if (index === 1) { gameSession.trainingReturn = 'title'; this.scene.start('Stage', { level: 'training_yard' }); }
-    else { this.fadeLeft = U.title.fadeSeconds; if (window.__game) window.__game.ready = false; }
+    if (cmd === 'records') { this.screens.openRecords(); return; }
+    if (cmd === 'settings') { this.screens.openSettings(); return; }
+    if (cmd === 'practice') { this.screens.openPractice(gameSession.practiceSetup, (setup) => this.startPractice(setup)); return; }
+    if (cmd === 'training') { gameSession.trainingReturn = 'title'; this.scene.start('Stage', { level: 'training_yard' }); return; }
+    if (cmd === 'daily') {
+      // 06 §14.1: no Home Village; the run starts at the Stage 1 start with the day's kit and seed.
+      const day = dailyDay(new Date()), seed = dailySeed(day);
+      gameSession.daily = { day, seed, kit: dailyKit(seed) };
+      if (window.__game) window.__game.ready = false;
+      this.scene.start('Stage', { level: 'plains' }); return;
+    }
+    gameSession.daily = null;
+    this.fadeLeft = U.title.fadeSeconds; if (window.__game) window.__game.ready = false;
   }
 }
