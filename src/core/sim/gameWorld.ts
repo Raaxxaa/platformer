@@ -161,6 +161,8 @@ export type WorldEvent =
   | { t: 'runCompleted' }
   | { t: 'practiceCleared'; ticks: number }
   | { t: 'practiceBestSaved'; key: string; ticks: number }
+  /** 02 §5.2 step 3 (M14): a shield parry or a Riposte block. */
+  | { t: 'parry' }
   | { t: 'dragonWarning'; color: 'red' | 'white' | 'storm' | 'green' }
   | { t: 'blueprintFound'; id: BlueprintId }
   | { t: 'startingWeaponUnlocked'; cls: ClassId; weapon: import('../combat/types.ts').WeaponId }

@@ -67,6 +67,8 @@ export interface EnemyDef {
 export interface EnemyProjectileDef {
   id: EnemyProjectileId; w: number; h: number;
   motion: 'straight' | 'arc' | 'floorWave' | 'falling'; speed?: number; arcTime?: number;
+  /** 04 §8 (M14): this arc's own horizontal speed cap (px/s), instead of the shared ENEMY_ARC.maxVx. */
+  arcMaxVx?: number;
   range?: number; life?: number; homing?: { radius: number; turnRate: number };
   hit: EnemyHit; blast?: { w: number; h: number; fuse: number };
   puddle?: { w: number; h: number; life: number; status: PlayerStatusId };

@@ -48,6 +48,8 @@ export interface AiState {
   pendingAwareAt: number;          // alert spread: world tick to become aware at (−1 = none)
   backingOff: boolean;             // Wolf: back off after an attack
   turnTicks: number;
+  /** 04 §3 Wolf pacing: its walking direction in the band and the ticks until it turns. */
+  paceDir?: 1 | -1; paceTicks?: number;
 }
 
 export interface EnemyState {
@@ -109,7 +111,7 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
     id: w.newId(), def, x: s.x, y: s.y, remX: 0, remY: 0, vx: 0, vy: 0, facing: s.facing,
     hp: maxHp, maxHp, poise: def.poiseMax, poiseImmuneTicks: 0, noPoiseHitTicks: 0,
     aware: def.id === 'sparring_dummy', noticeT: 0,     // the sparring dummy is always aware (04 §2.11)
-    ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false, turnTicks: 0 },
+    ai: { state: s.patrol ? 'patrol' : 'idle', t: 0, gapTicks: 0, cooldowns: new Map(), attack: null, patrolDir: s.facing, patrolWait: 0, lostTicks: 0, pendingAwareAt: -1, backingOff: false, turnTicks: 0, paceDir: undefined, paceTicks: 0 },
     hitStopTicks: 0, frozenAtTickStart: false, control: null, knockback: false, grounded: true, hitWall: false,
     dormant: true, dead: false, deathTicks: 0, spawn: s, lastPlayerHitTick: -100000, token: null,
     damagedTicks: 0, everDamaged: false, hurtFlashTicks: 0, spawnInTicks: 0, waveArena: null, outsideTicks: 0, boss: null, status: newStatus(), ward: null, noRewards: def.tier==='summon',

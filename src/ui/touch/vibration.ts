@@ -10,6 +10,7 @@ export function vibrationFor(events: readonly WorldEvent[], s: Pick<TouchSetting
   for (const e of events) {
     if (e.t === 'playerDied') return TOUCH.vibration.death;
     if (e.t === 'hit' && e.target === 'player') ms = TOUCH.vibration.hit;
+    if (e.t === 'parry') ms = Math.max(ms ?? 0, TOUCH.vibration.parry);
   }
   return ms;
 }

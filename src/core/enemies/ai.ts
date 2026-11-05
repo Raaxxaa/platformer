@@ -114,7 +114,6 @@ function stepEngage(w: GameWorld, e: EnemyState): void {
   }
   facePlayer(w, e);
   const [min, max] = preferredBand(w, e), speedMult = bossSpeedMult(e);
-  // SPEC-GAP: 04 §3's Wolf "paces" after backing off is undefined; it stands in its band for now.
   const toward: 1 | -1 = w.body.x >= e.x ? 1 : -1;
   if (stepMountainAi(w, e) || stepSwampFlight(w,e) || stepCastleAi(w, e) || stepDragonAi(w, e)) { /* Flyers replace the ground preferred band (04 §4–5). */ }
   else if (distX > max) e.vx = toward * e.def.chase * speedMult;
@@ -122,10 +121,26 @@ function stepEngage(w: GameWorld, e: EnemyState): void {
     const away = (-toward) as 1 | -1;
     const speed = (isRanged(e.def.attacks[0] ?? ({} as EnemyAttackDef)) ? e.def.walk : e.def.chase) * speedMult;
     e.vx = e.grounded && !supportAhead(w, e, away) ? 0 : away * speed;
-  } else e.vx = 0;
+  } else if (e.def.id === 'wolf' && !e.ai.attack) stepWolfPace(w, e, toward, min, max);
+  else e.vx = 0;
   if (e.ai.gapTicks > 0 || w.health.dead || e.ai.turnTicks > 0) return;
   const a = chooseAttack(w, e);
   if (a) startEnemyAttack(w, e, a);
+}
+
+/** 04 §3: a Wolf in its band walks toward one end of it, then the other, turning after 0.6 + rng × 0.4 s or at the
+ * band's edge, always facing the player. */
+function stepWolfPace(w: GameWorld, e: EnemyState, toward: 1 | -1, min: number, max: number): void {
+  const ai = e.ai;
+  ai.paceTicks = (ai.paceTicks ?? 0) - 1;
+  const distX = Math.abs(w.body.x - e.x), dir = ai.paceDir ?? toward;
+  const atEdge = dir === toward ? distX <= min + 1 : distX >= max - 1;     // toward the player shrinks the gap
+  if (ai.paceTicks <= 0 || atEdge || (e.grounded && !supportAhead(w, e, dir))) {
+    ai.paceDir = (-dir) as 1 | -1;
+    ai.paceTicks = ticks(ENEMY.PACE_MIN + w.rng.enemyAI.next() * ENEMY.PACE_RAND);
+  }
+  e.vx = (ai.paceDir ?? dir) * e.def.walk;
+  e.facing = toward;
 }
 
 function stepReturn(w: GameWorld, e: EnemyState): void {

@@ -273,6 +273,8 @@ export const ENEMY = {
   LOSE_RANGE_MIN: 320,          // loseRange = max(320, 2 × range)
   RETURN_AFTER: 5.0, RETURN_AFTER_TICKS: ticks(5.0),
   PATROL_PAUSE: 1.0, PATROL_PAUSE_TICKS: ticks(1.0),
+  /** 04 §3 Wolf pacing in its band: it turns after 0.6 + rng × 0.4 s. */
+  PACE_MIN: 0.6, PACE_RAND: 0.4,
   DEATH_ANIM: 0.4, DEATH_ANIM_TICKS: ticks(0.4),
   ACTIVATION_MARGIN: 96,
   MELEE_DY_MIN: -40, MELEE_DY_MAX: 24,
