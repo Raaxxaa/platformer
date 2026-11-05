@@ -28,6 +28,6 @@ export function defaultSettings(): SettingsData {
 export function defaultSave(): SaveData {
   return { v: SAVE_RULES.version, settings: defaultSettings(), lastKit: null, lastRoad: 'mountain', typedSeed: null, training: [],
     progress: { levelsReached: ['plains'], stage1Cleared: false, classesDiscovered: [] }, unlocks: { blueprints: [], startWeapons: {} },
-    stats: { runsStarted: 0, runsCompleted: 0, deaths: 0, dragonsKilled: 0 }, pbs: {}, bestSegments: {}, practiceBests: {}, history: [], daily: {}, bossRushBests: {},
+    stats: { runsStarted: 0, runsCompleted: 0, deaths: 0, dragonsKilled: 0 }, pbs: {}, bestSegments: {}, practiceBests: {}, history: [], daily: {}, seedBests: [], bossRushBests: {},
     look: { ...DEFAULT_LOOK }, cosmetics: defaultCosmetics() };
 }

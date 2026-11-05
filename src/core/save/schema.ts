@@ -42,6 +42,8 @@ export interface SaveData {
   practiceBests: Record<string, number>; history: RunRecord[];
   /** 06 §14.1 (M15): Daily challenge attempts by UTC day. */
   daily: import('../run/daily.ts').DailyBook;
+  /** 06 §14.1 (M18): seed challenge bests, newest first, last 50. */
+  seedBests: import('../run/daily.ts').SeedBest[];
   /** 06 §14.2 (M15). */
   bossRushBests: Partial<Record<import('../run/bossRush.ts').BossRushKey, import('../run/bossRush.ts').BossRushBest>>;
   /** 09 §8 (M13): the hero's look, and which cosmetics are owned / which enemies were met. */

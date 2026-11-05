@@ -20,6 +20,8 @@ const object = (raw: unknown): Obj => typeof raw === 'object' && raw !== null &&
 const integer = (raw: unknown): raw is number => typeof raw === 'number' && Number.isSafeInteger(raw) && raw >= 0;
 const text = (raw: unknown): raw is string => typeof raw === 'string' && raw.length > 0;
 const seed = (raw: unknown): raw is string => typeof raw === 'string' && raw.length > 0 && raw.length <= S.seedMaxLength && /^[A-Z0-9]+$/.test(raw);
+/** A run's seed: a typed or random seed, or a daily's `DAILY-YYYYMMDD` (06 §14.1). */
+const runSeedText = (raw: unknown): raw is string => seed(raw) || (typeof raw === 'string' && /^DAILY-\d{8}$/.test(raw));
 const has = <T extends string>(values: readonly T[], raw: unknown): raw is T => typeof raw === 'string' && values.includes(raw as T);
 const road = (raw: unknown): raw is 'mountain' | 'forest' => raw === 'mountain' || raw === 'forest';
 const cls = (raw: unknown): raw is ClassId => has(CLASS_IDS, raw);
@@ -93,7 +95,7 @@ function layoutField(raw: unknown): RunRecord['layout'] {
 function runRecord(raw: unknown): RunRecord | null {
   const h = object(raw), times = splits(h.splits, true), gear = kit(h.kit), stats = runStats(h.stats, true);
   if (!isoDate(h.date) || !cls(h.startClass) || !startWeapon(h.startClass, h.startWeapon) || !(h.road === null || road(h.road))
-    || !seed(h.seedText) || typeof h.seeded !== 'boolean' || !has(['complete', 'death', 'restart', 'quit'], h.result)
+    || !runSeedText(h.seedText) || typeof h.seeded !== 'boolean' || !has(['complete', 'death', 'restart', 'quit'], h.result)
     || !integer(h.stageReached) || h.stageReached < 1 || h.stageReached > RUN.STAGE_COUNT || !integer(h.sectionReached) || h.sectionReached > S.maxSection
     || !integer(h.runTicks) || !times || times.some((tick) => tick !== null && tick > (h.runTicks as number))
     || !(h.cause === null || text(h.cause)) || !has(['absent', 'skipped', 'escaped', 'killed'], h.dragon) || !gear || !stats) return null;
@@ -193,6 +195,7 @@ export function validateSave(raw: unknown): SaveData {
   }
   for (const [key, value] of Object.entries(object(source.practiceBests))) if (practiceKey(key) && integer(value)) result.practiceBests[migratePracticeKey(key)] = value;
   result.daily = validateDaily(source.daily);
+  if (Array.isArray(source.seedBests)) result.seedBests = source.seedBests.map(object).filter((b) => typeof b.seed === 'string' && runSeedText(b.seed) && integer(b.ticks)).slice(0, 50).map((b) => ({ seed: b.seed as string, ticks: b.ticks as number }));
   for (const [key, value] of Object.entries(object(source.bossRushBests))) {
     const [c, d] = key.split('|'), v = object(value);
     if (cls(c) && (d === 'dragon' || d === 'no_dragon') && integer(v.ticks) && Array.isArray(v.splits) && v.splits.every(integer)) result.bossRushBests[key as `${ClassId}|dragon`] = { ticks: v.ticks as number, splits: [...v.splits] as number[] };

@@ -187,6 +187,7 @@ export interface GameWorldOptions {
   startKit?: StartKit | null;
   /** 06 §14.1 (M15): the UTC day of a Daily challenge run. */
   daily?: string;
+  challenge?: boolean;
   /** M18: the run's twist (06 §14.1). */
   twist?: import('../../data/twists.ts').TwistId;
   /** 06 §14.2 (M15): a Boss Rush fight; the scene runs the attempt, a restart asks it to start over. */
@@ -347,7 +348,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; assist?: GameWorldOptions['assist']; dragon?: GameWorldOptions['dragon']; layout?: Picks; layoutForced?: boolean; cosmetics?: GameWorldOptions['cosmetics']; daily?: string; bossRush?: boolean; twist?: GameWorldOptions['twist'] }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; assist?: GameWorldOptions['assist']; dragon?: GameWorldOptions['dragon']; layout?: Picks; layoutForced?: boolean; cosmetics?: GameWorldOptions['cosmetics']; daily?: string; bossRush?: boolean; twist?: GameWorldOptions['twist']; challenge?: boolean }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -360,7 +361,7 @@ export class GameWorld {
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
       records: opts.records, practice: opts.practice, practiceSetup: opts.practiceSetup,
-      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon, layout: opts.layout, layoutForced: opts.layoutForced, cosmetics: opts.cosmetics, daily: opts.daily, bossRush: opts.bossRush, twist: opts.twist,
+      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon, layout: opts.layout, layoutForced: opts.layoutForced, cosmetics: opts.cosmetics, daily: opts.daily, bossRush: opts.bossRush, twist: opts.twist, challenge: opts.challenge,
       loadout: opts.practiceSetup ? practiceLoadout(opts.practiceSetup) : (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
@@ -389,6 +390,7 @@ export class GameWorld {
     this.run.assist ??= runAssistFrom(null);                   // runs carried from before M14
     if (this.opts.daily && !carry) this.run.daily = this.opts.daily;
     if (this.opts.twist && !carry) this.run.twist = this.opts.twist;
+    if (this.opts.challenge && !carry) this.run.challenge = true;
     this.opts.seeded = this.run.seeded;
     this.run.startKit = this.opts.startKit ?? null;
     this.run.runSeed = this.runSeed;

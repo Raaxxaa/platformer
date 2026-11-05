@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRunState } from './runState.ts';
-import { bestDailySegments, dailyDay, dailyKit, dailySeed, dailyShareText, recordDaily, recordDailyEnd, type DailyResult } from './daily.ts';
+import { bestDailySegments, dailyDay, dailyKit, dailySeed, dailyShareText, challengeSeed, pastDays, recordDaily, recordDailyEnd, recordSeedBest, type DailyResult } from './daily.ts';
 
 describe('Daily challenge (06 §14.1)', () => {
   it('the UTC date gives the seed DAILY-YYYYMMDD on every device', () => {
@@ -47,5 +47,21 @@ describe('recordDailyEnd', () => {
     expect(recordDailyEnd({}, { ...base, result: 'restart', runTicks: 100 })['20261105']?.official ?? null).toBeNull();
     const b = recordDailyEnd({}, { ...base, result: 'death' });
     expect(b['20261105'].official).toMatchObject({ result: 'death', stageReached: 2, ticks: 9000 });
+  });
+});
+
+describe('seed challenge (06 §14.1, M18)', () => {
+  it('keeps the best per seed, newest first, at most 50', () => {
+    let b = recordSeedBest([], 'ABC', 9000).bests;
+    expect(recordSeedBest(b, 'ABC', 9500)).toEqual({ bests: [{ seed: 'ABC', ticks: 9000 }], isNew: false });
+    b = recordSeedBest(b, 'ABC', 8000).bests; expect(b).toEqual([{ seed: 'ABC', ticks: 8000 }]);
+    for (let i = 0; i < 60; i++) b = recordSeedBest(b, `S${i}`, 100).bests;
+    expect(b).toHaveLength(50); expect(b[0].seed).toBe('S59');
+  });
+  it('past days are the 30 days before today; seeds are validated', () => {
+    const d = pastDays(new Date('2026-11-05T12:00:00Z'));
+    expect(d).toHaveLength(30); expect(d[0]).toBe('20261104'); expect(d[29]).toBe('20261006');
+    expect(challengeSeed(' abc12 ')).toBe('ABC12'); expect(challengeSeed('daily-20261101')).toBe('DAILY-20261101');
+    expect(challengeSeed('bad seed!')).toBeNull();
   });
 });

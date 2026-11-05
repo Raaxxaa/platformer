@@ -97,3 +97,22 @@ export function dailyShareFor(book: DailyBook, run: { daily?: string; seedText: 
   const r: DailyResult = { result, ticks: run.runTicks, stageReached: Math.max(1, run.stage), splits: [...run.splits], road: run.road, assist };
   return dailyShareText(run.daily, run.startKit, r, bestDailySegments(others, run.road));
 }
+
+/** 06 §14.1 (M18) seed challenge: any seed played like a daily; never official. Its own best per seed, last 50. */
+export const SEED_CHALLENGE = { keep: 50, pastDays: 30 } as const;
+export interface SeedBest { seed: string; ticks: number }
+export function recordSeedBest(bests: SeedBest[], seed: string, ticks: number): { bests: SeedBest[]; isNew: boolean } {
+  const old = bests.find((b) => b.seed === seed);
+  const isNew = !old || ticks < old.ticks;
+  const out = [{ seed, ticks: isNew ? ticks : old!.ticks }, ...bests.filter((b) => b.seed !== seed)].slice(0, SEED_CHALLENGE.keep);
+  return { bests: out, isNew };
+}
+/** The last `n` UTC days before today, newest first (`YYYYMMDD`). */
+export function pastDays(now: Date, n: number = SEED_CHALLENGE.pastDays): string[] {
+  return Array.from({ length: n }, (_, i) => dailyDay(new Date(now.getTime() - (i + 1) * 86_400_000)));
+}
+/** A seed the challenge accepts: a typed seed (A–Z, 0–9, up to 12) or a day's `DAILY-YYYYMMDD`. */
+export const challengeSeed = (raw: string): string | null => {
+  const s = raw.trim().toUpperCase();
+  return /^[A-Z0-9]{1,12}$/.test(s) || /^DAILY-\d{8}$/.test(s) ? s : null;
+};

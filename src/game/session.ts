@@ -16,7 +16,7 @@ import type { RunRecord } from '../core/save/schema.ts';
 import { WEAPONS } from '../data/weapons.ts';
 import { STARTING_KITS } from '../data/classes.ts';
 import { WEAPON_NAME } from '../data/uiText.ts';
-import { dailyTwist, recordDailyEnd } from '../core/run/daily.ts';
+import { dailyTwist, recordDailyEnd, recordSeedBest } from '../core/run/daily.ts';
 import type { BossRushAttempt } from '../core/run/bossRush.ts';
 import type { BossRushSetup } from '../ui/screens/bossRush.ts';
 import type { StartKit } from '../core/save/schema.ts';
@@ -26,7 +26,8 @@ export const gameSession = {
   /** The last practice setup, so `Retry` and `Change setup` come back to it (06 §14). */
   practiceSetup: null as PracticeSetup | null,
   /** 06 §14.1 (M15): set while a Daily challenge is being played (Title → Daily); Play clears it. */
-  daily: null as { day: string; seed: string; kit: StartKit } | null,
+  /** `official` false = a seed challenge (06 §14.1, M18). */
+  daily: null as { day: string; seed: string; kit: StartKit; official?: boolean } | null,
   /** 06 §14.2 (M15): the Boss Rush attempt being played, and the last setup (for Retry / Change setup). */
   bossRush: null as BossRushAttempt | null,
   bossRushSetup: null as BossRushSetup | null,
@@ -67,7 +68,7 @@ export const gameSession = {
     // SPEC-GAP: does practice Random pick a new layout on Retry? No: it keeps its layout (its best and ghost belong to it).
     const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout || (!!practice && !!layout), seeded: carry?.run.seeded ?? seed !== null,
       startKit, carry, cosmetics: save.cosmetics, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
-      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, assist: () => saveStore().data.settings.assist, dragon, practice: !!practice, practiceSetup: practice ?? undefined, daily: daily?.day, bossRush: !!rush, twist: daily ? dailyTwist(daily.seed) : undefined });
+      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, assist: () => saveStore().data.settings.assist, dragon, practice: !!practice, practiceSetup: practice ?? undefined, daily: daily && daily.official !== false ? daily.day : undefined, challenge: daily?.official === false, bossRush: !!rush, twist: daily ? dailyTwist(daily.seed) : undefined });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
@@ -129,6 +130,7 @@ export const gameSession = {
     saveStore().update((s) => {
       appendHistory(s, ended, saveDate());
       s.daily = recordDailyEnd(s.daily, ended);
+      if (result === 'complete' && w.run.challenge && !isAssisted(w.run)) { const r = recordSeedBest(s.seedBests, w.run.seedText, w.run.runTicks); s.seedBests = r.bests; if (r.isNew) w.events.push({ t: 'pbSaved' }); }
       if (result === 'death') s.stats.deaths++;
       if (result === 'complete') s.stats.runsCompleted++;
     });

@@ -35,6 +35,10 @@ describe('save shape validation (06 §15)', () => {
     save.history = [history()]; expect(validateSave(save)).toEqual(save);
   });
   it.each([null, [], 42, 'save'])('rejects invalid root %j instead of importing it as an empty save', (raw) => { expect(() => validateSave(raw)).toThrow(); });
+  it('keeps a daily run in history (DAILY-YYYYMMDD seed)', () => {
+    const h = { ...history(), seedText: 'DAILY-20261105', mode: 'daily' };
+    expect(validateSave({ history: [h] }).history).toEqual([h]);
+  });
   it('keeps well-formed daily entries and drops broken ones (M15)', () => {
     const ok = { official: { result: 'death', ticks: 5000, stageReached: 2, splits: [3000, null, null, null], road: 'forest', assist: false }, bestTicks: null, attempts: 2 };
     const save = validateSave({ daily: { '20261105': ok, bad: ok, '20261104': { attempts: 'x' }, '20261103': { ...ok, official: { result: 'win' } } } });

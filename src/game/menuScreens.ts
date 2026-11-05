@@ -5,6 +5,7 @@ import { RecordsView } from '../ui/screens/records.ts';
 import { SettingsView } from '../ui/screens/settings.ts';
 import { PracticeSetupView } from '../ui/screens/practice.ts';
 import { BossRushSetupView, type BossRushSetup } from '../ui/screens/bossRush.ts';
+import { DailyMenuView, type DailyChoice } from '../ui/screens/dailyMenu.ts';
 import type { PracticeSetup } from '../core/run/practice.ts';
 import { SaveCodeView, type SaveCodeMode } from '../ui/screens/saveCode.ts';
 import type { HomePanelAction } from '../ui/home/homePanels.ts';
@@ -26,13 +27,15 @@ export class MenuScreens {
   private code: SaveCodeView | null = null;
   private practice: PracticeSetupView | null = null;
   private bossRush: BossRushSetupView | null = null;
+  private daily: DailyMenuView | null = null;
   private hud: HudEditorView | null = null;
   constructor(scene: Phaser.Scene, closed: () => void, focused: (on: boolean) => void = () => {}, imported: () => void = () => {}) {
     this.scene = scene; this.closed = closed; this.focused = focused; this.imported = imported;
     scene.events.once('shutdown', () => this.destroy());
   }
-  get active(): boolean { return !!(this.records || this.settings || this.code || this.practice || this.hud || this.bossRush); }
+  get active(): boolean { return !!(this.records || this.settings || this.code || this.practice || this.hud || this.bossRush || this.daily); }
   snapshot() {
+    if (this.daily) { const m = this.daily.model; return { screen: 'daily', model: { cursor: m.cursor, pastIndex: m.pastIndex, rows: m.rows } }; }
     if (this.bossRush) { const m = this.bossRush.model; return { screen: 'bossRush', model: { cursor: m.cursor, setup: { ...m.setup }, best: m.best } }; }
     if (this.practice) { const m = this.practice.model; return { screen: 'practice', model: { cursor: m.cursor, setup: { ...m.setup }, levels: m.levels, best: m.best, seed: m.seedText, selectable: m.selectable } }; }
     if (this.code) { const m = this.code.model; return { screen: m.mode, model: { stage: m.stage, cursor: m.cursor, error: m.error, confirming: m.confirming, notice: m.notice } }; }
@@ -41,10 +44,16 @@ export class MenuScreens {
     if (this.records) { const m = this.records.model; return { screen: 'records', model: { tab: m.tab, cell: m.cell, footer: m.footer, look: m.look } }; }
     return { screen: null, model: null };
   }
-  action(action: HomePanelAction): void { (this.code ?? this.settings ?? this.records ?? this.practice ?? this.bossRush ?? this.hud)?.action(action); }
-  update(seconds: number): void { (this.code ?? this.settings ?? this.records ?? this.practice ?? this.bossRush ?? this.hud)?.update(seconds); }
+  action(action: HomePanelAction): void { (this.code ?? this.settings ?? this.records ?? this.practice ?? this.bossRush ?? this.daily ?? this.hud)?.action(action); }
+  update(seconds: number): void { (this.code ?? this.settings ?? this.records ?? this.practice ?? this.bossRush ?? this.daily ?? this.hud)?.update(seconds); }
   openPractice(initial: PracticeSetup | null, onStart: (setup: PracticeSetup) => void): void {
     this.destroy(); this.practice = new PracticeSetupView(this.scene, () => saveStore().data, initial, { onStart: (setup) => { this.practice = null; onStart(setup); }, onClose: () => { this.practice = null; this.closed(); } });
+  }
+  openDaily(online: boolean, onChoice: (c: DailyChoice) => void): void {
+    this.destroy(); this.daily = new DailyMenuView(this.scene, () => saveStore().data, online, (c) => {
+      if (c.kind !== 'askSeed') this.daily = null;
+      if (c.kind === 'back') this.closed(); else onChoice(c);
+    });
   }
   openBossRush(initial: BossRushSetup | null, onStart: (setup: BossRushSetup) => void): void {
     this.destroy(); this.bossRush = new BossRushSetupView(this.scene, () => saveStore().data, initial, { onStart: (setup) => { this.bossRush = null; onStart(setup); }, onClose: () => { this.bossRush = null; this.closed(); } });
@@ -86,5 +95,5 @@ export class MenuScreens {
       onClose: () => { this.code = null; this.settings?.setEnabled(true); this.closed(); },
     });
   }
-  destroy(): void { this.code?.destroy(); this.records?.destroy(); this.settings?.destroy(); this.practice?.destroy(); this.bossRush?.destroy(); this.bossRush = null; this.hud?.destroy(); this.hud = null; setHudDraft(null); this.code = null; this.records = null; this.settings = null; this.practice = null; }
+  destroy(): void { this.code?.destroy(); this.records?.destroy(); this.settings?.destroy(); this.practice?.destroy(); this.bossRush?.destroy(); this.bossRush = null; this.daily?.destroy(); this.daily = null; this.hud?.destroy(); this.hud = null; setHudDraft(null); this.code = null; this.records = null; this.settings = null; this.practice = null; }
 }

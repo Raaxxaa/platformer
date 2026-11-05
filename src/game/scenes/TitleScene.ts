@@ -15,8 +15,9 @@ import { activeHomePad, type HomePanelAction, type HomePanelPad } from '../../ui
 import type { PracticeSetup } from '../../core/run/practice.ts';
 import { MenuSurface } from '../../ui/screens/records.ts';
 import { TitleModel } from '../../ui/screens/front.ts';
-import { dailyDay, dailyKit, dailySeed, dailyTwist } from '../../core/run/daily.ts';
-import { TWIST_NAME } from '../../data/twists.ts';
+import { challengeSeed, dailyDay, dailyKit, dailySeed, dailyTwist } from '../../core/run/daily.ts';
+import type { DailyChoice } from '../../ui/screens/dailyMenu.ts';
+import { DAILY_MENU_UI, TWIST_NAME } from '../../data/twists.ts';
 import { bossRushUnlocked, newBossRush } from '../../core/run/bossRush.ts';
 import { BOSS_RUSH_UI } from '../../data/bossRush.ts';
 import { DRAGON_ROLL } from '../../data/run.ts';
@@ -92,7 +93,7 @@ export class TitleScene extends Phaser.Scene {
     if (this.openPracticeOnCreate) this.run('practice');
     if (this.openBossRushOnCreate) this.run('bossRush');
     if (debugEnabled()) window.__game = { ready: true, title: true, titleCursor: () => this.titleView.model.cursor,
-      titleChoose: (i: number) => this.choose(i), titleRun: (cmd: TitleCommand) => this.run(cmd), startBossRush: (s: BossRushSetup) => this.startBossRush(s), save: () => structuredClone(saveStore().data),
+      titleChoose: (i: number) => this.choose(i), titleRun: (cmd: TitleCommand) => this.run(cmd), startBossRush: (s: BossRushSetup) => this.startBossRush(s), startDaily: (seed: string, official: boolean) => this.startDaily(seed, official), save: () => structuredClone(saveStore().data),
       screenState: () => this.screens.active ? this.screens.snapshot() : { screen: 'title', model: { step: this.titleView.model.step, cursor: this.titleView.model.cursor } },
       screenAction: (action: HomePanelAction) => { if (this.screens.active) this.screens.action(action); else this.titleView.action(action); },
       appliedSettings: () => structuredClone(getUiSettings()),
@@ -105,6 +106,22 @@ export class TitleScene extends Phaser.Scene {
       if (this.fadeLeft === 0) this.scene.start('Village', { level: 'home', titleFade: true }); return;
     }
     this.screens.update(delta / 1000); if (!this.screens.active) this.titleView.update(delta / 1000);
+  }
+  /** 06 §14.1: today's daily (official), or a seed challenge; no Home Village, Stage 1 with the seed's kit and twist. */
+  startDaily(seed: string, official: boolean): void {
+    const day = official ? dailyDay(new Date()) : seed.startsWith('DAILY-') ? seed.slice(6) : dailyDay(new Date());
+    gameSession.daily = { day, seed, kit: dailyKit(seed), official }; gameSession.bossRush = null;
+    if (window.__game) window.__game.ready = false;
+    this.scene.start('Stage', { level: 'plains' });
+  }
+  private dailyChoice(c: DailyChoice): void {
+    if (c.kind === 'today') this.startDaily(dailySeed(dailyDay(new Date())), true);
+    else if (c.kind === 'challenge') this.startDaily(c.seed, false);
+    else if (c.kind === 'askSeed') {
+      // SPEC-GAP 67: the seed is typed in the browser's own text box (works with phone keyboards too).
+      const s = challengeSeed(window.prompt(DAILY_MENU_UI.seedPrompt, saveStore().data.typedSeed ?? '') ?? '');
+      if (s) { this.screens.destroy(); this.startDaily(s, false); }
+    }
   }
   /** 06 §14.2: a boss rush attempt starts at the Great Boar's arena. */
   startBossRush(setup: BossRushSetup): void {
@@ -132,13 +149,7 @@ export class TitleScene extends Phaser.Scene {
       this.screens.openBossRush(gameSession.bossRushSetup, (setup) => this.startBossRush(setup)); return;
     }
     if (cmd === 'training') { gameSession.trainingReturn = 'title'; this.scene.start('Stage', { level: 'training_yard' }); return; }
-    if (cmd === 'daily') {
-      // 06 §14.1: no Home Village; the run starts at the Stage 1 start with the day's kit and seed.
-      const day = dailyDay(new Date()), seed = dailySeed(day);
-      gameSession.daily = { day, seed, kit: dailyKit(seed) };
-      if (window.__game) window.__game.ready = false;
-      this.scene.start('Stage', { level: 'plains' }); return;
-    }
+    if (cmd === 'daily') { this.screens.openDaily(false, (c) => this.dailyChoice(c)); return; }
     gameSession.daily = null;
     this.fadeLeft = U.title.fadeSeconds; if (window.__game) window.__game.ready = false;
   }
