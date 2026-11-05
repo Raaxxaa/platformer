@@ -6,7 +6,7 @@ import type { ClassId } from '../abilities/types.ts';
 import type { WeaponId } from '../combat/types.ts';
 import { deriveSeed, fnv1a32, Rng } from '../rng.ts';
 import type { Road } from '../save/schema.ts';
-import { TWISTS, type TwistId } from '../../data/twists.ts';
+import { TWIST_NAME, TWISTS, type TwistId } from '../../data/twists.ts';
 
 export const DAILY = { keepDays: 60, freeRestartTicks: 30 * 120 } as const;
 
@@ -67,7 +67,7 @@ export function dailyShareText(day: string, kit: { cls: ClassId; weapon: WeaponI
     return best === null || best === undefined ? '⬜' : seg <= best ? '🟩' : '🟥';
   }).join('');
   const outcome = r.result === 'complete' ? fmt(r.ticks) : `💀 Stage ${r.stageReached}`;
-  return `RUSHBLADE Daily ${date} · ${CLASS_NAME[kit.cls]} (${WEAPON_NAME(kit.weapon)}) · ${road} · ${outcome}${squares ? ` · ${squares}` : ''}${r.assist ? ' (assist)' : ''}`;
+  return `RUSHBLADE Daily ${date} · ${TWIST_NAME[dailyTwist(dailySeed(day))]} · ${CLASS_NAME[kit.cls]} (${WEAPON_NAME(kit.weapon)}) · ${road} · ${outcome}${squares ? ` · ${squares}` : ''}${r.assist ? ' (assist)' : ''}`;
 }
 
 /** The best segment per split across every day with this road (for the share squares). */

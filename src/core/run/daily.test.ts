@@ -32,9 +32,9 @@ describe('Daily challenge (06 §14.1)', () => {
   it('share text for a finished run, a death and an assisted run', () => {
     const kit = { cls: 'tank' as const, weapon: 'war_maul' as const };
     expect(dailyShareText('20261104', kit, done(62533, { splits: [1000, 3000, 5000, 62533] }), [900, 2100, null, 50000]))
-      .toBe('RUSHBLADE Daily 2026-11-04 · Tank (War Maul) · Forest · 8:41.10 · 🟥🟩⬜🟥');
+      .toBe('RUSHBLADE Daily 2026-11-04 · Golden Hour · Tank (War Maul) · Forest · 8:41.10 · 🟥🟩⬜🟥');
     expect(dailyShareText('20261104', kit, { result: 'death', ticks: 9000, stageReached: 3, splits: [1000, 2000, null, null], road: 'mountain', assist: false }, [null, null, null, null]))
-      .toBe('RUSHBLADE Daily 2026-11-04 · Tank (War Maul) · Mountain · 💀 Stage 3 · ⬜⬜');
+      .toBe('RUSHBLADE Daily 2026-11-04 · Golden Hour · Tank (War Maul) · Mountain · 💀 Stage 3 · ⬜⬜');
     expect(dailyShareText('20261104', kit, done(62533, { assist: true }), [null, null, null, null]).endsWith('(assist)')).toBe(true);
     expect(bestDailySegments({ a: { official: done(4000), bestTicks: null, attempts: 1 } }, 'forest')).toEqual([1000, 1000, 1000, 1000]);
   });
