@@ -55,7 +55,7 @@ test('practice setup is keyboard-usable and starts a stage with the preset loado
   await seedSave(page, save({ lastKit: { cls: 'archer', weapon: 'bow' } }));
   await title(page);
   await page.keyboard.press('Enter');                                         // the boot gesture
-  for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowDown');
+  for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().screen)).toBe('practice');
   await frames(page); await page.screenshot({ path: 'test-results/m10-practice-setup.png' });

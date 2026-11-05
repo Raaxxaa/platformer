@@ -6,6 +6,7 @@ import { noteSeen, unlockOnKill } from './unlocks.ts';
 
 /** A player kill (`processDeaths`, after the rewards): the first kill of a type unlocks its accessory. */
 export function unlockCosmeticOnKill(w: GameWorld, e: EnemyState): void {
+  if (w.opts.bossRush) return;                    // 06 §14.2: no accessories from boss rush
   const id = unlockOnKill(w.cosmetics, e.def.id, e.dragon?.color);
   if (id) w.events.push({ t: 'cosmeticUnlocked', id, source: 'kill' });
 }
