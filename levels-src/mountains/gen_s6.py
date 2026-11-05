@@ -53,6 +53,10 @@ def build(P):
     carve(hx0, hx1, 106, 112)                                     # the merchant hall (floor 113)
     carve(P['shaft'], P['shaft'] + 3, a1 + 1, 105)                # main shaft: tunnel A -> hall
     carve(min(P['bWest'], h - 6), hx0, 110, 112)                  # tunnel B (its west end past the shaft is a dead-end nook) -> the hall
+    # Playtest: the shaft was too hard to climb back up. A ladder of one-way ledges on its right half, every 3 rows,
+    # from tunnel B up to the peak path; the left half stays open so a falling player drops straight past them.
+    for r in list(range(a1 - 2, 88, -3)) + list(range(a1 + 4, 113, 3)):
+        fill(h + 2, h + 3, r, r, '=')
     k = P['keyChimney']
     carve(k, k + 3, 96, 105)                                      # the key chimney (a hard wall-jump climb)
     carve(k - 4, k + 3, 94, 96)                                   # and the key's pocket at its top

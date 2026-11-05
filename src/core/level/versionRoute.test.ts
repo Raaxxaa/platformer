@@ -113,6 +113,11 @@ if (LEVEL_PACKS.includes('mountains')) {
           seen.add(key); todo.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
         }
         expect(seen.has(`${Math.floor(merchant.x / T)},112`)).toBe(true);
+        // Playtest: the shaft can be climbed back up — standing surfaces on its right half are never more than 3 rows apart.
+        const col = Math.floor(hole.x / T) + 1, floors: number[] = [];
+        for (let y = 113; y >= 88; y--) if (g.kindAt(col, y) !== 'empty' && g.kindAt(col, y - 1) === 'empty') floors.push(y);
+        for (let k = 1; k < floors.length; k++) expect(floors[k - 1] - floors[k], `rows ${floors[k]}..${floors[k - 1]}`).toBeLessThanOrEqual(3);
+        expect(floors.at(-1)).toBeLessThanOrEqual(91);                     // within a jump of the peak path (row 88)
       });
     }
   });
