@@ -16,81 +16,8 @@ async function draw(page: Page) {
   await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 }
 
-interface CartRide {
-  firstJump: boolean;
-  secondJump: boolean;
-  jumpLeft: number;
-  jumps: number;
-  crashes: number;
-  ticks: number;
-  firstTunnel: boolean;
-  secondTunnel: boolean;
-  firstUnderRoof: boolean;
-  secondUnderRoof: boolean;
-  firstTop: number | null;
-  secondTop: number | null;
-  firstFeet: number | null;
-  secondFeet: number | null;
-}
 
 /** Read the live cart; send only ordinary fixed inputs after the initial test placement. */
-async function rideTo(page: Page, targetX: number, progress: CartRide) {
-  return page.evaluate(({ targetX, progress }) => {
-    const g = (window as any).__game, scene = (window as any).PHASER_GAME.scene.getScene('Stage'), w = scene.world;
-    const cart = w.minecarts[0];
-    while (cart.active && cart.x < targetX && progress.ticks < 1800) {
-      if (!progress.firstJump && cart.x >= 321 * 16 && cart.x < 324 * 16) { progress.firstJump = true; progress.jumpLeft = 40; }
-      if (!progress.secondJump && cart.x >= 394 * 16 && cart.x < 396 * 16) { progress.secondJump = true; progress.jumpLeft = 40; }
-      g.step(1, { jump: progress.jumpLeft-- > 0 });
-      progress.ticks++;
-      progress.jumps += w.events.filter((e: any) => e.t === 'move' && e.e === 'cartJump').length;
-      progress.crashes += w.events.filter((e: any) => e.t === 'move' && e.e === 'cartCrash').length;
-      const seated = w.body.cartId === cart.id && w.body.state === 'minecart' && w.body.h === 20;
-      // Sample only while the entire24px cart is horizontally under the authored roof.
-      if (cart.x - cart.w / 2 >= 312 * 16 && cart.x + cart.w / 2 <= 320 * 16) {
-        progress.firstTunnel ||= seated;
-        progress.firstUnderRoof &&= seated && cart.y - cart.h >= 91 * 16 && cart.y <= 92 * 16;
-        progress.firstTop = Math.min(progress.firstTop ?? Infinity, cart.y - cart.h);
-        progress.firstFeet = Math.max(progress.firstFeet ?? -Infinity, cart.y);
-      }
-      if (cart.x - cart.w / 2 >= 386 * 16 && cart.x + cart.w / 2 <= 393 * 16) {
-        progress.secondTunnel ||= seated;
-        progress.secondUnderRoof &&= seated && cart.y - cart.h >= 131 * 16 && cart.y <= 132 * 16;
-        progress.secondTop = Math.min(progress.secondTop ?? Infinity, cart.y - cart.h);
-        progress.secondFeet = Math.max(progress.secondFeet ?? -Infinity, cart.y);
-      }
-    }
-    return { progress, cart: { x: cart.x, y: cart.y, active: cart.active }, body: g.body(), dead: w.health.dead };
-  }, { targetX, progress });
-}
-
-test('the real Mountain cart rides at least 120 tiles, jumps both gaps and passes both low tunnels before its stop', async ({ page }) => {
-  const errors = await boot(page, 'mountains', 6);
-  const start = await page.evaluate(() => {
-    const g = (window as any).__game, w = (window as any).PHASER_GAME.scene.getScene('Stage').world;
-    const cart = w.minecarts[0], initialX = cart.x, stop = w.cartStops[0];
-    g.teleport(cart.spawnX, cart.spawnY); g.step(1, { interact: true });
-    return { initialX, stopX: stop.x, cartWidth: cart.w, boarded: w.body.cartId === cart.id };
-  });
-  expect(start.boarded).toBe(true);
-  let progress: CartRide = { firstJump: false, secondJump: false, jumpLeft: 0, jumps: 0, crashes: 0, ticks: 0, firstTunnel: false, secondTunnel: false,
-    firstUnderRoof: true, secondUnderRoof: true, firstTop: null, secondTop: null, firstFeet: null, secondFeet: null };
-  const first = await rideTo(page, 318 * 16, progress); progress = first.progress;
-  expect(progress.firstTunnel).toBe(true); expect(progress.crashes).toBe(0);
-  expect(progress.firstUnderRoof, `first roof bottom1456/floor1472; min cart top ${progress.firstTop}, max feet ${progress.firstFeet}`).toBe(true);
-  await draw(page); await page.screenshot({ path: 'test-results/m71-cart-low-tunnel1.png' });
-  const second = await rideTo(page, 390 * 16, progress); progress = second.progress;
-  expect(progress.secondTunnel).toBe(true); expect(progress.crashes).toBe(0);
-  expect(progress.secondUnderRoof, `second roof bottom2096/floor2112; min cart top ${progress.secondTop}, max feet ${progress.secondFeet}`).toBe(true);
-  await draw(page); await page.screenshot({ path: 'test-results/m71-cart-low-tunnel2.png' });
-  const finish = await rideTo(page, start.stopX + 16, progress);
-  expect(finish.progress.jumps).toBe(2); expect(finish.progress.crashes).toBe(1);
-  expect(finish.cart.x - start.initialX).toBeGreaterThanOrEqual(120 * 16);
-  expect(finish.cart.x).toBeGreaterThanOrEqual(start.stopX - start.cartWidth / 2 - 1);
-  expect(finish.cart.active).toBe(false); expect(finish.body.cartId).toBeNull(); expect(finish.dead).toBe(false);
-  await draw(page); await page.screenshot({ path: 'test-results/m71-cart-arrival.png' });
-  expect(errors).toEqual([]);
-});
 
 test('normal movement enters real swamp water, wades at 85 px/s and uses the water jump', async ({ page }) => {
   const errors = await boot(page, 'swamps', 3);

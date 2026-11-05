@@ -188,7 +188,7 @@ test('Edit layout: drag a button, pinch it bigger, Done keeps it in the save', a
   await page.waitForFunction(() => (window as any).__game.screenState().screen === 'settings');
   const rows = await page.evaluate(() => (window as any).__game.screenState().model);
   expect(rows).toBeTruthy();
-  await page.evaluate(() => { const g = (window as any).__game; for (let i = 0; i < 6; i++) g.screenAction('down'); g.screenAction('confirm'); });     // Touch controls ▸
+  await page.evaluate(() => { const g = (window as any).__game; for (let i = 0; i < 7; i++) g.screenAction('down'); g.screenAction('confirm'); });     // Touch controls ▸
   await frames(page); await page.screenshot({ path: 'test-results/phone-settings-touch.png' });
   await page.evaluate(() => { const g = (window as any).__game; for (let i = 0; i < 6; i++) g.screenAction('down'); g.screenAction('confirm'); });     // Edit layout ▸
   await page.waitForFunction(() => getComputedStyle(document.querySelector('.touch-edit')!).display === 'flex');
