@@ -14,12 +14,16 @@ export const MENU_UI = {
   },
   settings: {
     panel: [112, 16, 416, 300], titleY: 28, rowsY: 56, rowH: 16, labelX: 160, valueX: 480, rowW: 336,
-    rows: ['controls', 'master', 'sfx', 'timer', 'shake', 'icons', 'hud', 'touch', 'fullscreen', 'export', 'import', 'back'],
+    rows: ['controls', 'master', 'sfx', 'timer', 'shake', 'icons', 'hud', 'assist', 'touch', 'fullscreen', 'export', 'import', 'back'],
     /** The touch page (07 §7.7, §8.6): opened by the `touch` row. */
+    /** The Assist page (06 §5.4, 07 §7.7, M14). */
+    assistRows: ['speed', 'damage', 'flask', 'doors', 'aback'],
+    assistLabels: { speed: 'Game speed', damage: 'Damage taken', flask: 'Extra flask charge', doors: 'Longer timed doors', aback: 'Back' },
+    assistNote: ['Assisted runs don\'t set best times,', 'but unlock everything as usual.', 'Damage, flask and doors apply from your next run.'], assistNoteY: 200,
     touchRows: ['mode', 'opacity', 'size', 'hand', 'vibe', 'effects', 'layout', 'tback'],
     touchLabels: { mode: 'Touch controls', opacity: 'Touch opacity', size: 'Button size', hand: 'Left-handed', vibe: 'Vibration', effects: 'Effects', layout: 'Edit layout ▸', tback: 'Back' },
     modeNames: { auto: 'Auto', on: 'On', off: 'Off' }, opacityStep: 5, sizeStep: 10,
-    labels: { controls: 'Controls ▸', master: 'Master volume', sfx: 'SFX volume', timer: 'Show timer', shake: 'Screen shake', icons: 'Button icons', hud: 'HUD layout ▸', touch: 'Touch controls ▸', fullscreen: 'Fullscreen', export: 'Export save ▸', import: 'Import save ▸', back: 'Back' },
+    labels: { controls: 'Controls ▸', master: 'Master volume', sfx: 'SFX volume', timer: 'Show timer', shake: 'Screen shake', icons: 'Button icons', hud: 'HUD layout ▸', assist: 'Assist ▸', touch: 'Touch controls ▸', fullscreen: 'Fullscreen', export: 'Export save ▸', import: 'Import save ▸', back: 'Back' },
     styles: ['auto', 'keyboard', 'xbox', 'playstation'], styleNames: ['Auto', 'Keyboard', 'Xbox', 'PlayStation'],
     volumeCells: 10, cell: 6, cellGap: 2, barX: 370, barY: 2, minusX: 350, plusX: 488, stepW: 14,
     hintY: 270, controlsRowsY: 64, controlsRowH: 14, controlsBackY: 280,

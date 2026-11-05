@@ -13,6 +13,7 @@ import { MenuSurface } from './records.ts';
 import { keyLabel, menuGlyphs, shownPromptStyle } from '../inputSettings.ts';
 import { ACTIONS, bindKey, bindPad, canCaptureKey, canCapturePad, clearKey, isFixed, type BindCol } from '../model/bindings.ts';
 import { defaultSettings } from '../../data/save.ts';
+import { ASSIST } from '../../data/assist.ts';
 import { PromptGlyph } from '../hud/abilityHud.ts';
 
 export type SettingsRow = typeof U.settings.rows[number];
@@ -50,8 +51,10 @@ export class SettingsModel {
   readonly controls = new ControlsModel();
   /** The touch page is open (07 §8.6 settings); `savedCursor` is where the main page's cursor was. */
   touchOpen = false;
+  /** The Assist page (06 §5.4). */
+  assistOpen = false;
   private savedCursor = 0;
-  get rows(): readonly string[] { return this.touchOpen ? U.settings.touchRows : U.settings.rows; }
+  get rows(): readonly string[] { return this.touchOpen ? U.settings.touchRows : this.assistOpen ? U.settings.assistRows : U.settings.rows; }
   private readonly getSettings: () => SettingsData;
   constructor(getSettings: () => SettingsData) { this.getSettings = getSettings; }
   snapshot(): SettingsData { return structuredClone(this.getSettings()); }
@@ -80,6 +83,23 @@ export class SettingsModel {
     else if (row === 'hand') t.leftHanded = !t.leftHanded;
     else if (row === 'vibe') t.vibration = !t.vibration;
     else if (row === 'effects') t.effects = effectsLevel(t, isTouchDevice()) === 'high' ? 'low' : 'high';
+    return { type: 'change', settings: next };
+  }
+  /** The Assist page: step each option; Back returns to the main page. */
+  private assistAction(action: HomePanelAction): SettingsCommand | null {
+    const back = (): null => { this.assistOpen = false; this.cursor = this.savedCursor; return null; };
+    if (action === 'back') return back();
+    if (action === 'up') this.select(this.cursor - 1);
+    if (action === 'down') this.select(this.cursor + 1);
+    const row = U.settings.assistRows[this.cursor], delta = action === 'left' ? -1 : action === 'right' ? 1 : 0;
+    if (action !== 'confirm' && !delta) return null;
+    if (row === 'aback') return action === 'confirm' ? back() : null;
+    const next = this.snapshot(), a = next.assist, step = delta || 1;
+    const cycle = <T>(list: readonly T[], v: T): T => list[(list.indexOf(v) + step + list.length) % list.length];
+    if (row === 'speed') a.speed = cycle(ASSIST.speeds, a.speed);
+    else if (row === 'damage') a.damageTaken = cycle(ASSIST.damage, a.damageTaken);
+    else if (row === 'flask') a.extraFlask = !a.extraFlask;
+    else a.longerDoors = !a.longerDoors;
     return { type: 'change', settings: next };
   }
   /** Controls page navigation (captures are fed through `capturedKey` / `capturedPad`). */
@@ -127,6 +147,7 @@ export class SettingsModel {
   action(action: HomePanelAction): SettingsCommand | null {
     if (this.controlsOpen) return this.controlsAction(action);
     if (this.touchOpen) return this.touchAction(action);
+    if (this.assistOpen) return this.assistAction(action);
     if (action === 'back') return { type: 'close' };
     if (action === 'up') this.select(this.cursor - 1); if (action === 'down') this.select(this.cursor + 1);
     const row = this.rows[this.cursor] as typeof U.settings.rows[number], delta = action === 'left' ? -1 : action === 'right' ? 1 : 0, next = this.snapshot();
@@ -143,6 +164,7 @@ export class SettingsModel {
     if (action !== 'confirm') return null;
     if (row === 'controls') { this.controlsOpen = true; return null; }
     if (row === 'hud') return { type: 'hudLayout' };
+    if (row === 'assist') { this.assistOpen = true; this.savedCursor = this.cursor; this.cursor = 0; return null; }
     if (row === 'touch') { this.touchOpen = true; this.savedCursor = this.cursor; this.cursor = 0; return null; }
     if (row === 'export' || row === 'import' || row === 'fullscreen') return { type: row };
     return row === 'back' ? { type: 'close' } : null;
@@ -167,9 +189,10 @@ export class SettingsView extends MenuSurface {
   protected render(): void {
     const m = this.model, settings = m.snapshot(), glyph = menuGlyphs(), c = m.controls, now = this.now(), blink = c.capture ? Math.floor(now * 3) % 2 : 0;
     if (!this.beginDraw([m.cursor, m.controlsOpen, m.touchOpen, settings, glyph, c.row, c.col, c.capture, c.flash && c.flash.until > now, blink])) return;
-    const S = U.settings; if (!m.controlsOpen) this.panel(S.panel); this.text(this.scene.scale.width / 2, S.titleY, m.controlsOpen ? '' : m.touchOpen ? 'TOUCH CONTROLS' : 'SETTINGS', UI_COLOR.text, true);
+    const S = U.settings; if (!m.controlsOpen) this.panel(S.panel); this.text(this.scene.scale.width / 2, S.titleY, m.controlsOpen ? '' : m.touchOpen ? 'TOUCH CONTROLS' : m.assistOpen ? 'ASSIST' : 'SETTINGS', UI_COLOR.text, true);
     if (m.controlsOpen) { this.renderControls(m, settings); return; }
     if (m.touchOpen) { this.renderTouch(m, settings); return; }
+    if (m.assistOpen) { this.renderAssist(m, settings); return; }
     (m.rows as readonly (typeof S.rows[number])[]).forEach((id, i) => {
       const y = S.rowsY + i * S.rowH, selected = m.cursor === i;
       if (selected) this.text(S.labelX - U.cursorGap, y, '▸', UI_COLOR.highlight);
@@ -248,6 +271,23 @@ export class SettingsView extends MenuSurface {
   }
 
   /** The touch page: one row per setting, `< value >` on the selected one (taps pick a row; ◂ ▸ step it). */
+  private renderAssist(m: SettingsModel, settings: SettingsData): void {
+    const S = U.settings, a = settings.assist, mid = this.scene.scale.width / 2, pct = (v: number) => `${Math.round(v * 100)}%`;
+    const value: Record<string, string> = { speed: pct(a.speed), damage: pct(a.damageTaken), flask: a.extraFlask ? 'On' : 'Off', doors: a.longerDoors ? 'On' : 'Off', aback: '' };
+    S.assistRows.forEach((id, i) => {
+      const y = S.rowsY + i * S.rowH, selected = m.cursor === i;
+      if (selected) this.text(S.labelX - U.cursorGap, y, '▸', UI_COLOR.highlight);
+      this.text(S.labelX, y, S.assistLabels[id], selected ? UI_COLOR.highlight : UI_COLOR.text, false, 'left');
+      this.target(S.labelX - U.cursorGap, y, S.rowW - 60, S.rowH, () => m.select(i), () => this.action('confirm'));
+      if (value[id]) {
+        this.text(S.valueX, y, selected ? `◂ ${value[id]} ▸` : value[id], selected ? UI_COLOR.highlight : UI_COLOR.textDim, false, 'right');
+        this.target(S.valueX - 70, y, 36, S.rowH, () => m.select(i), () => this.action('left'));
+        this.target(S.valueX - 34, y, 34, S.rowH, () => m.select(i), () => this.action('right'));
+      }
+    });
+    S.assistNote.forEach((line, i) => this.text(mid, S.assistNoteY + i * 14, line, UI_COLOR.textDim));
+    this.hint(mid, S.hintY, ['↑↓ Select   ←→ Change   ', { menu: 'confirm' }, ' Choose   ', { menu: 'back' }, ' Back']);
+  }
   private renderTouch(m: SettingsModel, settings: SettingsData): void {
     const S = U.settings, t = settings.touch, mid = this.scene.scale.width / 2;
     const value: Record<TouchRow, string> = {

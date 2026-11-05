@@ -5,7 +5,7 @@ import { defaultSettings } from '../../data/save.ts';
 describe('settings menu (07 §7.7)', () => {
   it('lists only built features and leaves saved music/damage-number fields intact', () => {
     const settings = defaultSettings(), m = new SettingsModel(() => settings);
-    expect(m.rows).toEqual(['controls', 'master', 'sfx', 'timer', 'shake', 'icons', 'hud', 'touch', 'fullscreen', 'export', 'import', 'back']);
+    expect(m.rows).toEqual(['controls', 'master', 'sfx', 'timer', 'shake', 'icons', 'hud', 'assist', 'touch', 'fullscreen', 'export', 'import', 'back']);
     m.select(1); const command = m.action('left'); expect(command?.type).toBe('change');
     if (command?.type !== 'change') throw Error('missing change');
     expect(command.settings.volume).toEqual({ master: 70, music: 70, sfx: 80 }); expect(command.settings.damageNumbers).toBe(true); expect(settings.volume.master).toBe(80);
@@ -31,18 +31,18 @@ describe('settings menu (07 §7.7)', () => {
     const m = new SettingsModel(defaultSettings); m.action('up'); expect(m.cursor).toBe(0);
     expect(m.action('confirm')).toBeNull(); expect(m.controlsOpen).toBe(true); m.action('left'); expect(m.controlsOpen).toBe(true);
     expect(m.action('back')).toBeNull(); expect(m.controlsOpen).toBe(false);
-    m.select(11); m.action('down'); expect(m.cursor).toBe(11); expect(m.action('confirm')).toEqual({ type: 'close' });
+    m.select(12); m.action('down'); expect(m.cursor).toBe(12); expect(m.action('confirm')).toEqual({ type: 'close' });
   });
   it('returns export/import/fullscreen callbacks without treating them as saved settings', () => {
     const m = new SettingsModel(defaultSettings);
-    for (const [index, type] of [[6, 'hudLayout'], [8, 'fullscreen'], [9, 'export'], [10, 'import']] as const) { m.select(index); expect(m.action('confirm')).toEqual({ type }); }
+    for (const [index, type] of [[6, 'hudLayout'], [9, 'fullscreen'], [10, 'export'], [11, 'import']] as const) { m.select(index); expect(m.action('confirm')).toEqual({ type }); }
     expect(m.action('back')).toEqual({ type: 'close' });
   });
 });
 
 describe('touch settings page (07 §8.6, M12 Task 5)', () => {
   const open = () => {
-    let settings = defaultSettings(); const m = new SettingsModel(() => settings); m.select(7);
+    let settings = defaultSettings(); const m = new SettingsModel(() => settings); m.select(8);
     expect(m.action('confirm')).toBeNull(); expect(m.touchOpen).toBe(true); expect(m.cursor).toBe(0);
     const apply = (a: Parameters<SettingsModel['action']>[0]) => { const c = m.action(a); if (c?.type === 'change') settings = c.settings; return c; };
     return { m, apply, get s() { return settings; } };
@@ -63,7 +63,7 @@ describe('touch settings page (07 §8.6, M12 Task 5)', () => {
     const t = open();
     for (let i = 0; i < 6; i++) t.apply('down');
     expect(t.m.action('confirm')).toEqual({ type: 'layout' });
-    t.apply('down'); expect(t.m.action('confirm')).toBeNull(); expect(t.m.touchOpen).toBe(false); expect(t.m.cursor).toBe(7);
+    t.apply('down'); expect(t.m.action('confirm')).toBeNull(); expect(t.m.touchOpen).toBe(false); expect(t.m.cursor).toBe(8);
   });
   it('Controls page (07 §7.8): capture a key, Escape cancels, a refused clear flashes, Reset restores defaults', () => {
     let settings = defaultSettings();
@@ -84,5 +84,15 @@ describe('touch settings page (07 §8.6, M12 Task 5)', () => {
     for (let i = 0; i < 20; i++) m.action('down');
     m.action('up'); const r = m.action('confirm')!;                                                     // Reset to defaults
     if (r.type !== 'change') throw Error('no reset'); expect(r.settings.bindings).toEqual(defaultSettings().bindings);
+  });
+  it('Assist page (06 §5.4): steps speed 100/85/70 and damage 100/75/50, toggles flask and doors, Back returns', () => {
+    let settings = defaultSettings(); const m = new SettingsModel(() => settings); m.select(7);
+    const apply = (a: Parameters<SettingsModel['action']>[0]) => { const c = m.action(a); if (c?.type === 'change') settings = c.settings; return c; };
+    apply('confirm'); expect(m.assistOpen).toBe(true);
+    apply('right'); expect(settings.assist.speed).toBe(0.85); apply('right'); expect(settings.assist.speed).toBe(0.7);
+    apply('down'); apply('right'); apply('right'); expect(settings.assist.damageTaken).toBe(0.5);
+    apply('down'); apply('confirm'); expect(settings.assist.extraFlask).toBe(true);
+    apply('down'); apply('confirm'); expect(settings.assist.longerDoors).toBe(true);
+    apply('down'); apply('confirm'); expect(m.assistOpen).toBe(false); expect(m.cursor).toBe(7);
   });
 });
