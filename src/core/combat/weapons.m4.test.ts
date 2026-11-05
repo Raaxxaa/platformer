@@ -173,8 +173,8 @@ describe('Storm Hammer throw (02 §11, checklist 25–26)', () => {
     run(w, {}, 120);                                        // caught well before 1.0 s
     expect(w.hammer).toBeNull();
     run(w, { moveY: -1, attack1: true }, 1);
-    expect(w.hammer).toBeNull();                            // swing instead
-    expect(w.combat.current?.kind).toBe('combo');
+    expect(w.hammer).toBeNull();                            // not ready: the Launcher instead (02 §9.6a, M15)
+    expect(w.combat.current?.kind).toBe('launcher');
     const v = setup('storm_hammer', [], 'thunder_strike');
     run(v, { moveY: -1, attack1: true }, 1);
     run(v, {}, 252);                                        // launch at +12 ticks; 2.0 s later the throw is ready

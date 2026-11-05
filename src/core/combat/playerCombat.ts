@@ -1,4 +1,5 @@
 // The player's weapon attacks: combo, input buffer, cancels, move caps and facing (02 §9.1–9.3, §9.5–9.6).
+import { isRangedWeapon, UP_MOVE, upMoveStep, type UpMoveKind } from '../../data/upMoves.ts';
 import { slot2Locked } from '../loot/lucky.ts';
 import { chargeTimeOf, isS } from './signatures.ts';
 import { attackSpeedBonus } from '../loot/perks.ts';
@@ -6,7 +7,8 @@ import type { InputState } from '../input.ts';
 import type { PlayerBody } from '../player/body.ts';
 import { detachFromWall } from '../player/wall.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
-import { COMBAT, ticks, WEIGHT_MOVE_MULT } from '../tuning.ts';
+import { COMBAT, TICK_RATE, ticks, WEIGHT_MOVE_MULT } from '../tuning.ts';
+import { startForcedMove } from '../player/forcedMove.ts';
 import { hammerOutIn, recallHammer, throwReady } from './stormHammer.ts';
 import { keepComboOnSwap } from '../classes/hybrids.ts';
 import { SHIELD, WEAPONS, WEAPON_SPECIAL } from '../../data/weapons.ts';
@@ -25,7 +27,7 @@ export interface CurrentAttack {
   lens: Record<AttackPhase, number>;     // phase lengths in ticks, fixed when the step starts
   faceAway: boolean;
   /** A combo step, the charged attack (02 §9.4), the Storm Hammer throw (§11), or a weapon's moving special (Spear lunge, Giant Axe spin; §10.5). */
-  kind: 'combo' | 'charged' | 'throw' | 'lunge' | 'spin';
+  kind: 'combo' | 'charged' | 'throw' | 'lunge' | 'spin' | UpMoveKind;
 }
 
 /** A weapon charging after its step (02 §9.4). */
@@ -74,6 +76,7 @@ export function stepDef(w: GameWorld, cur: CurrentAttack): AttackStep {
   if (cur.kind === 'charged') return weapon.chargedStep!;
   if (cur.kind === 'throw') return HAMMER_THROW_STEP;
   if (cur.kind === 'lunge' || cur.kind === 'spin') return weapon.special!;
+  if (cur.kind === 'launcher' || cur.kind === 'upAir' || cur.kind === 'dashAtk') return upMoveStep(weapon, cur.kind)!;
   return weapon.combo[cur.step];
 }
 
@@ -86,6 +89,7 @@ function isDivePress(b: PlayerBody, input: InputState, w: GameWorld, slot: Slot)
 function startability(w: GameWorld, slot?: Slot): 'yes' | 'hold' | 'buffer' {
   const s = w.body.state;
   if (s === 'dash' && slot !== undefined && !w.isDrinking() && lungeReady(w, slot)) return 'yes';   // the Spear lunge ends the dash (02 §10.5)
+  if (s === 'dash' && slot !== undefined && !w.isDrinking() && dashAttackReady(w, slot)) return 'yes';   // the Rushing Strike ends it too (02 §9.6a)
   if (w.isDrinking()) return 'buffer';
   if ((w.abilities.cast as { phase: string } | null)?.phase === 'startup') return 'buffer';   // 03 §7.6
   if (s === 'ground' || s === 'air' || s === 'crawl' || s === 'slide' || s === 'wallSlide' || s === 'minecart') return 'yes';
@@ -94,6 +98,13 @@ function startability(w: GameWorld, slot?: Slot): 'yes' | 'hold' | 'buffer' {
 }
 
 const inst0 = (w: GameWorld, slot: Slot) => w.combat.slots[slot];
+
+/** 02 §9.6a.4: a melee weapon without its own dash move, pressed during a dash or within 0.10 s after it. */
+export function dashAttackReady(w: GameWorld, slot: Slot): boolean {
+  const weapon = weaponIn(w, slot);
+  if (!weapon || !upMoveStep(weapon, 'dashAtk')) return false;
+  return w.body.state === 'dash' || w.tick - w.lastDashEndTick <= ticks(UP_MOVE.dashGraceS);
+}
 
 function removeAttackGroups(w: GameWorld, attackInstance: number): void {
   w.hitGroups = w.hitGroups.filter((g) => !(g.owner === 'player' && g.attackInstance === attackInstance && g.kind === 'melee'));
@@ -113,7 +124,9 @@ function spawnStepGroup(w: GameWorld, cur: CurrentAttack): void {
 function startStep(w: GameWorld, slot: Slot, step: number, input: InputState, kind: CurrentAttack['kind'] = 'combo'): void {
   const c = w.combat, b = w.body;
   const weapon = weaponIn(w, slot)!;
-  let st = kind === 'charged' ? weapon.chargedStep! : kind === 'throw' ? HAMMER_THROW_STEP : kind === 'lunge' || kind === 'spin' ? weapon.special! : weapon.combo[step];
+  let st = kind === 'charged' ? weapon.chargedStep! : kind === 'throw' ? HAMMER_THROW_STEP : kind === 'lunge' || kind === 'spin' ? weapon.special!
+    : kind === 'launcher' || kind === 'upAir' || kind === 'dashAtk' ? upMoveStep(weapon, kind)! : weapon.combo[step];
+  const dashVx = kind === 'dashAtk' && b.state === 'dash' ? b.vx : null;
   let faceAway = false;
   const lungeDir = kind === 'lunge' ? (b.state === 'dash' && b.vx !== 0 ? (Math.sign(b.vx) as 1 | -1) : b.facing) : null;
   if (b.state === 'slide') b.endSlideRequested = true;                 // 01 §9.2: the press ends the slide
@@ -133,6 +146,8 @@ function startStep(w: GameWorld, slot: Slot, step: number, input: InputState, ki
   // Moving specials keep their move time (02 §9.9: not scaled by attack speed).
   if (kind === 'charged' && weapon.id === 'katana') cur.lens.active = ticks(WEAPON_SPECIAL.katanaSlash.moveS);
   if (kind === 'lunge') cur.lens.active = ticks(WEAPON_SPECIAL.spearLunge.moveS);
+  // 02 §9.6a: the Rushing Strike ends the dash and keeps its speed through startup and active.
+  if (dashVx !== null) startForcedMove(b, { vx: dashVx, vy: 0, durationS: (cur.lens.startup + cur.lens.active) / TICK_RATE, gravity: true, endOnWall: true, endVelocity: 'keep', cancelByJump: true, cancelByDash: true }, 'weapon:dashAtk');
   if (kind === 'spin') cur.lens.active = ticks(isS(inst0(w, slot), 'giant_axe') ? WEAPON_SPECIAL.axeSpin.cycloneS : WEAPON_SPECIAL.axeSpin.spinS);
   c.current = cur;
   c.charge = null;
@@ -155,6 +170,10 @@ function enterPhase(w: GameWorld, cur: CurrentAttack, phase: AttackPhase): void 
   cur.phaseTicks = 1;
   if (phase === 'active') {
     onActiveStart(w, cur, stepDef(w, cur));                 // projectiles, the dash-slash, the uppercut, the throw
+    // 02 §9.6a: the up air attack's hop, once per airtime (shared with the Iron Fists uppercut).
+    if (cur.kind === 'upAir' && !isRangedWeapon(weaponIn(w, cur.slot)!) && !w.combat.uppercutUsed) {
+      w.body.vy = Math.min(w.body.vy, UP_MOVE.hopVy); w.combat.uppercutUsed = true;
+    }
     if (cur.lens.active === 0) { enterPhase(w, cur, 'recovery'); return; }
     spawnStepGroup(w, cur);
   } else if (phase === 'recovery') {
@@ -171,6 +190,12 @@ function startFromPress(w: GameWorld, slot: Slot, input: InputState): void {
   if (weapon.hold === 'shield') { raiseShield(w, slot, input); return; }                              // 02 §12
   if (lungeReady(w, slot)) { startStep(w, slot, 0, input, 'lunge'); return; }                         // 02 §10.5
   if (spinReady(w, slot, input)) { startStep(w, slot, 0, input, 'spin'); return; }
+  // 02 §9.6a: Up + button: the Launcher on the ground, the up air attack in the air (ranged: a shot straight up).
+  if (input.moveY === -1) {
+    const kind = w.body.grounded ? 'launcher' : 'upAir';
+    if (upMoveStep(weapon, kind)) { startStep(w, slot, 0, input, kind); return; }
+  }
+  if (dashAttackReady(w, slot)) { startStep(w, slot, 0, input, 'dashAtk'); return; }
   const len = weapon.combo.length;
   const step = w.tick - c.comboEndTick[slot] <= COMBAT.COMBO_WINDOW_TICKS ? c.comboStep[slot] % len : 0;
   startStep(w, slot, step, input);
@@ -233,7 +258,8 @@ function advance(w: GameWorld, input: InputState): void {
   // a charge weapon held since its press enters Charge (02 §9.4).
   const weapon = weaponIn(w, cur.slot)!;
   const held = cur.slot === 0 ? input.attack1.held : input.attack2.held;
-  if (weapon.hold === 'charge' && cur.kind === 'combo' && c.heldSinceStart && held && weapon.chargedStep && !c.queued && c.otherPending === null) {
+  // The Katana's Rushing Strike is its tap; held, it still charges into the dash-slash (02 §9.6a).
+  if (weapon.hold === 'charge' && (cur.kind === 'combo' || (cur.kind === 'dashAtk' && weapon.id === 'katana')) && c.heldSinceStart && held && weapon.chargedStep && !c.queued && c.otherPending === null) {
     finishStep(w, cur, w.tick - 1);
     c.charge = { slot: cur.slot, ticks: 0, need: phaseTicks(chargeTimeOf(w, cur.slot, weapon), attackSpeed(w, weapon.weight, cur.slot)) };
     return;
