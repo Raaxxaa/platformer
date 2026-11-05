@@ -13,7 +13,8 @@ function live(): Cfg {
   return u ? { url: u, anonKey: 'test' } : ONLINE;
 }
 export const onlineConfigured = (cfg: Cfg = live()): boolean => !!cfg.url && !!cfg.anonKey;
-const headers = (cfg: Cfg) => ({ apikey: cfg.anonKey, Authorization: `Bearer ${cfg.anonKey}`, 'Content-Type': 'application/json' });
+// New-style publishable keys go in the apikey header only (they are not JWTs).
+const headers = (cfg: Cfg) => ({ apikey: cfg.anonKey, 'Content-Type': 'application/json' });
 
 async function timed(f: Fetch, url: string, init: RequestInit): Promise<Response | null> {
   const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
