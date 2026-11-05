@@ -1,5 +1,6 @@
 // M3 stage scene: loads public/levels/<id>.json and plays it, with doors, loot markers, hints, the boss bar,
 // the run timer, the split popup and the temporary stage-clear screen.
+import { TWIST_NAME, TWIST_TEXT } from '../../data/twists.ts';
 import { applyBossRushBest, bossDown, bossRushHp, BOSS_RUSH, newBossRush } from '../../core/run/bossRush.ts';
 import { setupBossRushFight } from '../../core/run/bossRushWorld.ts';
 import { BossRushResultView } from '../../ui/screens/bossRush.ts';
@@ -199,6 +200,9 @@ export class StageScene extends WorldScene {
     this.installStageDebug();
     const kitNotice = gameSession.takeKitNotice();
     if (kitNotice) this.abilityHud.toast(kitNotice, UI_COLOR.highlight, this.time.now, SAVE_RULES.warningSeconds);
+    // 06 §14.1 (M18): the run start banner names the twist.
+    const tw = this.world.run.twist;
+    if (tw && tw !== 'classic' && !this.carry && this.level.kind === 'stage') this.abilityHud.toast(`Twist: ${TWIST_NAME[tw]} — ${TWIST_TEXT[tw]}`, UI_COLOR.highlight, this.time.now, SAVE_RULES.warningSeconds);
     // Before the run, pick a class and weapon (M4 plan Task 13). `?kit=archer:bow` skips the panel; debug runs keep
     // the M2 loadout unless a kit is given.
     const q = new URLSearchParams(window.location.search);

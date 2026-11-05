@@ -16,7 +16,7 @@ import type { RunRecord } from '../core/save/schema.ts';
 import { WEAPONS } from '../data/weapons.ts';
 import { STARTING_KITS } from '../data/classes.ts';
 import { WEAPON_NAME } from '../data/uiText.ts';
-import { recordDailyEnd } from '../core/run/daily.ts';
+import { dailyTwist, recordDailyEnd } from '../core/run/daily.ts';
 import type { BossRushAttempt } from '../core/run/bossRush.ts';
 import type { BossRushSetup } from '../ui/screens/bossRush.ts';
 import type { StartKit } from '../core/save/schema.ts';
@@ -67,7 +67,7 @@ export const gameSession = {
     // SPEC-GAP: does practice Random pick a new layout on Retry? No: it keeps its layout (its best and ghost belong to it).
     const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout || (!!practice && !!layout), seeded: carry?.run.seeded ?? seed !== null,
       startKit, carry, cosmetics: save.cosmetics, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
-      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, assist: () => saveStore().data.settings.assist, dragon, practice: !!practice, practiceSetup: practice ?? undefined, daily: daily?.day, bossRush: !!rush });
+      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, assist: () => saveStore().data.settings.assist, dragon, practice: !!practice, practiceSetup: practice ?? undefined, daily: daily?.day, bossRush: !!rush, twist: daily ? dailyTwist(daily.seed) : undefined });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);

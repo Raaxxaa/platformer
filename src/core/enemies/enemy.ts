@@ -1,4 +1,5 @@
 // Enemy runtime state, spawning with stage scaling, and activation (04 §2.2–2.3).
+import { enemyHpMult } from '../run/twistFx.ts';
 import { newStatus, type EnemyStatus } from '../combat/status.ts';
 import { roundHalfUp } from '../math.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
@@ -108,7 +109,7 @@ export function spawnEnemy(w: GameWorld, s: EnemySpawn): EnemyState {
   const def = ENEMIES[s.enemy];
   if (!def) throw new Error(`unknown enemy ${s.enemy}`);
   const scale = def.tier === 'dummy' || def.tier === 'target' ? 1 : def.tier === 'boss' ? STAGE_SCALING[w.stage].bossHp : STAGE_SCALING[w.stage].mobHp;
-  const maxHp = roundHalfUp(def.hp * scale);
+  const maxHp = roundHalfUp(def.hp * scale * (def.tier === 'dummy' || def.tier === 'target' ? 1 : enemyHpMult(w)));
   return {
     id: w.newId(), def, x: s.x, y: s.y, remX: 0, remY: 0, vx: 0, vy: 0, facing: s.facing,
     hp: maxHp, maxHp, poise: def.poiseMax, poiseImmuneTicks: 0, noPoiseHitTicks: 0,

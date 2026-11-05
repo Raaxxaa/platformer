@@ -6,6 +6,7 @@ import type { ClassId } from '../abilities/types.ts';
 import type { WeaponId } from '../combat/types.ts';
 import { deriveSeed, fnv1a32, Rng } from '../rng.ts';
 import type { Road } from '../save/schema.ts';
+import { TWISTS, type TwistId } from '../../data/twists.ts';
 
 export const DAILY = { keepDays: 60, freeRestartTicks: 30 * 120 } as const;
 
@@ -20,6 +21,12 @@ export function dailyKit(seedText: string): { cls: ClassId; weapon: WeaponId } {
   const cls = CLASS_IDS[Math.floor(rng.next() * 4)];
   const weapon = STARTING_KITS[cls].weapons[Math.floor(rng.next() * 2)];
   return { cls, weapon };
+}
+/** 06 §14.1 (M18): the third draw of the same stream picks the twist. */
+export function dailyTwist(seedText: string): TwistId {
+  const rng = new Rng(deriveSeed(fnv1a32(seedText), 'daily', 'run'));
+  rng.next(); rng.next();
+  return TWISTS[Math.floor(rng.next() * TWISTS.length)];
 }
 
 export interface DailyResult { result: 'complete' | 'death'; ticks: number; stageReached: number; splits: (number | null)[]; road: Road | null; assist: boolean }

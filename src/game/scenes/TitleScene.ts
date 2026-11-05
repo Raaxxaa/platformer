@@ -15,7 +15,8 @@ import { activeHomePad, type HomePanelAction, type HomePanelPad } from '../../ui
 import type { PracticeSetup } from '../../core/run/practice.ts';
 import { MenuSurface } from '../../ui/screens/records.ts';
 import { TitleModel } from '../../ui/screens/front.ts';
-import { dailyDay, dailyKit, dailySeed } from '../../core/run/daily.ts';
+import { dailyDay, dailyKit, dailySeed, dailyTwist } from '../../core/run/daily.ts';
+import { TWIST_NAME } from '../../data/twists.ts';
 import { bossRushUnlocked, newBossRush } from '../../core/run/bossRush.ts';
 import { BOSS_RUSH_UI } from '../../data/bossRush.ts';
 import { DRAGON_ROLL } from '../../data/run.ts';
@@ -28,7 +29,7 @@ export type TitleCommand = typeof U.titleCommands[number];
 export function dailyRowLabel(now = new Date()): string {
   const day = dailyDay(now), kit = dailyKit(dailySeed(day)), off = saveStore().data.daily[day]?.official;
   const result = off ? (off.result === 'complete' ? ` · ${formatTime(off.ticks)}` : ` · Stage ${off.stageReached}`) : '';
-  return `Daily · ${CLASS_NAME[kit.cls]} (${WEAPON_NAME(kit.weapon)})${result}`;
+  return `Daily · ${TWIST_NAME[dailyTwist(dailySeed(day))]} · ${CLASS_NAME[kit.cls]} (${WEAPON_NAME(kit.weapon)})${result}`;
 }
 class TitleView extends MenuSurface {
   private readonly choose: (cmd: TitleCommand) => void;

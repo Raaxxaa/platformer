@@ -1,4 +1,5 @@
 // Gold (05 §9): integer tenths, kill gold, Leaky Pockets coins. Keys are in keys.ts.
+import { goldGainMult } from '../run/twistFx.ts';
 import type { CurseId, LuckyId } from '../../data/loot.ts';
 import { GOLD, type StatUpgradeId } from '../../data/economy.ts';
 import { playerRect } from '../combat/resolve.ts';
@@ -23,6 +24,7 @@ export const COIN_SIZE = 6;
 /** §9.1: shown gold = floor(tenths / 10), at most 9999 (the rest is lost). */
 export function addGoldTenths(w: GameWorld, tenths: number, reason: string): void {
   if (tenths === 0) return;
+  if (tenths > 0) tenths *= goldGainMult(w);           // 06 §14.1 Heavy Pockets
   const before = w.econ.goldTenths;
   w.econ.goldTenths = Math.max(0, Math.min(GOLD.maxShown * 10 + 9, w.econ.goldTenths + tenths));
   w.run.goldEarnedTenths += Math.max(0, w.econ.goldTenths - before);

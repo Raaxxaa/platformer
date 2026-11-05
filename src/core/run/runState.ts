@@ -26,6 +26,8 @@ export interface RunState {
   assist: RunAssist;
   /** 06 §14.1 (M15): the UTC day (`YYYYMMDD`) of a Daily challenge run. */
   daily?: string;
+  /** 06 §14.1 (M18): the run's twist (dailies and seed challenges). */
+  twist?: import('../../data/twists.ts').TwistId;
   phase: RunPhase;
   pausedFrom: Exclude<RunPhase, 'paused'> | null;
   transition: RunTransition | null;

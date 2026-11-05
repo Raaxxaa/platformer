@@ -1,4 +1,5 @@
 // Enemy body: gravity, collision, ledges, knockback motion and separation (04 §2.1, 02 §4.2).
+import { enemySpeedMult } from '../run/twistFx.ts';
 import { approach } from '../math.ts';
 import { isGrounded, moveX, moveY, roundHalfAwayFromZero, type AABBBody } from '../physics/collide.ts';
 import { SWAMP } from '../../data/swamps.ts';
@@ -62,7 +63,7 @@ export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
     box.remX+=e.vx*TICK;box.remY+=e.vy*TICK;const dx=roundHalfAwayFromZero(box.remX),dy=roundHalfAwayFromZero(box.remY);box.x+=dx;box.y+=dy;box.remX-=dx;box.remY-=dy;copyBack(e,box);e.grounded=false;
     if(e.knockback&&!e.control&&Math.abs(e.vx)<COMBAT.ENEMY_KB_CONTROL_SPEED){e.knockback=false;e.vx=0;}return;
   }
-  if (moveX(box, w.grid, e.vx * TICK * surface, true) === 'wall') {
+  if (moveX(box, w.grid, e.vx * TICK * surface * (e.knockback || e.control ? 1 : enemySpeedMult(w)), true) === 'wall') {
     e.vx = 0;
     e.hitWall = true;
   }

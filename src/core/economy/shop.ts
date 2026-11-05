@@ -1,4 +1,5 @@
 // Village shops (05 §10–11) and altar tap/hold (06 §12.2). No devices, clock, storage or Phaser.
+import { twistPrice } from '../run/twistFx.ts';
 import { ASSIST } from '../../data/assist.ts';
 import type { AbilityId, AbilitySlot } from '../abilities/types.ts';
 import type { WeaponId, WeaponInstance } from '../combat/types.ts';
@@ -26,7 +27,7 @@ export interface ShopState {
   cosmeticId: CosmeticId | null; cosmeticSold: boolean;
 }
 export interface AltarHold { slot: 0 | 1; ticks: number; id: number; cancelled: boolean; sold: boolean }
-export const shopPrice = (w: GameWorld, base: number): number => priceOf(base, false, statCount(w, 'haggler') > 0);
+export const shopPrice = (w: GameWorld, base: number): number => twistPrice(w, priceOf(base, false, statCount(w, 'haggler') > 0));
 export const rerollPrice = (w: GameWorld): number => shopPrice(w, PRICES.rerollBase + PRICES.rerollStep * (w.shop?.rerollCount ?? 0));
 
 /** Exactly one fresh stream per offer. The optional key is the draw after the initial stock. */
