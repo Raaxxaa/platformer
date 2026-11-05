@@ -1,7 +1,7 @@
 // Browser session: the sole save repository and the source to return to after Training.
 import { isAssisted } from '../core/run/runState.ts';
 import { assembleLevel, type LevelPack, type Picks } from '../core/level/assemble.ts';
-import { classicLayout, layoutCode, rollLayout } from '../core/run/layout.ts';
+import { classicLayout, layoutCode, rollLayout, rollVariety } from '../core/run/layout.ts';
 import { fnv1a32 } from '../core/rng.ts';
 import type { StageLevelId } from '../data/levelRules.ts';
 import { saveDate, saveStore } from './save/storage.ts';
@@ -61,7 +61,8 @@ export const gameSession = {
     let layout: Picks | undefined;
     if (pack) {
       layout = forcedLayout ?? carry?.run.layout?.[pack.levelId as StageLevelId] ?? rollLayout(fnv1a32(seedText))[pack.levelId as StageLevelId];
-      level = assembleLevel(pack, layout);
+      // 06 §8.10: spots and formations from the seed; a forced layout (practice, debug) is placed as authored.
+      level = assembleLevel(pack, layout, forcedLayout ? undefined : rollVariety(fnv1a32(seedText))[pack.levelId as StageLevelId]);
     }
     // SPEC-GAP: does practice Random pick a new layout on Retry? No: it keeps its layout (its best and ghost belong to it).
     const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout || (!!practice && !!layout), seeded: carry?.run.seeded ?? seed !== null,

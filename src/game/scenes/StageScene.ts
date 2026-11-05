@@ -31,7 +31,9 @@ import { parseKit } from '../../ui/popups/classPickModel.ts';
 import { CLASS_IDS } from '../../data/classes.ts';
 import { LEVEL_FILE, LEVEL_PACKS } from '../../data/run.ts';
 import type { LevelPack } from '../../core/level/assemble.ts';
-import { layoutCode, parseLayoutCode } from '../../core/run/layout.ts';
+import { layoutCode, layoutCodeFull, parseLayoutCode, rollVariety } from '../../core/run/layout.ts';
+import { fnv1a32 } from '../../core/rng.ts';
+import type { StageLevelId } from '../../data/levelRules.ts';
 import { DRAGON_NAME } from '../../data/dragon.ts';
 import { debugSeed, randomSeed } from '../seed.ts';
 import { captureWorld, type WorldCarry } from '../../core/run/session.ts';
@@ -495,7 +497,7 @@ export class StageScene extends WorldScene {
       this.overlay.setVisible(false); this.overlayText.setVisible(false);
       const offer = !this.deathView && !this.practice && shouldOfferAssist(saveStore().data);
       if (offer) saveStore().update((s) => { s.progress.assistOffered = true; });
-      if (!this.deathView) this.deathView = new DeathView(this, { assistOffer: offer, stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCode(w.opts.layout) : undefined,
+      if (!this.deathView) this.deathView = new DeathView(this, { assistOffer: offer, stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCodeFull(w.opts.layout, w.opts.layoutForced ? undefined : rollVariety(fnv1a32(w.run.seedText))[this.level.id as StageLevelId]) : undefined,
         share: dailyShareFor(saveStore().data.daily, w.run, 'death', isAssisted(w.run)) ?? undefined }, (result) => {
         if (result === 'share') { const t = dailyShareFor(saveStore().data.daily, w.run, 'death', isAssisted(w.run)); if (t) void shareText(t); return; }
         this.deathView?.destroy(); this.deathView = null; this.clearMenuInput();

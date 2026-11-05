@@ -74,3 +74,14 @@ export const LAYOUT = {
   stages: ['plains', 'mountains', 'swamps', 'kingdom', 'castle'] as StageLevelId[],
   vary: [2, 3, 4, 6, 7] as const, sections: 8, versions: 3,
 } as const;
+
+/** 06 §8.10 (M18): object spots and enemy formations. Spot candidates are offsets along the same floor with the same
+ * surroundings; `spotDraws` draws per section, each `floor(r × 6)` so a 2- or 3-spot group picks evenly. */
+export const VARIETY = {
+  sections: [1, 2, 3, 4, 5, 6, 7] as const, spotDraws: 4, spotRoll: 6, maxSpots: 3,
+  spotOffsets: [4, -4, 7, -7, 10, -10] as const, spotTypes: ['lucky_block', 'key', 'key_chest', 'cursed_chest', 'loot_stand'] as const,
+  /** Rows above and below the tile compared for "the same surroundings". */
+  above: 2, below: 10,
+  // SPEC-GAP 65: mirrored enemies break the Stage 1 spacing rule (06 §8.6) in sections 2 and 3, so they keep formation A.
+  formationAOnly: { plains: [2, 3] } as Partial<Record<StageLevelId, readonly number[]>>,
+} as const;

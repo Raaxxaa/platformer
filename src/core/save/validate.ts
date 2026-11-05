@@ -1,7 +1,7 @@
 import { ASSIST, type AssistSettings } from '../../data/assist.ts';
 import { TOUCH } from '../../data/touch.ts';
 import { validateCosmetics, validateLook } from '../cosmetics/look.ts';
-import { classicLayout, LAYOUT, layoutCode, parseLayoutCode } from '../run/layout.ts';
+import { classicLayout, LAYOUT, layoutCode, parseLayoutCode, parseLayoutCodeFull } from '../run/layout.ts';
 import { migratePracticeKey } from '../run/practice.ts';
 // Full save validation (06 §15). Keep good entries; default missing fields. No storage or clock reads.
 import { ABILITY_INFO } from '../../data/abilities.ts';
@@ -88,7 +88,7 @@ function personalBest(raw: unknown): PbRecord | null {
 /** 06 §15.2: a missing or bad layout code (saves before M11) is the classic layout. */
 function layoutField(raw: unknown): RunRecord['layout'] {
   const o = typeof raw === 'object' && raw !== null ? raw as Record<string, unknown> : {};
-  return Object.fromEntries(LAYOUT.stages.map((s) => [s, typeof o[s] === 'string' && parseLayoutCode(o[s] as string) ? o[s] : layoutCode(classicLayout())])) as RunRecord['layout'];
+  return Object.fromEntries(LAYOUT.stages.map((s) => [s, typeof o[s] === 'string' && parseLayoutCodeFull(o[s] as string) ? o[s] : layoutCode(classicLayout())])) as RunRecord['layout'];
 }
 function runRecord(raw: unknown): RunRecord | null {
   const h = object(raw), times = splits(h.splits, true), gear = kit(h.kit), stats = runStats(h.stats, true);
