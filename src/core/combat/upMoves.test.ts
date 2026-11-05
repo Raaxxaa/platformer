@@ -33,7 +33,7 @@ describe('Smash-style moves (02 §9.6a)', () => {
     expect(w.body.vy).toBeLessThanOrEqual(-120); expect(w.combat.uppercutUsed).toBe(true);   // −140 set on the active tick, then one tick of gravity
     const d = setup('katana'); run(d, { jump: true }); run(d, {}, 20);
     run(d, { moveY: 1, attack1: true }); expect(d.combat.current?.kind ?? null).not.toBe('upAir');
-    expect(d.body.state === 'diveWindup' || d.body.state === 'dive' || d.body.state.startsWith('dive')).toBe(true);
+    expect(d.body.state.startsWith('dive')).toBe(true);
   });
   it('attack during a dash: Greatsword → Rushing Strike; Spear → lunge (unchanged); ranged → normal shot', () => {
     const g = setup('greatsword'); run(g, { dash: true }); run(g, {}, 4); run(g, { attack1: true });
