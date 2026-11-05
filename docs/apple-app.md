@@ -6,6 +6,15 @@ You do this on your **Mac**. It takes about 30 minutes, plus the time Xcode take
 
 > **Do it before Saturday 7 November**, while your paid Apple developer membership is still active.
 
+## Already done on your Mac (4 November 2026)
+
+A Claude Code chat on your Mac did steps 1–5 for you:
+
+- The app is signed with your **free Personal Team** (Team ID `7X49PRWGVF`, saved in the project, so step 3 is already done). Xcode didn't list a paid team on this Mac.
+- **Free signing lasts 7 days.** If the app stops opening, plug in the phone and run the update steps in section 8 again (a new 7 days starts each time).
+- RUSHBLADE was installed on your **iPhone 15 Pro** and on this **Mac** (in **Applications**, as *RUSHBLADE*).
+- If you find your paid team later (Xcode → Settings → Accounts), pick it in step 3 and press ▶ again: that version lasts much longer.
+
 ---
 
 ## 1. Install Xcode (start this first, it's big)
@@ -56,6 +65,8 @@ This works on a Mac with an **M1, M2, M3 or newer** chip ( → About This Mac �
 2. Press **▶**. RUSHBLADE opens in a window on your Mac and appears in **Launchpad** and **Applications**. Keyboard and gamepad work.
 
 ## 6. After Saturday (when the paid membership ends)
+
+(Right now the app uses the free Personal Team, so the 7-day rule below already applies.)
 
 - Apps you installed with the paid account **keep working until their signature expires** or Apple turns it off. We can't promise how long that is once the membership ends; it could be days or months.
 - If the app ever **stops opening**, do step 3 again but pick your **free Apple ID** (Personal Team) as the Team, then step 4 or 5 again. Free signing works too, but it **expires every 7 days**, so you'd re-run it weekly.

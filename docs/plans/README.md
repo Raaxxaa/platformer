@@ -23,13 +23,16 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | M13 | Character customization: races, looks, clothes and colors, 35 enemy accessories, shop cosmetics, wardrobe, collection | `M13-character-customization.md` | Done |
 | M14 | Assist mode (slower speed, less damage, extra flask, longer doors) and polish from the SPEC-GAP answers (full run summary, Wolf pacing, parry buzz, hero on more screens)** | `M14-assist-and-polish.md` | Planned (3rd) |
 | M15 | Smash-style moves (Launcher, up air attack, juggles, dash attack), Daily challenge with share text, Boss Rush | `M15-moves-daily-bossrush.md` | Planned (4th) |
-| M16 | iPhone and Mac app for the user (Capacitor) | `M16-apple-apps.md` | Done (guide: `docs/apple-app.md`; the user runs the Mac steps) |
+| M16 | iPhone and Mac app for the user (Capacitor) | `M16-apple-apps.md` | Done (guide: `docs/apple-app.md`; built and installed on the user's Mac with a local Claude Code) |
 | M17 | Playtest fixes: bow vs wolves, easier mountain climb, Dragon nest, cave labyrinth instead of the minecart; key rebinding; movable HUD (weapons/abilities top-right) | `M17-playtest-fixes-controls.md` | Done |
 | M18 | Seed variety (object spots, enemy formations), daily twists, seed challenge, online daily leaderboard | `M18-seeds-daily-leaderboard.md` | Planned (5th, after M15) |
 
 (M6 and M8 were folded into other milestones: classes moved into M4, and the art pass happens as we go in the ART plans.)
 
 ## Art (art chat)
+
+**All art is on hold (2026-11-04)** until the user picks a clear art style. Builders keep using placeholders (reused frames or simple shapes) for anything new, so code work isn't blocked.
+
 
 | Plan | What | Status |
 |---|---|---|
@@ -43,6 +46,6 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | ART8 | Stages 3–4, the Black Knight, Enemy King, the Dragon (4 colors), the other abilities and weapons (`ART8-stage3-4-bosses-weapons.md`) | Done |
 | ART9 | Music (`ART9-music.md`) | Done (waiting for the user to listen) |
 | ART10 | Touch buttons and app icons; layered player (4 races, hair, beards, outfits), 35 accessories, 24 shop cosmetics, wardrobe art (`ART10-phone-and-customization.md`) | Done |
-| **ART11** | **New-move poses and streaks for all 19 weapons, juggle effects, Daily and Boss Rush icons, move sounds** (`ART11-new-moves.md`) | **Next** |
-| ART12 | Mountain rework: Dragon nest, labyrinth torches and decor, bigger falling-rock warning (`ART12-mountain-rework.md`) | Planned (after ART11) |
-| ART13 | New art style (waiting for the user's examples) | To write |
+| ART11 | New-move poses and streaks for all 19 weapons, juggle effects, Daily and Boss Rush icons, move sounds (`ART11-new-moves.md`) | **On hold** until the new art style is chosen |
+| ART12 | Mountain rework: Dragon nest, labyrinth torches and decor, bigger falling-rock warning (`ART12-mountain-rework.md`) | **On hold** until the new art style is chosen |
+| ART13 | New art style (waiting for the user's examples). **Comes first** when art resumes; ART11 and ART12 will then be drawn in the new style | To write |

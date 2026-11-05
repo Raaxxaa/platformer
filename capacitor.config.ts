@@ -7,6 +7,8 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   backgroundColor: '#0d0b14',
   ios: { contentInset: 'never', backgroundColor: '#0d0b14', scrollEnabled: false },
+  // Hides the status bar and lets the home indicator fade away while playing.
+  plugins: { SystemBars: { hidden: true } },
 };
 
 export default config;
