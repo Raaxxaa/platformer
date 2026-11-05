@@ -72,6 +72,8 @@ function movement(s: PlayerAnimState, get: Lookup, runPhase: number): { key: str
 }
 
 /** 08 §5.2: dead → hurt → weapon step → drink → movement. */
+const UP_SUFFIX = { launcher: 'up', upAir: 'upair', dashAtk: 'dash' } as const;
+
 export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, runPhase: number): PlayerPick {
   if (s.dead || s.state === 'dead') return { key: 'dead', frame: timeFrame(get('dead')!, viewT), weapon: null };
   if (s.state === 'hurt') return { key: 'hurt', frame: timeFrame(get('hurt')!, sec(s.stateTicks)), weapon: null };
@@ -82,7 +84,11 @@ export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, r
       : a.kind === 'throw' && art.throw ? weaponThrowKey(a.weaponId)
       : a.kind === 'lunge' && art.lunge ? `atk_${a.weaponId}_lunge`
       : a.kind === 'spin' && art.spin ? `atk_${a.weaponId}_spin`
-      : a.kind === 'combo' || a.kind === undefined ? (a.step < art.steps ? (art.keys?.[a.step] ?? weaponStepKey(a.weaponId, a.step)) : null) : null;
+      : a.kind === 'combo' || a.kind === undefined ? (a.step < art.steps ? (art.keys?.[a.step] ?? weaponStepKey(a.weaponId, a.step)) : null)
+      // 02 §9.6a (M15): ART11's own poses when they exist, else the weapon's step-1 pose as a placeholder.
+      : a.kind === 'launcher' || a.kind === 'upAir' || a.kind === 'dashAtk'
+        ? (get(`atk_${a.weaponId}_${UP_SUFFIX[a.kind]}`) ? `atk_${a.weaponId}_${UP_SUFFIX[a.kind]}` : (art.keys?.[0] ?? weaponStepKey(a.weaponId, 0)))
+      : null;
     const def = key ? get(key) : undefined;
     if (key && def) {
       // Ranged anims have no `active` segment: hold the last startup frame through it.

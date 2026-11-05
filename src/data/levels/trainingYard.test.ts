@@ -194,3 +194,26 @@ describe('Training Yard level (06 §12.4)', () => {
     expect(Math.abs(w.body.x - cp.x)).toBeLessThan(4);
   });
 });
+
+describe('M15 stations 18 (launch and juggle) and 19 (dash attack)', () => {
+  it('station 18: launching the juggle target and hitting it twice more in the air completes it', () => {
+    const w = yardWorld(); w.setLoadout(kitLoadout('swordsman', 'katana')); toStation(w, 18);
+    const t = w.enemies.find((e) => e.def.id === 'juggle_target' && Math.abs(e.x - w.body.x) < 240)!;
+    w.teleportPlayer(t.x - 14, t.y); stepSpec(w, {}, 2); t.dormant = false;
+    stepSpec(w, { moveY: -1, attack1: true }); stepSpec(w, {}, 30);
+    expect(t.control?.type).toBe('launch'); expect(t.y).toBeLessThan(540);       // up in the air                                      // the target can be launched
+    for (let k = 0; k < 2 && !w.trainingDone.has(18); k++) {                     // two hits in the air (a player box on it)
+      t.vy = -50; t.hitStopTicks = 0;
+      w.hitGroups.push({ id: w.newId(), owner: 'player', kind: 'melee', rect: { x: t.x - 16, y: t.y - 30, w: 32, h: 36 },
+        spec: { kind: 'melee', damage: 5, kb: [10, -10], poise: 0, hitStop: 0 }, active: true, lastHitTick: new Map(), hitCount: new Map(), attackInstance: 9000 + k, slot: 0 });
+      stepSpec(w, {}, 1);
+      w.hitGroups = w.hitGroups.filter((g) => g.attackInstance !== 9000 + k);
+    }
+    expect(t.juggleCount).toBe(2); expect(w.trainingDone.has(18)).toBe(true);
+  });
+  it('station 19: a Rushing Strike that hits a straw target', () => {
+    const w = yardWorld(); toStation(w, 19);
+    const ok = doneIn(w, (i) => (i % 40 === 0 ? { dash: true, moveX: 1 } : i % 40 === 4 ? { attack1: true, moveX: 1 } : { moveX: 1 }), 600, 19);
+    expect(ok).toBe(true);
+  });
+});

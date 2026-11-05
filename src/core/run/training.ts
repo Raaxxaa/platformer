@@ -12,7 +12,7 @@ import { ABILITY_INFO } from '../../data/abilities.ts';
 import { SECOND_ABILITY, STARTING_KITS } from '../../data/classes.ts';
 import { WEAPONS } from '../../data/weapons.ts';
 
-export const TRAINING_RULES = { fadeS: 0.3, heal: { hp: 40, charges: 1 }, dodges: 3, bounces: 3 } as const;
+export const TRAINING_RULES = { fadeS: 0.3, heal: { hp: 40, charges: 1 }, dodges: 3, bounces: 3, juggles: 2 } as const;
 
 interface Rect { x: number; y: number; w: number; h: number }
 interface Station { id: number; check: string; rect: Rect; goal: Rect | null; checkpoint: { x: number; y: number } }
@@ -174,6 +174,9 @@ export function stepTraining(w: GameWorld): void {
     case 'dashJump': ok = inGoal && t.dashJump; break;
     case 'slideJump': ok = inGoal && t.slideJump; break;
     case 'diveBounce': ok = inGoal && t.bounces >= TRAINING_RULES.bounces; break;
+    // M15 (02 §9.6a): launch the target, then hit it twice more in the air; a Rushing Strike that hits.
+    case 'juggle': ok = ev.filter((e) => e.t === 'juggle').some((e) => e.t === 'juggle' && e.count >= TRAINING_RULES.juggles); break;
+    case 'dashAttack': ok = enemyHits.length > 0 && w.combat.current?.kind === 'dashAtk'; break;
     default: break;
   }
   if (ok) done(w, st.id);

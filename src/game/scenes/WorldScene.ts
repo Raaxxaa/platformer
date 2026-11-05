@@ -40,6 +40,7 @@ import { isTouchDevice } from '../zoom.ts';
 import { vibrate, vibrationFor } from '../../ui/touch/vibration.ts';
 import { touchHudView } from '../../ui/touch/touchView.ts';
 import { TopHud } from '../../ui/hud/topHud.ts';
+import { JuggleLabels } from '../view/juggleLabels.ts';
 import { shiftGroup } from '../../ui/hud/hudGroups.ts';
 import { hudDraft } from '../../ui/hud/hudPreview.ts';
 import { offsetOf, resolveHud, type HudLayout } from '../../ui/model/hudLayout.ts';
@@ -149,6 +150,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected classPick: { model: ClassPickModel; view: ClassPickView; pauseWorld: boolean } | null = null;
   /** The kit picked this session (instant restart keeps it, 03 §3). */
   protected pickedKit: Kit | null = null;
+  private juggles!: JuggleLabels;
   private statPopup: { model: StatPickModel; view: StatPickView; lastRunTick: number } | null = null;
   private readonly statMenu = new StatPickInput();
   private readonly classMenu = new HomePanelInput('training');
@@ -242,6 +244,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.overlayText = this.add.bitmapText(width / 2, height / 2, FONTS.large, 'You died — press R')
       .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.hud + 6);
     this.abilityHud = new AbilityHud(this);
+    this.juggles = new JuggleLabels(this);
     this.topHud = new TopHud(this);
     this.lootHud = new LootHud(this);
     this.card = new ItemCardPopup(this, (a) => this.devices.tap(a));
@@ -604,6 +607,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.itemViews.update(w.groundItems, w.tick);
     this.abilityView.update(w);
     this.abilityHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
+    this.juggles.update(w, this.frameEvents.map((f) => f.e), this.time.now);
     this.topHud.update(topHudView(w), this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
     this.lootView.update(w, this.frameEvents);
     this.lootHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview, (t, c, s, icon) => this.abilityHud.toast(t, c, this.time.now, s, icon));
