@@ -20,10 +20,9 @@ def info_plist():
     p.write_bytes(plistlib.dumps(d))
 
 GAME_VC = '''
-/// RUSHBLADE (M16): full screen, no status bar, the home indicator fades away, and edge swipes go to the game first.
+/// RUSHBLADE (M16): full screen, no status bar, and edge swipes go to the game first (the home indicator is hidden by SystemBars in capacitor.config.ts).
 class GameViewController: CAPBridgeViewController {
     override var prefersStatusBarHidden: Bool { true }
-    override var prefersHomeIndicatorAutoHidden: Bool { true }
     override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge { .all }
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
     override func viewDidLoad() {
@@ -42,6 +41,9 @@ def view_controller():
     d = APP / 'AppDelegate.swift'
     s = d.read_text()
     if 'class GameViewController' not in s: d.write_text(s.rstrip() + '\n' + GAME_VC)
+    # Capacitor 8 builds the first screen in SceneDelegate, not from Main.storyboard, so swap it there too.
+    sd = APP / 'SceneDelegate.swift'
+    if sd.exists(): sd.write_text(sd.read_text().replace('rootViewController = CAPBridgeViewController()', 'rootViewController = GameViewController()'))
     m = APP / 'Base.lproj/Main.storyboard'
     m.write_text(m.read_text().replace('customClass="CAPBridgeViewController" customModule="Capacitor"', 'customClass="GameViewController" customModule="App"'))
     ls = APP / 'Base.lproj/LaunchScreen.storyboard'

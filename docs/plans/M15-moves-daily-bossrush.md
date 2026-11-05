@@ -9,6 +9,8 @@
 
 **Spec:** `docs/spec/02-combat.md` **§9.6a** (new moves), §4.4 (Launch), §8.2 (Rush), §9.3 (move caps), §11 (Storm Hammer throw keeps Up + button); `docs/spec/06-run-levels-save.md` **§14.1** (daily), **§14.2** (boss rush), §7 (seeds), §5.3–5.4 (no PBs from seeded or assisted runs); `07-ui-hud-controls.md` §7 (title, result screens), §8.6 (touch: stick up + attack); `09-customization.md` §3 (daily counts for accessories, boss rush doesn't).
 
+**Art is on hold** until the user picks a new style: use placeholders (reused frames or simple shapes) for everything new, and don't wait for ART plans.
+
 **Starting point:** M14 on `main`. Merge `main` and `origin/claude/great-dijkstra-g00pcj` first. ART11 draws the new poses; until it lands, reuse each weapon's step-1 frames (rotated 90° up for the up moves is fine as a placeholder).
 
 ## Global Constraints

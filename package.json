@@ -13,7 +13,7 @@
     "assets": "python3 tools/build_assets.py",
     "levels": "node scripts/build-levels.mjs",
     "build:app": "tsc --noEmit && vite build",
-    "app:ios": "npm run build:app && npx cap sync ios && npx cap open ios"
+    "app:ios": "npm run build:app && npx cap sync ios && python3 scripts/ios_setup.py && npx cap open ios"
   },
   "dependencies": {
     "@capacitor/core": "^8.6.0",

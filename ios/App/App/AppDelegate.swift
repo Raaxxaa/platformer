@@ -43,10 +43,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 
-/// RUSHBLADE (M16): full screen, no status bar, the home indicator fades away, and edge swipes go to the game first.
+/// RUSHBLADE (M16): full screen, no status bar, and edge swipes go to the game first (the home indicator is hidden by SystemBars in capacitor.config.ts).
 class GameViewController: CAPBridgeViewController {
     override var prefersStatusBarHidden: Bool { true }
-    override var prefersHomeIndicatorAutoHidden: Bool { true }
     override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge { .all }
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
     override func viewDidLoad() {

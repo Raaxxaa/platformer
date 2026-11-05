@@ -15,6 +15,8 @@
 - `docs/spec/06-run-levels-save.md` §10 (`falling_rocks`: 3.0 s apart, 1.0 s warning, 240 px/s), §8.3 (`mountains`: no flyers in §3, nest, labyrinth, no minecart), §8.9 (the labyrinth), §9.4 (the Mountain nest).
 - `docs/spec/07-ui-hud-controls.md` §4.1a (HUD groups, new defaults, editor), §7.8 (rebinding), §8.3 (rebinding rules), §8.6 (the touch layout editor, already built: make sure it's reachable from Pause on phones).
 
+**Art is on hold** until the user picks a new style: use placeholders (reused frames or simple shapes) for everything new, and don't wait for ART plans.
+
 **Starting point:** current `main` (do it after M16 if M16 isn't done). Merge `main` and `origin/claude/great-dijkstra-g00pcj` first. ART12 draws the nest, labyrinth details and the bigger rock warning; use simple shapes until then.
 
 ## Global Constraints
