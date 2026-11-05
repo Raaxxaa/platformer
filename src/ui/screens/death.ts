@@ -5,6 +5,8 @@ import { FRONT_UI as U } from '../../data/frontUi.ts';
 import { UI_COLOR } from '../../data/uiText.ts';
 import type { HomePanelAction } from '../home/homePanels.ts';
 import { MenuSurface } from './records.ts';
+import { HeroPortrait } from '../../game/view/HeroPortrait.ts';
+import { MENU_UI as U_MENU } from '../../data/menuUi.ts';
 import { DeathModel, deathCause } from './front.ts';
 import { SAVE_RULES } from '../../data/save.ts';
 import { ASSIST } from '../../data/assist.ts';
@@ -21,7 +23,13 @@ export class DeathView extends MenuSurface {
   private readonly details: DeathDetails;
   private readonly choose: (result: typeof U.deathCommands[number]) => void;
   readonly model = new DeathModel();
-  constructor(scene: Phaser.Scene, details: DeathDetails, choose: (result: typeof U.deathCommands[number]) => void) { super(scene); this.details = details; this.choose = choose; this.render(); }
+  private readonly portrait: HeroPortrait;
+  constructor(scene: Phaser.Scene, details: DeathDetails, choose: (result: typeof U.deathCommands[number]) => void) {
+    super(scene); this.details = details; this.choose = choose;
+    this.portrait = new HeroPortrait(scene, U.death.heroX, U.death.heroY, U_MENU.depth + 1);   // 09 §7 (M14): the hero beside the details
+    this.render();
+  }
+  override destroy(): void { super.destroy(); this.portrait.destroy(); }
   override update(seconds: number): void { this.model.advance(seconds); super.update(seconds); }
   action(action: HomePanelAction): void { if (!this.enabled || this.closed) return; const result = this.model.action(action); if (result) this.choose(result); this.render(); }
   protected render(): void {

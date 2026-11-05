@@ -1,4 +1,5 @@
 // Authorized temporary ending at the Border inn until Stage 3 arrives in M9.
+import { HeroPortrait } from '../../game/view/HeroPortrait.ts';
 import type Phaser from 'phaser';
 import type { KitSummary } from '../../core/save/schema.ts';
 import { formatTime } from '../../core/time.ts';
@@ -40,6 +41,7 @@ export class RunSoFarModel {
 }
 
 export class RunSoFarView {
+  private readonly portrait: HeroPortrait | null;
   readonly model: RunSoFarModel;
   private readonly input = new HomePanelInput('training');
   private readonly c: Phaser.GameObjects.Container;
@@ -55,6 +57,8 @@ export class RunSoFarView {
     this.model = new RunSoFarModel(data); this.input.blockHeldPad(activeHomePad());
     this.dim = scene.add.graphics().setScrollFactor(0).setDepth(U.dimDepth);
     this.dim.fillStyle(UI_COLOR.ink, U.dimAlpha).fillRect(0, 0, scene.scale.width, scene.scale.height);
+    // 09 §7 (M14): the hero's look on the run summary.
+    this.portrait = data.title === 'VICTORY' ? new HeroPortrait(scene, U.heroX, U.heroY, U.depth + 1) : null;
     this.c = scene.add.container(0, 0).setScrollFactor(0).setDepth(U.depth);
     window.addEventListener('keydown', this.keyDown); window.addEventListener('keyup', this.keyUp);
     scene.events.once('shutdown', () => this.destroy()); this.draw();
@@ -88,7 +92,7 @@ export class RunSoFarView {
     if (this.closed) return;
     this.closed = true; this.input.clear();
     window.removeEventListener('keydown', this.keyDown); window.removeEventListener('keyup', this.keyUp);
-    this.c.destroy(); this.dim.destroy();
+    this.c.destroy(); this.dim.destroy(); this.portrait?.destroy();
   }
   private text(x: number, y: number, value: string, color: number, large = false): void {
     this.c.add(this.scene.add.bitmapText(x, y, large ? FONTS.large : FONTS.small, value).setTint(color).setOrigin(0.5, 0).setMaxWidth(U.summary.textW));

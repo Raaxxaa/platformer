@@ -1,4 +1,5 @@
 // Class pick panel (07 §6.7): 220 × 176 at (210, 72), fixed to the screen. Draws a ClassPickModel.
+import { HeroPortrait } from '../../game/view/HeroPortrait.ts';
 import type Phaser from 'phaser';
 import { STARTING_KITS } from '../../data/classes.ts';
 import { CLASS_NAME } from '../../data/classes.ts';
@@ -22,11 +23,14 @@ export class ClassPickView {
   private readonly hint: Phaser.GameObjects.Container;
   private readonly confirm: () => void;
   private key = '';
+  /** 09 §7 (M14): the hero's look beside the panel. */
+  private readonly portrait: HeroPortrait | null;
   constructor(scene: Phaser.Scene, confirm: () => void = () => {}) {
     this.scene = scene;
     this.confirm = confirm;
     this.hint = scene.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH.hud + P.depthOffset + 1);
     this.g = scene.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud + 10);
+    this.portrait = scene.textures.exists('player_skin_human') ? new HeroPortrait(scene, P.x - P.heroGap, P.y + P.h, DEPTH.hud + 11) : null;
     this.icon = scene.add.image(P.x + P.w / 2, P.y + 16, 'ui', 'icon_class_swordsman').setScrollFactor(0).setDepth(DEPTH.hud + 11);
   }
 
@@ -67,7 +71,7 @@ export class ClassPickView {
   }
 
   destroy(): void {
-    this.g.destroy();
+    this.g.destroy(); this.portrait?.destroy();
     this.icon.destroy();
     this.hint.destroy(); for (const target of this.targets) target.destroy();
     for (const t of this.texts) t.destroy();

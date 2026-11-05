@@ -1,6 +1,9 @@
 // The hero drawn as ART10's layers at one position (09 §7): skin, cloth A/B, fixed, face, trims, beard, hair, headwear,
 // and the three accessory slots. Used by the player in the world and by the wardrobe preview.
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
+
+/** Phaser.TintModes values (a type-only import keeps this file loadable in unit tests). */
+const TINT = { MULTIPLY: 0, FILL: 1 } as const;
 import { DEPTH } from '../../data/art.ts';
 import type { Look } from '../../data/cosmetics.ts';
 import { COSMETIC_ART } from '../../data/lookArt.ts';
@@ -45,9 +48,9 @@ export class LookRig {
     const s = this.sprites.get(k)!;
     if (!atlas || !this.has(atlas, frame)) { s.setVisible(false); return null; }
     s.setTexture(atlas, frame).setVisible(true).setAlpha(d.alpha);
-    if (d.flash != null) s.setTint(d.flash).setTintMode(Phaser.TintModes.FILL);
-    else if (tint !== null) s.setTint(tint).setTintMode(Phaser.TintModes.MULTIPLY);
-    else s.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
+    if (d.flash != null) s.setTint(d.flash).setTintMode(TINT.FILL);
+    else if (tint !== null) s.setTint(tint).setTintMode(TINT.MULTIPLY);
+    else s.clearTint().setTintMode(TINT.MULTIPLY);
     return s;
   }
 

@@ -3,7 +3,7 @@ export const FRONT_UI = {
   fadeDepth: 2000,
   boot: { textY: 170, bar: [240, 184, 160, 6], percent: 100, font: '12px monospace' },
   title: { titleY: 70, scale: 2, promptY: 220, blinkHz: 1, rowsY: 170, rowStep: 16, rowW: 160, rowH: 14, version: [632, 344], soundY: 316, warningY: 300, fadeSeconds: 0.25 },
-  death: { titleY: 100, infoY: 126, lineH: 12, rowsY: 200, rowStep: 16, rowW: 160, rowH: 14, guardSeconds: 0.25 },
+  death: { heroX: 150, heroY: 236, titleY: 100, infoY: 126, lineH: 12, rowsY: 200, rowStep: 16, rowW: 160, rowH: 14, guardSeconds: 0.25 },
   // SPEC-GAP 43: where does Practice go? Last, so the earlier row numbers stay the same. (07 §7.3)
   // Practice (07 §7.3) is last so the earlier row numbers stay the same.
   titleRows: ['Play', 'Training Yard', 'Records', 'Settings', 'Practice'], titleCommands: ['play', 'training', 'records', 'settings', 'practice'],

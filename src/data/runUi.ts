@@ -1,6 +1,6 @@
 // Route choice is 07 §6.6. The temporary M7 summary uses the existing popup style.
 export const RUN_UI = {
-  depth: 1200, dimDepth: 89.5, dimAlpha: 0.60, border: 1, corner: 8, panelFrame: 'panel_9',
+  depth: 1200, heroX: 586, heroY: 112, dimDepth: 89.5, dimAlpha: 0.60, border: 1, corner: 8, panelFrame: 'panel_9',
   frameClamp: 0.10, stick: 0.5, textInset: 8, cursorGap: 8,
   glyphs: { keyboard: { confirm: 'ENT', back: 'ESC' }, pad: { confirm: 'A', back: 'B' } },
   route: {
