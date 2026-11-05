@@ -49,3 +49,11 @@ describe('the player layers (09 §7, checklist 7)', () => {
     expect(capeFrame('atk_greatsword_1')).toBe('idle');
   });
 });
+
+import { aimFrameIndex } from './pickAnim.ts';
+describe('Crossbowman aim frames (art note 20, M14)', () => {
+  it('picks 0 (up) to 4 (down) from the aim angle', () => {
+    expect(aimFrameIndex(0, 100)).toBe(2); expect(aimFrameIndex(-100, 60)).toBe(0); expect(aimFrameIndex(100, 60)).toBe(4);
+    expect(aimFrameIndex(-30, 100)).toBe(1);
+  });
+});

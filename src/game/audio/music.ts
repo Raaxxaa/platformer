@@ -170,11 +170,16 @@ export class MusicPlayer {
     v.gain.gain.setValueAtTime(1, t);
     this.sting = v; this.log.push(id); this.ensureTimer();
     // Stingers duck the music bus by x0.5 (attack 0.05 s, release 0.3 s after the sound ends).
-    const len = v.json.bars * MUSIC_RULES.stepsPerBar * 60 / v.json.bpm / 4;
-    const d = this.loopsDuck.gain; d.cancelScheduledValues(t); d.setValueAtTime(d.value, t);
+    this.duck(v.json.bars * MUSIC_RULES.stepsPerBar * 60 / v.json.bpm / 4 + 0.6);
+  }
+  /** 08 §15: duck the music loops by x0.5 for `seconds` (stingers, and the boss roars and jackpot SFX, M14). */
+  duck(seconds: number): void {
+    if (!this.ctx || !this.loopsDuck) return;
+    const t = this.ctx.currentTime, d = this.loopsDuck.gain; d.cancelScheduledValues(t); d.setValueAtTime(d.value, t);
     d.linearRampToValueAtTime(MUSIC_RULES.duckFactor, t + MUSIC_RULES.duckAttack);
-    d.setValueAtTime(MUSIC_RULES.duckFactor, t + len + 0.6);
-    d.linearRampToValueAtTime(1, t + len + 0.6 + MUSIC_RULES.duckRelease);
+    d.setValueAtTime(MUSIC_RULES.duckFactor, t + seconds);
+    d.linearRampToValueAtTime(1, t + seconds + MUSIC_RULES.duckRelease);
+    this.log.push('duck');
   }
 
   private mix(paused: boolean, slow: boolean): void {

@@ -198,3 +198,9 @@ export function yardDummyFrame(id: keyof typeof YARD_DUMMY_FRAMES, s: YardDummyS
   if (s.attack?.phase === 'act') return F.swing[Math.min(F.swing.length - 1, Math.floor((s.attack.t / Math.max(1, s.attack.len)) * F.swing.length))];
   return F.idle[0];
 }
+
+/** Crossbowman aim frame (art note 20): 0 = aiming up to 4 = aiming down, in 5 steps over −60°…+60°. */
+export function aimFrameIndex(dy: number, dxAbs: number): number {
+  const deg = (Math.atan2(dy, Math.max(1, dxAbs)) * 180) / Math.PI;
+  return Math.max(0, Math.min(4, Math.round((deg + 60) / 30)));
+}
