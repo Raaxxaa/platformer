@@ -32,6 +32,8 @@ export interface SettingsData { volume: { master: number; music: number; sfx: nu
   hud: Partial<Record<'vitals' | 'slots' | 'timer', { x: number; y: number }>>;
   /** 06 §5.4 (M14). */
   assist: AssistSettings;
+  /** 06 §14.3 (M18): leaderboard name and switch. */
+  online: { name: string | null; enabled: boolean };
   bindings: { keyboard: Record<ActionId, [string | null, string | null]>; gamepad: Record<ActionId, number | null> } }
 export interface SaveData {
   v: 1; settings: SettingsData; lastKit: StartKit | null; lastRoad: Road; typedSeed: string | null; training: number[];
@@ -44,6 +46,8 @@ export interface SaveData {
   daily: import('../run/daily.ts').DailyBook;
   /** 06 §14.1 (M18): seed challenge bests, newest first, last 50. */
   seedBests: import('../run/daily.ts').SeedBest[];
+  /** 06 §14.3: one score waiting to be sent (offline), retried on the next launch. */
+  onlineQueue: import('../run/leaderboard.ts').ScoreRow | null;
   /** 06 §14.2 (M15). */
   bossRushBests: Partial<Record<import('../run/bossRush.ts').BossRushKey, import('../run/bossRush.ts').BossRushBest>>;
   /** 09 §8 (M13): the hero's look, and which cosmetics are owned / which enemies were met. */

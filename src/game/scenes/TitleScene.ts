@@ -1,4 +1,6 @@
 // Two-step Title, Records and Settings (07 §7.3). Debug start URLs skip this scene.
+import { onlineConfigured } from '../online/leaderboard.ts';
+import { retryQueued } from '../online/onlineUi.ts';
 import Phaser from 'phaser';
 import { FRONT_UI as U } from '../../data/frontUi.ts';
 import { GRADE_COLOR, UI_COLOR } from '../../data/uiText.ts';
@@ -83,6 +85,7 @@ export class TitleScene extends Phaser.Scene {
   preload(): void { loadAssets(this); }
   create(): void {
     this.fadeLeft = 0; applySettings(this, saveStore().data.settings);
+    retryQueued();                                   // 06 §14.3: the one queued score, on launch
     const keyboard = (navigator as Navigator & { keyboard?: { getLayoutMap(): Promise<Map<string, string>> } }).keyboard;
     void keyboard?.getLayoutMap().then(setKeyboardLayout).catch(() => {});
     for (let i = 0; i < 3; i++) this.add.image(0, 0, `bg_plains_${i}`).setOrigin(0).setScrollFactor(0);
@@ -115,6 +118,7 @@ export class TitleScene extends Phaser.Scene {
     this.scene.start('Stage', { level: 'plains' });
   }
   private dailyChoice(c: DailyChoice): void {
+    if (c.kind === 'leaderboard') { this.screens.openBoard(); return; }
     if (c.kind === 'today') this.startDaily(dailySeed(dailyDay(new Date())), true);
     else if (c.kind === 'challenge') this.startDaily(c.seed, false);
     else if (c.kind === 'askSeed') {
@@ -149,7 +153,7 @@ export class TitleScene extends Phaser.Scene {
       this.screens.openBossRush(gameSession.bossRushSetup, (setup) => this.startBossRush(setup)); return;
     }
     if (cmd === 'training') { gameSession.trainingReturn = 'title'; this.scene.start('Stage', { level: 'training_yard' }); return; }
-    if (cmd === 'daily') { this.screens.openDaily(false, (c) => this.dailyChoice(c)); return; }
+    if (cmd === 'daily') { this.screens.openDaily(onlineConfigured(), (c) => this.dailyChoice(c)); return; }
     gameSession.daily = null;
     this.fadeLeft = U.title.fadeSeconds; if (window.__game) window.__game.ready = false;
   }

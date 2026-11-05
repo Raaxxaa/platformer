@@ -30,7 +30,9 @@ export function dailyTwist(seedText: string): TwistId {
 }
 
 export interface DailyResult { result: 'complete' | 'death'; ticks: number; stageReached: number; splits: (number | null)[]; road: Road | null; assist: boolean }
-export interface DailyEntry { official: DailyResult | null; bestTicks: number | null; attempts: number; bestSplits?: Record<string, (number | null)[]> }
+export interface DailyEntry { official: DailyResult | null; bestTicks: number | null; attempts: number; bestSplits?: Record<string, (number | null)[]>;
+  /** 06 §14.3 (M18): the official finished run was sent to the leaderboard. */
+  sent?: boolean }
 export type DailyBook = Record<string, DailyEntry>;
 
 /** Records an attempt (06 §14.1): the first attempt of the day is official, except a restart in its first 30 s. */

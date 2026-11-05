@@ -1,5 +1,7 @@
 // M3 stage scene: loads public/levels/<id>.json and plays it, with doors, loot markers, hints, the boss bar,
 // the run timer, the split popup and the temporary stage-clear screen.
+import { afterDailyFinish } from '../online/onlineUi.ts';
+import { DailyStandingView } from '../../ui/screens/leaderboard.ts';
 import { TWIST_NAME, TWIST_TEXT } from '../../data/twists.ts';
 import { applyBossRushBest, bossDown, bossRushHp, BOSS_RUSH, newBossRush } from '../../core/run/bossRush.ts';
 import { setupBossRushFight } from '../../core/run/bossRushWorld.ts';
@@ -172,7 +174,7 @@ export class StageScene extends WorldScene {
 
   protected createExtra(): void {
     this.menus = new MenuScreens(this, () => this.clearMenuInput(), () => { this.devices.setEnabled(false); this.clearMenuInput(); }, () => gameSession.refreshRecords(this.world));
-    this.events.once('shutdown', () => { this.deathView?.destroy(); this.deathView = null; this.rushResult?.destroy(); this.rushResult = null; });
+    this.events.once('shutdown', () => { this.deathView?.destroy(); this.deathView = null; this.rushResult?.destroy(); this.rushResult = null; this.standing?.destroy(); this.standing = null; });
     const U = STAGE_UI;
     const { width, height } = this.scale;
     this.props = this.add.graphics().setDepth(DEPTH.terrain + 5);
@@ -229,7 +231,7 @@ export class StageScene extends WorldScene {
     api.save = () => structuredClone(saveStore().data);
     api.appliedSettings = () => structuredClone(getUiSettings());
     api.screenState = () => this.menus.active ? this.menus.snapshot() : this.practiceResult ? { screen: 'practiceResult', model: { cursor: this.practiceResult.model.cursor, canConfirm: this.practiceResult.model.canConfirm } } : this.rushResult ? { screen: 'bossRushResult', model: { cursor: this.rushResult.model.cursor, canConfirm: this.rushResult.model.canConfirm } } : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
-    api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else if (this.practiceResult) this.practiceResult.action(action); else if (this.rushResult) this.rushResult.action(action); else this.deathView?.action(action); };
+    api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else if (this.practiceResult) this.practiceResult.action(action); else if (this.rushResult) this.rushResult.action(action); else if (this.standing) this.standing.action(action); else this.deathView?.action(action); };
     api.timerBlock = () => this.timerBlock.snapshot();
     api.hurtPlayer = (damageA: number) => {
       const w = this.world, all = w.events, n = all.length;
@@ -330,7 +332,7 @@ export class StageScene extends WorldScene {
   }
   protected override touchControlsOn(): boolean { return super.touchControlsOn() && !this.deathView && !this.practiceResult && !this.rushResult; }
   protected override deathOpen(): boolean { return !!this.deathView; }
-  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.wardrobe?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.rushResult || !!this.menus?.active || this.titleFadeLeft > 0; }
+  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.wardrobe?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.rushResult || !!this.standing || !!this.menus?.active || this.titleFadeLeft > 0; }
   private requestHome(): void {
     gameSession.endRun(this.world, 'quit');
     this.runSoFar?.destroy(); this.runSoFar = null; this.victory?.destroy(); this.victory = null;
@@ -350,6 +352,7 @@ export class StageScene extends WorldScene {
       if (this.time.now - this.victoryAt >= VICTORY_UI.deathAnimSeconds * 1000) {
         this.victory = new RunSoFarView(this, { ...victoryData(w), share: dailyShareFor(saveStore().data.daily, w.run, 'complete', isAssisted(w.run)) ?? undefined }, { onShare: (t) => { void shareText(t); }, onRestart: () => { this.victory?.destroy(); this.victory = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
         this.victory.setEnabled(false);                         // inputs are ignored for the first 1.0 s (07 §7.11)
+        this.showDailyStanding(w);
       }
     }
     if (this.victory && this.time.now - this.victoryAt >= (VICTORY_UI.deathAnimSeconds + VICTORY_UI.inputLockSeconds) * 1000 && !this.pause) this.victory.setEnabled(true);
@@ -437,6 +440,8 @@ export class StageScene extends WorldScene {
     this.victory?.update(delta / 1000);
     this.practiceResult?.setEnabled(!this.pause); this.practiceResult?.update(delta / 1000);
     this.rushResult?.setEnabled(!this.pause); this.rushResult?.update(delta / 1000);
+    this.standing?.update(delta / 1000);
+    if (this.standing) this.victory?.setEnabled(false);
     super.update(time, delta);
   }
   /** 06 §14.2: a boss down → split, 1.0 s fade (not timed), the next arena; the last one or a death → the result screen. */
@@ -467,6 +472,17 @@ export class StageScene extends WorldScene {
       return;
     }
     if (w.health.dead) this.openRushResult(false);
+  }
+  /** 06 §14.3: an official daily that finished is sent once; its standing shows over the result until closed. */
+  private standing: DailyStandingView | null = null;
+  private showDailyStanding(w: GameWorld): void {
+    const day = w.run.daily, kit = w.run.startKit; if (!day || !kit) return;
+    const off = saveStore().data.daily[day]?.official;
+    if (!off || off.result !== 'complete' || off.ticks !== w.run.runTicks) return;      // only the official attempt
+    void afterDailyFinish(day, kit, off.ticks, off.assist).then((r) => {
+      if (!r || this.leaving || !this.victory) return;
+      this.standing = new DailyStandingView(this, r.line, r.rows, r.me, () => { this.standing = null; this.clearMenuInput(); });
+    });
   }
   private openRushResult(isNew: boolean): void {
     const a = gameSession.bossRush!;

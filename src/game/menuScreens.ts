@@ -6,6 +6,8 @@ import { SettingsView } from '../ui/screens/settings.ts';
 import { PracticeSetupView } from '../ui/screens/practice.ts';
 import { BossRushSetupView, type BossRushSetup } from '../ui/screens/bossRush.ts';
 import { DailyMenuView, type DailyChoice } from '../ui/screens/dailyMenu.ts';
+import { LeaderboardView } from '../ui/screens/leaderboard.ts';
+import { boardDeps } from './online/onlineUi.ts';
 import type { PracticeSetup } from '../core/run/practice.ts';
 import { SaveCodeView, type SaveCodeMode } from '../ui/screens/saveCode.ts';
 import type { HomePanelAction } from '../ui/home/homePanels.ts';
@@ -28,13 +30,15 @@ export class MenuScreens {
   private practice: PracticeSetupView | null = null;
   private bossRush: BossRushSetupView | null = null;
   private daily: DailyMenuView | null = null;
+  private board: LeaderboardView | null = null;
   private hud: HudEditorView | null = null;
   constructor(scene: Phaser.Scene, closed: () => void, focused: (on: boolean) => void = () => {}, imported: () => void = () => {}) {
     this.scene = scene; this.closed = closed; this.focused = focused; this.imported = imported;
     scene.events.once('shutdown', () => this.destroy());
   }
-  get active(): boolean { return !!(this.records || this.settings || this.code || this.practice || this.hud || this.bossRush || this.daily); }
+  get active(): boolean { return !!(this.records || this.settings || this.code || this.practice || this.hud || this.bossRush || this.daily || this.board); }
   snapshot() {
+    if (this.board) { const m = this.board.model; return { screen: 'leaderboard', model: { cursor: m.cursor, dayIndex: m.dayIndex, assist: m.assist, rows: m.rows } }; }
     if (this.daily) { const m = this.daily.model; return { screen: 'daily', model: { cursor: m.cursor, pastIndex: m.pastIndex, rows: m.rows } }; }
     if (this.bossRush) { const m = this.bossRush.model; return { screen: 'bossRush', model: { cursor: m.cursor, setup: { ...m.setup }, best: m.best } }; }
     if (this.practice) { const m = this.practice.model; return { screen: 'practice', model: { cursor: m.cursor, setup: { ...m.setup }, levels: m.levels, best: m.best, seed: m.seedText, selectable: m.selectable } }; }
@@ -44,8 +48,8 @@ export class MenuScreens {
     if (this.records) { const m = this.records.model; return { screen: 'records', model: { tab: m.tab, cell: m.cell, footer: m.footer, look: m.look } }; }
     return { screen: null, model: null };
   }
-  action(action: HomePanelAction): void { (this.code ?? this.settings ?? this.records ?? this.practice ?? this.bossRush ?? this.daily ?? this.hud)?.action(action); }
-  update(seconds: number): void { (this.code ?? this.settings ?? this.records ?? this.practice ?? this.bossRush ?? this.daily ?? this.hud)?.update(seconds); }
+  action(action: HomePanelAction): void { (this.code ?? this.settings ?? this.records ?? this.practice ?? this.bossRush ?? this.daily ?? this.board ?? this.hud)?.action(action); }
+  update(seconds: number): void { (this.code ?? this.settings ?? this.records ?? this.practice ?? this.bossRush ?? this.daily ?? this.board ?? this.hud)?.update(seconds); }
   openPractice(initial: PracticeSetup | null, onStart: (setup: PracticeSetup) => void): void {
     this.destroy(); this.practice = new PracticeSetupView(this.scene, () => saveStore().data, initial, { onStart: (setup) => { this.practice = null; onStart(setup); }, onClose: () => { this.practice = null; this.closed(); } });
   }
@@ -54,6 +58,9 @@ export class MenuScreens {
       if (c.kind !== 'askSeed') this.daily = null;
       if (c.kind === 'back') this.closed(); else onChoice(c);
     });
+  }
+  openBoard(): void {
+    this.destroy(); this.board = new LeaderboardView(this.scene, boardDeps(() => { this.board = null; this.closed(); }));
   }
   openBossRush(initial: BossRushSetup | null, onStart: (setup: BossRushSetup) => void): void {
     this.destroy(); this.bossRush = new BossRushSetupView(this.scene, () => saveStore().data, initial, { onStart: (setup) => { this.bossRush = null; onStart(setup); }, onClose: () => { this.bossRush = null; this.closed(); } });
@@ -95,5 +102,5 @@ export class MenuScreens {
       onClose: () => { this.code = null; this.settings?.setEnabled(true); this.closed(); },
     });
   }
-  destroy(): void { this.code?.destroy(); this.records?.destroy(); this.settings?.destroy(); this.practice?.destroy(); this.bossRush?.destroy(); this.bossRush = null; this.daily?.destroy(); this.daily = null; this.hud?.destroy(); this.hud = null; setHudDraft(null); this.code = null; this.records = null; this.settings = null; this.practice = null; }
+  destroy(): void { this.code?.destroy(); this.records?.destroy(); this.settings?.destroy(); this.practice?.destroy(); this.bossRush?.destroy(); this.bossRush = null; this.daily?.destroy(); this.daily = null; this.board?.destroy(); this.board = null; this.hud?.destroy(); this.hud = null; setHudDraft(null); this.code = null; this.records = null; this.settings = null; this.practice = null; }
 }
