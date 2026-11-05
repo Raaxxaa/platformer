@@ -1,3 +1,4 @@
+import { isAssisted } from './runState.ts';
 // Cumulative splits, best segments and completed-run PBs (06 §5.2–5.3). No I/O or clock.
 import type { KitSummary, PbKey, PbRecord, SaveData } from '../save/schema.ts';
 import { RUN } from '../tuning.ts';
@@ -35,7 +36,7 @@ export function recordSplit(run: RunState, index: number, records: RunRecords, p
     const old = records.bestSegments[key]?.[at]; return old === undefined || old === null || segmentTicks < old;
   });
   run.splits[at] = run.runTicks;
-  if (!run.seeded && !practice) {
+  if (!run.seeded && !practice && !isAssisted(run)) {
     for (const key of improved) {
       const values = records.bestSegments[key] ?? run.splits.map(() => null) as NonNullable<RunRecords['bestSegments'][PbKey]>;
       values[at] = segmentTicks; records.bestSegments[key] = values;
@@ -46,7 +47,7 @@ export function recordSplit(run: RunState, index: number, records: RunRecords, p
 
 /** Saves only a fully completed, counting run. Date is supplied by the game layer. */
 export function savePersonalBest(run: RunState, records: RunRecords, date: string, kit: KitSummary, practice = false): boolean {
-  if (run.phase !== 'runComplete' || run.seeded || practice || !run.road || !run.startKit) return false;
+  if (run.phase !== 'runComplete' || run.seeded || practice || isAssisted(run) || !run.road || !run.startKit) return false;
   if (run.splits.length !== RUN.STAGE_COUNT || run.splits.some((value) => value === null || !Number.isFinite(value))) return false;
   const splits = run.splits as PbRecord['splits'], ticks = splits[splits.length - 1];
   const key: PbKey = `${run.startKit.cls}|${run.road}`, old = records.pbs[key];

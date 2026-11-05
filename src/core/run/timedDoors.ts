@@ -1,4 +1,5 @@
 // Timed doors (06 §9.5): decided the first tick the player's center enters the 48 px strip in front of the door.
+import { ASSIST } from '../../data/assist.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import { TICK_RATE } from '../tuning.ts';
 import { LEVEL_RULES, type StageLevelId } from '../../data/levelRules.ts';
@@ -12,7 +13,7 @@ export function buildTimedDoors(w: GameWorld): TimedDoorRt[] {
     if (o.type !== 'timed_door') continue;
     const id = String(o.props.id);
     const limit = o.props.timeLimit !== undefined ? Number(o.props.timeLimit) : LEVEL_RULES[w.level!.id as StageLevelId]?.timeLimit ?? 120;
-    out.push({ id, x: o.x, y: o.y, w: o.w, h: o.h, side: o.props.side === 'right' ? 'right' : 'left', limitTicks: Math.round(limit * TICK_RATE) });
+    out.push({ id, x: o.x, y: o.y, w: o.w, h: o.h, side: o.props.side === 'right' ? 'right' : 'left', limitTicks: Math.round(limit * (w.run.assist?.longerDoors ? ASSIST.doorMult : 1) * TICK_RATE) });
     w.run.timedDoors[id] = 'pending';
   }
   return out;

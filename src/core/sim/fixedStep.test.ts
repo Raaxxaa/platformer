@@ -25,3 +25,11 @@ describe('FixedStepper', () => {
     expect(s.advance(1 / 120)).toBe(1);
   });
 });
+
+describe('Assist Game speed (06 §5.4, M14)', () => {
+  it('at 70%, one real second of 60 fps frames runs 84 ticks (the tick size never changes)', () => {
+    const s = new FixedStepper(); let n = 0;
+    for (let i = 0; i < 60; i++) n += s.advance((1 / 60) * 0.7);
+    expect(n).toBe(84);
+  });
+});

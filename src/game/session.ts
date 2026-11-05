@@ -1,4 +1,5 @@
 // Browser session: the sole save repository and the source to return to after Training.
+import { isAssisted } from '../core/run/runState.ts';
 import { assembleLevel, type LevelPack, type Picks } from '../core/level/assemble.ts';
 import { classicLayout, layoutCode, rollLayout } from '../core/run/layout.ts';
 import { fnv1a32 } from '../core/rng.ts';
@@ -50,7 +51,7 @@ export const gameSession = {
     // SPEC-GAP: does practice Random pick a new layout on Retry? No: it keeps its layout (its best and ghost belong to it).
     const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout || (!!practice && !!layout), seeded: carry?.run.seeded ?? seed !== null,
       startKit, carry, cosmetics: save.cosmetics, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
-      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, dragon, practice: !!practice, practiceSetup: practice ?? undefined });
+      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, assist: () => saveStore().data.settings.assist, dragon, practice: !!practice, practiceSetup: practice ?? undefined });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
@@ -92,7 +93,7 @@ export const gameSession = {
   practiceEvents(w: GameWorld): void {
     const setup = w.opts.practiceSetup;
     for (const e of [...w.events]) {
-      if (e.t !== 'practiceCleared' || !setup || !w.practiceClear) continue;
+      if (e.t !== 'practiceCleared' || !setup || !w.practiceClear || isAssisted(w.run)) continue;   // 06 §5.4: assisted practice writes no best
       const key = practiceKey(setup.levelId, setup.cls, layoutCode(w.opts.layout ?? classicLayout()));
       saveStore().update((s) => {
         const old = s.practiceBests[key], r = applyPracticeTime(s.practiceBests, key, e.ticks);

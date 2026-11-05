@@ -1,3 +1,4 @@
+import { ASSIST, type AssistSettings } from '../../data/assist.ts';
 import { TOUCH } from '../../data/touch.ts';
 import { validateCosmetics, validateLook } from '../cosmetics/look.ts';
 import { classicLayout, LAYOUT, layoutCode, parseLayoutCode } from '../run/layout.ts';
@@ -97,7 +98,7 @@ function runRecord(raw: unknown): RunRecord | null {
     || !(h.cause === null || text(h.cause)) || !has(['absent', 'skipped', 'escaped', 'killed'], h.dragon) || !gear || !stats) return null;
   if ((h.result === 'restart' || h.result === 'quit') && h.runTicks < S.historyMinTicks) return null;
   if (h.result === 'complete' && (h.road === null || h.stageReached !== RUN.STAGE_COUNT || times.includes(null) || h.runTicks !== times.at(-1))) return null;
-  return { date: h.date, startClass: h.startClass, startWeapon: h.startWeapon, road: h.road, seedText: h.seedText, seeded: h.seeded,
+  return { date: h.date, startClass: h.startClass, startWeapon: h.startWeapon, road: h.road, seedText: h.seedText, seeded: h.seeded, ...(h.assist === true ? { assist: true } : {}),
     result: h.result, stageReached: h.stageReached as RunRecord['stageReached'], sectionReached: h.sectionReached, runTicks: h.runTicks,
     splits: times, cause: h.cause, dragon: h.dragon, kit: gear, stats, layout: layoutField(h.layout) };
 }
@@ -128,6 +129,12 @@ function settings(raw: unknown, defaults: SettingsData): SettingsData {
   for (const key of ['showTimer', 'screenShake', 'damageNumbers'] as const) if (typeof source[key] === 'boolean') result[key] = source[key];
   if (has(['auto', 'keyboard', 'xbox', 'playstation'], source.promptStyle)) result.promptStyle = source.promptStyle;
   result.touch = touchSettings(source.touch, defaults.touch);
+  const a = (source.assist ?? {}) as Record<string, unknown>;
+  result.assist = {
+    speed: (ASSIST.speeds as readonly number[]).includes(a.speed as number) ? a.speed as AssistSettings['speed'] : 1,
+    damageTaken: (ASSIST.damage as readonly number[]).includes(a.damageTaken as number) ? a.damageTaken as AssistSettings['damageTaken'] : 1,
+    extraFlask: a.extraFlask === true, longerDoors: a.longerDoors === true,
+  };
   result.hud = {};
   if (source.hud && typeof source.hud === 'object') for (const g of ['vitals', 'slots', 'timer'] as const) {
     const p = (source.hud as Record<string, unknown>)[g] as { x?: unknown; y?: unknown } | undefined;
@@ -167,6 +174,7 @@ export function validateSave(raw: unknown): SaveData {
   const progress = object(source.progress), unlocks = object(source.unlocks), startWeapons = object(unlocks.startWeapons), totals = object(source.stats);
   result.progress.levelsReached = [...new Set(['plains', ...unique(progress.levelsReached, (value): value is string => has(SAVE_STAGE_IDS, value))])];
   if (typeof progress.stage1Cleared === 'boolean') result.progress.stage1Cleared = progress.stage1Cleared;
+  if (progress.assistOffered === true) result.progress.assistOffered = true;
   const discoveries = [...Object.values(BONDS).map((bond) => bond.id), ...Object.values(HYBRIDS).map((hybrid) => hybrid.id)];
   result.progress.classesDiscovered = unique(progress.classesDiscovered, (value): value is BondId | HybridId => has(discoveries, value));
   result.unlocks.blueprints = unique(unlocks.blueprints, (value): value is WeaponId | AbilityId => has(BLUEPRINT_IDS, value));

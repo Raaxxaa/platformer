@@ -1,4 +1,5 @@
 // Timer and split presentation (07 §4.11, §6.9). Record decisions stay in core/run/splits.
+import { isAssisted } from '../../core/run/runState.ts';
 import type Phaser from 'phaser';
 import type { GameWorld, WorldEvent } from '../../core/sim/gameWorld.ts';
 import { formatDelta, formatTime } from '../../core/time.ts';
@@ -41,7 +42,8 @@ export function timerBlockModel(w: GameWorld, showTimer: boolean) {
   }
   // 07 §3: in practice the timer shows the practice time (stageTicks) and the segment line is hidden.
   return { time: formatTime(practice ? w.run.stageTicks : w.run.runTicks), segment: w.level?.kind === 'village' ? VILLAGE_SHORT[w.level.id] : `STAGE ${w.stage}  ${formatTime(w.run.stageTicks)}`,
-    timeVisible: visible && showTimer, segmentVisible: visible && showTimer && !practice, infoVisible: visible, info, infoBad };
+    timeVisible: visible && showTimer, segmentVisible: visible && showTimer && !practice, infoVisible: visible, info, infoBad,
+    assistVisible: visible && isAssisted(w.run) };     // 07 §4.11 (M14): `ASSIST` under the timer
 }
 
 export class TimerBlock {
@@ -49,15 +51,16 @@ export class TimerBlock {
   private readonly time: Phaser.GameObjects.BitmapText;
   private readonly segment: Phaser.GameObjects.BitmapText;
   private readonly info: Phaser.GameObjects.BitmapText;
+  private readonly assist: Phaser.GameObjects.BitmapText;
   private readonly title: Phaser.GameObjects.BitmapText;
   private readonly line: Phaser.GameObjects.BitmapText[];
   private lastTicks = 0;
   /** The `timer` group's parts (07 §4.1a). */
-  groupObjects(): { x: number; y: number }[] { return [this.time, this.segment, this.info]; }
+  groupObjects(): { x: number; y: number }[] { return [this.time, this.segment, this.info, this.assist]; }
   constructor(scene: Phaser.Scene) {
     const text = (x: number, y: number, large = false) => scene.add.bitmapText(x, y, large ? FONTS.large : FONTS.small, '').setScrollFactor(0).setDepth(DEPTH.hud);
     this.time = text(...U.timer, true).setOrigin(1, 0).setTint(UI_COLOR.text); this.segment = text(...U.segment).setOrigin(1, 0).setTint(UI_COLOR.textDim);
-    this.info = text(...U.info).setOrigin(1, 0); this.title = text(...U.alert, true).setOrigin(0.5, 0).setMaxWidth(U.alertMaxWidth);
+    this.info = text(...U.info).setOrigin(1, 0); this.assist = text(...U.assist).setOrigin(1, 0).setTint(UI_COLOR.textDim).setText('ASSIST'); this.title = text(...U.alert, true).setOrigin(0.5, 0).setMaxWidth(U.alertMaxWidth);
     this.line = [text(0, U.alertLineY), text(0, U.alertLineY), text(0, U.alertLineY)];
   }
   advance(seconds: number, paused: boolean): void { this.alerts.advance(Math.min(UI_FRAME_SECONDS, Math.max(0, seconds)), paused); }
@@ -73,6 +76,7 @@ export class TimerBlock {
     const m = timerBlockModel(w, showTimer);
     this.time.setText(m.time).setVisible(m.timeVisible && !hidden); this.segment.setText(m.segment).setVisible(m.segmentVisible && !hidden);
     this.info.setText(m.info).setTint(m.infoBad ? UI_COLOR.bad : UI_COLOR.text).setVisible(m.infoVisible && !hidden);
+    this.assist.setVisible(m.assistVisible && !hidden);
     const a = this.alerts.current;
     this.title.setVisible(!!a && !hidden); for (const t of this.line) t.setVisible(!!a && !hidden);
     if (!a) return;

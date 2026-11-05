@@ -421,7 +421,10 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       for (const action of this.classMenu.poll(Math.min(STAT_PICK_UI.frameClamp, delta / 1000), pad)) if (typeof action === 'string' && action !== 'backspace') this.classAction(action);
     }
     if (!this.manual) {
-      const n = this.stepper.advance(delta / 1000);
+      // 06 §5.4 Game speed: fewer ticks per real second; the tick itself never changes. A slowed run is marked once.
+      const speed = getUiSettings().assist?.speed ?? 1;
+      if (speed < 1 && this.world.run.assist && ['stage', 'village', 'statPick', 'routeChoice', 'transition'].includes(this.world.run.phase)) this.world.run.assist.slowedEver = true;
+      const n = this.stepper.advance((delta / 1000) * speed);
       for (let i = 0; i < n; i++) {
         const snapshot = this.readInput(), input = this.swallowHeld(snapshot.input);
         const menu = this.world.run.phase === 'statPick' || this.extraMenuOpen();

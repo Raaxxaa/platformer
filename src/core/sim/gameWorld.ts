@@ -28,6 +28,7 @@ import { overlaps } from '../combat/hitGroups.ts';
 import { playerRect } from '../combat/resolve.ts';
 import { cancelAttack, createPlayerCombat, stepPlayerCombat, syncPlayerGroups, type PlayerCombat } from '../combat/playerCombat.ts';
 import type { ElementId, FlaskState, HealRefusedReason, RushState } from '../combat/types.ts';
+import { ASSIST, type AssistSettings } from '../../data/assist.ts';
 import { cancelDrink, createFlask, onKillFill, stepDrink, stepFlask, tryStartDrink, type DrinkState } from '../combat/flask.ts';
 import { CAMERA, COMBAT, FLASK, RESTART, RUN, RUSH, VIEW_H, VIEW_W } from '../tuning.ts';
 import { emptyInput, type InputState } from '../input.ts';
@@ -65,7 +66,7 @@ import { stepGuardianSpecial, afterGuardianBody } from '../enemies/guardians2.ts
 import { endDive, onDiveEvents, onDiveGroupHit, stepDiveImpact, type DiveState } from '../combat/dive.ts';
 import type { EnemySpawn } from '../enemies/types.ts';
 import { buildWorldParts, type LevelData, type LevelEnemySpawn, type LevelObject } from '../level/loadLevel.ts';
-import { createRunState, type RunState } from '../run/runState.ts';
+import { createRunState, runAssistFrom, type RunState } from '../run/runState.ts';
 import { fnv1a32 } from '../rng.ts';
 import { buildArenas, stepArenas, type ArenaRt } from '../run/arenas.ts';
 import { buildTimedDoors, stepTimedDoors, type TimedDoorRt } from '../run/timedDoors.ts';
@@ -187,6 +188,8 @@ export interface GameWorldOptions {
   unlockedBlueprints?: readonly BlueprintId[];
   /** Phaser supplies the current in-memory unlock list only when a new run starts. */
   nextRunUnlocks?: () => readonly BlueprintId[];
+  /** 06 §5.4: the assist settings, read when a run starts. */
+  assist?: () => AssistSettings | null;
   level?: LevelData;
   /** Debug and tests: force the Dragon roll (06 §4). */
   dragon?: import('../run/dragonRoll.ts').DragonRoll;
@@ -333,7 +336,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; dragon?: GameWorldOptions['dragon']; layout?: Picks; layoutForced?: boolean; cosmetics?: GameWorldOptions['cosmetics'] }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; assist?: GameWorldOptions['assist']; dragon?: GameWorldOptions['dragon']; layout?: Picks; layoutForced?: boolean; cosmetics?: GameWorldOptions['cosmetics'] }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -342,6 +345,7 @@ export class GameWorld {
     }));
     return new GameWorld({
       grid: parts.grid, spawn: { x: start.x, y: start.y }, facing: Number(start.props.facing ?? 1) < 0 ? -1 : 1,
+      assist: opts.assist,
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
       records: opts.records, practice: opts.practice, practiceSetup: opts.practiceSetup,
@@ -370,7 +374,8 @@ export class GameWorld {
     this.body.facing = this.opts.facing ?? 1;
     // The restart hold survives a restart (06 §6.2: holding through one never restarts twice).
     const hold = this.run ? { h: this.run.restartHoldTicks, n: this.run.restartNeedsRelease } : { h: 0, n: false };
-    this.run = carry ? structuredClone(carry.run) : createRunState(this.opts.seedText ?? '', this.opts.seeded ?? false);
+    this.run = carry ? structuredClone(carry.run) : createRunState(this.opts.seedText ?? '', this.opts.seeded ?? false, this.opts.assist?.());
+    this.run.assist ??= runAssistFrom(null);                   // runs carried from before M14
     this.opts.seeded = this.run.seeded;
     this.run.startKit = this.opts.startKit ?? null;
     this.run.runSeed = this.runSeed;
@@ -401,6 +406,7 @@ export class GameWorld {
     this.playerStatus=createPlayerStatus();this.puddles=[];
     this.rush = createRush();
     this.flask = createFlask();
+    if (!carriedState && this.run.assist.extraFlask) this.flask = { ...this.flask, charges: this.flask.charges + ASSIST.extraFlask, maxCharges: this.flask.maxCharges + ASSIST.extraFlask };
     this.drinking = null;
     this.drinkBufferTicks = 0;
     const lo = cloneLoadout(carriedState?.loadout ?? this.opts.loadout ?? (this.level?.kind === 'village' || this.level?.kind === 'training' ? { weapons: [null, null], abilities: [null, null] } : defaultLoadout()));

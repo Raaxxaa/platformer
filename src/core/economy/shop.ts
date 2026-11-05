@@ -1,4 +1,5 @@
 // Village shops (05 §10–11) and altar tap/hold (06 §12.2). No devices, clock, storage or Phaser.
+import { ASSIST } from '../../data/assist.ts';
 import type { AbilityId, AbilitySlot } from '../abilities/types.ts';
 import type { WeaponId, WeaponInstance } from '../combat/types.ts';
 import { dropItem, interactTarget, ITEM, type Interactable } from '../abilities/items.ts';
@@ -89,8 +90,10 @@ export function rerollShop(w: GameWorld): boolean {
   w.weaponSwapChoice = null; w.abilities.swapChoice = null;
   return true;
 }
+/** The most flask charges upgrades can reach: 4, or 5 with Assist's extra charge (06 §5.4). */
+export const flaskCap = (w: GameWorld): number => FLASK.MAX_CHARGES + (w.run.assist?.extraFlask ? ASSIST.extraFlask : 0);
 export function buyFlaskUpgrade(w: GameWorld): boolean {
-  if (w.flask.maxCharges >= FLASK.MAX_CHARGES || !pay(w, shopPrice(w, PRICES.flaskUpgrade), 'flask_upgrade')) return false;
+  if (w.flask.maxCharges >= flaskCap(w) || !pay(w, shopPrice(w, PRICES.flaskUpgrade), 'flask_upgrade')) return false;
   w.flask.maxCharges += 1; w.flask.charges += 1; return true;
 }
 export function refill(w: GameWorld): boolean {

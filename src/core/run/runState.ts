@@ -1,3 +1,4 @@
+import type { AssistDamage, AssistSettings } from '../../data/assist.ts';
 import { rollLayout, type RunLayout } from './layout.ts';
 // Run phases and clocks (06 §2, §5, §16). No clock, storage or random source lives here.
 import { deriveSeed, fnv1a32, Rng } from '../rng.ts';
@@ -13,7 +14,16 @@ export type RunPhase = 'title' | 'homeVillage' | 'transition' | 'loading' | 'sta
 
 export interface ArenaRunState { locked: boolean; wave: number; lockTick: number; cleared: boolean; clearTick: number | null }
 
+/** Assist options fixed at run start (06 §5.4); `slowedEver` is set by the loop the first time Game speed is below 100%. */
+export interface RunAssist { damageTaken: AssistDamage; extraFlask: boolean; longerDoors: boolean; slowedEver: boolean }
+export const runAssistFrom = (s?: AssistSettings | null): RunAssist =>
+  ({ damageTaken: s?.damageTaken ?? 1, extraFlask: !!s?.extraFlask, longerDoors: !!s?.longerDoors, slowedEver: false });
+/** An assisted run never writes best times (06 §5.4). */
+export const isAssisted = (r: RunState): boolean =>
+  !!r.assist && (r.assist.damageTaken !== 1 || r.assist.extraFlask || r.assist.longerDoors || r.assist.slowedEver);
+
 export interface RunState {
+  assist: RunAssist;
   phase: RunPhase;
   pausedFrom: Exclude<RunPhase, 'paused'> | null;
   transition: RunTransition | null;
@@ -45,10 +55,10 @@ export interface RunState {
   winUnlocks: { blueprint: string | null; startWeapon: string | null };
 }
 
-export function createRunState(seedText: string, seeded = false): RunState {
+export function createRunState(seedText: string, seeded = false, assist?: AssistSettings | null): RunState {
   const runSeed = fnv1a32(seedText), dragonRng = new Rng(deriveSeed(runSeed, 'dragon', 'run'));
   return {
-    phase: 'stage', pausedFrom: null, transition: null, seedText, runSeed, seeded, startKit: null, started: false, endRecorded: false, stats: defaultRunStats(), goldEarnedTenths: 0, lootUnlocked: [], blueprintsDropped: [], road: null, stage: 1, levelId: 'plains',
+    assist: runAssistFrom(assist), phase: 'stage', pausedFrom: null, transition: null, seedText, runSeed, seeded, startKit: null, started: false, endRecorded: false, stats: defaultRunStats(), goldEarnedTenths: 0, lootUnlocked: [], blueprintsDropped: [], road: null, stage: 1, levelId: 'plains',
     dragon: rollDragon(() => dragonRng.next()), layout: rollLayout(runSeed), runTicks: 0, stageTicks: 0, splits: [null, null, null, null], deathTick: null, sectionReached: 0,
     arenas: {}, timedDoors: {}, restartHoldTicks: 0, restartNeedsRelease: false,
     bossDefeatedTick: null, statPickDone: false, winUnlocks: { blueprint: null, startWeapon: null },
