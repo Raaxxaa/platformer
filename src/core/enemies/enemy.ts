@@ -63,6 +63,8 @@ export interface EnemyState {
   hitStopTicks: number;
   frozenAtTickStart: boolean;      // in hit-stop when the tick began: its attack boxes don't test overlap (02 §2.1)
   control: EnemyControl | null;
+  /** 02 §9.6a juggles (M15): juggle hits since the last Launch landing. */
+  juggleCount?: number;
   knockback: boolean;
   grounded: boolean;
   hitWall: boolean;                // moveX hit a wall this tick

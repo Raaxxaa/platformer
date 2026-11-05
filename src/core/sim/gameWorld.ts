@@ -163,6 +163,8 @@ export type WorldEvent =
   | { t: 'practiceBestSaved'; key: string; ticks: number }
   /** 02 §5.2 step 3 (M14): a shield parry or a Riposte block. */
   | { t: 'parry' }
+  /** 02 §9.6a (M15): a juggle hit; `count` 1–4. */
+  | { t: 'juggle'; target: number; count: number }
   | { t: 'dragonWarning'; color: 'red' | 'white' | 'storm' | 'green' }
   | { t: 'blueprintFound'; id: BlueprintId }
   | { t: 'startingWeaponUnlocked'; cls: ClassId; weapon: import('../combat/types.ts').WeaponId }

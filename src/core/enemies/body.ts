@@ -72,7 +72,7 @@ export function stepEnemyBody(w: GameWorld, e: EnemyState): void {
   copyBack(e, box);
   e.grounded = !e.def.flying && isGrounded(box, w.grid, e.vy);
   if (e.grounded) e.vy = 0;
-  if (c?.type === 'launch' && !c.landed && e.grounded) c.landed = true;     // acts again 0.2 s after landing
+  if (c?.type === 'launch' && !c.landed && e.grounded) { c.landed = true; e.juggleCount = 0; }      // juggles reset on landing (02 §9.6a)     // acts again 0.2 s after landing
   if (e.knockback && (e.grounded || e.def.flying) && !e.control && Math.abs(e.vx) < COMBAT.ENEMY_KB_CONTROL_SPEED) {
     e.knockback = false;
     e.vx = 0;

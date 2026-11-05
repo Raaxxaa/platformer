@@ -3,6 +3,7 @@ import { newWeapon } from '../abilities/runtime.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
 import type { InputSpec } from '../sim/playerSim.ts';
 import { arenaWorld, stepSpec } from '../testkit/combatWorld.ts';
+import { resolvePlayerHits } from './resolve.ts';
 import type { EnemyId } from '../enemies/types.ts';
 import type { WeaponId } from './types.ts';
 
@@ -53,5 +54,35 @@ describe('Smash-style moves (02 §9.6a)', () => {
     const w = setup('greatsword', { id: 'bandit', x: 260 }); w.rush.value = 0;
     run(w, { dash: true }); run(w, {}, 4); run(w, { attack1: true }); run(w, {}, 30);
     expect(w.rush.value).toBeGreaterThan(0);
+  });
+});
+
+describe('juggles (02 §9.6a.3)', () => {
+  const launched = () => {
+    const w = setup('katana', { id: 'wolf', x: 225 });
+    run(w, { moveY: -1, attack1: true }); run(w, {}, 30);
+    return w;
+  };
+  it('a launched Wolf hit again in the air is refreshed (vy ≤ −160) and counts juggles, +0.10 each, at most 4', () => {
+    const w = launched(), e = w.enemies[0];
+    expect(e.control?.type).toBe('launch'); expect(e.grounded).toBe(false);
+    const counts: number[] = [], dmg: number[] = [];
+    for (let k = 0; k < 6; k++) {
+      e.vy = 50; e.hitStopTicks = 0;
+      w.events = [];
+      w.hitGroups.push({ id: w.newId(), owner: 'player', kind: 'melee', rect: { x: e.x - 20, y: e.y - 30, w: 40, h: 40 },
+        spec: { kind: 'melee', damage: 10, kb: [10, -10], poise: 0, hitStop: 0 }, active: true, lastHitTick: new Map(), hitCount: new Map(), attackInstance: 900 + k, slot: 0 });
+      resolvePlayerHits(w);
+      w.hitGroups.pop();
+      for (const x of w.events) { if (x.t === 'juggle') counts.push(x.count); if (x.t === 'hit') dmg.push(x.amount); }
+      if (k < 4) expect(e.vy).toBeLessThanOrEqual(-160); else expect(e.vy).toBeGreaterThan(-160);   // no refresh after the 4th
+    }
+    expect(counts).toEqual([1, 2, 3, 4]);
+    expect(dmg[3]).toBeGreaterThan(dmg[0]); expect(dmg[5]).toBeLessThan(dmg[3]);
+  });
+  it('bosses are never juggled', () => {
+    const w = setup('katana', { id: 'great_boar', x: 240 });
+    run(w, { moveY: -1, attack1: true }); run(w, {}, 30);
+    expect(w.enemies[0].control?.type ?? null).not.toBe('launch'); expect(w.enemies[0].juggleCount ?? 0).toBe(0);
   });
 });

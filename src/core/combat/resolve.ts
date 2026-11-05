@@ -1,4 +1,5 @@
 // 02 §2.1 steps 7a, 7b and 9: hit resolution and deaths.
+import { UP_MOVE } from '../../data/upMoves.ts';
 import { unlockCosmeticOnKill } from '../cosmetics/hooks.ts';
 import { lootOnKill } from '../loot/sources.ts';
 import { addGoldTenths, killGoldTenths } from '../economy/gold.ts';
@@ -66,8 +67,12 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   const guarded = enemyGuarded(w,g,e), warded = e.ward !== null, stone = isStone(e);
   const armor = e.def.armor && !(e.def.armor.heavyIgnores && spec.heavy) ? e.def.armor.mult : 1;     // Knight armor (04 §6)
   const tMult = targetMult(w, g, e) * shatterMult(w, e, true) * (guarded ? e.def.guard!.guardMult : 1) * armor * castleTargetMult(e);
+  // 02 §9.6a juggles: a direct hit on an enemy in the air from a Launch, up to 4 times; +0.10 per juggle in the additive pool.
+  const juggle = e.control?.type === 'launch' && !e.control.landed && !e.boss && (e.juggleCount ?? 0) < UP_MOVE.juggleMax;
+  if (juggle) e.juggleCount = (e.juggleCount ?? 0) + 1;
+  const juggleBonus = juggle ? UP_MOVE.juggleBonus * e.juggleCount! : 0;
   const { damage, procBase } = playerHitDamage({
-    base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e), crit, targetMult: tMult,
+    base: spec.damage, grade: inst?.grade ?? 'C', matched, isWeapon, bonus: hitBonus(w, g, e) + juggleBonus, crit, targetMult: tMult,
   });
   applyEnemyDamage(e,damage);
   if (guarded && g.kind === 'melee') w.body.vx = -w.body.facing * MOUNTAIN.guardRecoil;
@@ -114,6 +119,10 @@ function applyPlayerHit(w: GameWorld, g: HitGroup, e: EnemyState): void {
   if (!warded && !stone && (!guarded || spec.heavy)) {
     if (ctl?.type === 'launch') applyLaunch(w, e, spec.kb, dir);
     else if (!frozen && (staggered || !committed)) applyEnemyKnockback(e, kb, dir);
+  }
+  if (juggle) {                                             // the juggle refreshes the Launch, whatever the hit's own knockback did
+    e.control = { type: 'launch', ticks: COMBAT.LAUNCH_LAND_TICKS, landed: false };
+    e.vy = Math.min(e.vy, UP_MOVE.juggleVy); e.grounded = false; w.events.push({ t: 'juggle', target: e.id, count: e.juggleCount! });
   }
   if (!stone && (ctl?.type === 'knockdown' || ctl?.type === 'stun')) controlOrPoise(w, e, ctl.type, ctl.duration);
   else if (ctl?.type === 'pull' && g.pullTo) applyPull(w, e, g.pullTo);
