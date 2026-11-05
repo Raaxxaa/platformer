@@ -8,6 +8,8 @@
 
 **How:** [Capacitor](https://capacitorjs.com) wraps the built game (`dist/`) in a native iOS app. The **Mac** runs that same iOS app: on an Apple Silicon Mac (M1 or later), Xcode can install an iPhone/iPad app directly ("My Mac (Designed for iPad)"); keyboard and gamepad work there. (An Intel Mac can't do that; for an Intel Mac use the installed web app from M12 instead, or add Mac Catalyst later.)
 
+**Who builds it:** the user, on their own Mac, with Claude Code running in Terminal there (it can run Xcode's command-line tools, so it can build and install the app itself). The cloud builder does **not** do M16.
+
 **The user must do the last part on their Mac** (Xcode, signing, plugging in the phone), because building and signing iOS apps needs macOS. This chat prepares everything so that part is a few clicks, and writes a plain-words guide.
 
 **Starting point:** current `main`. Merge `main` and `origin/claude/great-dijkstra-g00pcj` first.
