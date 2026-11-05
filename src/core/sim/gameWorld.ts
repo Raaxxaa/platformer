@@ -186,6 +186,8 @@ export interface GameWorldOptions {
   startKit?: StartKit | null;
   /** 06 §14.1 (M15): the UTC day of a Daily challenge run. */
   daily?: string;
+  /** 06 §14.2 (M15): a Boss Rush fight; the scene runs the attempt, a restart asks it to start over. */
+  bossRush?: boolean;
   carry?: WorldCarry;
   records?: RunRecords;
   practice?: boolean;
@@ -342,7 +344,7 @@ export class GameWorld {
   }
 
   /** A stage world from level data (M3 Task 4): player start, placed enemies, bodies, markers, run state. */
-  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; assist?: GameWorldOptions['assist']; dragon?: GameWorldOptions['dragon']; layout?: Picks; layoutForced?: boolean; cosmetics?: GameWorldOptions['cosmetics']; daily?: string }): GameWorld {
+  static fromLevel(d: LevelData, opts: { seedText: string; seeded?: boolean; nextRandomSeed?: () => string; startKit?: StartKit | null; carry?: WorldCarry; records?: RunRecords; practice?: boolean; practiceSetup?: PracticeSetup; unlockedBlueprints?: readonly BlueprintId[]; nextRunUnlocks?: () => readonly BlueprintId[]; assist?: GameWorldOptions['assist']; dragon?: GameWorldOptions['dragon']; layout?: Picks; layoutForced?: boolean; cosmetics?: GameWorldOptions['cosmetics']; daily?: string; bossRush?: boolean }): GameWorld {
     const parts = buildWorldParts(d);
     const start = d.objects.find((o) => o.type === 'player_start');
     if (!start) throw new Error(`level ${d.id} has no player_start`);
@@ -355,7 +357,7 @@ export class GameWorld {
       stage: (d.stage || 1) as Stage, seedText: opts.seedText, seeded: opts.seeded, nextRandomSeed: opts.nextRandomSeed, level: d, bodies,
       startKit: opts.carry?.run.startKit ?? opts.startKit, carry: opts.carry,
       records: opts.records, practice: opts.practice, practiceSetup: opts.practiceSetup,
-      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon, layout: opts.layout, layoutForced: opts.layoutForced, cosmetics: opts.cosmetics, daily: opts.daily,
+      unlockedBlueprints: opts.unlockedBlueprints, nextRunUnlocks: opts.nextRunUnlocks, dragon: opts.dragon, layout: opts.layout, layoutForced: opts.layoutForced, cosmetics: opts.cosmetics, daily: opts.daily, bossRush: opts.bossRush,
       loadout: opts.practiceSetup ? practiceLoadout(opts.practiceSetup) : (opts.carry?.run.startKit ?? opts.startKit) ? kitLoadout((opts.carry?.run.startKit ?? opts.startKit)!.cls, (opts.carry?.run.startKit ?? opts.startKit)!.weapon) : undefined,
       enemies: parts.spawns.filter((s) => s.wave === 0),
       waveSpawns: parts.spawns.filter((s) => s.wave > 0),
@@ -501,7 +503,10 @@ export class GameWorld {
   /** Set on the practice boss's death tick: the time of this attempt (06 §14). */
   practiceClear: { ticks: number; best: number | null; isNew: boolean } | null = null;
 
+  /** Boss rush: set by a restart; the scene starts the attempt over from the Great Boar (06 §14.2). */
+  bossRushRestart = false;
   restart(): void {
+    if (this.opts.bossRush) { this.bossRushRestart = true; return; }
     const ended = captureRunEnd(this, 'restart'); if (ended) this.pendingRunEnds.push(ended);
     if (!this.run.seeded && this.opts.nextRandomSeed) {
       this.opts.seedText = this.opts.nextRandomSeed();

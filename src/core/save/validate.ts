@@ -176,6 +176,7 @@ export function validateSave(raw: unknown): SaveData {
   result.progress.levelsReached = [...new Set(['plains', ...unique(progress.levelsReached, (value): value is string => has(SAVE_STAGE_IDS, value))])];
   if (typeof progress.stage1Cleared === 'boolean') result.progress.stage1Cleared = progress.stage1Cleared;
   if (progress.assistOffered === true) result.progress.assistOffered = true;
+  if (progress.kingBeaten === true) result.progress.kingBeaten = true;
   const discoveries = [...Object.values(BONDS).map((bond) => bond.id), ...Object.values(HYBRIDS).map((hybrid) => hybrid.id)];
   result.progress.classesDiscovered = unique(progress.classesDiscovered, (value): value is BondId | HybridId => has(discoveries, value));
   result.unlocks.blueprints = unique(unlocks.blueprints, (value): value is WeaponId | AbilityId => has(BLUEPRINT_IDS, value));
@@ -192,6 +193,10 @@ export function validateSave(raw: unknown): SaveData {
   }
   for (const [key, value] of Object.entries(object(source.practiceBests))) if (practiceKey(key) && integer(value)) result.practiceBests[migratePracticeKey(key)] = value;
   result.daily = validateDaily(source.daily);
+  for (const [key, value] of Object.entries(object(source.bossRushBests))) {
+    const [c, d] = key.split('|'), v = object(value);
+    if (cls(c) && (d === 'dragon' || d === 'no_dragon') && integer(v.ticks) && Array.isArray(v.splits) && v.splits.every(integer)) result.bossRushBests[key as `${ClassId}|dragon`] = { ticks: v.ticks as number, splits: [...v.splits] as number[] };
+  }
   result.cosmetics = validateCosmetics(source.cosmetics);
   result.look = validateLook(source.look, result.cosmetics.owned);
   result.history = (Array.isArray(source.history) ? source.history.map(runRecord).filter((entry): entry is RunRecord => entry !== null) : [])

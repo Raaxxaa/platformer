@@ -4,7 +4,7 @@ describe('title, boot and death screens (07 §7)', () => {
   it('consumes the first gesture and keeps title choices in bounds', () => {
     const m = new TitleModel(); expect(m.action('confirm')).toBeNull(); expect(m.step).toBe(2);
     expect(m.action('confirm')).toBe('play');
-    for (let i = 0; i < 9; i++) m.action('down'); expect(m.cursor).toBe(5); expect(m.action('confirm')).toBe('practice');
+    for (let i = 0; i < 9; i++) m.action('down'); expect(m.cursor).toBe(6); expect(m.action('confirm')).toBe('practice');
     expect(m.action('back')).toBeNull(); expect(m.step).toBe(1);
   });
   it('a Daily death adds a Share row (M15)', () => {

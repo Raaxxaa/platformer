@@ -35,13 +35,15 @@ export interface SettingsData { volume: { master: number; music: number; sfx: nu
   bindings: { keyboard: Record<ActionId, [string | null, string | null]>; gamepad: Record<ActionId, number | null> } }
 export interface SaveData {
   v: 1; settings: SettingsData; lastKit: StartKit | null; lastRoad: Road; typedSeed: string | null; training: number[];
-  progress: { levelsReached: string[]; stage1Cleared: boolean; classesDiscovered: (BondId | HybridId)[]; assistOffered?: boolean };
+  progress: { levelsReached: string[]; stage1Cleared: boolean; classesDiscovered: (BondId | HybridId)[]; assistOffered?: boolean; kingBeaten?: boolean };
   unlocks: { blueprints: (WeaponId | AbilityId)[]; startWeapons: Partial<Record<ClassId, WeaponId[]>> };
   stats: { runsStarted: number; runsCompleted: number; deaths: number; dragonsKilled: number };
   pbs: Partial<Record<PbKey, PbRecord>>; bestSegments: Partial<Record<PbKey, [number | null, number | null, number | null, number | null]>>;
   practiceBests: Record<string, number>; history: RunRecord[];
   /** 06 §14.1 (M15): Daily challenge attempts by UTC day. */
   daily: import('../run/daily.ts').DailyBook;
+  /** 06 §14.2 (M15). */
+  bossRushBests: Partial<Record<import('../run/bossRush.ts').BossRushKey, import('../run/bossRush.ts').BossRushBest>>;
   /** 09 §8 (M13): the hero's look, and which cosmetics are owned / which enemies were met. */
   look: import('../../data/cosmetics.ts').Look; cosmetics: import('../cosmetics/look.ts').CosmeticsSave;
 }

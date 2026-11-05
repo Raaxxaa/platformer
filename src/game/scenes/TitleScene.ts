@@ -16,6 +16,10 @@ import type { PracticeSetup } from '../../core/run/practice.ts';
 import { MenuSurface } from '../../ui/screens/records.ts';
 import { TitleModel } from '../../ui/screens/front.ts';
 import { dailyDay, dailyKit, dailySeed } from '../../core/run/daily.ts';
+import { bossRushUnlocked, newBossRush } from '../../core/run/bossRush.ts';
+import { BOSS_RUSH_UI } from '../../data/bossRush.ts';
+import { DRAGON_ROLL } from '../../data/run.ts';
+import type { BossRushSetup } from '../../ui/screens/bossRush.ts';
 import { CLASS_NAME } from '../../data/classes.ts';
 import { WEAPON_NAME } from '../../data/uiText.ts';
 import { formatTime } from '../../core/time.ts';
@@ -55,7 +59,9 @@ class TitleView extends MenuSurface {
     if (m.step === 1) { if (blink) this.text(this.scene.scale.width / 2, T.promptY, 'Press any button'); }
     else U.titleRows.forEach((label, i) => {
       const x = (this.scene.scale.width - T.rowW) / 2, y = T.rowsY + i * T.rowStep;
-      this.text(this.scene.scale.width / 2, y, `${m.cursor === i ? '▸ ' : ''}${U.titleCommands[i] === 'daily' ? dailyRowLabel() : label}`, m.cursor === i ? UI_COLOR.highlight : UI_COLOR.text);
+      this.text(this.scene.scale.width / 2, y, `${m.cursor === i ? '▸ ' : ''}${U.titleCommands[i] === 'daily' ? dailyRowLabel() : U.titleCommands[i] === 'bossRush' && !bossRushUnlocked(saveStore().data) ? BOSS_RUSH_UI.locked : label}`,
+        m.cursor === i ? UI_COLOR.highlight : U.titleCommands[i] === 'bossRush' && !bossRushUnlocked(saveStore().data) ? UI_COLOR.textOff : UI_COLOR.text);
+      if (m.cursor === i && U.titleCommands[i] === 'bossRush' && !bossRushUnlocked(saveStore().data)) this.text(this.scene.scale.width / 2, T.warningY - 14, BOSS_RUSH_UI.lockedHint, UI_COLOR.textDim);
       this.target(x, y, T.rowW, T.rowH, () => { m.cursor = i; }, () => this.action('confirm'));
     });
     this.text(T.version[0], T.version[1], 'v0.0.0', UI_COLOR.textOff, false, 'right');
@@ -69,8 +75,9 @@ export class TitleScene extends Phaser.Scene {
   private fade!: Phaser.GameObjects.Graphics;
   private fadeLeft = 0;
   private openPracticeOnCreate = false;
+  private openBossRushOnCreate = false;
   constructor() { super('Title'); }
-  init(data?: { practice?: boolean }): void { this.openPracticeOnCreate = !!data?.practice; this.fadeLeft = 0; }
+  init(data?: { practice?: boolean; bossRush?: boolean }): void { this.openPracticeOnCreate = !!data?.practice; this.openBossRushOnCreate = !!data?.bossRush; this.fadeLeft = 0; }
   preload(): void { loadAssets(this); }
   create(): void {
     this.fadeLeft = 0; applySettings(this, saveStore().data.settings);
@@ -82,8 +89,9 @@ export class TitleScene extends Phaser.Scene {
     this.fade = this.add.graphics().setScrollFactor(0).setDepth(U.fadeDepth).fillStyle(UI_COLOR.ink).fillRect(0, 0, this.scale.width, this.scale.height).setVisible(false);
     this.events.once('shutdown', () => { this.titleView.destroy(); this.screens.destroy(); });
     if (this.openPracticeOnCreate) this.run('practice');
+    if (this.openBossRushOnCreate) this.run('bossRush');
     if (debugEnabled()) window.__game = { ready: true, title: true, titleCursor: () => this.titleView.model.cursor,
-      titleChoose: (i: number) => this.choose(i), titleRun: (cmd: TitleCommand) => this.run(cmd), save: () => structuredClone(saveStore().data),
+      titleChoose: (i: number) => this.choose(i), titleRun: (cmd: TitleCommand) => this.run(cmd), startBossRush: (s: BossRushSetup) => this.startBossRush(s), save: () => structuredClone(saveStore().data),
       screenState: () => this.screens.active ? this.screens.snapshot() : { screen: 'title', model: { step: this.titleView.model.step, cursor: this.titleView.model.cursor } },
       screenAction: (action: HomePanelAction) => { if (this.screens.active) this.screens.action(action); else this.titleView.action(action); },
       appliedSettings: () => structuredClone(getUiSettings()),
@@ -96,6 +104,13 @@ export class TitleScene extends Phaser.Scene {
       if (this.fadeLeft === 0) this.scene.start('Village', { level: 'home', titleFade: true }); return;
     }
     this.screens.update(delta / 1000); if (!this.screens.active) this.titleView.update(delta / 1000);
+  }
+  /** 06 §14.2: a boss rush attempt starts at the Great Boar's arena. */
+  startBossRush(setup: BossRushSetup): void {
+    gameSession.bossRushSetup = setup; gameSession.daily = null;
+    gameSession.bossRush = newBossRush(setup.cls, setup.weapon, setup.dragon, Math.random(), DRAGON_ROLL.colors);
+    if (window.__game) window.__game.ready = false;
+    this.scene.start('Stage', { level: gameSession.bossRush.fights[0].levelId });
   }
   /** 06 §14: a practice attempt is a stage level started with its setup; nothing is carried in. */
   private startPractice(setup: PracticeSetup): void {
@@ -111,6 +126,10 @@ export class TitleScene extends Phaser.Scene {
     if (cmd === 'records') { this.screens.openRecords(); return; }
     if (cmd === 'settings') { this.screens.openSettings(); return; }
     if (cmd === 'practice') { this.screens.openPractice(gameSession.practiceSetup, (setup) => this.startPractice(setup)); return; }
+    if (cmd === 'bossRush') {
+      if (!bossRushUnlocked(saveStore().data)) { this.titleView.setEnabled(true); return; }
+      this.screens.openBossRush(gameSession.bossRushSetup, (setup) => this.startBossRush(setup)); return;
+    }
     if (cmd === 'training') { gameSession.trainingReturn = 'title'; this.scene.start('Stage', { level: 'training_yard' }); return; }
     if (cmd === 'daily') {
       // 06 §14.1: no Home Village; the run starts at the Stage 1 start with the day's kit and seed.

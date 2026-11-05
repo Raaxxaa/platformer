@@ -1,5 +1,9 @@
 // M3 stage scene: loads public/levels/<id>.json and plays it, with doors, loot markers, hints, the boss bar,
 // the run timer, the split popup and the temporary stage-clear screen.
+import { applyBossRushBest, bossDown, bossRushHp, BOSS_RUSH, newBossRush } from '../../core/run/bossRush.ts';
+import { setupBossRushFight } from '../../core/run/bossRushWorld.ts';
+import { BossRushResultView } from '../../ui/screens/bossRush.ts';
+import { DRAGON_ROLL } from '../../data/run.ts';
 import { dailyShareFor } from '../../core/run/daily.ts';
 import { shareText, lastShared } from '../../ui/share.ts';
 import { isAssisted } from '../../core/run/runState.ts';
@@ -108,6 +112,10 @@ export class StageScene extends WorldScene {
   /** Practice mode (06 §14): the setup, the result screen, and the ghost being recorded and played. */
   private practice: PracticeSetup | null = null;
   private practiceResult: PracticeResultView | null = null;
+  /** 06 §14.2 (M15) boss rush: the result screen, and the fade to the next fight (ms left). */
+  private rushResult: BossRushResultView | null = null;
+  private rushFadeAt = -1;
+  private rushNext: string | null = null;
   private practiceAt = -1;
   private ghostView: GhostView | null = null;
   private readonly recorder = new GhostRecorder();
@@ -121,7 +129,7 @@ export class StageScene extends WorldScene {
   /** The level the start screen chose (else the URL decides). */
   private chosen: string | null = null;
   init(data?: { level?: string; carry?: WorldCarry; titleFade?: boolean; practice?: PracticeSetup }): void {
-    this.chosen = data?.level ?? null; if (this.chosen === 'home') gameSession.daily = null; this.practice = data?.practice ?? null; this.practiceResult = null; this.practiceAt = -1; this.ghostView = null; this.recorder.reset(); this.lastWorldTick = 0;
+    this.chosen = data?.level ?? null; if (this.chosen === 'home') { gameSession.daily = null; gameSession.bossRush = null; } this.rushResult = null; this.rushFadeAt = -1; this.rushNext = null; this.practice = data?.practice ?? null; this.practiceResult = null; this.practiceAt = -1; this.ghostView = null; this.recorder.reset(); this.lastWorldTick = 0;
     this.deathView = null; this.deathCause = 'hazard'; this.titleFadeLeft = data?.titleFade ? FRONT_UI.title.fadeSeconds : 0;
     this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.wardrobe = null; this.introChecked = false; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.victory = null; this.victoryAt = -1; this.labels = []; this.doorText.clear();
   }
@@ -155,12 +163,13 @@ export class StageScene extends WorldScene {
       const p = this.level.objects.find((o) => o.type === 'main_path')?.points?.find((v) => sectionAt(this.level, v.x, v.y) === section);
       if (p) w.teleportPlayer(p.x, Math.floor(p.y / 16) * 16 + 16);
     }
+    if (w.opts.bossRush && gameSession.bossRush) setupBossRushFight(w, gameSession.bossRush, bossRushHp());
     return w;
   }
 
   protected createExtra(): void {
     this.menus = new MenuScreens(this, () => this.clearMenuInput(), () => { this.devices.setEnabled(false); this.clearMenuInput(); }, () => gameSession.refreshRecords(this.world));
-    this.events.once('shutdown', () => { this.deathView?.destroy(); this.deathView = null; });
+    this.events.once('shutdown', () => { this.deathView?.destroy(); this.deathView = null; this.rushResult?.destroy(); this.rushResult = null; });
     const U = STAGE_UI;
     const { width, height } = this.scale;
     this.props = this.add.graphics().setDepth(DEPTH.terrain + 5);
@@ -203,6 +212,8 @@ export class StageScene extends WorldScene {
     api.runState = () => structuredClone(this.world.run);
     api.confirmStatPick = (index?: number) => this.chooseStat(index);
     api.completeLoading = () => this.world.completeLoading();
+    api.bossRush = () => gameSession.bossRush ? structuredClone(gameSession.bossRush) : null;
+    api.rushResultOpen = () => !!this.rushResult;
     api.killAll = () => { for (const e of this.world.enemies) if (!e.dead && !e.dormant && e.spawnInTicks === 0) killEnemy(this.world, e); };
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.setEnemyHp = (id: number, hp: number) => { const e = this.world.enemies.find((x) => x.id === id); if (e) { e.hp = hp; if (hp <= 0) killEnemy(this.world, e); } };
@@ -211,8 +222,8 @@ export class StageScene extends WorldScene {
     api.layoutCode = () => layoutCode(this.world.opts.layout ?? []);
     api.save = () => structuredClone(saveStore().data);
     api.appliedSettings = () => structuredClone(getUiSettings());
-    api.screenState = () => this.menus.active ? this.menus.snapshot() : this.practiceResult ? { screen: 'practiceResult', model: { cursor: this.practiceResult.model.cursor, canConfirm: this.practiceResult.model.canConfirm } } : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
-    api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else if (this.practiceResult) this.practiceResult.action(action); else this.deathView?.action(action); };
+    api.screenState = () => this.menus.active ? this.menus.snapshot() : this.practiceResult ? { screen: 'practiceResult', model: { cursor: this.practiceResult.model.cursor, canConfirm: this.practiceResult.model.canConfirm } } : this.rushResult ? { screen: 'bossRushResult', model: { cursor: this.rushResult.model.cursor, canConfirm: this.rushResult.model.canConfirm } } : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
+    api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else if (this.practiceResult) this.practiceResult.action(action); else if (this.rushResult) this.rushResult.action(action); else this.deathView?.action(action); };
     api.timerBlock = () => this.timerBlock.snapshot();
     api.hurtPlayer = (damageA: number) => {
       const w = this.world, all = w.events, n = all.length;
@@ -311,9 +322,9 @@ export class StageScene extends WorldScene {
     saveStore().update((s) => { s.lastKit = { ...kit }; });
     if (first && this.level.id === 'home') this.openHomePanel('training');
   }
-  protected override touchControlsOn(): boolean { return super.touchControlsOn() && !this.deathView && !this.practiceResult; }
+  protected override touchControlsOn(): boolean { return super.touchControlsOn() && !this.deathView && !this.practiceResult && !this.rushResult; }
   protected override deathOpen(): boolean { return !!this.deathView; }
-  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.wardrobe?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.menus?.active || this.titleFadeLeft > 0; }
+  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.wardrobe?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.rushResult || !!this.menus?.active || this.titleFadeLeft > 0; }
   private requestHome(): void {
     gameSession.endRun(this.world, 'quit');
     this.runSoFar?.destroy(); this.runSoFar = null; this.victory?.destroy(); this.victory = null;
@@ -327,7 +338,7 @@ export class StageScene extends WorldScene {
         onConfirm: (road) => { if (chooseRoad(w, road)) saveStore().update((s) => { s.lastRoad = road; }); this.routeChoice?.destroy(); this.routeChoice = null; this.clearMenuInput(); },
         onCancel: () => { cancelRoad(w); this.routeChoice?.destroy(); this.routeChoice = null; this.clearMenuInput(); },
       });
-    if (w.run.phase !== 'runComplete') { this.victory?.destroy(); this.victory = null; this.victoryAt = -1; }
+    if (w.run.phase !== 'runComplete' || w.opts.bossRush) { this.victory?.destroy(); this.victory = null; this.victoryAt = -1; }
     else if (!this.victory) {                                   // the King's 1.5 s death animation plays first, then the summary opens (06 §2.6)
       this.victoryAt = this.victoryAt < 0 ? this.time.now : this.victoryAt;
       if (this.time.now - this.victoryAt >= VICTORY_UI.deathAnimSeconds * 1000) {
@@ -419,7 +430,51 @@ export class StageScene extends WorldScene {
     this.runSoFar?.update(delta / 1000);
     this.victory?.update(delta / 1000);
     this.practiceResult?.setEnabled(!this.pause); this.practiceResult?.update(delta / 1000);
+    this.rushResult?.setEnabled(!this.pause); this.rushResult?.update(delta / 1000);
     super.update(time, delta);
+  }
+  /** 06 §14.2: a boss down → split, 1.0 s fade (not timed), the next arena; the last one or a death → the result screen. */
+  private syncBossRush(): void {
+    const w = this.world, a = gameSession.bossRush;
+    if (!a || this.leaving) return;
+    if (w.bossRushRestart) { w.bossRushRestart = false; this.startBossRush(); return; }
+    if (this.rushNext) {
+      const t = Math.min(1, (this.time.now - this.rushFadeAt) / (BOSS_RUSH.fadeSeconds * 1000));
+      this.fade.setVisible(true).setAlpha(t);
+      if (t >= 1) { this.leaving = true; if (window.__game) window.__game.ready = false; this.scene.start('Stage', { level: this.rushNext }); }
+      return;
+    }
+    if (this.rushResult) return;
+    a.assist ||= isAssisted(w.run);
+    const fight = a.fights[a.index];
+    for (const { e } of this.frameEvents) {
+      if (e.t !== 'bossDefeated' || e.bossId !== fight.boss) continue;
+      // Time runs from the arena lock (the first tick of control in it) to the boss's death tick.
+      const id = w.level?.objects.find((o) => o.type === 'arena' && o.props.kind === fight.arena)?.props.id;
+      const lock = id === undefined ? -1 : w.run.arenas[String(id)]?.lockTick ?? -1;
+      const ticks = w.tick - Math.max(0, lock);
+      if (bossDown(a, ticks, w.health.hp, w.health.maxHp)) {
+        let isNew = false;
+        saveStore().update((s) => { isNew = applyBossRushBest(s.bossRushBests, a); });
+        this.openRushResult(isNew);
+      } else { this.rushNext = a.fights[a.index].levelId; this.rushFadeAt = this.time.now; }
+      return;
+    }
+    if (w.health.dead) this.openRushResult(false);
+  }
+  private openRushResult(isNew: boolean): void {
+    const a = gameSession.bossRush!;
+    this.rushResult = new BossRushResultView(this, a, isNew, (command) => {
+      this.rushResult?.destroy(); this.rushResult = null; this.clearMenuInput();
+      if (command === 'retry') this.startBossRush();
+      else { gameSession.bossRush = null; this.leaving = true; this.scene.start('Title', command === 'setup' ? { bossRush: true } : undefined); }
+    });
+  }
+  private startBossRush(): void {
+    const s = gameSession.bossRushSetup; if (!s) return;
+    gameSession.bossRush = newBossRush(s.cls, s.weapon, s.dragon, Math.random(), DRAGON_ROLL.colors);
+    this.leaving = true; if (window.__game) window.__game.ready = false;
+    this.scene.start('Stage', { level: gameSession.bossRush.fights[0].levelId });
   }
   private toTitle(): void {
     gameSession.endRun(this.world, 'quit');
@@ -434,7 +489,7 @@ export class StageScene extends WorldScene {
     const w = this.world, U = STAGE_UI;
     for (const { e } of this.frameEvents) if (e.t === 'playerDied') this.deathCause = e.cause;
     if (this.practice && w.phase === 'deathScreen' && w.run.phase === 'dead') w.restart();      // 06 §14: no death screen in practice
-    const deathVisible = !this.practice && w.phase === 'deathScreen' && (w.run.phase === 'dead' || w.run.phase === 'paused' && w.run.pausedFrom === 'dead');
+    const deathVisible = !this.practice && !w.opts.bossRush && w.phase === 'deathScreen' && (w.run.phase === 'dead' || w.run.phase === 'paused' && w.run.pausedFrom === 'dead');
     if (!deathVisible) { this.deathView?.destroy(); this.deathView = null; }
     if (deathVisible) {
       this.overlay.setVisible(false); this.overlayText.setVisible(false);
@@ -456,6 +511,7 @@ export class StageScene extends WorldScene {
       }
     }
     this.syncRunPanels();
+    if (w.opts.bossRush) this.syncBossRush();
     if (this.practice) { this.syncPractice(); this.syncGhost(); }
     this.villageView?.update(w, saveStore().data.typedSeed);
     this.shopView?.update(w, this.frameEvents.some(({ e }) => e.t === 'cantAfford'));
