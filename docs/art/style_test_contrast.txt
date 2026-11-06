@@ -1,0 +1,13 @@
+# ART13 style test: OKLab distance of each character from the background around it (FAIL below 0.15)
+A hero vs background 0.308 PASS
+A wolf vs background 0.170 PASS
+A archer vs background 0.315 PASS
+B hero vs background 0.154 PASS
+B wolf vs background 0.340 PASS
+B archer vs background 0.236 PASS
+C hero vs background 0.300 PASS
+C wolf vs background 0.185 PASS
+C archer vs background 0.351 PASS
+D hero vs background 0.230 PASS
+D wolf vs background 0.101 FAIL
+D archer vs background 0.237 PASS
