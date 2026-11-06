@@ -35,6 +35,6 @@ export function stepVillage(w: GameWorld): void {
   if (!w.run.startKit) { w.villageMessage = 'Choose a class at a statue first'; return; }
   const kit = w.run.startKit;
   const lootUnlocked = unlockedCatalog(w.opts.nextRunUnlocks?.() ?? w.opts.unlockedBlueprints ?? [], w.run.seeded || w.opts.practice);
-  w.run = createRunState(w.run.seedText, w.run.seeded); w.run.startKit = kit; w.run.lootUnlocked = lootUnlocked;
+  w.run = createRunState(w.run.seedText, w.run.seeded, w.opts.assist?.()); w.run.startKit = kit; w.run.lootUnlocked = lootUnlocked;
   beginTransition(w.run, 'homeGate', { phase: 'stage', levelId: 'plains', stage: 1 });
 }

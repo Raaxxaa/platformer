@@ -13,8 +13,9 @@ describe('Victory summary (07 §7.11)', () => {
   it('shows the final time, every split, the Dragon outcome and the kills', () => {
     const lines = victoryLines(won());
     expect(lines[0]).toBe('Time 2:00.00');
-    expect(lines).toContain('Stage 1 0:30.00'); expect(lines).toContain('Stage 4 2:00.00');
-    expect(lines.some((l) => l.startsWith('Dragon: Not this run') && l.includes('Kills: 55'))).toBe(true);
+    expect(lines).toContain('Stage 1 Plains  0:30.00  0:30.00'); expect(lines).toContain('Stage 4 Castle  0:30.00  2:00.00');
+    expect(lines.some((l) => l.startsWith('Dragon: Not this run'))).toBe(true); expect(lines.some((l) => l.startsWith('Kills: 55 (elites 0)'))).toBe(true);
+    expect(lines.some((l) => l.startsWith('Chests: 0   Lucky Blocks: 0   Flasks drunk: 0   Damage taken: 0'))).toBe(true);
     expect(lines.some((l) => l.includes('Road: Forest'))).toBe(true);
   });
   it('marks a new personal best, a seeded run, and lists what was unlocked', () => {
@@ -24,6 +25,8 @@ describe('Victory summary (07 §7.11)', () => {
     expect(victoryLines(w)[1]).toBe('* NEW PERSONAL BEST *');
     pb.ticks = 14000;
     expect(victoryLines(w)[1]).toBe('Personal best 1:56.66');
+    pb.splits = [3000, 7200, 10800, 14000]; w.records.bestSegments['tank|forest'] = [3000, 3600, 3600, 3200];
+    expect(victoryLines(w)).toContain('Stage 2 Swamps  0:30.00  1:00.00  ±0.00 *');
     w.run.winUnlocks = { blueprint: 'scythe', startWeapon: 'giant_axe' };
     expect(victoryLines(w)).toEqual(expect.arrayContaining(['Unlocked: Scythe', 'New starting weapon: Giant Axe']));
     w.run.seeded = true;

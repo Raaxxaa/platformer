@@ -31,7 +31,7 @@
    "x": 19,
    "y": 161,
    "props": {
-    "enemy": "ram",
+    "enemy": "bat_swarm",
     "facing": -1
    }
   },
@@ -49,7 +49,7 @@
    "x": 37,
    "y": 163,
    "props": {
-    "enemy": "ram",
+    "enemy": "bat_swarm",
     "facing": -1
    }
   },

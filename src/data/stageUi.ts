@@ -11,7 +11,7 @@ export const STAGE_UI = {
   splitSeconds: 3,
   // 07 §4.11 timer block, §4.12 boss bar (bottom center), §6.9 alert line for splits.
   doorInfoRange: 640, doorInfoBadS: 5,
-  timer: [632, 8], segment: [632, 27], info: [632, 38], alert: [320, 10],
+  timer: [632, 8], segment: [632, 27], info: [632, 38], assist: [632, 49], alert: [320, 10],
   alertLineY: 28, alertMaxWidth: 248, alertGap: 4,
   bossName: [160, 321], bossTitleRight: 480, bossHp: [160, 332, 320, 10], bossPoise: [160, 343, 320, 4],
   overviewAbove: 18, overviewBelow: 4,      // tiles above / below the main path in a section overview
@@ -46,7 +46,7 @@ export const ABILITY_FX = {
 /** 07 §4.1 top-left HUD layout and §4.2–4.6 timings (seconds). */
 export const TOP_HUD = {
   status: { x: 184, y: 22, size: 8, step: 10, poisonStep: 16, stackDx: 9, order: ['burning', 'poisoned', 'chilled', 'rooted'] },
-  plate: [4, 4, 196, 48], plateBottom: [4, 280, 128, 76],
+  plate: [4, 4, 216, 48], plateBottom: [4, 280, 128, 76],
   heart: [8, 9], heartSize: 10, hpFrame: [20, 8, 160, 12], hpText: [184, 10],
   rushX: [8, 58, 108], rushY: 22, rushW: 48, rushH: 6,
   flaskIcon: [8, 30], flaskStep: 12, flaskIconSize: [10, 12], flaskBar: [8, 46, 46, 4],

@@ -10,19 +10,19 @@
  "objects": [
   {
    "type": "enemy",
-   "x": 7,
-   "y": 137,
+   "x": 3,
+   "y": 163,
    "props": {
-    "enemy": "bat_swarm",
-    "facing": -1
+    "enemy": "ram",
+    "facing": 1
    }
   },
   {
    "type": "enemy",
-   "x": 7,
-   "y": 113,
+   "x": 20,
+   "y": 91,
    "props": {
-    "enemy": "bat_swarm",
+    "enemy": "ram",
     "facing": -1
    }
   },
@@ -44,9 +44,7 @@
    "y": 140,
    "w": 4,
    "h": 12,
-   "props": {
-    "interval": 2
-   }
+   "props": {}
   },
   {
    "type": "falling_rocks",
@@ -54,9 +52,7 @@
    "y": 116,
    "w": 4,
    "h": 12,
-   "props": {
-    "interval": 2
-   }
+   "props": {}
   },
   {
    "type": "falling_rocks",
@@ -64,9 +60,7 @@
    "y": 92,
    "w": 4,
    "h": 12,
-   "props": {
-    "interval": 2
-   }
+   "props": {}
   },
   {
    "type": "guide_arrow",

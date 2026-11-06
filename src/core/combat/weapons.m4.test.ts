@@ -26,10 +26,10 @@ function tap(w: GameWorld, spec: InputSpec, wait: number): WorldEvent[] {
 }
 
 describe('player projectiles (02 §9.8, §10.4)', () => {
-  it('spawn at +12, −18 from the feet; fly at their speed; vanish at their range; track distance', () => {
+  it('spawn at +12, −10 from the feet; fly at their speed; vanish at their range; track distance', () => {
     const w = setup('bow');
     const p = firePlayerProjectile(w, 0, 99, 'arrow', 0)!;
-    expect([p.x, p.y]).toEqual([w.body.x + 12, w.body.y - 18]);
+    expect([p.x, p.y]).toEqual([w.body.x + 12, w.body.y - 10]);
     run(w, {}, 10);
     expect(p.traveled).toBeCloseTo(50);
     run(w, {}, 53);
@@ -173,8 +173,8 @@ describe('Storm Hammer throw (02 §11, checklist 25–26)', () => {
     run(w, {}, 120);                                        // caught well before 1.0 s
     expect(w.hammer).toBeNull();
     run(w, { moveY: -1, attack1: true }, 1);
-    expect(w.hammer).toBeNull();                            // swing instead
-    expect(w.combat.current?.kind).toBe('combo');
+    expect(w.hammer).toBeNull();                            // not ready: the Launcher instead (02 §9.6a, M15)
+    expect(w.combat.current?.kind).toBe('launcher');
     const v = setup('storm_hammer', [], 'thunder_strike');
     run(v, { moveY: -1, attack1: true }, 1);
     run(v, {}, 252);                                        // launch at +12 ticks; 2.0 s later the throw is ready

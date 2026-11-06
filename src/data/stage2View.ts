@@ -8,6 +8,8 @@ export const STAGE2_VIEW = {
   grapple: { size: 16, width: 2, color: 0x9c9fa8 },
   marker: { height: 4, color: 0xff8a1f, go: 0xfff4c8, minAlpha: 0.4, maxAlpha: 0.8, hz: 4, solidLast: 0.15 },
   rockMarkerWidth: 16,
+  /** M17 (06 §10): the rock warning grows from 25% to full width, with dust trickling from the zone top. */
+  rockWarn: { minFrac: 0.25, dust: 3, dustSize: 2, dustColor: 0xc8b89a, dustSpeed: 90 },
   firefly: { size: 2, color: 0xe6ffff },
   puddle: { color: 0x85888f, alpha: 0.7 },
   ward: { extra: 6, color: 0x9c9fa8, alpha: 0.6, lineWidth: 2 },

@@ -1,5 +1,16 @@
 // M3 stage scene: loads public/levels/<id>.json and plays it, with doors, loot markers, hints, the boss bar,
 // the run timer, the split popup and the temporary stage-clear screen.
+import { afterDailyFinish } from '../online/onlineUi.ts';
+import { DailyStandingView } from '../../ui/screens/leaderboard.ts';
+import { TWIST_NAME, TWIST_TEXT } from '../../data/twists.ts';
+import { applyBossRushBest, bossDown, bossRushHp, BOSS_RUSH, newBossRush } from '../../core/run/bossRush.ts';
+import { setupBossRushFight } from '../../core/run/bossRushWorld.ts';
+import { BossRushResultView } from '../../ui/screens/bossRush.ts';
+import { DRAGON_ROLL } from '../../data/run.ts';
+import { dailyShareFor } from '../../core/run/daily.ts';
+import { shareText, lastShared } from '../../ui/share.ts';
+import { isAssisted } from '../../core/run/runState.ts';
+import { hurtPlayer } from '../../core/combat/health.ts';
 import Phaser from 'phaser';
 import { killEnemy } from '../../core/combat/resolve.ts';
 import { loadLevel, type LevelData } from '../../core/level/loadLevel.ts';
@@ -8,7 +19,7 @@ import { timedDoorTimeLeft } from '../../core/run/timedDoors.ts';
 import { GameWorld } from '../../core/sim/gameWorld.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
-import { DoorViews, drawGuideArrows } from '../view/levelView.ts';
+import { DoorViews, drawCaveDecor, drawGuideArrows } from '../view/levelView.ts';
 import { YardView } from '../view/yardView.ts';
 import { STAGE_UI } from '../../data/stageUi.ts';
 import { HUD_COLOR, UI_COLOR } from '../../data/uiText.ts';
@@ -23,7 +34,9 @@ import { parseKit } from '../../ui/popups/classPickModel.ts';
 import { CLASS_IDS } from '../../data/classes.ts';
 import { LEVEL_FILE, LEVEL_PACKS } from '../../data/run.ts';
 import type { LevelPack } from '../../core/level/assemble.ts';
-import { layoutCode, parseLayoutCode } from '../../core/run/layout.ts';
+import { layoutCode, layoutCodeFull, parseLayoutCode, rollVariety } from '../../core/run/layout.ts';
+import { fnv1a32 } from '../../core/rng.ts';
+import type { StageLevelId } from '../../data/levelRules.ts';
 import { DRAGON_NAME } from '../../data/dragon.ts';
 import { debugSeed, randomSeed } from '../seed.ts';
 import { captureWorld, type WorldCarry } from '../../core/run/session.ts';
@@ -45,12 +58,14 @@ import { VICTORY_UI, victoryData } from '../../ui/screens/victory.ts';
 import { cancelRoad, chooseRoad } from '../../core/run/roads.ts';
 import { beginTransition } from '../../core/run/phases.ts';
 import { TimerBlock } from '../../ui/hud/timerBlock.ts';
+import { shiftGroup } from '../../ui/hud/hudGroups.ts';
+import { offsetOf } from '../../ui/model/hudLayout.ts';
 import { SAVE_RULES } from '../../data/save.ts';
 import { dropBlueprint } from '../../core/loot/blueprintItems.ts';
 import type { BlueprintId } from '../../core/loot/blueprints.ts';
 import { abilityPool, weaponPool } from '../../core/loot/roll.ts';
 import { MenuScreens } from '../menuScreens.ts';
-import { DeathView } from '../../ui/screens/death.ts';
+import { shouldOfferAssist, DeathView } from '../../ui/screens/death.ts';
 import { getUiSettings } from '../../ui/inputSettings.ts';
 import type { HomePanelAction } from '../../ui/home/homePanels.ts';
 import { FRONT_UI } from '../../data/frontUi.ts';
@@ -102,6 +117,10 @@ export class StageScene extends WorldScene {
   /** Practice mode (06 §14): the setup, the result screen, and the ghost being recorded and played. */
   private practice: PracticeSetup | null = null;
   private practiceResult: PracticeResultView | null = null;
+  /** 06 §14.2 (M15) boss rush: the result screen, and the fade to the next fight (ms left). */
+  private rushResult: BossRushResultView | null = null;
+  private rushFadeAt = -1;
+  private rushNext: string | null = null;
   private practiceAt = -1;
   private ghostView: GhostView | null = null;
   private readonly recorder = new GhostRecorder();
@@ -115,7 +134,7 @@ export class StageScene extends WorldScene {
   /** The level the start screen chose (else the URL decides). */
   private chosen: string | null = null;
   init(data?: { level?: string; carry?: WorldCarry; titleFade?: boolean; practice?: PracticeSetup }): void {
-    this.chosen = data?.level ?? null; this.practice = data?.practice ?? null; this.practiceResult = null; this.practiceAt = -1; this.ghostView = null; this.recorder.reset(); this.lastWorldTick = 0;
+    this.chosen = data?.level ?? null; if (this.chosen === 'home') { gameSession.daily = null; gameSession.bossRush = null; } this.rushResult = null; this.rushFadeAt = -1; this.rushNext = null; this.practice = data?.practice ?? null; this.practiceResult = null; this.practiceAt = -1; this.ghostView = null; this.recorder.reset(); this.lastWorldTick = 0;
     this.deathView = null; this.deathCause = 'hazard'; this.titleFadeLeft = data?.titleFade ? FRONT_UI.title.fadeSeconds : 0;
     this.carry = data?.carry; this.leaving = false; this.yard = null; this.homePanel = null; this.wardrobe = null; this.introChecked = false; this.villageView = null; this.shopView = null; this.routeChoice = null; this.runSoFar = null; this.victory = null; this.victoryAt = -1; this.labels = []; this.doorText.clear();
   }
@@ -149,12 +168,13 @@ export class StageScene extends WorldScene {
       const p = this.level.objects.find((o) => o.type === 'main_path')?.points?.find((v) => sectionAt(this.level, v.x, v.y) === section);
       if (p) w.teleportPlayer(p.x, Math.floor(p.y / 16) * 16 + 16);
     }
+    if (w.opts.bossRush && gameSession.bossRush) setupBossRushFight(w, gameSession.bossRush, bossRushHp());
     return w;
   }
 
   protected createExtra(): void {
     this.menus = new MenuScreens(this, () => this.clearMenuInput(), () => { this.devices.setEnabled(false); this.clearMenuInput(); }, () => gameSession.refreshRecords(this.world));
-    this.events.once('shutdown', () => { this.deathView?.destroy(); this.deathView = null; });
+    this.events.once('shutdown', () => { this.deathView?.destroy(); this.deathView = null; this.rushResult?.destroy(); this.rushResult = null; this.standing?.destroy(); this.standing = null; });
     const U = STAGE_UI;
     const { width, height } = this.scale;
     this.props = this.add.graphics().setDepth(DEPTH.terrain + 5);
@@ -164,7 +184,7 @@ export class StageScene extends WorldScene {
         .setOrigin(0.5).setDepth(DEPTH.terrain + 6));
     }
     this.doorViews = new DoorViews(this);
-    drawGuideArrows(this, this.level.objects);
+    drawGuideArrows(this, this.level.objects); drawCaveDecor(this, this.level.objects);
     this.hintText = this.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH.hud);
     this.timerBlock = new TimerBlock(this);
     this.bossBarGfx = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.hud);
@@ -182,6 +202,9 @@ export class StageScene extends WorldScene {
     this.installStageDebug();
     const kitNotice = gameSession.takeKitNotice();
     if (kitNotice) this.abilityHud.toast(kitNotice, UI_COLOR.highlight, this.time.now, SAVE_RULES.warningSeconds);
+    // 06 §14.1 (M18): the run start banner names the twist.
+    const tw = this.world.run.twist;
+    if (tw && tw !== 'classic' && !this.carry && this.level.kind === 'stage') this.abilityHud.toast(`Twist: ${TWIST_NAME[tw]} — ${TWIST_TEXT[tw]}`, UI_COLOR.highlight, this.time.now, SAVE_RULES.warningSeconds);
     // Before the run, pick a class and weapon (M4 plan Task 13). `?kit=archer:bow` skips the panel; debug runs keep
     // the M2 loadout unless a kit is given.
     const q = new URLSearchParams(window.location.search);
@@ -197,6 +220,8 @@ export class StageScene extends WorldScene {
     api.runState = () => structuredClone(this.world.run);
     api.confirmStatPick = (index?: number) => this.chooseStat(index);
     api.completeLoading = () => this.world.completeLoading();
+    api.bossRush = () => gameSession.bossRush ? structuredClone(gameSession.bossRush) : null;
+    api.rushResultOpen = () => !!this.rushResult;
     api.killAll = () => { for (const e of this.world.enemies) if (!e.dead && !e.dormant && e.spawnInTicks === 0) killEnemy(this.world, e); };
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.setEnemyHp = (id: number, hp: number) => { const e = this.world.enemies.find((x) => x.id === id); if (e) { e.hp = hp; if (hp <= 0) killEnemy(this.world, e); } };
@@ -205,9 +230,15 @@ export class StageScene extends WorldScene {
     api.layoutCode = () => layoutCode(this.world.opts.layout ?? []);
     api.save = () => structuredClone(saveStore().data);
     api.appliedSettings = () => structuredClone(getUiSettings());
-    api.screenState = () => this.menus.active ? this.menus.snapshot() : this.practiceResult ? { screen: 'practiceResult', model: { cursor: this.practiceResult.model.cursor, canConfirm: this.practiceResult.model.canConfirm } } : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
-    api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else if (this.practiceResult) this.practiceResult.action(action); else this.deathView?.action(action); };
+    api.screenState = () => this.menus.active ? this.menus.snapshot() : this.practiceResult ? { screen: 'practiceResult', model: { cursor: this.practiceResult.model.cursor, canConfirm: this.practiceResult.model.canConfirm } } : this.rushResult ? { screen: 'bossRushResult', model: { cursor: this.rushResult.model.cursor, canConfirm: this.rushResult.model.canConfirm } } : this.deathView ? { screen: 'death', model: { cursor: this.deathView.model.cursor, guardLeft: this.deathView.model.guardLeft, canConfirm: this.deathView.model.canConfirm } } : { screen: null, model: null };
+    api.screenAction = (action: HomePanelAction) => { if (this.menus.active) this.menus.action(action); else if (this.practiceResult) this.practiceResult.action(action); else if (this.rushResult) this.rushResult.action(action); else if (this.standing) this.standing.action(action); else this.deathView?.action(action); };
     api.timerBlock = () => this.timerBlock.snapshot();
+    api.hurtPlayer = (damageA: number) => {
+      const w = this.world, all = w.events, n = all.length;
+      const dealt = hurtPlayer(w, { kind: 'enemyHit', enemyId: 0, enemyDefId: 'bandit', damageA, attackerCx: w.body.x + 40, melee: true });
+      if (all.length > n) { w.events = all.slice(n); gameSession.events(w); w.events = all; }   // debug-only: save what this hit caused (a death)
+      return dealt;
+    };
     api.practice = () => this.practice ? { setup: { ...this.practice }, clear: this.world.practiceClear ? { ...this.world.practiceClear } : null, resultOpen: !!this.practiceResult,
       ghost: { loaded: this.ghostView?.samples?.length ?? 0, shown: this.ghostView?.shown ?? false, recorded: this.recorder.samples.length }, dragon: { ...this.world.run.dragon } } : null;
     api.dropBlueprint = (id: BlueprintId) => dropBlueprint(this.world, id, this.world.body.x, this.world.body.y);
@@ -217,6 +248,7 @@ export class StageScene extends WorldScene {
     api.routeChoice = () => this.routeChoice ? { cursor: this.routeChoice.model.cursor, road: this.routeChoice.model.road } : null;
     api.routeAction = (action: Parameters<RouteChoiceView['action']>[0]) => this.routeChoice?.action(action);
     api.summaryAction = (action: Parameters<RunSoFarView['action']>[0]) => (this.runSoFar ?? this.victory)?.action(action);
+    api.lastShared = () => lastShared; api.deathRows = () => this.deathView ? [...this.deathView.model.rows] : null;
     api.victory = () => this.victory ? { lines: this.victory.model.lines, cursor: this.victory.model.cursor } : null;
     api.restartRun = () => this.world.restart();
     api.enemyDraw = (id: number) => this.enemyDrawMode(id);
@@ -278,6 +310,7 @@ export class StageScene extends WorldScene {
     return PauseView.info(this.world.run.stage || Math.max(1, this.world.run.splits.filter((s) => s !== null).length), this.world.run.runTicks, this.world.run.seeded ? this.world.run.seedText : null);
   }
   protected pauseMenuCovered(): boolean { return !!this.menus?.active; }
+  protected override hudEditorOpen(): boolean { return this.menus?.snapshot().screen === 'hudLayout'; }
   protected freezesExtraMenuWorld(): boolean { return this.titleFadeLeft > 0 || this.menus?.snapshot().screen === 'records'; }
   protected onPauseSettings(): void { this.menus.openSettings(); this.clearMenuInput(); }
   /** Quitting, or leaving the Training Yard: back to the start screen (M4.1 Task 2). */
@@ -297,9 +330,9 @@ export class StageScene extends WorldScene {
     saveStore().update((s) => { s.lastKit = { ...kit }; });
     if (first && this.level.id === 'home') this.openHomePanel('training');
   }
-  protected override touchControlsOn(): boolean { return super.touchControlsOn() && !this.deathView && !this.practiceResult; }
+  protected override touchControlsOn(): boolean { return super.touchControlsOn() && !this.deathView && !this.practiceResult && !this.rushResult; }
   protected override deathOpen(): boolean { return !!this.deathView; }
-  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.wardrobe?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.menus?.active || this.titleFadeLeft > 0; }
+  protected extraMenuOpen(): boolean { return !!this.homePanel?.active || !!this.wardrobe?.active || !!this.routeChoice || !!this.runSoFar || !!this.victory || !!this.practiceResult || !!this.rushResult || !!this.standing || !!this.menus?.active || this.titleFadeLeft > 0; }
   private requestHome(): void {
     gameSession.endRun(this.world, 'quit');
     this.runSoFar?.destroy(); this.runSoFar = null; this.victory?.destroy(); this.victory = null;
@@ -313,12 +346,13 @@ export class StageScene extends WorldScene {
         onConfirm: (road) => { if (chooseRoad(w, road)) saveStore().update((s) => { s.lastRoad = road; }); this.routeChoice?.destroy(); this.routeChoice = null; this.clearMenuInput(); },
         onCancel: () => { cancelRoad(w); this.routeChoice?.destroy(); this.routeChoice = null; this.clearMenuInput(); },
       });
-    if (w.run.phase !== 'runComplete') { this.victory?.destroy(); this.victory = null; this.victoryAt = -1; }
+    if (w.run.phase !== 'runComplete' || w.opts.bossRush) { this.victory?.destroy(); this.victory = null; this.victoryAt = -1; }
     else if (!this.victory) {                                   // the King's 1.5 s death animation plays first, then the summary opens (06 §2.6)
       this.victoryAt = this.victoryAt < 0 ? this.time.now : this.victoryAt;
       if (this.time.now - this.victoryAt >= VICTORY_UI.deathAnimSeconds * 1000) {
-        this.victory = new RunSoFarView(this, victoryData(w), { onRestart: () => { this.victory?.destroy(); this.victory = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
+        this.victory = new RunSoFarView(this, { ...victoryData(w), share: dailyShareFor(saveStore().data.daily, w.run, 'complete', isAssisted(w.run)) ?? undefined }, { onShare: (t) => { void shareText(t); }, onRestart: () => { this.victory?.destroy(); this.victory = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
         this.victory.setEnabled(false);                         // inputs are ignored for the first 1.0 s (07 §7.11)
+        this.showDailyStanding(w);
       }
     }
     if (this.victory && this.time.now - this.victoryAt >= (VICTORY_UI.deathAnimSeconds + VICTORY_UI.inputLockSeconds) * 1000 && !this.pause) this.victory.setEnabled(true);
@@ -405,7 +439,64 @@ export class StageScene extends WorldScene {
     this.runSoFar?.update(delta / 1000);
     this.victory?.update(delta / 1000);
     this.practiceResult?.setEnabled(!this.pause); this.practiceResult?.update(delta / 1000);
+    this.rushResult?.setEnabled(!this.pause); this.rushResult?.update(delta / 1000);
+    this.standing?.update(delta / 1000);
+    if (this.standing) this.victory?.setEnabled(false);
     super.update(time, delta);
+  }
+  /** 06 §14.2: a boss down → split, 1.0 s fade (not timed), the next arena; the last one or a death → the result screen. */
+  private syncBossRush(): void {
+    const w = this.world, a = gameSession.bossRush;
+    if (!a || this.leaving) return;
+    if (w.bossRushRestart) { w.bossRushRestart = false; this.startBossRush(); return; }
+    if (this.rushNext) {
+      const t = Math.min(1, (this.time.now - this.rushFadeAt) / (BOSS_RUSH.fadeSeconds * 1000));
+      this.fade.setVisible(true).setAlpha(t);
+      if (t >= 1) { this.leaving = true; if (window.__game) window.__game.ready = false; this.scene.start('Stage', { level: this.rushNext }); }
+      return;
+    }
+    if (this.rushResult) return;
+    a.assist ||= isAssisted(w.run);
+    const fight = a.fights[a.index];
+    for (const { e } of this.frameEvents) {
+      if (e.t !== 'bossDefeated' || e.bossId !== fight.boss) continue;
+      // Time runs from the arena lock (the first tick of control in it) to the boss's death tick.
+      const id = w.level?.objects.find((o) => o.type === 'arena' && o.props.kind === fight.arena)?.props.id;
+      const lock = id === undefined ? -1 : w.run.arenas[String(id)]?.lockTick ?? -1;
+      const ticks = w.tick - Math.max(0, lock);
+      if (bossDown(a, ticks, w.health.hp, w.health.maxHp)) {
+        let isNew = false;
+        saveStore().update((s) => { isNew = applyBossRushBest(s.bossRushBests, a); });
+        this.openRushResult(isNew);
+      } else { this.rushNext = a.fights[a.index].levelId; this.rushFadeAt = this.time.now; }
+      return;
+    }
+    if (w.health.dead) this.openRushResult(false);
+  }
+  /** 06 §14.3: an official daily that finished is sent once; its standing shows over the result until closed. */
+  private standing: DailyStandingView | null = null;
+  private showDailyStanding(w: GameWorld): void {
+    const day = w.run.daily, kit = w.run.startKit; if (!day || !kit) return;
+    const off = saveStore().data.daily[day]?.official;
+    if (!off || off.result !== 'complete' || off.ticks !== w.run.runTicks) return;      // only the official attempt
+    void afterDailyFinish(day, kit, off.ticks, off.assist).then((r) => {
+      if (!r || this.leaving || !this.victory) return;
+      this.standing = new DailyStandingView(this, r.line, r.rows, r.me, () => { this.standing = null; this.clearMenuInput(); });
+    });
+  }
+  private openRushResult(isNew: boolean): void {
+    const a = gameSession.bossRush!;
+    this.rushResult = new BossRushResultView(this, a, isNew, (command) => {
+      this.rushResult?.destroy(); this.rushResult = null; this.clearMenuInput();
+      if (command === 'retry') this.startBossRush();
+      else { gameSession.bossRush = null; this.leaving = true; this.scene.start('Title', command === 'setup' ? { bossRush: true } : undefined); }
+    });
+  }
+  private startBossRush(): void {
+    const s = gameSession.bossRushSetup; if (!s) return;
+    gameSession.bossRush = newBossRush(s.cls, s.weapon, s.dragon, Math.random(), DRAGON_ROLL.colors);
+    this.leaving = true; if (window.__game) window.__game.ready = false;
+    this.scene.start('Stage', { level: gameSession.bossRush.fights[0].levelId });
   }
   private toTitle(): void {
     gameSession.endRun(this.world, 'quit');
@@ -420,11 +511,15 @@ export class StageScene extends WorldScene {
     const w = this.world, U = STAGE_UI;
     for (const { e } of this.frameEvents) if (e.t === 'playerDied') this.deathCause = e.cause;
     if (this.practice && w.phase === 'deathScreen' && w.run.phase === 'dead') w.restart();      // 06 §14: no death screen in practice
-    const deathVisible = !this.practice && w.phase === 'deathScreen' && (w.run.phase === 'dead' || w.run.phase === 'paused' && w.run.pausedFrom === 'dead');
+    const deathVisible = !this.practice && !w.opts.bossRush && w.phase === 'deathScreen' && (w.run.phase === 'dead' || w.run.phase === 'paused' && w.run.pausedFrom === 'dead');
     if (!deathVisible) { this.deathView?.destroy(); this.deathView = null; }
     if (deathVisible) {
       this.overlay.setVisible(false); this.overlayText.setVisible(false);
-      if (!this.deathView) this.deathView = new DeathView(this, { stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCode(w.opts.layout) : undefined }, (result) => {
+      const offer = !this.deathView && !this.practice && shouldOfferAssist(saveStore().data);
+      if (offer) saveStore().update((s) => { s.progress.assistOffered = true; });
+      if (!this.deathView) this.deathView = new DeathView(this, { assistOffer: offer, stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCodeFull(w.opts.layout, w.opts.layoutForced ? undefined : rollVariety(fnv1a32(w.run.seedText))[this.level.id as StageLevelId]) : undefined,
+        share: dailyShareFor(saveStore().data.daily, w.run, 'death', isAssisted(w.run)) ?? undefined }, (result) => {
+        if (result === 'share') { const t = dailyShareFor(saveStore().data.daily, w.run, 'death', isAssisted(w.run)); if (t) void shareText(t); return; }
         this.deathView?.destroy(); this.deathView = null; this.clearMenuInput();
         if (result === 'restart') w.restart(); else if (result === 'home') this.requestHome(); else this.toTitle();
       });
@@ -438,6 +533,7 @@ export class StageScene extends WorldScene {
       }
     }
     this.syncRunPanels();
+    if (w.opts.bossRush) this.syncBossRush();
     if (this.practice) { this.syncPractice(); this.syncGhost(); }
     this.villageView?.update(w, saveStore().data.typedSeed);
     this.shopView?.update(w, this.frameEvents.some(({ e }) => e.t === 'cantAfford'));
@@ -474,6 +570,7 @@ export class StageScene extends WorldScene {
     this.yard?.update(w);
     if (this.frameEvents.some(({ e }) => e.t === 'leftTraining')) { if (gameSession.trainingReturn === 'home') this.goLevel('home'); else this.toTitle(); return; }
     this.timerBlock.draw(w, saveStore().data.settings.showTimer, !!this.overview, this.frameEvents.map(({ e }) => e));
+    const tm = offsetOf('timer', this.hudLayout().timer); shiftGroup(this.timerBlock.groupObjects(), tm.dx, tm.dy);
     const bar = w.bossBar;
     const bg = this.bossBarGfx.clear();
     if (bar && !this.overview) {

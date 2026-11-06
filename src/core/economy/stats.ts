@@ -1,4 +1,5 @@
 // Run-long stat upgrades (05 §13). Pure core: no storage, clock or device reads.
+import { twistPrice } from '../run/twistFx.ts';
 import { PRICES, STAT_OFFER_COUNT, STAT_UPGRADES, type StatUpgradeId } from '../../data/economy.ts';
 import { BOND } from '../../data/classes.ts';
 import { COMBAT } from '../tuning.ts';
@@ -39,7 +40,7 @@ export function applyStatUpgrade(w: GameWorld, id: StatUpgradeId): boolean {
     // Stock has already been rolled. Reprice that stock without consuming RNG or changing item IDs.
     for (const it of w.groundItems) if (it.price !== undefined) {
       const base = it.weapon ? PRICES.weapon[it.weapon.grade] : PRICES.abilityBuy;
-      it.price = priceOf(base, it.merchantSlot !== undefined, true);
+      it.price = twistPrice(w, priceOf(base, it.merchantSlot !== undefined, true));
     }
   }
   return true;

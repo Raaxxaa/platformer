@@ -28,9 +28,12 @@ describe('Spider Queen venom projectiles (04 §8, §10.3)', () => {
     expect(shots.map((p) => p.vx)).toEqual(speeds);
   });
 
-  it('keeps the shared 260px/s arc clamp at long range', () => {
-    const w = world(); w.body.x = 900;
-    expect(spawnVenomSpit(w, w.enemies[0]).every((p) => p.vx === 260)).toBe(true);
+  it('M14: the glob has its own 420 px/s cap: a target 300 px away is reached, a very far one is clamped', () => {
+    const w = world(); w.body.x = 400 + 7 + 300;                       // 300 px from the mouth (x 407)
+    const mid = spawnVenomSpit(w, w.enemies[0])[1];
+    expect(Math.abs(mid.x + mid.vx * 0.8 - w.body.x)).toBeLessThanOrEqual(4);
+    const far = world(); far.body.x = 1200;
+    expect(spawnVenomSpit(far, far.enemies[0]).every((p) => p.vx === 420)).toBe(true);
   });
 
   it('a player impact deals one Stage2 hit for twenty, applies Poison1, and leaves no ground puddle', () => {

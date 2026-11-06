@@ -16,7 +16,7 @@ import { OUTFIT_ATLAS } from '../../data/cosmetics.ts';
 import { LookRig } from './LookRig.ts';
 import { getLook } from './lookState.ts';
 import { castRt } from '../../core/abilities/abilitySystem.ts';
-import { yardDummyFrame, pickEnemyAnim, pickPlayerAnim, type Lookup, type PlayerAnimState } from './pickAnim.ts';
+import { aimFrameIndex, yardDummyFrame, pickEnemyAnim, pickPlayerAnim, type Lookup, type PlayerAnimState } from './pickAnim.ts';
 
 /** The special pose an enemy's own state asks for (ART8): Bulwark, stone, wake, collapse, pile, rise, ward channel. */
 export function enemySpecial(e: EnemyState): { key: string; progress?: number } | null {
@@ -224,6 +224,17 @@ export class EnemySprite {
     const jiggle = frozen ? (worldTick % 2 === 0 ? 1 : -1) : 0;      // hit-stop jiggle (08 §5.3)
     const spawn = e.spawnInTicks > 0 ? 1 - e.spawnInTicks / ENEMY.SPAWN_IN_TICKS : 1;
     for (const s of [this.sprite, this.overlay]) feet(s.setTexture(def.atlas, def.frames[frame])).setPosition(e.x + jiggle, e.y).setFlipX(flip);
+    // Art note 20 (M14): the Crossbowman's aim pose follows the aim angle while it aims (5 steps, up to down).
+    const aim = e.def.id === 'crossbowman' && e.ai.attack?.def.id === 'bolt' && e.ai.attack.phase === 'tele' ? e.kingdom?.aim : null;
+    if (aim) {
+      const f = `crossbowman_aim_0${aimFrameIndex(aim.y - (e.y - e.def.hurtbox.h * 0.6), Math.abs(aim.x - e.x))}`;
+      if (this.sprite.texture.has(f)) for (const s of [this.sprite, this.overlay]) feet(s.setFrame(f));
+    }
+    // Art note 22 (M14): the Dragon's Wing Hop pose while it hops (rising, then falling).
+    if (e.dragon?.hopping) {
+      const f = `wing_hop_0${e.vy < 0 ? 0 : 1}`;
+      if (this.sprite.texture.has(f)) for (const s of [this.sprite, this.overlay]) feet(s.setFrame(f));
+    }
     this.sprite.setVisible(true).setAlpha(alpha * spawn);
     this.updateOverlay(worldTick, alpha);
     // Stun stars orbit the head while dazed or broken (08 §11).

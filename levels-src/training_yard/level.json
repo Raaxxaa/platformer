@@ -3,7 +3,7 @@
  "kind": "training",
  "stage": 0,
  "biome": "plains",
- "width": 514,
+ "width": 552,
  "height": 40,
  "chunks": [
   {
@@ -29,6 +29,11 @@
   "t": {
    "type": "enemy",
    "enemy": "straw_target",
+   "facing": -1
+  },
+  "j": {
+   "type": "enemy",
+   "enemy": "juggle_target",
    "facing": -1
   },
   "B": {
@@ -693,8 +698,84 @@
    }
   },
   {
+   "type": "station",
+   "x": 331,
+   "y": 4,
+   "w": 17,
+   "h": 35,
+   "props": {
+    "id": 18,
+    "check": "juggle"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 332,
+   "y": 33,
+   "props": {
+    "station": 18
+   }
+  },
+  {
+   "type": "hint",
+   "x": 331,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "\u2191 + Attack \u2014 launch, then jump and keep hitting",
+    "station": 18
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 346,
+   "y": 33,
+   "props": {
+    "station": 18
+   }
+  },
+  {
+   "type": "station",
+   "x": 348,
+   "y": 4,
+   "w": 21,
+   "h": 35,
+   "props": {
+    "id": 19,
+    "check": "dashAttack"
+   }
+  },
+  {
+   "type": "checkpoint",
+   "x": 349,
+   "y": 33,
+   "props": {
+    "station": 19
+   }
+  },
+  {
+   "type": "hint",
+   "x": 348,
+   "y": 26,
+   "w": 8,
+   "h": 8,
+   "props": {
+    "text": "Attack during a dash \u2014 Rushing Strike",
+    "station": 19
+   }
+  },
+  {
+   "type": "station_flag",
+   "x": 367,
+   "y": 33,
+   "props": {
+    "station": 19
+   }
+  },
+  {
    "type": "respawn",
-   "x": 341,
+   "x": 379,
    "y": 35,
    "w": 8,
    "h": 2,
@@ -702,7 +783,7 @@
   },
   {
    "type": "station",
-   "x": 331,
+   "x": 369,
    "y": 4,
    "w": 27,
    "h": 35,
@@ -713,7 +794,7 @@
   },
   {
    "type": "checkpoint",
-   "x": 332,
+   "x": 370,
    "y": 33,
    "props": {
     "station": 15
@@ -721,7 +802,7 @@
   },
   {
    "type": "hint",
-   "x": 331,
+   "x": 369,
    "y": 26,
    "w": 8,
    "h": 8,
@@ -732,7 +813,7 @@
   },
   {
    "type": "station_goal",
-   "x": 349,
+   "x": 387,
    "y": 30,
    "w": 4,
    "h": 4,
@@ -742,7 +823,7 @@
   },
   {
    "type": "station_flag",
-   "x": 356,
+   "x": 394,
    "y": 33,
    "props": {
     "station": 15
@@ -750,7 +831,7 @@
   },
   {
    "type": "respawn",
-   "x": 369,
+   "x": 407,
    "y": 35,
    "w": 6,
    "h": 2,
@@ -758,7 +839,7 @@
   },
   {
    "type": "station",
-   "x": 358,
+   "x": 396,
    "y": 4,
    "w": 31,
    "h": 35,
@@ -769,7 +850,7 @@
   },
   {
    "type": "checkpoint",
-   "x": 359,
+   "x": 397,
    "y": 33,
    "props": {
     "station": 16
@@ -777,7 +858,7 @@
   },
   {
    "type": "hint",
-   "x": 358,
+   "x": 396,
    "y": 26,
    "w": 8,
    "h": 8,
@@ -788,7 +869,7 @@
   },
   {
    "type": "station_goal",
-   "x": 375,
+   "x": 413,
    "y": 30,
    "w": 4,
    "h": 4,
@@ -798,7 +879,7 @@
   },
   {
    "type": "station_flag",
-   "x": 387,
+   "x": 425,
    "y": 33,
    "props": {
     "station": 16
@@ -806,7 +887,7 @@
   },
   {
    "type": "respawn",
-   "x": 394,
+   "x": 432,
    "y": 36,
    "w": 20,
    "h": 2,
@@ -814,7 +895,7 @@
   },
   {
    "type": "station",
-   "x": 389,
+   "x": 427,
    "y": 4,
    "w": 33,
    "h": 35,
@@ -825,7 +906,7 @@
   },
   {
    "type": "checkpoint",
-   "x": 390,
+   "x": 428,
    "y": 33,
    "props": {
     "station": 17
@@ -833,7 +914,7 @@
   },
   {
    "type": "hint",
-   "x": 389,
+   "x": 427,
    "y": 26,
    "w": 8,
    "h": 8,
@@ -844,7 +925,7 @@
   },
   {
    "type": "station_goal",
-   "x": 414,
+   "x": 452,
    "y": 30,
    "w": 4,
    "h": 4,
@@ -854,7 +935,7 @@
   },
   {
    "type": "station_flag",
-   "x": 420,
+   "x": 458,
    "y": 33,
    "props": {
     "station": 17
@@ -862,7 +943,7 @@
   },
   {
    "type": "hint",
-   "x": 422,
+   "x": 460,
    "y": 26,
    "w": 8,
    "h": 8,
@@ -872,13 +953,13 @@
   },
   {
    "type": "lucky_block",
-   "x": 427,
+   "x": 465,
    "y": 30,
    "props": {}
   },
   {
    "type": "hint",
-   "x": 432,
+   "x": 470,
    "y": 26,
    "w": 8,
    "h": 8,
@@ -888,19 +969,19 @@
   },
   {
    "type": "key",
-   "x": 434,
+   "x": 472,
    "y": 33,
    "props": {}
   },
   {
    "type": "key_chest",
-   "x": 441,
+   "x": 479,
    "y": 33,
    "props": {}
   },
   {
    "type": "armory_label",
-   "x": 456,
+   "x": 494,
    "y": 30,
    "props": {
     "cls": "swordsman"
@@ -908,7 +989,7 @@
   },
   {
    "type": "item_stand",
-   "x": 455,
+   "x": 493,
    "y": 33,
    "props": {
     "weapon": "greatsword",
@@ -917,7 +998,7 @@
   },
   {
    "type": "item_stand",
-   "x": 457,
+   "x": 495,
    "y": 33,
    "props": {
     "weapon": "katana",
@@ -926,7 +1007,7 @@
   },
   {
    "type": "item_stand",
-   "x": 459,
+   "x": 497,
    "y": 33,
    "props": {
     "ability": "blade_dash",
@@ -935,7 +1016,7 @@
   },
   {
    "type": "item_stand",
-   "x": 461,
+   "x": 499,
    "y": 33,
    "props": {
     "ability": "whirlwind",
@@ -944,7 +1025,7 @@
   },
   {
    "type": "armory_label",
-   "x": 467,
+   "x": 505,
    "y": 30,
    "props": {
     "cls": "tank"
@@ -952,7 +1033,7 @@
   },
   {
    "type": "item_stand",
-   "x": 466,
+   "x": 504,
    "y": 33,
    "props": {
     "weapon": "war_maul",
@@ -961,7 +1042,7 @@
   },
   {
    "type": "item_stand",
-   "x": 468,
+   "x": 506,
    "y": 33,
    "props": {
     "weapon": "iron_fists",
@@ -970,7 +1051,7 @@
   },
   {
    "type": "item_stand",
-   "x": 470,
+   "x": 508,
    "y": 33,
    "props": {
     "ability": "shockwave",
@@ -979,7 +1060,7 @@
   },
   {
    "type": "item_stand",
-   "x": 472,
+   "x": 510,
    "y": 33,
    "props": {
     "ability": "shoulder_charge",
@@ -988,7 +1069,7 @@
   },
   {
    "type": "armory_label",
-   "x": 478,
+   "x": 516,
    "y": 30,
    "props": {
     "cls": "archer"
@@ -996,7 +1077,7 @@
   },
   {
    "type": "item_stand",
-   "x": 477,
+   "x": 515,
    "y": 33,
    "props": {
     "weapon": "bow",
@@ -1005,7 +1086,7 @@
   },
   {
    "type": "item_stand",
-   "x": 479,
+   "x": 517,
    "y": 33,
    "props": {
     "weapon": "crossbow",
@@ -1014,7 +1095,7 @@
   },
   {
    "type": "item_stand",
-   "x": 481,
+   "x": 519,
    "y": 33,
    "props": {
     "ability": "arrow_rain",
@@ -1023,7 +1104,7 @@
   },
   {
    "type": "item_stand",
-   "x": 483,
+   "x": 521,
    "y": 33,
    "props": {
     "ability": "hunters_mark",
@@ -1032,7 +1113,7 @@
   },
   {
    "type": "armory_label",
-   "x": 489,
+   "x": 527,
    "y": 30,
    "props": {
     "cls": "wizard"
@@ -1040,7 +1121,7 @@
   },
   {
    "type": "item_stand",
-   "x": 488,
+   "x": 526,
    "y": 33,
    "props": {
     "weapon": "storm_hammer",
@@ -1049,7 +1130,7 @@
   },
   {
    "type": "item_stand",
-   "x": 490,
+   "x": 528,
    "y": 33,
    "props": {
     "weapon": "staff",
@@ -1058,7 +1139,7 @@
   },
   {
    "type": "item_stand",
-   "x": 492,
+   "x": 530,
    "y": 33,
    "props": {
     "ability": "thunder_strike",
@@ -1067,7 +1148,7 @@
   },
   {
    "type": "item_stand",
-   "x": 494,
+   "x": 532,
    "y": 33,
    "props": {
     "ability": "blink",
@@ -1076,7 +1157,7 @@
   },
   {
    "type": "item_stand",
-   "x": 499,
+   "x": 537,
    "y": 33,
    "props": {
     "ability": "vampire",
@@ -1085,7 +1166,7 @@
   },
   {
    "type": "exit",
-   "x": 513,
+   "x": 551,
    "y": 28,
    "w": 1,
    "h": 6,

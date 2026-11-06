@@ -1,5 +1,6 @@
 // The wandering merchant (05 §12, 06 §11.3): present 40% of stages; 2 cursed-table weapons + 1 ability at ×1.25,
 // and two altars that upgrade the carried abilities at normal prices.
+import { twistPrice } from '../run/twistFx.ts';
 import { dropItem, type GroundItem, type Interactable } from '../abilities/items.ts';
 import { maxCharges } from '../abilities/abilitySystem.ts';
 import type { AbilityId } from '../abilities/types.ts';
@@ -20,7 +21,7 @@ export function priceOf(base: number, merchant: boolean, haggler = false): numbe
   const markup = merchant ? PRICES.merchantMarkupPct : 100, hag = haggler ? PRICES.hagglerPct : 100;
   return 5 * Math.floor((base * markup * hag + 25000) / 50000);
 }
-export const upgradePrice = (w: GameWorld, nextLevel: number): number => priceOf(PRICES.upgradeTo[nextLevel], false, statCount(w, 'haggler') > 0);
+export const upgradePrice = (w: GameWorld, nextLevel: number): number => twistPrice(w, priceOf(PRICES.upgradeTo[nextLevel], false, statCount(w, 'haggler') > 0));
 
 /** Stage load: the presence draw, then the stock (with the abilities carried now). `force` (debug) skips the 40% draw. */
 export function setupMerchant(w: GameWorld, force = false): void {
@@ -39,7 +40,7 @@ export function setupMerchant(w: GameWorld, force = false): void {
   const ab = rollAbility(rng, w.abilities.slots.filter((s) => s).map((s) => s!.id) as AbilityId[], carried, [], w.run.lootUnlocked);
   const stock: Pick<GroundItem, 'weapon' | 'ability'>[] = [{ weapon: a }, { weapon: b }, ab ? { ability: ab } : { weapon: rollWeapon(rng, GRADE_ODDS.cursed[stage], carried, { unlocked: w.run.lootUnlocked }) }];
   stock.forEach((s, i) => {
-    const price = priceOf(s.weapon ? PRICES.weapon[s.weapon.grade] : PRICES.abilityBuy, true, statCount(w, 'haggler') > 0);
+    const price = twistPrice(w, priceOf(s.weapon ? PRICES.weapon[s.weapon.grade] : PRICES.abilityBuy, true, statCount(w, 'haggler') > 0));
     const it = dropItem(w, spot.x + MERCHANT_LAYOUT.items[i], spot.y, { ...s, price, merchantSlot: i });
     it.resting = true;
   });

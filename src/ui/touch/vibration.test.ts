@@ -15,4 +15,7 @@ describe('vibration (07 §8.6)', () => {
     expect(vibrationFor([hit], { ...defaultTouchSettings(), vibration: false }, true)).toBeNull();
     expect(vibrationFor([hit], defaultTouchSettings(), false)).toBeNull();
   });
+  it('8 ms on a parry (M14: the core now emits `parry`)', () => {
+    expect(vibrationFor([{ t: 'parry' }], defaultTouchSettings(), true)).toBe(8);
+  });
 });

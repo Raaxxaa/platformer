@@ -14,7 +14,7 @@ export function timeSlow(w: GameWorld): TimeSlowEntity | undefined {
   return w.abilityEntities.find((e): e is TimeSlowEntity => e.kind === 'time_slow');
 }
 
-// SPEC-GAP: enemy status timers (burn, poison, chill, frozen) are not slowed yet (03 §11.4)
+// 03 §11.4: enemy status timers (burn, poison, chill, frozen) are not slowed (as designed)
 registerAbility('time_slow', {
   start(w, c) {
     w.abilityEntities = w.abilityEntities.filter((e) => e.kind !== 'time_slow');   // recasting restarts it; never stacks

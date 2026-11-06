@@ -4,8 +4,12 @@ describe('title, boot and death screens (07 §7)', () => {
   it('consumes the first gesture and keeps title choices in bounds', () => {
     const m = new TitleModel(); expect(m.action('confirm')).toBeNull(); expect(m.step).toBe(2);
     expect(m.action('confirm')).toBe('play');
-    for (let i = 0; i < 9; i++) m.action('down'); expect(m.cursor).toBe(4); expect(m.action('confirm')).toBe('practice');
+    for (let i = 0; i < 9; i++) m.action('down'); expect(m.cursor).toBe(6); expect(m.action('confirm')).toBe('practice');
     expect(m.action('back')).toBeNull(); expect(m.step).toBe(1);
+  });
+  it('a Daily death adds a Share row (M15)', () => {
+    const m = new DeathModel(true); for (let i = 0; i < 30; i++) m.advance(0.05); for (let i = 0; i < 5; i++) m.action('down');
+    expect(m.rows).toEqual(['Restart', 'Change class', 'Title', 'Share']); expect(m.action('confirm')).toBe('share');
   });
   it('guards death confirms for a quarter second and clamps long UI frames', () => {
     const m = new DeathModel(); expect(m.action('confirm')).toBeNull(); m.advance(9); expect(m.canConfirm).toBe(false);

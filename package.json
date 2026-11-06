@@ -11,14 +11,21 @@
     "preview": "vite preview --port 4173 --strictPort",
     "test:e2e": "npm run build && playwright test",
     "assets": "python3 tools/build_assets.py",
-    "levels": "node scripts/build-levels.mjs"
+    "levels": "node scripts/build-levels.mjs",
+    "build:app": "tsc --noEmit && vite build",
+    "app:ios": "npm run build:app && npx cap sync ios && python3 scripts/ios_setup.py && npx cap open ios"
   },
-  "dependencies": { "phaser": "4.2.1" },
+  "dependencies": {
+    "@capacitor/core": "^8.6.0",
+    "phaser": "4.2.1"
+  },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/ios": "^8.6.0",
+    "@playwright/test": "1.56.1",
+    "@types/node": "^22.20.5",
     "typescript": "~6.0.3",
     "vite": "^8.3.4",
-    "vitest": "^5.0.5",
-    "@playwright/test": "1.56.1",
-    "@types/node": "^22.20.5"
+    "vitest": "^5.0.5"
   }
 }

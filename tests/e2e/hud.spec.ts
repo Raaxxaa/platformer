@@ -1,85 +1,35 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// M4.1: the full HUD, the item card, the pause tabs and the start screen.
-async function boot(page: Page, query: string) {
-  const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(`/?debug=1&seed=PLAINS${query}`);
-  await page.waitForFunction(() => (window as any).__game?.ready === true);
-  return errors;
-}
+// M17 Task 5 (07 §4.1a): HUD groups at their new defaults, and the HUD layout editor.
 const frames = (page: Page) => page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+const g = (page: Page, fn: string, ...a: unknown[]) => page.evaluate(([fn, a]) => (window as any).__game[fn as string](...(a as unknown[])), [fn, a] as const);
 
-test('the HUD over the Plains: plates, heart, HP bar, Rush, flask, gold, slots, timer', async ({ page }) => {
-  const errors = await boot(page, '&start=plains&kit=swordsman:greatsword');
-  await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(60, { moveX: 1 }); g.setHp(40); g.step(30, {}); });
-  await frames(page);
-  await page.screenshot({ path: 'test-results/hud-plains.png' });
+test('new default HUD: health top-left, weapons top-right, timer bottom-right; the editor moves a group and saves it', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/?debug=1&start=plains&seed=HUD&kit=swordsman:greatsword');
+  await page.waitForFunction(() => (window as any).__game?.ready === true);
+  await page.waitForTimeout(500); await frames(page);
+  await page.screenshot({ path: 'test-results/m17-hud-desktop.png' });
+  await g(page, 'openPause'); await g(page, 'pauseAction', 'down'); await g(page, 'pauseAction', 'down'); await g(page, 'pauseAction', 'confirm');
+  await expect.poll(() => page.evaluate(() => (window as any).__game.screenState()?.screen)).toBe('settings');
+  for (let i = 0; i < 6; i++) await g(page, 'screenAction', 'down');
+  await g(page, 'screenAction', 'confirm');
+  await expect.poll(() => page.evaluate(() => (window as any).__game.screenState()?.screen)).toBe('hudLayout');
+  await page.keyboard.press('Digit4');                             // the Weapons group to Bottom-left
+  await frames(page); await page.screenshot({ path: 'test-results/m17-hud-editor.png' });
+  await page.keyboard.press('ArrowUp'); await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => (window as any).__game.screenState()?.screen)).toBe('settings');
+  expect((await g(page, 'save')).settings.hud.slots).toEqual({ x: 4, y: 276 });
   expect(errors).toEqual([]);
 });
 
-test('the item card: a weapon and an ability with both slots full', async ({ page }) => {
-  const errors = await boot(page, '&start=training&kit=swordsman:greatsword');
-  const standOn = (id: string) => page.evaluate((id) => {
-    const g = (window as any).__game;
-    const it = g.groundItems().find((i: any) => i.weapon === id || i.ability === id);
-    g.teleport(it.x, it.y); g.step(20, {});
-  }, id);
-  await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.giveWeapon(1, 'war_maul'); g.giveAbility(1, 'whirlwind'); });
-  await standOn('katana');
-  expect(await page.evaluate(() => (window as any).__game.cardOpen())).toBe(true);
-  await frames(page);
-  await page.screenshot({ path: 'test-results/card-weapon.png' });
-  await standOn('arrow_rain');
-  await frames(page);
-  await page.screenshot({ path: 'test-results/card-ability.png' });
-  // Interact opens the swap choice; ability 1 replaces slot 1 (Blade Dash) → Thief.
-  await page.evaluate(() => { const g = (window as any).__game; g.step(1, { interact: true }); g.step(2, {}); });
-  await frames(page);
-  await page.screenshot({ path: 'test-results/card-swap-choice.png' });
-  await page.evaluate(() => { const g = (window as any).__game; g.step(1, { ability1: true }); g.step(2, {}); });
-  expect((await page.evaluate(() => (window as any).__game.classState())).displayName).toBe('Thief');
-  expect(errors).toEqual([]);
-});
-
-test('pause: MENU, LOADOUT and CONTROLS tabs', async ({ page }) => {
-  const errors = await boot(page, '&start=training&kit=wizard:storm_hammer');
-  await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.giveAbility(1, 'blink'); g.step(5, {}); g.openPause(); });
-  for (const tab of ['MENU', 'LOADOUT', 'CONTROLS']) {
-    await frames(page);
-    expect((await page.evaluate(() => (window as any).__game.pauseState())).tab).toBe(tab);
-    await page.screenshot({ path: `test-results/pause-${tab.toLowerCase()}.png` });
-    await page.keyboard.press('ArrowRight');
-  }
-  await page.keyboard.press('Escape');
-  await frames(page);
-  expect(await page.evaluate(() => (window as any).__game.pauseState())).toBeNull();
-  expect(errors).toEqual([]);
-});
-
-test('start screen: Training Yard, then leave it and come back', async ({ page }) => {
-  const errors = await boot(page, '');
-  expect(await page.evaluate(() => (window as any).__game.title)).toBe(true);
-  await frames(page);
-  await page.screenshot({ path: 'test-results/title.png' });
-  await page.keyboard.press('Enter');
-  await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().model.step)).toBe(2);
-  await page.keyboard.press('ArrowDown');
-  await page.keyboard.press('Enter');
-  await page.waitForFunction(() => (window as any).__game?.levelId?.() === 'training_yard');
-  await frames(page);
-  await page.screenshot({ path: 'test-results/title-yard.png' });
-  // Pause → Leave Training Yard (confirm twice).
-  await page.evaluate(() => { const g = (window as any).__game; g.openPause(); g.pauseAction('down'); g.pauseAction('down'); g.pauseAction('confirm'); g.pauseAction('confirm'); });
-  await page.waitForFunction(() => (window as any).__game?.title === true);
-  // Play opens Home Village; class statues handle the kit pick there.
-  await page.keyboard.press('Enter');
-  await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().model.step)).toBe(2);
-  await page.keyboard.press('Enter');
-  await page.waitForFunction(() => (window as any).__game?.levelId?.() === 'home');
-  await page.waitForFunction(() => (window as any).PHASER_GAME.scene.getScene('Village').titleFadeLeft === 0);
-  expect(await page.evaluate(() => (window as any).__game.runState().phase)).toBe('homeVillage');
-  await frames(page);
-  await page.screenshot({ path: 'test-results/title-play.png' });
-  expect(errors).toEqual([]);
+test.describe('phone', () => {
+  test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
+  test('on a phone the timer sits top-center', async ({ page }) => {
+    await page.goto('/?debug=1&start=plains&seed=HUD&kit=swordsman:greatsword');
+    await page.waitForFunction(() => (window as any).__game?.ready === true);
+    await page.evaluate(() => { for (const t of ['pointerdown', 'pointerup']) window.dispatchEvent(new PointerEvent(t, { pointerId: 9, pointerType: 'touch', clientX: 300, clientY: 100, bubbles: true })); });
+    await page.waitForTimeout(500); await frames(page);
+    await page.screenshot({ path: 'test-results/m17-hud-phone.png' });
+  });
 });

@@ -21,10 +21,10 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | M11 | Layout variety: sections 2, 3, 4, 6, 7 of every stage get 3 versions, picked by the seed | `M11-layout-variety.md` | Done |
 | M12 | Phone version: touch controls, phone screen scaling, tap menus, installable app (PWA), Low effects | `M12-phone-version.md` | Done |
 | M13 | Character customization: races, looks, clothes and colors, 35 enemy accessories, shop cosmetics, wardrobe, collection | `M13-character-customization.md` | Done |
-| M14 | Assist mode (slower speed, less damage, extra flask, longer doors) and polish from the SPEC-GAP answers (full run summary, Wolf pacing, parry buzz, hero on more screens)** | `M14-assist-and-polish.md` | Planned (3rd) |
+| M14 | Assist mode (slower speed, less damage, extra flask, longer doors) and polish from the SPEC-GAP answers (full run summary, Wolf pacing, parry buzz, hero on more screens)** | `M14-assist-and-polish.md` | Done |
 | M15 | Smash-style moves (Launcher, up air attack, juggles, dash attack), Daily challenge with share text, Boss Rush | `M15-moves-daily-bossrush.md` | Planned (4th) |
-| M16 | iPhone and Mac app for the user (Capacitor). Apple membership ends Sat 2026-11-07 | `M16-apple-apps.md` | **Done by the user on their Mac** with a local Claude Code (not the cloud builder) |
-| M17 | Playtest fixes: bow vs wolves, easier mountain climb, Dragon nest, cave labyrinth instead of the minecart; key rebinding; movable HUD (weapons/abilities top-right) | `M17-playtest-fixes-controls.md` | **Next (builder)** |
+| M16 | iPhone and Mac app for the user (Capacitor) | `M16-apple-apps.md` | Done (guide: `docs/apple-app.md`; built and installed on the user's Mac with a local Claude Code) |
+| M17 | Playtest fixes: bow vs wolves, easier mountain climb, Dragon nest, cave labyrinth instead of the minecart; key rebinding; movable HUD (weapons/abilities top-right) | `M17-playtest-fixes-controls.md` | Done |
 | M18 | Seed variety (object spots, enemy formations), daily twists, seed challenge, online daily leaderboard | `M18-seeds-daily-leaderboard.md` | Planned (5th, after M15) |
 
 (M6 and M8 were folded into other milestones: classes moved into M4, and the art pass happens as we go in the ART plans.)

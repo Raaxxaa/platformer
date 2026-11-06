@@ -77,6 +77,10 @@ export const YARD_DUMMY_FRAMES = {
   straw_target: {
     idle: ['straw_target_idle_00'], death: ['straw_target_death_00', 'straw_target_death_01', 'straw_target_death_02', 'straw_target_death_03'],
   },
+  // M15: the juggle target reuses the straw target's art.
+  juggle_target: {
+    idle: ['straw_target_idle_00'], death: ['straw_target_death_00', 'straw_target_death_01', 'straw_target_death_02', 'straw_target_death_03'],
+  },
 } as const;
 
 /** 08 §6.2 ability poses that have art (ART5): cast abilities by id, and ability moves by their ForcedMove owner. */

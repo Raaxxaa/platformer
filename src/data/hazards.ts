@@ -1,9 +1,10 @@
 // Level hazards, 06 §10. Damage is fixed and never follows enemy stage scaling.
+// M17 (playtest: the climb was too hard): first mark 0.6 s after entering, a 1.0 s warning, every 3.0 s, 240 px/s.
 export const FALLING_ROCKS = {
-  firstMarkTicks: 36,
-  warningTicks: 72,
-  intervalTicks: 240,
-  speed: 360,
+  firstMarkTicks: 72,
+  warningTicks: 120,
+  intervalTicks: 360,
+  speed: 240,
   size: 16,
   inset: 8,
   damage: 18,

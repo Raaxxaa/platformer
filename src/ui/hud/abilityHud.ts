@@ -1,5 +1,6 @@
 // Weapon and ability slots, the class name lines and toasts (07 §4.8–4.10, §6.10). Grey-box shapes and the ui atlas
 // icons; reads HUD views from abilityHudModel and reacts to the frame's events. UI timers use real time (07 §2).
+import { HUD_LAYOUT } from '../../data/hudLayout.ts';
 import type Phaser from 'phaser';
 import type { GameWorld, WorldEvent } from '../../core/sim/gameWorld.ts';
 import { FONTS, itemIcon } from '../../data/animKeys.ts';
@@ -115,9 +116,9 @@ export class AbilityHud {
   }
 
   toast(text: string, color: number, now: number, seconds: number = L.toastS, icon?: string): void {
-    const t = this.scene.add.bitmapText(0, 0, FONTS.small, text).setOrigin(1, 1).setRightAlign().setTint(color).setScrollFactor(0).setDepth(DEPTH.hud + 2)
+    const t = this.scene.add.bitmapText(0, 0, FONTS.small, text).setOrigin(0, 1).setTint(color).setScrollFactor(0).setDepth(DEPTH.hud + 2)
       .setMaxWidth(L.toastMaxW);
-    const img = icon && this.scene.textures.get('ui').has(icon) ? this.scene.add.image(0, 0, 'ui', icon).setOrigin(1, 1).setScrollFactor(0).setDepth(DEPTH.hud + 2) : undefined;
+    const img = icon && this.scene.textures.get('ui').has(icon) ? this.scene.add.image(0, 0, 'ui', icon).setOrigin(0, 1).setScrollFactor(0).setDepth(DEPTH.hud + 2) : undefined;
     this.toasts.push({ text: t, icon: img, born: now, until: now + seconds * 1000 });
     while (this.toasts.length > L.toastMax) { const old = this.toasts.shift()!; old.text.destroy(); old.icon?.destroy(); }
   }
@@ -125,6 +126,11 @@ export class AbilityHud {
   private all(): Phaser.GameObjects.Components.Visible[] {
     return [...this.plate, this.g, ...this.icons, ...this.classIcons, ...this.prompts.map((prompt) => prompt.container), ...this.digits, this.line1, this.line2, this.linkIcon, this.linkText,
       this.fizzle, ...this.toasts.map((t) => t.text), ...this.toasts.flatMap((t) => (t.icon ? [t.icon] : []))];
+  }
+
+  /** The `slots` group's parts (07 §4.1a); toasts and the fizzle text are not in it. */
+  groupObjects(): { x: number; y: number }[] {
+    return [...this.plate, this.g, ...this.icons, ...this.classIcons, ...this.prompts.map((p) => p.container), ...this.digits, this.line1, this.line2, this.linkIcon, this.linkText] as unknown as { x: number; y: number }[];
   }
 
   /** `now` in ms (real time). `shown` false hides it all (the debug overview zooms the camera out). */
@@ -215,12 +221,13 @@ export class AbilityHud {
 
     // Toasts, newest at the bottom.
     this.toasts = this.toasts.filter((t) => { if (t.until > now) return true; t.text.destroy(); t.icon?.destroy(); return false; });
-    let ty = L.toastBottom;
+    let ty = HUD_LAYOUT.toast.bottom;
     for (let i = this.toasts.length - 1; i >= 0; i--) {
       const t = this.toasts[i];
       const fade = Math.min(1, (t.until - now) / (L.toastFadeS * 1000));
-      t.text.setPosition(L.toastRight, ty).setAlpha(fade);
-      t.icon?.setPosition(L.toastRight - t.text.width - 2, ty).setAlpha(fade);
+      // 07 §4.1a: toasts sit bottom-left, left-aligned (the timer moved to the bottom-right).
+      t.icon?.setPosition(HUD_LAYOUT.toast.x, ty).setAlpha(fade);
+      t.text.setPosition(HUD_LAYOUT.toast.x + (t.icon ? t.icon.width + 2 : 0), ty).setAlpha(fade);
       ty -= Math.max(t.text.height, t.icon?.height ?? 0) + L.toastGap;
     }
   }

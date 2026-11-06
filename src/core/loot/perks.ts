@@ -36,7 +36,8 @@ export function extraSpeed(w: GameWorld): number {
 }
 /** 02 §3.3 incoming multiplier: Sturdy ×0.90 per carried copy, × registered sources (Glass Bones). */
 export function incomingMult(w: GameWorld): number {
-  return statProduct(w, 'iron_skin') * PERK.sturdy.value ** carriedCount(w, 'sturdy') * STAT_SOURCES.reduce((p, x) => p * (x.incoming?.(w) ?? 1), 1);
+  // 06 §5.4: Assist's Damage taken is one more incoming multiplier, fixed at run start.
+  return statProduct(w, 'iron_skin') * PERK.sturdy.value ** carriedCount(w, 'sturdy') * STAT_SOURCES.reduce((p, x) => p * (x.incoming?.(w) ?? 1), 1) * (w.run.assist?.damageTaken ?? 1);
 }
 export function dashCooldownMult(w: GameWorld): number {
   return statProduct(w, 'light_feet') * STAT_SOURCES.reduce((p, x) => p * (x.dashMult?.(w) ?? 1), 1);

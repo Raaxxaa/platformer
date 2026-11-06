@@ -31,7 +31,8 @@ test('one boot gesture opens the title menu without also starting Play', async (
   await page.keyboard.press('Enter'); await frames(page);
   expect(await page.evaluate(() => (window as any).__game.screenState())).toMatchObject({ screen: 'title', model: { step: 2, cursor: 0 } });
   await page.screenshot({ path: 'test-results/m7-title-menu.png' });
-  await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter');
+  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowDown');   // Daily, Boss Rush, Training Yard
+  await page.keyboard.press('Enter');
   await page.waitForFunction(() => (window as any).__game?.levelId?.() === 'training_yard');
   expect(errors).toEqual([]);
 });

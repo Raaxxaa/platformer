@@ -9,7 +9,7 @@ import { SOLDIER, CROSSBOWMAN, WAR_HOUND, BATTLE_MAGE, KNIGHT, BLACK_KNIGHT } fr
 
 const REGULAR = { tier: 'regular', elite: false, attackGap: ENEMY.ATTACK_GAP_REGULAR, turnDelay: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged' } as const;
 
-export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'great_boar' | 'bat_swarm' | 'goblin_miner' | 'rock_golem' | 'ram' | 'goblin_shaman' | 'bog_zombie' | 'giant_spider' | 'wisp' | 'swamp_witch' | 'treant' | 'soldier' | 'crossbowman' | 'war_hound' | 'battle_mage' | 'knight' | 'black_knight' | 'royal_guard' | 'gargoyle' | 'castle_mage' | 'living_armor' | 'royal_executioner' | 'enemy_king' | 'dragon', EnemyDef> = {
+export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'bandit' | 'bandit_archer' | 'wild_boar' | 'bandit_brute' | 'training_dummy' | 'sparring_dummy' | 'straw_target' | 'juggle_target' | 'great_boar' | 'bat_swarm' | 'goblin_miner' | 'rock_golem' | 'ram' | 'goblin_shaman' | 'bog_zombie' | 'giant_spider' | 'wisp' | 'swamp_witch' | 'treant' | 'soldier' | 'crossbowman' | 'war_hound' | 'battle_mage' | 'knight' | 'black_knight' | 'royal_guard' | 'gargoyle' | 'castle_mage' | 'living_armor' | 'royal_executioner' | 'enemy_king' | 'dragon', EnemyDef> = {
   royal_guard: ROYAL_GUARD, gargoyle: GARGOYLE, castle_mage: CASTLE_MAGE, living_armor: LIVING_ARMOR, royal_executioner: ROYAL_EXECUTIONER, enemy_king: ENEMY_KING,
   dragon: DRAGONS.red,                      // the colored variants are in data/dragon.ts
   soldier: SOLDIER, crossbowman: CROSSBOWMAN, war_hound: WAR_HOUND, battle_mage: BATTLE_MAGE, knight: KNIGHT, black_knight: BLACK_KNIGHT,
@@ -193,6 +193,12 @@ export const ENEMIES: Partial<Record<EnemyId, EnemyDef>> & Record<'wolf' | 'band
   straw_target: {
     id: 'straw_target', tier: 'target', elite: false, size: 'small', hurtbox: { w: 12, h: 24 }, hp: 1, poiseMax: 0, kbResist: 1.0,
     walk: 0, chase: 0, notice: { range: 0, rangeY: 0, time: 0 }, preferred: [0, 0], attackGap: 0, turnDelay: 0, stationary: true,
+    gold: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged', attacks: [],
+  },
+  // M15 Training Yard station 18: a straw target that can be launched and juggled (never breaks, takes knockback).
+  juggle_target: {
+    id: 'juggle_target', tier: 'dummy', elite: false, size: 'small', hurtbox: { w: 12, h: 24 }, hp: 9999, poiseMax: 0, kbResist: 0,
+    walk: 0, chase: 0, notice: { range: 0, rangeY: 0, time: 0 }, preferred: [0, 0], attackGap: 0, turnDelay: 0,
     gold: 0, itemRoll: 'none', blueprintRoll: false, hpBar: 'damaged', attacks: [],
   },
 };

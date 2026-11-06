@@ -40,7 +40,7 @@ export const WEAPON_NAME = (id: WeaponId) => id.split('_').map((p) => p[0].toUpp
 /** Training Yard station names, 1–17 (docs/levels/training-yard.md), for the checklist board. */
 export const TRAINING_STATION_NAMES = [
   'Run and jump', 'Double jump', 'Dash', 'Wall jump', 'Ledge grab', 'Slide and crawl', 'Drop through', 'Dive slam',
-  'Combo', 'Two weapons', 'Dodge', 'Heal', 'Abilities', 'Rush', 'Dash-jump', 'Slide-jump', 'Dive bounce',
+  'Combo', 'Two weapons', 'Dodge', 'Heal', 'Abilities', 'Rush', 'Dash-jump', 'Slide-jump', 'Dive bounce', 'Launch and juggle', 'Dash attack',
 ] as const;
 /** 07 §3.1 tokens added for the full HUD. */
 export const HUD_COLOR = {

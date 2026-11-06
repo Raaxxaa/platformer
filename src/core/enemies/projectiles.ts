@@ -49,7 +49,8 @@ export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProj
     if (def.motion === 'arc') {
       const time = def.arcTime!;
       const feet = target ?? w.body;
-      vx = Math.max(-ENEMY_ARC.maxVx, Math.min(ENEMY_ARC.maxVx, (feet.x - x) / time));
+      const cap = def.arcMaxVx ?? ENEMY_ARC.maxVx;
+      vx = Math.max(-cap, Math.min(cap, (feet.x - x) / time));
       vy = (feet.y - y - 0.5 * ENEMY_ARC.gravity * time * time) / time;
     } else {
       if (aim === 'player') {
@@ -75,7 +76,7 @@ export function spawnEnemyProjectile(w: GameWorld, e: EnemyState, def: EnemyProj
 
 export function spawnVenomSpit(w: GameWorld, e: EnemyState): EnemyProjectile[] {
   const feet = { x: w.body.x, y: w.body.y };
-  // SPEC-GAP: May Queen Venom Spit exceed the shared 260px/s arc cap to reach its named targets?
+  // 04 §8 (answered): the glob has its own 420 px/s cap, so it reaches targets up to ~320 px away.
   return VENOM_SPIT_OFFSETS.map((offset) => spawnEnemyProjectile(w, e, VENOM_GLOB, 'arc', 0, undefined, { x: feet.x + offset, y: feet.y }));
 }
 

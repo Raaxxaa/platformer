@@ -10,7 +10,7 @@ import { SWINGING_BLADE } from '../../data/hazards.ts';
 
 export const CASTLE_VIEW = {
   blade: 0xc9ced8, bladeRope: 0x6b6f7a, pivot: 0x3a3d46, ward: 0x5ad0ff, wardAlpha: 0.8, stone: 0x30343c, stoneAlpha: 0.55,
-  pile: 0x8a8f9c, beam: 0xfff0a0, beamLine: 0xff5a3c, beamAlpha: 0.75,
+  pile: 0x8a8f9c, beam: 0xfff0a0, beamLine: 0xff5a3c, beamAlpha: 0.75, aura: 0xffd34a, auraAlpha: 0.22, auraPulse: 0.1, auraPeriod: 10,
   marker: 0xff6030, markerAlpha: 0.55, spike: 0xbfe8ff, bolt: 0xfff27a, cloud: 0x6fbf4a, cloudAlpha: 0.4,
 } as const;
 
@@ -69,6 +69,11 @@ export class CastleFeatureView {
       if (e.castle?.wardTarget != null) {
         const ally = w.enemies.find((o) => o.id === e.castle!.wardTarget);
         if (ally && !ally.dead) { const p = enemyCenter(e), q = enemyCenter(ally); g.lineStyle(1, C.ward, C.wardAlpha).lineBetween(p.x, p.y, q.x, q.y); }
+      }
+      // Art note 23 (M14): the Enemy King's phase-3 gold aura (08 §7.4), a pulsing glow round him.
+      if (e.def.id === 'enemy_king' && !e.dead && (e.boss?.phase ?? 1) >= 3) {
+        const pulse = C.auraAlpha + C.auraPulse * Math.sin(w.tick / C.auraPeriod);
+        g.fillStyle(C.aura, pulse).fillEllipse(e.x, e.y - e.def.hurtbox.h / 2, e.def.hurtbox.w * 2.4, e.def.hurtbox.h * 1.5);
       }
       if (e.def.id === 'enemy_king' && a?.def.id === 'throne_beam' && a.phase === 'tele' && a.t >= 36) {      // the thin line shows the beam's height
         const arena = w.arenas.get(e.boss!.arenaId)!.rect, band = beamBand(e), wall = e.facing > 0 ? arena.x + arena.w : arena.x;

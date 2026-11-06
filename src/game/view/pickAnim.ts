@@ -11,7 +11,7 @@ export interface PlayerAnimState {
   state: MoveStateId; stateTicks: number; vx: number; vy: number; facing: 1 | -1; landSpeed: number;
   dead: boolean;
   /** The current weapon step (phaseTicks counts from 1, like core). */
-  attack: { weaponId: string; step: number; phase: 'startup' | 'active' | 'recovery'; phaseTicks: number; lens: Record<'startup' | 'active' | 'recovery', number>; kind?: 'combo' | 'charged' | 'throw' | 'lunge' | 'spin' } | null;
+  attack: { weaponId: string; step: number; phase: 'startup' | 'active' | 'recovery'; phaseTicks: number; lens: Record<'startup' | 'active' | 'recovery', number>; kind?: 'combo' | 'charged' | 'throw' | 'lunge' | 'spin' | 'launcher' | 'upAir' | 'dashAtk' } | null;
   /** A running ability cast (03 §7.6) and the ForcedMove owner tag, for ability poses (08 §6.2). */
   cast?: { id: string; phase: 'startup' | 'recovery'; t: number; len: number } | null;
   forcedOwner?: string | null;
@@ -72,6 +72,8 @@ function movement(s: PlayerAnimState, get: Lookup, runPhase: number): { key: str
 }
 
 /** 08 §5.2: dead → hurt → weapon step → drink → movement. */
+const UP_SUFFIX = { launcher: 'up', upAir: 'upair', dashAtk: 'dash' } as const;
+
 export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, runPhase: number): PlayerPick {
   if (s.dead || s.state === 'dead') return { key: 'dead', frame: timeFrame(get('dead')!, viewT), weapon: null };
   if (s.state === 'hurt') return { key: 'hurt', frame: timeFrame(get('hurt')!, sec(s.stateTicks)), weapon: null };
@@ -82,7 +84,11 @@ export function pickPlayerAnim(s: PlayerAnimState, get: Lookup, viewT: number, r
       : a.kind === 'throw' && art.throw ? weaponThrowKey(a.weaponId)
       : a.kind === 'lunge' && art.lunge ? `atk_${a.weaponId}_lunge`
       : a.kind === 'spin' && art.spin ? `atk_${a.weaponId}_spin`
-      : a.kind === 'combo' || a.kind === undefined ? (a.step < art.steps ? (art.keys?.[a.step] ?? weaponStepKey(a.weaponId, a.step)) : null) : null;
+      : a.kind === 'combo' || a.kind === undefined ? (a.step < art.steps ? (art.keys?.[a.step] ?? weaponStepKey(a.weaponId, a.step)) : null)
+      // 02 §9.6a (M15): ART11's own poses when they exist, else the weapon's step-1 pose as a placeholder.
+      : a.kind === 'launcher' || a.kind === 'upAir' || a.kind === 'dashAtk'
+        ? (get(`atk_${a.weaponId}_${UP_SUFFIX[a.kind]}`) ? `atk_${a.weaponId}_${UP_SUFFIX[a.kind]}` : (art.keys?.[0] ?? weaponStepKey(a.weaponId, 0)))
+      : null;
     const def = key ? get(key) : undefined;
     if (key && def) {
       // Ranged anims have no `active` segment: hold the last startup frame through it.
@@ -197,4 +203,10 @@ export function yardDummyFrame(id: keyof typeof YARD_DUMMY_FRAMES, s: YardDummyS
   if (s.attack?.phase === 'tele') return at(F.tele, s.attack.t, YARD_FPS.tele, true);
   if (s.attack?.phase === 'act') return F.swing[Math.min(F.swing.length - 1, Math.floor((s.attack.t / Math.max(1, s.attack.len)) * F.swing.length))];
   return F.idle[0];
+}
+
+/** Crossbowman aim frame (art note 20): 0 = aiming up to 4 = aiming down, in 5 steps over −60°…+60°. */
+export function aimFrameIndex(dy: number, dxAbs: number): number {
+  const deg = (Math.atan2(dy, Math.max(1, dxAbs)) * 180) / Math.PI;
+  return Math.max(0, Math.min(4, Math.round((deg + 60) / 30)));
 }
