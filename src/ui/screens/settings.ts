@@ -270,7 +270,7 @@ export class SettingsView extends MenuSurface {
     this.hint(mid, C.hintY, c.capture ? ['Press the new ', c.capture.col === 2 ? 'button   ' : 'key   ', 'ESC / Start cancels'] : ['↑↓←→ Select   ', { menu: 'confirm' }, ' Change   DEL Clear   ', { menu: 'back' }, ' Back']);
   }
 
-  /** The touch page: one row per setting, `< value >` on the selected one (taps pick a row; ◂ ▸ step it). */
+  /** The touch page: one row per setting, `< value >` on the selected one (taps pick a row; < > step it). */
   private renderAssist(m: SettingsModel, settings: SettingsData): void {
     const S = U.settings, a = settings.assist, mid = this.scene.scale.width / 2, pct = (v: number) => `${Math.round(v * 100)}%`;
     const value: Record<string, string> = { speed: pct(a.speed), damage: pct(a.damageTaken), flask: a.extraFlask ? 'On' : 'Off', doors: a.longerDoors ? 'On' : 'Off', aback: '' };
@@ -280,7 +280,7 @@ export class SettingsView extends MenuSurface {
       this.text(S.labelX, y, S.assistLabels[id], selected ? UI_COLOR.highlight : UI_COLOR.text, false, 'left');
       this.target(S.labelX - U.cursorGap, y, S.rowW - 60, S.rowH, () => m.select(i), () => this.action('confirm'));
       if (value[id]) {
-        this.text(S.valueX, y, selected ? `◂ ${value[id]} ▸` : value[id], selected ? UI_COLOR.highlight : UI_COLOR.textDim, false, 'right');
+        this.text(S.valueX, y, selected ? `< ${value[id]} >` : value[id], selected ? UI_COLOR.highlight : UI_COLOR.textDim, false, 'right');
         this.target(S.valueX - 70, y, 36, S.rowH, () => m.select(i), () => this.action('left'));
         this.target(S.valueX - 34, y, 34, S.rowH, () => m.select(i), () => this.action('right'));
       }
@@ -299,7 +299,7 @@ export class SettingsView extends MenuSurface {
       if (selected) this.text(S.labelX - U.cursorGap, y, '▸', UI_COLOR.highlight);
       this.text(S.labelX, y, S.touchLabels[id], selected ? UI_COLOR.highlight : UI_COLOR.text, false, 'left');
       this.target(S.labelX - U.cursorGap, y, S.rowW - 60, S.rowH, () => m.select(i), () => this.action('confirm'));
-      if (value[id]) this.text(S.valueX, y, selected ? `◂ ${value[id]} ▸` : value[id], selected ? UI_COLOR.highlight : UI_COLOR.textDim, false, 'right');
+      if (value[id]) this.text(S.valueX, y, selected ? `< ${value[id]} >` : value[id], selected ? UI_COLOR.highlight : UI_COLOR.textDim, false, 'right');
       if (value[id]) {
         // Tap targets for the step arrows (the whole value is also a "next" tap).
         this.target(S.valueX - 70, y, 36, S.rowH, () => m.select(i), () => this.action('left'));
