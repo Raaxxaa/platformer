@@ -72,6 +72,7 @@ import { FRONT_UI } from '../../data/frontUi.ts';
 import { UI_FRAME_SECONDS } from '../../data/stageUi.ts';
 import { HINT_PARTS } from '../../data/hints.ts';
 import { promptLine, type PromptPart } from '../../ui/promptLine.ts';
+import { signParts } from '../../ui/signParts.ts';
 import { PROMPT } from '../../data/prompts.ts';
 import type { PracticeSetup } from '../../core/run/practice.ts';
 import { practiceKey } from '../../core/run/practice.ts';
@@ -564,7 +565,7 @@ export class StageScene extends WorldScene {
     }
     // Hint, timer, split popup, boss bar, stage clear.
     const target = this.level.kind === 'village' ? interactTarget(w) : null;
-    const sign: readonly PromptPart[] = w.villageMessage || w.training?.sign ? [w.villageMessage ?? w.training!.sign!] : target && 'use' in target ? interactPrompt(w, target) ? [] : [{ action: 'interact' }, ` ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label === 'wardrobe' ? 'Look' : target.label}`] : w.activeHint && !saveStore().data.progress.stage1Cleared ? HINT_PARTS[w.activeHint] : [];
+    const sign: readonly PromptPart[] = w.villageMessage ? [w.villageMessage] : w.training?.sign ? signParts(w.training.sign) : target && 'use' in target ? interactPrompt(w, target) ? [] : [{ action: 'interact' }, ` ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label === 'wardrobe' ? 'Look' : target.label}`] : w.activeHint && !saveStore().data.progress.stage1Cleared ? HINT_PARTS[w.activeHint] : [];
     this.hintText.removeAll(true);
     if (!this.overview) promptLine(this, this.hintText, this.scale.width / 2, this.scale.height - U.hintBottom - PROMPT.height, sign);
     this.yard?.update(w);
