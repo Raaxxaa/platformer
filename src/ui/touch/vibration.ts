@@ -1,4 +1,6 @@
 // Vibration (07 §8.6): 12 ms when the player is hit, 25 ms on death, 8 ms on a parry. Never during menus.
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { isNativeApp } from './pwa.ts';
 import type { TouchSettings } from '../../core/save/schema.ts';
 import type { WorldEvent } from '../../core/sim/gameWorld.ts';
 import { TOUCH } from '../../data/touch.ts';
@@ -14,4 +16,9 @@ export function vibrationFor(events: readonly WorldEvent[], s: Pick<TouchSetting
   }
   return ms;
 }
-export function vibrate(ms: number): void { try { navigator.vibrate?.(ms); } catch { /* not supported */ } }
+/** Review P8: iPhones have no navigator.vibrate; the app uses Capacitor Haptics, Safari hides the setting. */
+export function canVibrate(): boolean { return isNativeApp() || (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function'); }
+export function vibrate(ms: number): void {
+  if (isNativeApp()) { void Haptics.impact({ style: ms >= TOUCH.vibration.death ? ImpactStyle.Heavy : ms >= TOUCH.vibration.hit ? ImpactStyle.Medium : ImpactStyle.Light }).catch(() => {}); return; }
+  try { navigator.vibrate?.(ms); } catch { /* not supported */ }
+}

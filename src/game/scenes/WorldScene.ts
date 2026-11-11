@@ -1,4 +1,5 @@
 // Shared scene for a GameWorld: steps it at 120 Hz and uses each biome's art, with grey fallbacks.
+import type { WorldEvent } from '../../core/sim/gameWorld.ts';
 import Phaser from 'phaser';
 import { rushLevel } from '../../core/combat/rush.ts';
 import { enemyRect, type EnemyState } from '../../core/enemies/enemy.ts';
@@ -107,6 +108,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected readonly stepper = new FixedStepper();
   protected devices!: Devices;
   protected manual = false;
+  private hudTextMode = false;
   /** Manual mode with the devices still read (`stepDevices`, review C8). */
   protected liveManual = false;
   protected debug = false;
@@ -141,6 +143,15 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected card!: ItemCardPopup;
   /** Events of every tick since the last render (core clears `world.events` each tick). */
   protected frameEvents: TickEvent[] = [];
+  /** Review C9: this frame's events as a plain list, built once per frame (not once per HUD part). */
+  private eventsCache: { src: TickEvent[]; n: number; list: WorldEvent[] } | null = null;
+  protected get frameEventList(): WorldEvent[] {
+    const c = this.eventsCache;
+    if (c && c.src === this.frameEvents && c.n === this.frameEvents.length) return c.list;
+    const list = this.frameEventList;
+    this.eventsCache = { src: this.frameEvents, n: this.frameEvents.length, list };
+    return list;
+  }
   private playerEv: PlayerViewEvents = { lastDoubleJumpTick: -100000, lastWallJumpTick: -100000 };
   private lastRenderTick = -1;
   protected sfx!: SfxPlayer;
@@ -207,7 +218,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
       document.removeEventListener('visibilitychange', this.onVisibilityChanged);
     });
     this.bank = new AnimBank(this.cache.json.get('anims') as AnimDef[]);
-    this.boxesMode = new URLSearchParams(window.location.search).get('boxes') === '1';
+    const q0 = new URLSearchParams(window.location.search);
+    this.boxesMode = q0.get('boxes') === '1'; this.hudTextMode = q0.get('hudtext') === '1';   // URL options read once (review C9)
     const bg = this.world.level?.kind === 'training' ? 'village_home' : this.world.level?.id === 'border' ? 'village_border' : this.world.level?.id === 'rebel_camp' ? 'village_rebel_camp' : this.world.level?.biome ?? 'plains';
     this.parallax = new Parallax(this, this.world.grid.heightPx, bg in PARALLAX ? bg as keyof typeof PARALLAX : 'plains');
     drawTerrain(this, this.world.grid, this.world.level?.biome ?? 'plains', this.world.level?.kind !== 'village');
@@ -534,7 +546,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     if (touch) {
       const on = this.touchControlsOn();
       touch.setGameplay(on); touch.setView(touchHudView(w));
-      const pulse = vibrationFor(this.frameEvents.map((f) => f.e), getUiSettings().touch, on && lastDeviceIsTouch());
+      const pulse = vibrationFor(this.frameEventList, getUiSettings().touch, on && lastDeviceIsTouch());
       if (pulse !== null) vibrate(pulse);
       touch.setBack(!on && !this.overview && !this.deathOpen() && (!!this.pause || !!this.classPick || this.extraMenuOpen() || w.run.phase === 'statPick'));
     }
@@ -613,11 +625,11 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
     this.darkness.update(w, w.tick / TICK_RATE);
     this.itemViews.update(w.groundItems, w.tick);
     this.abilityView.update(w);
-    this.abilityHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
-    this.juggles.update(w, this.frameEvents.map((f) => f.e), this.time.now);
-    this.topHud.update(topHudView(w), this.frameEvents.map((f) => f.e), this.time.now, !this.overview);
+    this.abilityHud.update(w, this.frameEventList, this.time.now, !this.overview);
+    this.juggles.update(w, this.frameEventList, this.time.now);
+    this.topHud.update(topHudView(w), this.frameEventList, this.time.now, !this.overview);
     this.lootView.update(w, this.frameEvents);
-    this.lootHud.update(w, this.frameEvents.map((f) => f.e), this.time.now, !this.overview, (t, c, s, icon) => this.abilityHud.toast(t, c, this.time.now, s, icon));
+    this.lootHud.update(w, this.frameEventList, this.time.now, !this.overview, (t, c, s, icon) => this.abilityHud.toast(t, c, this.time.now, s, icon));
     // 07 §4.1a: move the HUD groups to their saved (or default) places.
     const hud = this.hudLayout(), v = offsetOf('vitals', hud.vitals), sl = offsetOf('slots', hud.slots);
     shiftGroup([...this.topHud.groupObjects(), ...this.lootHud.groupObjects()], v.dx, v.dy);
@@ -773,6 +785,6 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
 
   private drawHud(): void {
     // The M1 text readout, now only with ?hudtext=1 (07's HUD replaced it).
-    this.hud.setText(new URLSearchParams(window.location.search).get('hudtext') === '1' ? this.hudLines() : '');
+    this.hud.setText(this.hudTextMode ? this.hudLines() : '');
   }
 }

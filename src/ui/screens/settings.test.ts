@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SettingsModel } from './settings.ts';
+// A device that can vibrate (the row is hidden where it can't, review P8).
+(globalThis.navigator as { vibrate?: unknown }).vibrate ??= () => true;
 import { defaultSettings } from '../../data/save.ts';
 
 describe('settings menu (07 §7.7)', () => {
@@ -94,5 +96,13 @@ describe('touch settings page (07 §8.6, M12 Task 5)', () => {
     apply('down'); apply('confirm'); expect(settings.assist.extraFlask).toBe(true);
     apply('down'); apply('confirm'); expect(settings.assist.longerDoors).toBe(true);
     apply('down'); apply('confirm'); expect(m.assistOpen).toBe(false); expect(m.cursor).toBe(7);
+  });
+});
+
+describe('vibration row (review P8)', () => {
+  it('is hidden where the device cannot vibrate', () => {
+    const nav = globalThis.navigator as { vibrate?: unknown }, saved = nav.vibrate; delete nav.vibrate;
+    try { expect(new SettingsModel(defaultSettings).touchRowsHere).not.toContain('vibe'); } finally { nav.vibrate = saved; }
+    expect(new SettingsModel(defaultSettings).touchRowsHere).toContain('vibe');
   });
 });

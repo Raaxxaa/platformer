@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { buildPrecache } from './src/pwa/precache.ts';
 import { resolve, relative, join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { execSync } from 'node:child_process';
 const assetRoot = resolve('public/assets');
 function filesIn(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry => entry.isDirectory()
@@ -18,15 +19,22 @@ const precachePlugin = {
     const list = buildPrecache(files);
     writeFileSync(join(dist, 'precache.json'), JSON.stringify(list) + '\n');
     // The browser only looks for a new service worker when sw.js itself changes, so each build stamps its version into it.
-    writeFileSync(join(dist, 'sw.js'), `${readFileSync(join(dist, 'sw.js'), 'utf8')}\n// build ${list.version}\n`);
+    const sw = readFileSync(join(dist, 'sw.js'), 'utf8');
+    if (!sw.includes('const BUILD = null;')) throw new Error('sw.js: the BUILD line to stamp is missing');
+    writeFileSync(join(dist, 'sw.js'), sw.replace('const BUILD = null;', `const BUILD = ${JSON.stringify(list.version)};`));
   },
 };
+function buildLabel(): string {
+  const day = new Date().toISOString().slice(0, 10);
+  try { return `${day} · ${execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()}`; } catch { return day; }
+}
 function filesBelow(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? filesBelow(join(dir, e.name)) : [join(dir, e.name)]));
 }
 export default defineConfig({
   plugins: [precachePlugin],
   base: './',
-  define: { __ASSET_FILES__: JSON.stringify(filesIn(assetRoot)) },
+  // Review C12: the title shows the build date (and the short commit when git is there).
+  define: { __ASSET_FILES__: JSON.stringify(filesIn(assetRoot)), __BUILD_LABEL__: JSON.stringify(buildLabel()) },
   test: { include: ['src/**/*.test.ts'], environment: 'node' },
 });

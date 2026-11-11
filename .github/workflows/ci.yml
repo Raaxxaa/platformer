@@ -23,3 +23,40 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m unittest discover company/tests
+
+  # Review C6: the browser tests on pull requests. GitHub's runner has Google Chrome installed; no browser download.
+  e2e:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright test $(ls tests/e2e/*.spec.ts | grep -v layouts.spec.ts)
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-results
+          path: test-results/
+
+  # The section-layout browser tests take about 6 minutes, so they run on their own.
+  e2e-layouts:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright test tests/e2e/layouts.spec.ts

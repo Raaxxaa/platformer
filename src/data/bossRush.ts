@@ -6,7 +6,7 @@ export const BOSS_RUSH_UI = {
   labels: { class: 'Class', weapon: 'Weapon', dragon: 'Dragon', best: 'Best' },
   dragons: ['off', 'random', 'red', 'white', 'storm', 'green'] as const,
   dragonLabel: { off: 'Off', random: 'Random color', red: 'Red', white: 'White', storm: 'Storm', green: 'Green' },
-  locked: 'Boss Rush (locked)', lockedHint: 'Beat the Enemy King to unlock',
+  locked: 'Boss Rush — beat the King once to unlock',
   bossName: { great_boar: 'Great Boar', stone_colossus: 'Stone Colossus', spider_queen: 'Spider Queen', dragon: 'Dragon', black_knight: 'Black Knight', enemy_king: 'Enemy King' } as Record<string, string>,
   result: { titleY: 70, timeY: 94, linesY: 122, lineH: 12, rowsY: 222, rowStep: 16, rowW: 160, rowH: 14, guardSeconds: 0.5,
     rows: ['Retry', 'Change setup', 'Title'], commands: ['retry', 'setup', 'title'] },

@@ -1,4 +1,5 @@
 // Settings (07 §7.7) with the Controls page (07 §7.8: rebinding, rules in ui/model/bindings.ts) and the touch page (07 §8.6).
+import { canVibrate } from '../touch/vibration.ts';
 import type Phaser from 'phaser';
 import { TOUCH } from '../../data/touch.ts';
 import { effectsLevel } from '../touch/effects.ts';
@@ -54,7 +55,9 @@ export class SettingsModel {
   /** The Assist page (06 §5.4). */
   assistOpen = false;
   private savedCursor = 0;
-  get rows(): readonly string[] { return this.touchOpen ? U.settings.touchRows : this.assistOpen ? U.settings.assistRows : U.settings.rows; }
+  /** Review P8: the Vibration row only where the device can vibrate (not Safari on iPhone). */
+  touchRowsHere: readonly TouchRow[] = U.settings.touchRows.filter((r) => r !== 'vibe' || canVibrate());
+  get rows(): readonly string[] { return this.touchOpen ? this.touchRowsHere : this.assistOpen ? U.settings.assistRows : U.settings.rows; }
   private readonly getSettings: () => SettingsData;
   constructor(getSettings: () => SettingsData) { this.getSettings = getSettings; }
   snapshot(): SettingsData { return structuredClone(this.getSettings()); }
@@ -67,7 +70,7 @@ export class SettingsModel {
   }
   /** The touch page's actions: cycle or step each value, open the layout editor, Back to the main page. */
   private touchAction(action: HomePanelAction): SettingsCommand | null {
-    const S = U.settings, rows = S.touchRows;
+    const S = U.settings, rows = this.touchRowsHere;
     const back = (): null => { this.touchOpen = false; this.cursor = this.savedCursor; return null; };
     if (action === 'back') return back();
     if (action === 'up') this.select(this.cursor - 1);
@@ -294,7 +297,7 @@ export class SettingsView extends MenuSurface {
       mode: S.modeNames[t.mode], opacity: `${t.opacity}%`, size: `${t.size}%`, hand: t.leftHanded ? 'On' : 'Off', vibe: t.vibration ? 'On' : 'Off',
       effects: effectsLevel(t, isTouchDevice()) === 'high' ? 'High' : 'Low', layout: '', tback: '',
     };
-    S.touchRows.forEach((id, i) => {
+    m.touchRowsHere.forEach((id, i) => {
       const y = S.rowsY + i * S.rowH, selected = m.cursor === i;
       if (selected) this.text(S.labelX - U.cursorGap, y, '▸', UI_COLOR.highlight);
       this.text(S.labelX, y, S.touchLabels[id], selected ? UI_COLOR.highlight : UI_COLOR.text, false, 'left');

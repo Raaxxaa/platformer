@@ -1,4 +1,5 @@
 // Two-step Title, Records and Settings (07 §7.3). Debug start URLs skip this scene.
+declare const __BUILD_LABEL__: string;
 import { onlineConfigured } from '../online/leaderboard.ts';
 import { retryQueued } from '../online/onlineUi.ts';
 import Phaser from 'phaser';
@@ -65,10 +66,9 @@ class TitleView extends MenuSurface {
       const x = (this.scene.scale.width - T.rowW) / 2, y = T.rowsY + i * T.rowStep;
       this.text(this.scene.scale.width / 2, y, `${m.cursor === i ? '▸ ' : ''}${U.titleCommands[i] === 'daily' ? dailyRowLabel() : U.titleCommands[i] === 'bossRush' && !bossRushUnlocked(saveStore().data) ? BOSS_RUSH_UI.locked : label}`,
         m.cursor === i ? UI_COLOR.highlight : U.titleCommands[i] === 'bossRush' && !bossRushUnlocked(saveStore().data) ? UI_COLOR.textOff : UI_COLOR.text);
-      if (m.cursor === i && U.titleCommands[i] === 'bossRush' && !bossRushUnlocked(saveStore().data)) this.text(this.scene.scale.width / 2, T.warningY - 14, BOSS_RUSH_UI.lockedHint, UI_COLOR.textDim);
       this.target(x, y, T.rowW, T.rowH, () => { m.cursor = i; }, () => this.action('confirm'));
     });
-    this.text(T.version[0], T.version[1], 'v0.0.0', UI_COLOR.textOff, false, 'right');
+    this.text(T.version[0], T.version[1], typeof __BUILD_LABEL__ === 'string' ? __BUILD_LABEL__ : 'dev', UI_COLOR.textOff, false, 'right');
     if (m.step === 2 && this.scene.sound.locked) this.text(this.scene.scale.width / 2, T.soundY, 'Press a key or click to enable sound', UI_COLOR.textDim);
     if (saveStore().readOnly || saveStore().warning) this.text(this.scene.scale.width / 2, T.warningY, saveStore().readOnly ? U.newer : saveStore().warning!, UI_COLOR.bad);
   }

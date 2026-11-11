@@ -51,3 +51,16 @@ describe('the service worker answers from the saved copy when offline', () => {
     expect(await loadWorker([], true)(new Request('https://elsewhere.test/api'))).toBe('not handled');
   });
 });
+
+describe('the stamped build version (review C11)', () => {
+  it('activate keeps only its own stamped cache, without fetching precache.json', async () => {
+    const src = readFileSync('public/sw.js', 'utf8').replace('const BUILD = null;', "const BUILD = 'v2';");
+    const listeners: Record<string, (e: { waitUntil(p: Promise<unknown>): void }) => void> = {};
+    const deleted: string[] = []; let fetched = 0; let done: Promise<unknown> = Promise.resolve();
+    const self = { addEventListener: (t: string, f: never) => { listeners[t] = f; }, clients: { claim: async () => {} }, location: { origin: 'x' } };
+    const caches = { keys: async () => ['rushblade-v1', 'rushblade-v2', 'other'], delete: async (k: string) => { deleted.push(k); return true; } };
+    new Function('self', 'caches', 'fetch', src)(self, caches, async () => { fetched++; throw new Error('offline'); });
+    listeners.activate({ waitUntil: (p) => { done = p; } }); await done;
+    expect(deleted).toEqual(['rushblade-v1']); expect(fetched).toBe(0);
+  });
+});

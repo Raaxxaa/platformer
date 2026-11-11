@@ -87,8 +87,19 @@ export class DarknessView {
   private readonly context: CanvasRenderingContext2D;
   private readonly pixels: ImageData;
   private readonly renderTexture: Phaser.GameObjects.RenderTexture;
-  private cacheKey = '';
-  private frameKey = '';
+  // Review C9: change checks compare numbers; no JSON text is built per frame.
+  private cacheCam: [number, number] | null = null; private cacheZonesRef: unknown = null; private cacheZonesLen = -1;
+  private frameKey: number[] = [];
+  private sameFrame(camX: number, camY: number, lights: readonly DarknessLight[]): boolean {
+    const k = this.frameKey, n = 3 + lights.length * 4;
+    let same = k.length === n && k[0] === camX && k[1] === camY && k[2] === this.step;
+    const next = new Array<number>(n); next[0] = camX; next[1] = camY; next[2] = this.step;
+    lights.forEach((l, i) => {
+      const o = 3 + i * 4; next[o] = l.x; next[o + 1] = l.y; next[o + 2] = l.radius; next[o + 3] = l.zoneId ?? -1;
+      if (same && (k[o] !== l.x || k[o + 1] !== l.y || k[o + 2] !== l.radius || k[o + 3] !== (l.zoneId ?? -1))) same = false;
+    });
+    this.frameKey = next; return same;
+  }
   private zones: ZoneRaster[] = [];
   private destroyed = false;
   private enabled = true;
@@ -111,21 +122,19 @@ export class DarknessView {
     scene.events.once('shutdown', this.destroy, this);
   }
 
-  setStep(step: 1 | 2): void { if (step !== this.step) { this.step = step; this.frameKey = ''; } }
+  setStep(step: 1 | 2): void { if (step !== this.step) { this.step = step; this.frameKey = []; } }
 
   update(w: GameWorld, viewSeconds: number): void {
     if (this.destroyed || !this.enabled) return;
     const camera = this.scene.cameras.main, camX = Math.round(camera.scrollX), camY = Math.round(camera.scrollY);
-    const key = JSON.stringify([camX, camY, w.darkZones]);
-    if (key !== this.cacheKey) {
-      this.cacheKey = key;
-      this.zones = this.cacheZones(w.darkZones, camX, camY);
+    if (!this.cacheCam || this.cacheCam[0] !== camX || this.cacheCam[1] !== camY || this.cacheZonesRef !== w.darkZones || this.cacheZonesLen !== w.darkZones.length) {
+      this.cacheCam = [camX, camY]; this.cacheZonesRef = w.darkZones; this.cacheZonesLen = w.darkZones.length;
+      this.zones = this.cacheZones(w.darkZones, camX, camY); this.frameKey = [];
     }
     this.renderTexture.setVisible(this.zones.length > 0);
-    if (this.zones.length === 0) { this.frameKey = ''; return; }
-    const lights = worldLights(w, viewSeconds), frameKey = JSON.stringify([key, lights, this.step]);
-    if (frameKey === this.frameKey) return;
-    this.frameKey = frameKey;
+    if (this.zones.length === 0) { this.frameKey = []; return; }
+    const lights = worldLights(w, viewSeconds);
+    if (this.sameFrame(camX, camY, lights)) return;
     const data = this.pixels.data;
     for (let i = 3; i < data.length; i += 4) data[i] = 0;
     for (const zone of this.zones) {

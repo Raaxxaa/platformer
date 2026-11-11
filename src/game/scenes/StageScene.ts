@@ -1,5 +1,7 @@
 // M3 stage scene: loads public/levels/<id>.json and plays it, with doors, loot markers, hints, the boss bar,
 // the run timer, the split popup and the temporary stage-clear screen.
+import { CLASS_NAME } from '../../data/classes.ts';
+import type { ClassId } from '../../core/abilities/types.ts';
 import { recordsOff } from '../debug.ts';
 import { afterDailyFinish } from '../online/onlineUi.ts';
 import { DailyStandingView } from '../../ui/screens/leaderboard.ts';
@@ -566,12 +568,13 @@ export class StageScene extends WorldScene {
     }
     // Hint, timer, split popup, boss bar, stage clear.
     const target = this.level.kind === 'village' ? interactTarget(w) : null;
-    const sign: readonly PromptPart[] = w.villageMessage ? [w.villageMessage] : w.training?.sign ? signParts(w.training.sign) : target && 'use' in target ? interactPrompt(w, target) ? [] : [{ action: 'interact' }, ` ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label === 'wardrobe' ? 'Look' : target.label}`] : w.activeHint && !saveStore().data.progress.stage1Cleared ? HINT_PARTS[w.activeHint] : [];
+    // Review: the gate message shows once, in the world (villageView), not again in this line.
+    const sign: readonly PromptPart[] = w.villageMessage ? [] : w.training?.sign ? signParts(w.training.sign) : target && 'use' in target ? interactPrompt(w, target) ? [] : [{ action: 'interact' }, ` ${target.label === 'training' ? 'Training Yard' : target.label === 'seed' ? 'Seed' : target.label === 'records' ? 'Discoveries' : target.label === 'wardrobe' ? 'Look' : target.kind === 'class_statue' ? `Choose ${CLASS_NAME[target.label as ClassId] ?? target.label}` : target.label}`] : w.activeHint && !saveStore().data.progress.stage1Cleared ? HINT_PARTS[w.activeHint] : [];
     this.hintText.removeAll(true);
     if (!this.overview) promptLine(this, this.hintText, this.scale.width / 2, this.scale.height - U.hintBottom - PROMPT.height, sign);
     this.yard?.update(w);
     if (this.frameEvents.some(({ e }) => e.t === 'leftTraining')) { if (gameSession.trainingReturn === 'home') this.goLevel('home'); else this.toTitle(); return; }
-    this.timerBlock.draw(w, saveStore().data.settings.showTimer, !!this.overview, this.frameEvents.map(({ e }) => e));
+    this.timerBlock.draw(w, saveStore().data.settings.showTimer, !!this.overview, this.frameEventList);
     const tm = offsetOf('timer', this.hudLayout().timer); shiftGroup(this.timerBlock.groupObjects(), tm.dx, tm.dy);
     const bar = w.bossBar;
     const bg = this.bossBarGfx.clear();
