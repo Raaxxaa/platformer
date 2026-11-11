@@ -73,19 +73,28 @@ D |      ======          ======       | D
   ######################################
 ```
 
-## Section 6 — Ice peaks and minecart descent
+## Section 6 — Ice peaks, the Dragon's nest and the cave labyrinth (M17)
 
-The short approach offers small icy ledges above a safe, dry merchant floor; the direct route can walk underneath them to the cart. Merchant x287 has at least 112 pixels of flat clear floor on both sides, extending into the cleared arena exit. Lucky Block 3 is on the upper ice line. Key 2 uses a short harder jump detour above it, below eight seconds there and back. The **empty 40 × 20 side arena** lies above the first flat part of the cart line, x335–375, floor y88 and top y68; its single three-tile-high opening faces left at x335. A two-tile one-way branch at x333–334, y88 lets a foot player double-jump four tiles up from the rail floor and enter. The room has the central eight-tile one-way platform six tiles above its floor, no doors, no lock and no camera zone. Entering and returning to the main route takes under four seconds. The warning zone is x290–291, across the main route; its right edge is 44 tiles (704 pixels) before the opening, so both warning and arena are in section 6.
+Built by `levels-src/mountains/gen_s6.py` (all three versions; the minecart is gone).
 
-The cart waits at approximately x293.5, y92. Its `minecart_stop` starts at x415, giving **121.5 nominal horizontal tiles** to the stop and at least **120 tiles of actual travel** before its box first touches the stop. Its first 40 tiles are flat; after x335 the track descends to y144 in visible steps, with two short gaps over catch floors and two low cart tunnels. Before the second tunnel, the descent finishes at x375 and leaves eleven flat floor columns before the roof starts at x386, so the cart settles onto the rail instead of landing on the roof. The side room's floor at y88 leaves three empty rows above the flat rail floor at y92. A player can take the normal foot route and can leave the cart. One Miner, one Ram and one bat are spaced along the descent away from the merchant floor and first boarding point. The main arrow points down toward the cart; the side opening remains a clear optional fork. The Dragon room stays empty until M9.
+**Peak path.** From the entry the road climbs two icy steps (floors y92 → y90 → y88) toward the summit. The `dragon_warning` stands across the road at x3, more than 40 tiles before the nest.
 
-```text
-       [empty 40x20 room, central platform]
-          opening
-       I  L  K
-> ___ M ___ V \__   __\_____   __\_____  stop >
-               \_safe floor_____safe floor___
-```
+**The Dragon's nest** (the side arena, 40 × 20 inner, x49–88, floor y88) is a cave inside the summit: rock walls, floor and ceiling all round. It is entered only from the peak path, through a 3-tile-tall passage at floor level (x40–48). Its far wall has a wide opening (y72–79) onto a sealed alcove that ART12 paints as open sky, so there is no back door out of the nest. The central one-way platform is 8 tiles wide, 6 tiles up. Without the Dragon it still looks lived in: a nest of branches, eggshells, bones, scorch marks and a coin pile (decoration objects). The nest floor is at least 4 rock rows above every cave, so it can't be reached from the labyrinth.
+
+**The labyrinth.** A 4-wide hole in the peak path (before the nest passage) drops into the mountain:
+- a **one-way floor** across the shaft at tunnel A's level: land on it for the main route, or drop through for tunnel B;
+- **tunnel A** (main, torches every ~12 tiles): west is a dead-end nook with **Lucky Block 3**; east leads to the main shaft down into the **merchant hall** (y106–112, merchant with ≥ 7 flat tiles each side);
+- **tunnel B** (the second complete route, dark): from the bottom of the hole east to the hall; its west end is a dead-end nook;
+- the **key chimney**: a one-way step in the hall, then a 4-wide wall-jump chimney up to a pocket with **Key 2** (under 8 s there and back);
+- the **drop** from the hall (two one-way ledges break it) to the **exit tunnel** (floor y144) into §7.
+
+Guide arrows: down into the hole, along tunnel A, down the main shaft, down the exit drop, and out. Regulars: a Miner in tunnel A, a Ram in tunnel B, a bat in the exit tunnel (never under a drop).
+
+| Version | Hole | Tunnel A row | Main shaft | Hall | Key chimney | Exit drop |
+|---|---|---|---|---|---|---|
+| v1 | x34 | y98 | x81 | x80–115 | x106 | x112 |
+| v2 | x30 | y96 | x74 | x72–112 | x100 | x106 |
+| v3 | x36 | y100 | x86 | x85–120 | x112 | x116 |
 
 ## Section 7 — Crystal cave loot
 

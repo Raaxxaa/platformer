@@ -81,7 +81,7 @@ function endProjectile(w: GameWorld, p: PlayerProjectile): void {
   removePlayerProjectile(w, p);
 }
 
-/** 02 §9.8: spawns at +12, −18 from the feet in the facing direction; inside a wall it runs `onWall` at once. */
+/** 02 §9.8: spawns at +12, −10 from the feet in the facing direction; inside a wall it runs `onWall` at once. */
 export function firePlayerProjectile(w: GameWorld, slot: 0 | 1, attackInstance: number, id: ProjectileId, angleDeg: number, opts: FireOpts = {}): PlayerProjectile | null {
   const def = PLAYER_PROJECTILES[id];
   if (!def) return null;

@@ -24,6 +24,8 @@ export interface AttackStep {
   gravityMult?: number;       // 01 §5.4; default 1
   canTurn?: boolean;          // 01 §12.2; default false
   box?: Box; hit?: HitSpec; projectiles?: { id: ProjectileId; angle: number }[];
+  /** 02 §9.6a (M15): an up shot leaves from this offset (feet), not the usual +12, −10. */
+  shotOrigin?: { dx: number; dy: number };
 }
 export interface WeaponDef {
   id: WeaponId; weight: Weight; hold: 'repeat' | 'charge' | 'shield';

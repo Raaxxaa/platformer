@@ -10,7 +10,7 @@ describe('Stage2 level contracts (06 §8.2–8.5)',()=>{
     expect(errors).toContain('mountains: section 3 needs a main-path climb of at least 60 tiles');
     expect(errors).toContain('mountains: section 3 needs falling_rocks');
     expect(errors).toContain('mountains: section 4 needs a cracked_wall skip');
-    expect(errors).toContain('mountains: section 6 needs ice and a minecart route of at least 120 tiles');
+    expect(errors).toContain('mountains: section 6 needs ice, no minecart and a cave labyrinth of at least 120 tiles');
   });
   it('rejects dry Swamp sections and missing dark/firefly and grapple foundations',()=>{
     const d=levelFrom(Array(30).fill('.'.repeat(60)),[rect('section',0,0,60,30,{index:2}),rect('section',0,0,60,30,{index:3}),rect('section',0,0,60,30,{index:6})],'swamps');d.stage=2;

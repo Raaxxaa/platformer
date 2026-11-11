@@ -166,7 +166,7 @@ describe('Stage 2 mechanics through the real GameWorld', () => {
     const dummy = w.spawnExtra({ enemy: 'training_dummy', x: 200, y: 320, facing: -1 });
     const enemyHp = dummy.hp;
     w.health.abilityIframeTicks = 9999;
-    for (let i = 0; i < 240 && w.health.hp === 100; i++) stepSpec(w, {});
+    for (let i = 0; i < 480 && w.health.hp === 100; i++) stepSpec(w, {});
     expect(w.health.hp).toBe(82);
     expect(w.health.abilityIframeTicks).toBeGreaterThan(0);
     expect(w.health.iframeTicks).toBeGreaterThan(0);

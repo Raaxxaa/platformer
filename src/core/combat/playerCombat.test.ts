@@ -71,7 +71,7 @@ describe('player attacks (02 §9)', () => {
       expect(ev).toContainEqual({ t: 'move', e: 'dashStart' });
       expect(w.combat.current).toBeNull();
       expect(w.hitGroups).toEqual([]);
-      stepSpec(w, {}, 18);
+      stepSpec(w, {}, 40);                             // past the dash and its 0.10 s Rushing Strike window (M15)
       stepSpec(w, { attack1: true });
       expect(w.combat.current?.step).toBe(2);
     }
@@ -80,7 +80,7 @@ describe('player attacks (02 §9)', () => {
     const w = arenaWorld();
     stepSpec(w, { attack1: true }); stepSpec(w, {}, 40);
     expect(w.combat.current?.phase).toBe('recovery');
-    stepSpec(w, { dash: true }); stepSpec(w, {}, 18);
+    stepSpec(w, { dash: true }); stepSpec(w, {}, 40);
     stepSpec(w, { attack1: true });
     expect(w.combat.current?.step).toBe(1);
   });

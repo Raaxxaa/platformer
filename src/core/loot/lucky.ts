@@ -1,4 +1,5 @@
 // Lucky Blocks (05 §7) and curses (05 §8): the roll, every buff and debuff, timers, Ambush packs, the curse counter.
+import { luckyAlwaysBuff } from '../run/twistFx.ts';
 import { dropItem } from '../abilities/items.ts';
 import { overlaps, type Rect } from '../combat/hitGroups.ts';
 import { boxFree, isGrounded } from '../physics/collide.ts';
@@ -23,8 +24,8 @@ export const hasBuff = (w: GameWorld, id: LuckyId) => w.econ.buffs.includes(id);
 export const hasDebuff = (w: GameWorld, id: LuckyId) => w.econ.debuffs.some((d) => d.id === id);
 
 /** §7.1: draw 1 buff or debuff, draw 2 among the eligible entries (active buffs are not eligible; Jackpot always is). */
-export function rollLucky(rng: Rng, activeBuffs: readonly LuckyId[], luckyCharm: boolean): LuckyDef {
-  const buff = rng() < (luckyCharm ? LUCKY_BUFF_CHANCE.luckyCharm : LUCKY_BUFF_CHANCE.base);
+export function rollLucky(rng: Rng, activeBuffs: readonly LuckyId[], luckyCharm: boolean, alwaysBuff = false): LuckyDef {
+  const buff = rng() < (luckyCharm ? LUCKY_BUFF_CHANCE.luckyCharm : LUCKY_BUFF_CHANCE.base) || alwaysBuff;   // 06 §14.1 Golden Hour (the draw is still made)
   const pool = LUCKY.filter((l) => (buff ? l.kind === 'buff' && (l.id === 'jackpot' || !activeBuffs.includes(l.id)) : l.kind === 'debuff'));
   return pick(pool.map((l) => [l, l.weight] as const), rng);
 }
@@ -89,7 +90,7 @@ export function breakLucky(w: GameWorld, b: LuckyBlock): void {
   if (b.broken) return;
   b.broken = true;
   const rng = sourceRng(w.runSeed, 'lucky', w.level?.id ?? 'test', b.objectId);
-  const r = rollLucky(rng, w.econ.buffs, statCount(w, 'lucky_charm') > 0);
+  const r = rollLucky(rng, w.econ.buffs, statCount(w, 'lucky_charm') > 0, luckyAlwaysBuff(w));
   w.run.stats.luckyBlocksBroken += 1;
   w.events.push({ t: 'luckyBroken', objectId: b.objectId });
   applyLucky(w, r.id, b.x, b.y, b.objectId);

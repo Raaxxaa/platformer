@@ -1,4 +1,5 @@
 // Authorized temporary ending at the Border inn until Stage 3 arrives in M9.
+import { HeroPortrait } from '../../game/view/HeroPortrait.ts';
 import type Phaser from 'phaser';
 import type { KitSummary } from '../../core/save/schema.ts';
 import { formatTime } from '../../core/time.ts';
@@ -12,15 +13,20 @@ import { promptLine } from '../promptLine.ts';
 
 export interface RunSoFarData { runTicks: number; split1: number | null; split2?: number | null; kit: KitSummary; gold: number; kills: number;
   /** The victory screen (after the Enemy King) replaces the title, the lines and their spacing. */
-  title?: string; lines?: string[]; lineGap?: number }
-export interface RunSoFarCallbacks { onRestart(): void; onHomeVillage(): void; onTitle(): void }
-export type RunSoFarCommand = typeof U.summary.commands[number];
+  title?: string; lines?: string[]; lineGap?: number;
+  /** M15: a Daily run's share text; adds the Share button (06 §14.1). */
+  share?: string }
+export interface RunSoFarCallbacks { onRestart(): void; onHomeVillage(): void; onTitle(): void; onShare?(text: string): void }
+export type RunSoFarCommand = typeof U.summary.share.commands[number];
 
 export class RunSoFarModel {
   cursor = 0;
   readonly lines: string[];
   private closed = false;
+  readonly buttons: readonly string[]; readonly commands: readonly RunSoFarCommand[]; readonly buttonXs: readonly number[];
   constructor(data: RunSoFarData) {
+    const B = data.share ? U.summary.share : U.summary;
+    this.buttons = B.buttons; this.commands = B.commands; this.buttonXs = B.buttonXs;
     const weapons = data.kit.weapons.map((weapon) => weapon ? `${WEAPON_NAME(weapon.weaponId)} ${weapon.grade}` : 'Empty');
     const abilities = data.kit.abilities.map((ability) => ability ? `${ABILITY_INFO[ability.id].name} Lv ${ability.level}` : 'Empty');
     this.lines = data.lines ?? [
@@ -29,17 +35,20 @@ export class RunSoFarModel {
       `Weapons: ${weapons.join(' / ') || 'Empty'}`, `Abilities: ${abilities.join(' / ') || 'Empty'}`, `Gold: ${data.gold}`, `Kills: ${data.kills}`,
     ];
   }
-  select(index: number): void { if (!this.closed) this.cursor = Math.max(0, Math.min(U.summary.buttons.length - 1, index)); }
+  select(index: number): void { if (!this.closed) this.cursor = Math.max(0, Math.min(this.buttons.length - 1, index)); }
   action(action: HomePanelAction): RunSoFarCommand | null {
     if (this.closed) return null;
     if (action === 'left') this.select(this.cursor - 1);
     if (action === 'right') this.select(this.cursor + 1);
     if (action !== 'confirm') return null;
-    this.closed = true; return U.summary.commands[this.cursor];
+    const cmd = this.commands[this.cursor];
+    if (cmd !== 'share') this.closed = true;
+    return cmd;
   }
 }
 
 export class RunSoFarView {
+  private readonly portrait: HeroPortrait | null;
   readonly model: RunSoFarModel;
   private readonly input = new HomePanelInput('training');
   private readonly c: Phaser.GameObjects.Container;
@@ -47,6 +56,7 @@ export class RunSoFarView {
   private closed = false;
   private enabled = true;
   private drawn = '';
+  private shared = false;
   private readonly scene: Phaser.Scene;
   private readonly callbacks: RunSoFarCallbacks;
   private readonly data: RunSoFarData;
@@ -55,6 +65,8 @@ export class RunSoFarView {
     this.model = new RunSoFarModel(data); this.input.blockHeldPad(activeHomePad());
     this.dim = scene.add.graphics().setScrollFactor(0).setDepth(U.dimDepth);
     this.dim.fillStyle(UI_COLOR.ink, U.dimAlpha).fillRect(0, 0, scene.scale.width, scene.scale.height);
+    // 09 §7 (M14): the hero's look on the run summary.
+    this.portrait = data.title === 'VICTORY' ? new HeroPortrait(scene, U.heroX, U.heroY, U.depth + 1) : null;
     this.c = scene.add.container(0, 0).setScrollFactor(0).setDepth(U.depth);
     window.addEventListener('keydown', this.keyDown); window.addEventListener('keyup', this.keyUp);
     scene.events.once('shutdown', () => this.destroy()); this.draw();
@@ -79,6 +91,7 @@ export class RunSoFarView {
     if (!this.enabled || this.closed) return;
     const command = this.model.action(action); this.draw();
     if (!command) return;
+    if (command === 'share') { if (this.data.share) this.callbacks.onShare?.(this.data.share); this.shared = true; this.drawn = ''; this.draw(); return; }
     this.destroy();
     if (command === 'restart') this.callbacks.onRestart();
     else if (command === 'homeVillage') this.callbacks.onHomeVillage();
@@ -88,7 +101,7 @@ export class RunSoFarView {
     if (this.closed) return;
     this.closed = true; this.input.clear();
     window.removeEventListener('keydown', this.keyDown); window.removeEventListener('keyup', this.keyUp);
-    this.c.destroy(); this.dim.destroy();
+    this.c.destroy(); this.dim.destroy(); this.portrait?.destroy();
   }
   private text(x: number, y: number, value: string, color: number, large = false): void {
     this.c.add(this.scene.add.bitmapText(x, y, large ? FONTS.large : FONTS.small, value).setTint(color).setOrigin(0.5, 0).setMaxWidth(U.summary.textW));
@@ -108,8 +121,9 @@ export class RunSoFarView {
     } else this.rect(x, y, w, h);
     this.text(x + w / 2, S.titleY, this.data.title ?? S.title, UI_COLOR.highlight, true);
     this.model.lines.forEach((line, row) => this.text(x + w / 2, S.linesY + row * (this.data.lineGap ?? S.lineGap), line, row === 0 ? UI_COLOR.text : UI_COLOR.textDim));
-    S.buttons.forEach((label, i) => {
-      const xx = S.buttonXs[i], selected = this.model.cursor === i;
+    if (this.shared) this.text(x + w / 2, S.sharedY, S.sharedText, UI_COLOR.highlight);
+    this.model.buttons.forEach((label, i) => {
+      const xx = this.model.buttonXs[i], selected = this.model.cursor === i;
       this.rect(xx, S.buttonY, S.buttonW, S.buttonH, selected);
       this.text(xx + S.buttonW / 2, S.buttonY + U.border, label, selected ? UI_COLOR.highlight : UI_COLOR.text);
       if (selected) this.text(xx - U.cursorGap, S.buttonY + U.border, '▸', UI_COLOR.highlight);

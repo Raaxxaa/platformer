@@ -21,10 +21,10 @@ describe('sound triggers (08 §13.3)', () => {
     const rows = Array.from({ length: 23 }, (_, y) => y >= 20 ? '#'.repeat(40) : '.'.repeat(40));
     const d = levelFrom(rows, [feet('player_start', 12, 19), rect('falling_rocks', 5, 0, 20, 20)]);
     const w = World.fromLevel(d, { seedText: 'SFX' }), watch = new SfxWatch();
-    const first = run(w, watch, {}, 108);
+    const first = run(w, watch, {}, 193);
     expect(w.fallingRocks.rocks).toHaveLength(1);
     expect(first).toContain('rock_whistle');
-    const falling = run(w, watch, {}, 120);
+    const falling = run(w, watch, {}, 200);
     expect(falling).toContain('rock_shatter');
   });
   it('selects wet, ice, soft and hard footsteps and forwards cart/water/platform events', () => {

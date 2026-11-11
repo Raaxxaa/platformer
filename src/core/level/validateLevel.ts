@@ -6,7 +6,7 @@ import { stage2Errors } from './stage2Rules.ts';
 import { stage3Errors } from './stage3Rules.ts';
 import { stage4Errors } from './stage4Rules.ts';
 
-export const TRAINING_STATIONS = 17;
+export const TRAINING_STATIONS = 19;
 
 /** Length of a polyline in tiles. */
 export function pathLengthTiles(o: LevelObject): number {

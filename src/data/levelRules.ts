@@ -35,7 +35,7 @@ export const COMBAT_ARENA = { minW: 34, maxW: 40, minH: 14, maxH: 20, doors: 2, 
 /** Stage2 road differences and gimmicks (06 §8.2–8.5, §9.4). */
 export const STAGE2_LEVEL = {
   regulars: { mountains:[0,10,2,8,9,3,4,0], swamps:[0,12,4,8,9,7,4,0] },
-  climb:60, cartRun:120, waterFraction:.30,waterSections:[2,3,6],darkSections:[3,6],
+  climb:60, labyrinth:120, labyrinthTop:92, waterFraction:.30,waterSections:[2,3,6],darkSections:[3,6],
   sideWidth:40,sideHeight:20,warningDistance:640,
 } as const;
 
@@ -73,4 +73,15 @@ export const STAGE4_LEVEL = { regulars: [0, 10, 4, 8, 9, 5, 4, 0], bladeSections
 export const LAYOUT = {
   stages: ['plains', 'mountains', 'swamps', 'kingdom', 'castle'] as StageLevelId[],
   vary: [2, 3, 4, 6, 7] as const, sections: 8, versions: 3,
+} as const;
+
+/** 06 §8.10 (M18): object spots and enemy formations. Spot candidates are offsets along the same floor with the same
+ * surroundings; `spotDraws` draws per section, each `floor(r × 6)` so a 2- or 3-spot group picks evenly. */
+export const VARIETY = {
+  sections: [1, 2, 3, 4, 5, 6, 7] as const, spotDraws: 4, spotRoll: 6, maxSpots: 3,
+  spotOffsets: [4, -4, 7, -7, 10, -10] as const, spotTypes: ['lucky_block', 'key', 'key_chest', 'cursed_chest', 'loot_stand'] as const,
+  /** Rows above and below the tile compared for "the same surroundings". */
+  above: 2, below: 10,
+  // SPEC-GAP 65: mirrored enemies break the Stage 1 spacing rule (06 §8.6) in sections 2 and 3, so they keep formation A.
+  formationAOnly: { plains: [2, 3] } as Partial<Record<StageLevelId, readonly number[]>>,
 } as const;

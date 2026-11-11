@@ -409,6 +409,7 @@ describe('Shield (02 §12)', () => {
     expect(w.enemies[0].control!.ticks).toBe(180);
     expect(w.rush.value).toBe(10);
     expect(w.health.iframeTicks).toBe(36);
+    expect(w.events.some((e) => e.t === 'parry')).toBe(true);           // M14: 02 §5.2 step 3
   });
   it('parry of an elite stuns 0.75 s; a boss takes 50 poise damage', async () => {
     const w = setup('shield', [brute(260)]);

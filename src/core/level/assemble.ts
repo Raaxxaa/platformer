@@ -2,6 +2,8 @@
 // versions entry-on-exit and builds the LevelData exactly as tools/build_levels.py does (same cells, objects and ids).
 import { TILE_SIZE as T } from '../tuning.ts';
 import type { LevelData, LevelId, LevelObject } from './loadLevel.ts';
+import { applyVariety, type SectionVariety } from './variety.ts';
+import { VARIETY, type StageLevelId } from '../../data/levelRules.ts';
 
 type Props = Record<string, string | number | boolean>;
 export interface PackObject { type: string; x: number; y: number; w?: number; h?: number; props?: Props }
@@ -25,7 +27,7 @@ const SPECIAL: Record<string, [string, string, Props]> = {
   '%': ['.', 'collapsing_platform', { oneWay: false }], '&': ['.', 'collapsing_platform', { oneWay: true }],
   '+': ['.', 'cracked_wall', {}], '@': ['#', 'blink_block', {}],
 };
-const CENTER = new Set(['lucky_block', 'key', 'grapple_point', 'cannon', 'swinging_blade', 'firefly', 'guide_arrow']);
+const CENTER = new Set(['lucky_block', 'key', 'grapple_point', 'cannon', 'swinging_blade', 'firefly', 'guide_arrow', 'torch']);
 
 export const classicPicks = (p: LevelPack): Picks => p.sections.map(() => 1);
 
@@ -66,13 +68,16 @@ function mergeRects(cells: [number, number][]): [number, number, number, number]
   return rects;
 }
 
-export function assembleLevel(pack: LevelPack, picks: Picks): LevelData {
+/** `variety` (06 §8.10, M18): per section (index = section − 1) its formation and spot rolls; absent = as authored. */
+export function assembleLevel(pack: LevelPack, picks: Picks, variety?: (SectionVariety | undefined)[]): LevelData {
   // Place: section 1 at the origin, each next entry anchor on the previous exit anchor.
   const placed: { x: number; y: number; v: SectionVersion }[] = [];
   let x = pack.origin[0], y = pack.origin[1];
   pack.sections.forEach((vs, i) => {
-    const v = vs[(picks[i] ?? 1) - 1];
-    if (!v) throw new Error(`assembleLevel: section ${i + 1} has no v${picks[i]}`);
+    const raw = vs[(picks[i] ?? 1) - 1];
+    if (!raw) throw new Error(`assembleLevel: section ${i + 1} has no v${picks[i]}`);
+    const sv = variety?.[i] && VARIETY.formationAOnly[pack.levelId as StageLevelId]?.includes(i + 1) ? { ...variety[i]!, formation: 'A' as const } : variety?.[i];
+    const v = sv ? applyVariety(raw, pack, sv) : raw;
     const prev = placed[i - 1];
     if (prev) { x = prev.x + prev.v.exit[0] + 1 - v.entry[0]; y = prev.y + prev.v.exit[1] - v.entry[1]; }
     placed.push({ x, y, v });

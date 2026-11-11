@@ -1,5 +1,6 @@
 // SFX player (08 §13.2, §15): plays what SfxMixer decides through Phaser's WebAudio sound manager.
 // Every call is a no-op until the browser unlocks audio (a key press, click or touch).
+import { music } from './music.ts';
 import type Phaser from 'phaser';
 import { SFX, SFX_RULES, sfxKey } from '../../data/sfx.ts';
 import { SfxMixer, type SfxListener, type SfxRequest } from './sfxRules.ts';
@@ -48,6 +49,8 @@ export class SfxPlayer {
       const key = sfxKey(p.id, p.variant);
       if (!this.scene.cache.audio.exists(key)) { this.mixer.release(p.handle); continue; }
       this.log.push(p.id);
+      // 08 §15 (M14): boss roars, the Dragon's roar and the jackpot duck the music while they play.
+      if (p.id.startsWith('boss_roar') || p.id === 'dragon_roar' || p.id === 'jackpot') music.duck(this.scene.cache.audio.get(key)?.duration ?? 1);
       const bus = SFX[p.id].bus ?? 'sfx';
       const baseVolume = p.volume * SFX_RULES.busTrim[bus];
       const s = this.scene.sound.add(key, { volume: baseVolume * gain, rate: p.rate, pan: p.pan });

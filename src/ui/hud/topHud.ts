@@ -55,6 +55,8 @@ export class TopHud {
   }
 
   /** `now` in ms (real time, 07 §1.3). */
+  /** The `vitals` group's parts (07 §4.1a). */
+  groupObjects(): { x: number; y: number }[] { return [...this.objs, ...this.flaskIcons] as unknown as { x: number; y: number }[]; }
   update(v: TopHudView, events: readonly WorldEvent[], now: number, shown = true): void {
     for (const o of this.objs) o.setVisible(shown);
     for (const i of this.flaskIcons) i.setVisible(shown);

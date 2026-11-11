@@ -15,12 +15,14 @@ export class TitleModel {
 }
 export class DeathModel {
   cursor = 0; guardLeft: number = U.death.guardSeconds;
+  readonly rows: readonly string[]; readonly commands: readonly (typeof U.deathShareCommands[number])[];
+  constructor(share = false) { this.rows = share ? U.deathShareRows : U.deathRows; this.commands = share ? U.deathShareCommands : U.deathCommands; }
   get canConfirm(): boolean { return this.guardLeft <= Number.EPSILON; }
   advance(seconds: number): void { this.guardLeft = Math.max(0, this.guardLeft - Math.min(UI_FRAME_SECONDS, Math.max(0, seconds))); }
-  action(action: HomePanelAction): typeof U.deathCommands[number] | null {
+  action(action: HomePanelAction): typeof U.deathShareCommands[number] | null {
     if (action === 'up') this.cursor = Math.max(0, this.cursor - 1);
-    if (action === 'down') this.cursor = Math.min(U.deathRows.length - 1, this.cursor + 1);
-    return action === 'confirm' && this.canConfirm ? U.deathCommands[this.cursor] : null;
+    if (action === 'down') this.cursor = Math.min(this.rows.length - 1, this.cursor + 1);
+    return action === 'confirm' && this.canConfirm ? this.commands[this.cursor] : null;
   }
 }
 export function deathCause(cause: string): string {

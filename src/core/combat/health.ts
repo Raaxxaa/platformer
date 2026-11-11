@@ -70,10 +70,10 @@ export function hurtPlayer(w: GameWorld, src: HurtSource): number {
   if (h.iframeTicks > 0) return 0;
   if (src.kind === 'enemyHit' && (b.dashIframes || h.abilityIframeTicks > 0)) return 0;
   // 2–4. Riposte, parry, block: hooks.
-  if (src.kind === 'enemyHit' && ripostes(w, src)) return 0;
+  if (src.kind === 'enemyHit' && ripostes(w, src)) { w.events.push({ t: 'parry' }); return 0; }      // 02 §5.2 step 3: a Riposte block emits `parry`
   // 3–4. The Shield: a parry answers the hit fully; a block lets ×0.25 damage through with no hurt reaction (02 §12).
   const guard = shieldGuard(w, src);
-  if (guard === 'parry') return 0;
+  if (guard === 'parry') { w.events.push({ t: 'parry' }); return 0; }
   const blocked = guard === 'block';
   // 5. Damage.
   // A practice hit (Sparring Dummy, 04 §2.11) deals 0 but runs the rest of the pipeline.

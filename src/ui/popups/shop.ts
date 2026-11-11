@@ -2,10 +2,10 @@
 import type Phaser from 'phaser';
 import { interactTarget } from '../../core/abilities/items.ts';
 import { cosmeticIcon, cosmeticName } from '../../data/cosmetics.ts';
-import { cosmeticStand } from '../../core/economy/shop.ts';
+import { cosmeticStand, flaskCap } from '../../core/economy/shop.ts';
 import { MERCHANT_LAYOUT, priceOf, upgradePrice } from '../../core/loot/merchant.ts';
 import type { GameWorld } from '../../core/sim/gameWorld.ts';
-import { FLASK, TICK_RATE } from '../../core/tuning.ts';
+import { TICK_RATE } from '../../core/tuning.ts';
 import { KEYS_MAX, PRICES } from '../../data/economy.ts';
 import { FONTS } from '../../data/animKeys.ts';
 import { DEPTH } from '../../data/art.ts';
@@ -16,7 +16,7 @@ export function serviceTag(w: GameWorld, kind: string, slot = 0): ServiceTag {
   let base = 0, word: string | null = null;
   if (kind === 'shop_cosmetic') { const c = cosmeticStand(w); return c.word ? { price: null, word: c.word } : { price: c.price, word: null }; }
   if (kind === 'ability_altar' || kind === 'merchant_altar') { const s = w.abilities.slots[slot]; if (!s) return { price: null, word: 'No ability', hidden: true }; if (s.level >= MERCHANT_LAYOUT.maxLevel) word = 'MAX'; else return { price: upgradePrice(w, s.level + 1), word: null }; }
-  else if (kind === 'shop_flask') { base = PRICES.flaskUpgrade; if (w.flask.maxCharges >= FLASK.MAX_CHARGES) word = 'MAX'; }
+  else if (kind === 'shop_flask') { base = PRICES.flaskUpgrade; if (w.flask.maxCharges >= flaskCap(w)) word = 'MAX'; }
   else if (kind === 'shop_refill') { base = PRICES.flaskRefill; if (w.flask.charges === w.flask.maxCharges) word = 'Full'; }
   else if (kind === 'shop_key') { base = PRICES.key; if (!w.shop?.keyInStock) return { price: null, word: null, hidden: true }; if (w.econ.keys >= KEYS_MAX) word = 'Keys full'; }
   else if (kind === 'shop_reroll') base = PRICES.rerollBase + PRICES.rerollStep * (w.shop?.rerollCount ?? 0);

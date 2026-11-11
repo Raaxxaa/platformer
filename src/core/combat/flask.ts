@@ -1,4 +1,5 @@
 // Heal flask: charges, drinking, kill-charged fill (02 §7).
+import { flaskKillMult } from '../run/twistFx.ts';
 import type { InputState } from '../input.ts';
 import { roundHalfUp } from '../math.ts';
 import type { GameWorld } from '../sim/gameWorld.ts';
@@ -31,7 +32,7 @@ export function addFlaskFill(w: GameWorld, tenths: number): void {
 
 export function onKillFill(w: GameWorld, tier: 'regular' | 'elite', extraTenths = 0): void {
   const mult = w.econ.buffs.includes('bloodrush') ? LUCKY_FX.bloodrushMult : 1;     // 05 §7.2 Bloodrush
-  addFlaskFill(w, ((tier === 'elite' ? FLASK.FILL_ELITE : FLASK.FILL_REGULAR) + statValue(w, 'bloodthirst') + extraTenths) * mult);
+  addFlaskFill(w, ((tier === 'elite' ? FLASK.FILL_ELITE : FLASK.FILL_REGULAR) + statValue(w, 'bloodthirst') + extraTenths) * mult * flaskKillMult(w));
 }
 
 function startDrink(w: GameWorld): void {

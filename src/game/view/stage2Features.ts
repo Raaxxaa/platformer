@@ -1,4 +1,5 @@
 // Stage2 terrain/effect drawing. Pure helpers have no Phaser runtime dependency.
+import { FALLING_ROCKS } from '../../data/hazards.ts';
 import type Phaser from 'phaser';
 import type { LevelObject } from '../../core/level/loadLevel.ts';
 import type { TileGrid } from '../../core/level/tiles.ts';
@@ -39,9 +40,12 @@ export function waterFrame(tick: number, tx: number): number {
 }
 
 export interface FeatureMarker { x: number; y: number; w: number }
+/** The rock warning's width: 25% when it appears, full width when the rock drops (M17). */
+export const rockWarnWidth = (ticksLeft: number): number =>
+  Math.round(S.rockMarkerWidth * (S.rockWarn.minFrac + (1 - S.rockWarn.minFrac) * (1 - Math.max(0, Math.min(1, ticksLeft / FALLING_ROCKS.warningTicks)))));
 /** Fixed targets come from their live attack state, never the current player position. */
 export function featureMarkers(w: GameWorld): FeatureMarker[] {
-  const out: FeatureMarker[] = w.fallingRocks.markers.map((m) => ({ x: m.x, y: m.floorY, w: S.rockMarkerWidth }));
+  const out: FeatureMarker[] = w.fallingRocks.markers.map((m) => ({ x: m.x, y: m.floorY, w: rockWarnWidth(m.ticks) }));
   for (const e of w.enemies) {
     const a = e.ai.attack;
     if (e.dead || !a || a.phase !== 'tele') continue;
@@ -238,6 +242,14 @@ export class Stage2FeatureView {
     for (const marker of featureMarkers(w)) if (this.visible(marker.x - marker.w / 2, marker.y - S.marker.height, marker.w, S.marker.height)) {
       const style = markerStyle(w, marker, viewSeconds);
       markerGfx.fillStyle(style.color, style.alpha).fillRect(Math.round(marker.x - marker.w / 2), marker.y - S.marker.height, marker.w, S.marker.height);
+    }
+    // Dust trickling down from the zone top over a rock warning (M17).
+    for (const m of w.fallingRocks.markers) {
+      const D = S.rockWarn, span = Math.max(1, m.floorY - m.topY);
+      for (let i = 0; i < D.dust; i++) {
+        const y = m.topY + ((viewSeconds * D.dustSpeed + (i * span) / D.dust) % span), x = m.x + (i - 1) * 4;
+        if (this.visible(x, y, D.dustSize, D.dustSize)) markerGfx.fillStyle(D.dustColor, 0.8).fillRect(Math.round(x), Math.round(y), D.dustSize, D.dustSize);
+      }
     }
     this.waterFx.update(w, events);
     for (const effect of this.waterFx.list) {

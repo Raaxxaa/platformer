@@ -102,7 +102,7 @@ describe('weapons (02 §10)', () => {
   it('projectile table (02 §10.4)', () => {
     expect(PLAYER_PROJECTILES.cannonball).toMatchObject({ speed: 520, range: 360, onWall: 'explode', blast: { w: 56, h: 56 } });
     expect(PLAYER_PROJECTILES.javelin).toMatchObject({ speed: 560, lifetime: 1.5, gravity: 300, pierce: 1, onWall: 'stick', w: 20, h: 4 });
-    expect(PLAYER_PROJECTILES.knife).toMatchObject({ speed: 640, range: 240, w: 8, h: 4 });
+    expect(PLAYER_PROJECTILES.knife).toMatchObject({ speed: 640, range: 240, w: 8, h: 6 });
     expect(PLAYER_PROJECTILES.wand_shot).toMatchObject({ speed: 420, range: 240, homing: { radius: 96, turnRate: 180 } });
   });
 });

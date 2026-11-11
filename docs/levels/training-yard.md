@@ -66,7 +66,7 @@ The builder turns this into `levels-src/training_yard/` like the Plains chunks.
 
 ## The end
 
-- **Checklist board:** lists all 17 stations with a check for each one done.
+- **Checklist board:** lists all 19 stations (18 Launch and juggle, 19 Dash attack: M15, placed after station 14) with a check for each one done.
 - **Armory (practice):** endless stands with every M4 ability and weapon (the M4 plan's armory), plus a training dummy with the DPS readout. Everything here is practice only.
 - **Exit** back to where you came from.
 

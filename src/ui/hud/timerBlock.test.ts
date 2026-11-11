@@ -21,7 +21,7 @@ describe('timer block and split alerts (07 §4.11, §6.9)', () => {
     expect(a.current?.event.index).toBe(2); a.clear(); expect(a.current).toBeNull();
   });
   it('caps the real frame entry point to0.1seconds so a long frame cannot erase an alert', () => {
-    const text = () => { const t = { setScrollFactor: () => t, setDepth: () => t, setOrigin: () => t, setTint: () => t, setMaxWidth: () => t }; return t; };
+    const text = () => { const t = { setScrollFactor: () => t, setDepth: () => t, setOrigin: () => t, setTint: () => t, setMaxWidth: () => t, setText: () => t }; return t; };
     const view = new TimerBlock({ add: { bitmapText: text } } as unknown as ConstructorParameters<typeof TimerBlock>[0]);
     view.alerts.push(split(0)); view.advance(10, false);
     expect(view.alerts.current?.elapsed).toBe(0.1); view.advance(10, true); expect(view.alerts.current?.elapsed).toBe(0.1);

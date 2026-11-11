@@ -1,6 +1,6 @@
 // Route choice is 07 §6.6. The temporary M7 summary uses the existing popup style.
 export const RUN_UI = {
-  depth: 1200, dimDepth: 89.5, dimAlpha: 0.60, border: 1, corner: 8, panelFrame: 'panel_9',
+  depth: 1200, heroX: 586, heroY: 112, dimDepth: 89.5, dimAlpha: 0.60, border: 1, corner: 8, panelFrame: 'panel_9',
   frameClamp: 0.10, stick: 0.5, textInset: 8, cursorGap: 8,
   glyphs: { keyboard: { confirm: 'ENT', back: 'ESC' }, pad: { confirm: 'A', back: 'B' } },
   route: {
@@ -15,5 +15,8 @@ export const RUN_UI = {
     panel: [112, 64, 416, 232], title: 'TO BE CONTINUED', titleY: 80,
     linesY: 112, lineGap: 14, textW: 384, buttons: ['Restart', 'Home Village', 'Title'],
     commands: ['restart', 'homeVillage', 'title'], buttonXs: [176, 276, 376], buttonY: 244, buttonW: 88, buttonH: 20, hintY: 276,
+    // M15: a Daily run adds Share (06 §14.1).
+    share: { buttons: ['Restart', 'Home Village', 'Title', 'Share'], commands: ['restart', 'homeVillage', 'title', 'share'], buttonXs: [128, 224, 320, 416] },
+    sharedText: 'Copied!', sharedY: 226,
   },
 } as const;

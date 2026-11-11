@@ -1,6 +1,8 @@
+import { ASSIST, type AssistSettings } from '../../data/assist.ts';
+import { validName } from '../run/leaderboard.ts';
 import { TOUCH } from '../../data/touch.ts';
 import { validateCosmetics, validateLook } from '../cosmetics/look.ts';
-import { classicLayout, LAYOUT, layoutCode, parseLayoutCode } from '../run/layout.ts';
+import { classicLayout, LAYOUT, layoutCode, parseLayoutCode, parseLayoutCodeFull } from '../run/layout.ts';
 import { migratePracticeKey } from '../run/practice.ts';
 // Full save validation (06 §15). Keep good entries; default missing fields. No storage or clock reads.
 import { ABILITY_INFO } from '../../data/abilities.ts';
@@ -10,14 +12,17 @@ import { BLUEPRINT_IDS, defaultRunStats, defaultSave, SAVE_RULES as S, SAVE_STAG
 import { RUN } from '../tuning.ts';
 import type { AbilityId, BondId, ClassId, HybridId } from '../abilities/types.ts';
 import type { WeaponId, WeaponInstance } from '../combat/types.ts';
-import type { ActionId, KitSummary, PbKey, PbRecord, RunRecord, RunStats, SaveData, SettingsData } from './schema.ts';
+import type { ActionId, KitSummary, PbKey, PbRecord, Road, RunRecord, RunStats, SaveData, SettingsData } from './schema.ts';
 import { migrateSave } from './migrate.ts';
+import { DAILY } from '../run/daily.ts';
 
 type Obj = Record<string, unknown>;
 const object = (raw: unknown): Obj => typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? raw as Obj : {};
 const integer = (raw: unknown): raw is number => typeof raw === 'number' && Number.isSafeInteger(raw) && raw >= 0;
 const text = (raw: unknown): raw is string => typeof raw === 'string' && raw.length > 0;
 const seed = (raw: unknown): raw is string => typeof raw === 'string' && raw.length > 0 && raw.length <= S.seedMaxLength && /^[A-Z0-9]+$/.test(raw);
+/** A run's seed: a typed or random seed, or a daily's `DAILY-YYYYMMDD` (06 §14.1). */
+const runSeedText = (raw: unknown): raw is string => seed(raw) || (typeof raw === 'string' && /^DAILY-\d{8}$/.test(raw));
 const has = <T extends string>(values: readonly T[], raw: unknown): raw is T => typeof raw === 'string' && values.includes(raw as T);
 const road = (raw: unknown): raw is 'mountain' | 'forest' => raw === 'mountain' || raw === 'forest';
 const cls = (raw: unknown): raw is ClassId => has(CLASS_IDS, raw);
@@ -86,18 +91,18 @@ function personalBest(raw: unknown): PbRecord | null {
 /** 06 §15.2: a missing or bad layout code (saves before M11) is the classic layout. */
 function layoutField(raw: unknown): RunRecord['layout'] {
   const o = typeof raw === 'object' && raw !== null ? raw as Record<string, unknown> : {};
-  return Object.fromEntries(LAYOUT.stages.map((s) => [s, typeof o[s] === 'string' && parseLayoutCode(o[s] as string) ? o[s] : layoutCode(classicLayout())])) as RunRecord['layout'];
+  return Object.fromEntries(LAYOUT.stages.map((s) => [s, typeof o[s] === 'string' && parseLayoutCodeFull(o[s] as string) ? o[s] : layoutCode(classicLayout())])) as RunRecord['layout'];
 }
 function runRecord(raw: unknown): RunRecord | null {
   const h = object(raw), times = splits(h.splits, true), gear = kit(h.kit), stats = runStats(h.stats, true);
   if (!isoDate(h.date) || !cls(h.startClass) || !startWeapon(h.startClass, h.startWeapon) || !(h.road === null || road(h.road))
-    || !seed(h.seedText) || typeof h.seeded !== 'boolean' || !has(['complete', 'death', 'restart', 'quit'], h.result)
+    || !runSeedText(h.seedText) || typeof h.seeded !== 'boolean' || !has(['complete', 'death', 'restart', 'quit'], h.result)
     || !integer(h.stageReached) || h.stageReached < 1 || h.stageReached > RUN.STAGE_COUNT || !integer(h.sectionReached) || h.sectionReached > S.maxSection
     || !integer(h.runTicks) || !times || times.some((tick) => tick !== null && tick > (h.runTicks as number))
     || !(h.cause === null || text(h.cause)) || !has(['absent', 'skipped', 'escaped', 'killed'], h.dragon) || !gear || !stats) return null;
   if ((h.result === 'restart' || h.result === 'quit') && h.runTicks < S.historyMinTicks) return null;
   if (h.result === 'complete' && (h.road === null || h.stageReached !== RUN.STAGE_COUNT || times.includes(null) || h.runTicks !== times.at(-1))) return null;
-  return { date: h.date, startClass: h.startClass, startWeapon: h.startWeapon, road: h.road, seedText: h.seedText, seeded: h.seeded,
+  return { date: h.date, startClass: h.startClass, startWeapon: h.startWeapon, road: h.road, seedText: h.seedText, seeded: h.seeded, ...(h.assist === true ? { assist: true } : {}), ...(h.mode === 'daily' || h.mode === 'bossRush' ? { mode: h.mode } : {}),
     result: h.result, stageReached: h.stageReached as RunRecord['stageReached'], sectionReached: h.sectionReached, runTicks: h.runTicks,
     splits: times, cause: h.cause, dragon: h.dragon, kit: gear, stats, layout: layoutField(h.layout) };
 }
@@ -128,6 +133,19 @@ function settings(raw: unknown, defaults: SettingsData): SettingsData {
   for (const key of ['showTimer', 'screenShake', 'damageNumbers'] as const) if (typeof source[key] === 'boolean') result[key] = source[key];
   if (has(['auto', 'keyboard', 'xbox', 'playstation'], source.promptStyle)) result.promptStyle = source.promptStyle;
   result.touch = touchSettings(source.touch, defaults.touch);
+  const a = (source.assist ?? {}) as Record<string, unknown>;
+  result.assist = {
+    speed: (ASSIST.speeds as readonly number[]).includes(a.speed as number) ? a.speed as AssistSettings['speed'] : 1,
+    damageTaken: (ASSIST.damage as readonly number[]).includes(a.damageTaken as number) ? a.damageTaken as AssistSettings['damageTaken'] : 1,
+    extraFlask: a.extraFlask === true, longerDoors: a.longerDoors === true,
+  };
+  const on = (source.online ?? {}) as Record<string, unknown>;
+  result.online = { name: typeof on.name === 'string' && validName(on.name) ? on.name : null, enabled: on.enabled !== false };
+  result.hud = {};
+  if (source.hud && typeof source.hud === 'object') for (const g of ['vitals', 'slots', 'timer'] as const) {
+    const p = (source.hud as Record<string, unknown>)[g] as { x?: unknown; y?: unknown } | undefined;
+    if (p && typeof p.x === 'number' && typeof p.y === 'number' && Number.isFinite(p.x) && Number.isFinite(p.y)) result.hud[g] = { x: p.x, y: p.y };
+  }
   const bindings = object(source.bindings), keyboard = object(bindings.keyboard), gamepad = object(bindings.gamepad);
   const keys = structuredClone(defaults.bindings.keyboard), pads = { ...defaults.bindings.gamepad }, actions = Object.keys(keys) as ActionId[];
   let keysValid = true, padsValid = true; const usedKeys = new Set<string>(), usedPads = new Set<number>();
@@ -162,6 +180,8 @@ export function validateSave(raw: unknown): SaveData {
   const progress = object(source.progress), unlocks = object(source.unlocks), startWeapons = object(unlocks.startWeapons), totals = object(source.stats);
   result.progress.levelsReached = [...new Set(['plains', ...unique(progress.levelsReached, (value): value is string => has(SAVE_STAGE_IDS, value))])];
   if (typeof progress.stage1Cleared === 'boolean') result.progress.stage1Cleared = progress.stage1Cleared;
+  if (progress.assistOffered === true) result.progress.assistOffered = true;
+  if (progress.kingBeaten === true) result.progress.kingBeaten = true;
   const discoveries = [...Object.values(BONDS).map((bond) => bond.id), ...Object.values(HYBRIDS).map((hybrid) => hybrid.id)];
   result.progress.classesDiscovered = unique(progress.classesDiscovered, (value): value is BondId | HybridId => has(discoveries, value));
   result.unlocks.blueprints = unique(unlocks.blueprints, (value): value is WeaponId | AbilityId => has(BLUEPRINT_IDS, value));
@@ -177,9 +197,38 @@ export function validateSave(raw: unknown): SaveData {
     if (pbKey(key) && Array.isArray(value) && value.length === RUN.STAGE_COUNT && value.every((tick) => tick === null || integer(tick))) result.bestSegments[key] = [...value] as NonNullable<SaveData['bestSegments'][PbKey]>;
   }
   for (const [key, value] of Object.entries(object(source.practiceBests))) if (practiceKey(key) && integer(value)) result.practiceBests[migratePracticeKey(key)] = value;
+  result.daily = validateDaily(source.daily);
+  { const q = object(source.onlineQueue); if (typeof q.day === 'string' && /^\d{8}$/.test(q.day) && typeof q.name === 'string' && validName(q.name) && integer(q.ticks) && typeof q.class === 'string' && typeof q.weapon === 'string' && typeof q.road === 'string')
+    result.onlineQueue = { day: q.day, name: q.name, ticks: q.ticks as number, class: q.class, weapon: q.weapon, road: q.road, assist: q.assist === true }; }
+  if (Array.isArray(source.seedBests)) result.seedBests = source.seedBests.map(object).filter((b) => typeof b.seed === 'string' && runSeedText(b.seed) && integer(b.ticks)).slice(0, 50).map((b) => ({ seed: b.seed as string, ticks: b.ticks as number }));
+  for (const [key, value] of Object.entries(object(source.bossRushBests))) {
+    const [c, d] = key.split('|'), v = object(value);
+    if (cls(c) && (d === 'dragon' || d === 'no_dragon') && integer(v.ticks) && Array.isArray(v.splits) && v.splits.every(integer)) result.bossRushBests[key as `${ClassId}|dragon`] = { ticks: v.ticks as number, splits: [...v.splits] as number[] };
+  }
   result.cosmetics = validateCosmetics(source.cosmetics);
   result.look = validateLook(source.look, result.cosmetics.owned);
   result.history = (Array.isArray(source.history) ? source.history.map(runRecord).filter((entry): entry is RunRecord => entry !== null) : [])
     .sort((a, b) => b.date.localeCompare(a.date)).slice(0, S.historyLimit);
   return result;
+}
+
+function dailyResult(v: unknown): import('../run/daily.ts').DailyResult | null {
+  const r = object(v);
+  if ((r.result !== 'complete' && r.result !== 'death') || !integer(r.ticks) || !integer(r.stageReached) || (r.stageReached as number) < 1 || (r.stageReached as number) > RUN.STAGE_COUNT) return null;
+  if (!Array.isArray(r.splits) || r.splits.length !== RUN.STAGE_COUNT || !r.splits.every((t) => t === null || integer(t))) return null;
+  if (r.road !== null && !road(r.road)) return null;
+  return { result: r.result, ticks: r.ticks as number, stageReached: r.stageReached as number, splits: [...r.splits] as (number | null)[], road: r.road as Road | null, assist: r.assist === true };
+}
+function validateDaily(v: unknown): import('../run/daily.ts').DailyBook {
+  const out: import('../run/daily.ts').DailyBook = {};
+  for (const [day, raw] of Object.entries(object(v))) {
+    if (!/^\d{8}$/.test(day)) continue;
+    const e = object(raw);
+    if (!integer(e.attempts)) continue;
+    const official = e.official === null || e.official === undefined ? null : dailyResult(e.official);
+    out[day] = { official, bestTicks: integer(e.bestTicks) ? e.bestTicks as number : null, attempts: e.attempts as number, ...(e.sent === true ? { sent: true } : {}) };
+  }
+  const days = Object.keys(out).sort();
+  for (const d of days.slice(0, Math.max(0, days.length - DAILY.keepDays))) delete out[d];
+  return out;
 }

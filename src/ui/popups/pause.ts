@@ -30,6 +30,8 @@ export class PauseView {
   }
 
   destroy(): void { this.c.destroy(); }
+  /** Hidden while the HUD layout editor needs the screen (07 §4.1a). */
+  setVisible(on: boolean): void { this.c.setVisible(on); }
 
   private t(x: number, y: number, s: string, color: number = UI_COLOR.text, font: string = FONTS.small) {
     const o = this.scene.add.bitmapText(P.panel[0] + x, P.panel[1] + y, font, s).setTint(color);

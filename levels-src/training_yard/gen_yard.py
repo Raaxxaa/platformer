@@ -23,6 +23,7 @@ legend = {
     'D': {'type': 'enemy', 'enemy': 'training_dummy', 'facing': -1},
     'X': {'type': 'enemy', 'enemy': 'sparring_dummy', 'facing': -1},
     't': {'type': 'enemy', 'enemy': 'straw_target', 'facing': -1},
+    'j': {'type': 'enemy', 'enemy': 'juggle_target', 'facing': -1},
     'B': {'type': 'checklist_board'},
 }
 
@@ -196,6 +197,21 @@ def s14(x0):
     return x0 + 46
 
 
+# ================================================================ M15 — Smash-style moves (02 §9.6a), after station 14
+def s18(x0):                                      # a straw target on the ground: launch it, then hit it twice in the air
+    ground(x0, x0 + 16, G)
+    put(x0 + 9, G - 1, 'j')
+    station(18, x0, x0 + 16, '↑ + Attack — launch, then jump and keep hitting', 'juggle')
+    return x0 + 16
+
+
+def s19(x0):                                      # dash into a straw target and attack during the dash
+    ground(x0, x0 + 20, G)
+    put(x0 + 14, G - 1, 't')
+    station(19, x0, x0 + 20, 'Attack during a dash — Rushing Strike', 'dashAttack')
+    return x0 + 20
+
+
 # ================================================================ Part C — speed techniques
 def s15(x0):
     ground(x0, x0 + 26, G)
@@ -268,7 +284,7 @@ def main():
     x = s6(x + 1, f)
     x = s7(x + 1, f)
     x = s8(x + 1)
-    for s in (s9, s10, s11, s12, s13, s14, s15, s16, s17):
+    for s in (s9, s10, s11, s12, s13, s14, s18, s19, s15, s16, s17):
         x = s(x + 1)
     x = loot_corner(x + 1)
     x = end(x + 1)
