@@ -7,7 +7,7 @@ const g = (page: Page, fn: string, ...a: unknown[]) => page.evaluate(([fn, a]) =
 test('Boss Rush: locked, then setup → all five bosses → result', async ({ page }) => {
   test.setTimeout(120_000);
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1');
+  await page.goto('/?debug=1&records=1');
   await page.waitForFunction(() => (window as any).__game?.ready);
   await page.keyboard.press('Space');
   await g(page, 'titleRun', 'bossRush');

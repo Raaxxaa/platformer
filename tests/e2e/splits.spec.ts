@@ -14,7 +14,7 @@ async function boot(page: Page, seeded = false, showTimer = true, level = 'plain
     }));
   }, { pbs, showTimer });
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(`/?debug=1&start=${level}&kit=tank:war_maul${seeded ? '&seed=TIMECHECK' : ''}`);
+  await page.goto(`/?debug=1&records=1&start=${level}&kit=tank:war_maul${seeded ? '&seed=TIMECHECK' : ''}`);
   await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => (window as any).__game.setManual(true));
   return errors;

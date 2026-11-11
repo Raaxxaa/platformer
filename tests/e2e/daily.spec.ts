@@ -7,7 +7,7 @@ const g = (page: Page, fn: string, ...a: unknown[]) => page.evaluate(([fn, a]) =
 test('Daily: the title row, the seeded run, the official death and Share', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1');
+  await page.goto('/?debug=1&records=1');
   await page.waitForFunction(() => (window as any).__game?.ready);
   await page.keyboard.press('Space'); await frames(page);
   await page.screenshot({ path: 'test-results/m15-title-daily.png' });
@@ -36,7 +36,7 @@ test('Daily: the title row, the seeded run, the official death and Share', async
 
 test('Seed challenge: a past day plays with that day\'s seed, never official', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1');
+  await page.goto('/?debug=1&records=1');
   await page.waitForFunction(() => (window as any).__game?.ready);
   await page.keyboard.press('Space');
   await g(page, 'titleRun', 'daily');

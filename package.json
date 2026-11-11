@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@capacitor/core": "^8.6.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/preferences": "^8.0.1",
     "phaser": "4.2.1"
   },
   "devDependencies": {

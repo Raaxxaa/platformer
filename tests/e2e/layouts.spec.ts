@@ -12,7 +12,7 @@ for (const level of STAGES) {
       test(`${level} section ${section} version ${v}`, async ({ page }) => {
         const errors: string[] = [];
         page.on('pageerror', (e) => errors.push(e.message));
-        await page.goto(`/?debug=1&start=${level}&seed=LAYOUT&section=${section}&layout=${code(section, v)}&kit=swordsman:greatsword`);
+        await page.goto(`/?debug=1&records=1&start=${level}&seed=LAYOUT&section=${section}&layout=${code(section, v)}&kit=swordsman:greatsword`);
         await page.waitForFunction(() => (window as any).__game?.ready === true);
         const got = await page.evaluate((s) => { const g = (window as any).__game; g.setManual(true); g.step(2, {}); g.overview(s); return g.layoutCode(); }, section);
         expect(got).toBe(code(section, v));
@@ -27,7 +27,7 @@ for (const level of STAGES) {
 test('the run picks its layout from the seed, and the same seed gives the same layout', async ({ page }) => {
   const codes: string[] = [];
   for (let i = 0; i < 2; i++) {
-    await page.goto('/?debug=1&start=plains&seed=SAMESEED&kit=swordsman:greatsword');
+    await page.goto('/?debug=1&records=1&start=plains&seed=SAMESEED&kit=swordsman:greatsword');
     await page.waitForFunction(() => (window as any).__game?.ready === true);
     codes.push(await page.evaluate(() => (window as any).__game.layoutCode()));
   }
@@ -38,7 +38,7 @@ test('the run picks its layout from the seed, and the same seed gives the same l
 test('practice on a chosen layout: the best is saved under its layout code', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(() => { if (!localStorage.getItem('rushblade.save')) localStorage.setItem('rushblade.save', JSON.stringify({ v: 1, lastKit: { cls: 'swordsman', weapon: 'greatsword' } })); });
-  await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.title);
+  await page.goto('/?debug=1&records=1'); await page.waitForFunction(() => (window as any).__game?.title);
   await page.evaluate(() => (window as any).__game.titleChoose(4));
   await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().screen)).toBe('practice');
   const act = (...a: string[]) => page.evaluate((list) => { for (const x of list) (window as any).__game.screenAction(x); }, a);

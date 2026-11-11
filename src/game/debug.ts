@@ -37,6 +37,13 @@ declare global {
 }
 
 /** Dev builds, or any build opened with ?debug=1. */
+/** Review C1: a `?debug=1` run writes no personal bests, daily or seed results, boss rush or practice bests, and sends
+ * nothing to the leaderboard. Tests that check those writes opt back in with `&records=1`. */
+export function recordsOff(): boolean {
+  if (typeof window === 'undefined') return false;
+  const q = new URLSearchParams(window.location.search);
+  return q.get('debug') === '1' && q.get('records') !== '1';
+}
 export function debugEnabled(): boolean {
   return import.meta.env.DEV || new URLSearchParams(window.location.search).get('debug') === '1';
 }

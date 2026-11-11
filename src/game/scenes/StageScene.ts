@@ -1,5 +1,6 @@
 // M3 stage scene: loads public/levels/<id>.json and plays it, with doors, loot markers, hints, the boss bar,
 // the run timer, the split popup and the temporary stage-clear screen.
+import { recordsOff } from '../debug.ts';
 import { afterDailyFinish } from '../online/onlineUi.ts';
 import { DailyStandingView } from '../../ui/screens/leaderboard.ts';
 import { TWIST_NAME, TWIST_TEXT } from '../../data/twists.ts';
@@ -467,7 +468,7 @@ export class StageScene extends WorldScene {
       const ticks = w.tick - Math.max(0, lock);
       if (bossDown(a, ticks, w.health.hp, w.health.maxHp)) {
         let isNew = false;
-        saveStore().update((s) => { isNew = applyBossRushBest(s.bossRushBests, a); });
+        if (!recordsOff()) saveStore().update((s) => { isNew = applyBossRushBest(s.bossRushBests, a); });
         this.openRushResult(isNew);
       } else { this.rushNext = a.fights[a.index].levelId; this.rushFadeAt = this.time.now; }
       return;

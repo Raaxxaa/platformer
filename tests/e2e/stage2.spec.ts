@@ -25,7 +25,7 @@ for (const road of ['mountains', 'swamps'] as const) {
     const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
     for (let index = 1; index <= 8; index++) {
       // A fresh scene keeps an earlier arena's real camera lock out of later section photos.
-      await page.goto(`/?debug=1&start=${road}&section=${index}&seed=M71VIEW&kit=tank:war_maul`);
+      await page.goto(`/?debug=1&records=1&start=${road}&section=${index}&seed=M71VIEW&kit=tank:war_maul`);
       await arrive(page, road);
       expect(await page.evaluate(() => (window as any).__game.levelId())).toBe(road);
       await page.evaluate(() => (window as any).__game.step(1, {}));
@@ -46,7 +46,7 @@ for (const route of [{ road: 'mountain', level: 'mountains', boss: 'stone_coloss
   test(`${route.road}: real Plains carry, inn, Guardian split 2, stat choice, Border and Stage 3`, async ({ page }) => {
     const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
     const typed = route.road === 'forest';
-    await page.goto(`/?debug=1&start=plains&kit=tank:war_maul${typed ? '&seed=M71RUN' : ''}`);
+    await page.goto(`/?debug=1&records=1&start=plains&kit=tank:war_maul${typed ? '&seed=M71RUN' : ''}`);
     await arrive(page, 'plains');
     const split1 = await page.evaluate(() => {
       const g = (window as any).__game, boss = g.arenas().find((a: any) => a.kind === 'boss').rect;

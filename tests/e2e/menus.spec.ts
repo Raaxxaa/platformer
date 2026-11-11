@@ -5,7 +5,7 @@ import { defaultSave } from '../../src/data/save.ts';
 const frames = (page: Page) => page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 async function title(page: Page) {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.ready);
+  await page.goto('/?debug=1&records=1'); await page.waitForFunction(() => (window as any).__game?.ready);
   return errors;
 }
 async function waitScreen(page: Page, screen: string) {
@@ -103,7 +103,7 @@ test('settings save and apply now, survive reload, and affect the actual game HU
   await page.reload(); await page.waitForFunction(() => (window as any).__game?.ready);
   expect(await page.evaluate(() => (window as any).__game.save().settings)).toMatchObject(expected);
   expect(await page.evaluate(() => (window as any).__game.appliedSettings())).toMatchObject(expected);
-  await page.goto('/?debug=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
+  await page.goto('/?debug=1&records=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => (window as any).__game.setManual(true)); await frames(page);
   expect(await page.evaluate(() => (window as any).__game.timerBlock().timeVisible)).toBe(false);
   expect(await page.evaluate(() => (window as any).__game.timerBlock().segmentVisible)).toBe(false);
@@ -166,7 +166,7 @@ test('invalid and canceled imports keep the old save; confirmed import replaces 
 
 test('typing in a paused-run import cannot operate menus or the game, and Back keeps the run paused', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
+  await page.goto('/?debug=1&records=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
   const before = await page.evaluate(() => {
     const g = (window as any).__game; g.setManual(true); g.step(120, {}); g.openPause();
     g.pauseAction('down'); g.pauseAction('down'); g.pauseAction('confirm');
@@ -198,7 +198,7 @@ test('confirmed imported bindings and timer settings apply to the already loaded
   imported.settings.bindings.keyboard.jump = ['KeyZ', null]; imported.settings.showTimer = false;
   imported.settings.bindings.keyboard.pause = ['Escape', 'KeyT'];
   const code = encodeSave(imported), errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
+  await page.goto('/?debug=1&records=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => {
     const g = (window as any).__game; g.setManual(true); g.step(120, {}); g.openPause();
     g.pauseAction('down'); g.pauseAction('down'); g.pauseAction('confirm');
@@ -236,7 +236,7 @@ test('fresh gamepad Start resumes the same road popup after pausing it', async (
     const pad = { connected: true, mapping: 'standard', axes: [0, 0], buttons: Array.from({ length: 16 }, () => ({ pressed: false, value: 0 })) };
     (window as any).__menuPad = pad; Object.defineProperty(navigator, 'getGamepads', { value: () => [pad] });
   });
-  await page.goto('/?debug=1&start=crossroads&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
+  await page.goto('/?debug=1&records=1&start=crossroads&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(1, {}); g.teleport(680, 320); g.step(1, { interact: true }); g.setManual(false); });
   await expect.poll(() => page.evaluate(() => (window as any).__game.runState().phase)).toBe('routeChoice');
   await frames(page);
@@ -269,7 +269,7 @@ test('fixed menu navigation wins over an imported Pause key in Pause and stat ch
   const saved = defaultSave(); saved.lastKit = { cls: 'tank', weapon: 'war_maul' };
   saved.settings.bindings.keyboard.left = ['KeyH', 'ArrowLeft']; saved.settings.bindings.keyboard.pause = ['Escape', 'KeyA'];
   await page.addInitScript((value) => localStorage.setItem('rushblade.save', value), JSON.stringify(saved));
-  await page.goto('/?debug=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
+  await page.goto('/?debug=1&records=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
   await page.keyboard.press('Escape');
   await expect.poll(() => page.evaluate(() => (window as any).__game.runState().phase)).toBe('paused');
   await page.evaluate(() => (window as any).__game.pauseAction('right'));
@@ -291,7 +291,7 @@ test('fixed menu navigation wins over an imported Pause key in Pause and stat ch
 
 test('a real death opens a guarded summary and Change class loads Home without duplicate history', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
+  await page.goto('/?debug=1&records=1&start=plains&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
   const death = await page.evaluate(() => {
     const g = (window as any).__game; g.setManual(true); g.setHp(1);
     const b = g.body(); g.spawn('bandit', b.x + 20, b.y, -1);

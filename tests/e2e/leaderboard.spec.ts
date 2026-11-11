@@ -23,7 +23,7 @@ test('Leaderboard: the queued score is sent on launch; Title → Daily → Leade
       onlineQueue: { day, name: 'Me_Me', ticks: 61234, class: 'archer', weapon: 'bow', road: 'mountain', assist: false },
       daily: { [day]: { official: { result: 'complete', ticks: 61234, stageReached: 4, splits: [1, 2, 3, 61234], road: 'mountain', assist: false }, bestTicks: 61234, attempts: 1 } } }));
   }, [day]);
-  await page.goto(`/?debug=1&online=${encodeURIComponent(HOST)}`);
+  await page.goto(`/?debug=1&records=1&online=${encodeURIComponent(HOST)}`);
   await page.waitForFunction(() => (window as any).__game?.ready);
   await expect.poll(() => posted.length).toBe(1);
   expect(posted[0]).toEqual({ day, name: 'Me_Me', ticks: 61234, class: 'archer', weapon: 'bow', road: 'mountain', assist: false });

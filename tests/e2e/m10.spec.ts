@@ -5,7 +5,7 @@ const frames = (page: Page) => page.evaluate(() => new Promise<void>((r) => requ
 const save = (extra: Record<string, unknown> = {}) => JSON.stringify({ v: 1, progress: { levelsReached: ['plains', 'mountains', 'swamps', 'kingdom'], stage1Cleared: true, classesDiscovered: [] }, ...extra });
 const seedSave = (page: Page, data: string) => page.addInitScript((d) => { if (!localStorage.getItem('rushblade.save')) localStorage.setItem('rushblade.save', d); }, data);
 async function title(page: Page) {
-  await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.title);
+  await page.goto('/?debug=1&records=1'); await page.waitForFunction(() => (window as any).__game?.title);
 }
 async function openPractice(page: Page) {
   await page.evaluate(() => (window as any).__game.titleChoose(4));
@@ -29,7 +29,7 @@ async function killBoss(page: Page) {
 
 test('a typed seed is saved from the Home Village board and shown in practice and on the HUD', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1&start=home');
+  await page.goto('/?debug=1&records=1&start=home');
   await page.waitForFunction(() => (window as any).__game?.ready && (window as any).__game.levelId?.() === 'home');
   await page.evaluate(() => (window as any).__game.setManual(true));
   await page.evaluate(() => (window as any).__game.openHomePanel('seed'));
@@ -38,7 +38,7 @@ test('a typed seed is saved from the Home Village board and shown in practice an
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => (window as any).__game.save().typedSeed)).toBe('RACE7');
   // The same seed shows on the practice setup and the practice HUD, and the run is seeded (no records).
-  await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.title);
+  await page.goto('/?debug=1&records=1'); await page.waitForFunction(() => (window as any).__game?.title);
   await openPractice(page);
   expect(await page.evaluate(() => (window as any).__game.screenState().model.seed)).toBe('RACE7');
   await act(page, 'down', 'down', 'down', 'down', 'confirm');                  // past the Layout row (M11): Start

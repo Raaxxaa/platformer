@@ -1,4 +1,5 @@
 // Browser session: the sole save repository and the source to return to after Training.
+import { recordsOff } from './debug.ts';
 import { isAssisted } from '../core/run/runState.ts';
 import { assembleLevel, type LevelPack, type Picks } from '../core/level/assemble.ts';
 import { classicLayout, layoutCode, rollLayout, rollVariety } from '../core/run/layout.ts';
@@ -96,6 +97,7 @@ export const gameSession = {
       if (e.t === 'runCompleted') this.endRun(w, 'complete');
       if (e.t === 'split') saveStore().update((s) => {
         if (e.index === 1) s.progress.stage1Cleared = true;
+        if (recordsOff()) return;
         if (!w.run.seeded && !w.opts.practice) s.bestSegments = structuredClone(w.records.bestSegments);
         if (savePersonalBest(w.run, w.records, saveDate(), { displayName: w.classState.displayName, weapons: w.combat.slots,
           abilities: w.abilities.slots.map((a) => a ? { id: a.id, level: a.level } : null) }, w.opts.practice)) {
@@ -112,7 +114,7 @@ export const gameSession = {
   practiceEvents(w: GameWorld): void {
     const setup = w.opts.practiceSetup;
     for (const e of [...w.events]) {
-      if (e.t !== 'practiceCleared' || !setup || !w.practiceClear || isAssisted(w.run)) continue;   // 06 §5.4: assisted practice writes no best
+      if (e.t !== 'practiceCleared' || !setup || !w.practiceClear || isAssisted(w.run) || recordsOff()) continue;   // 06 §5.4: assisted practice writes no best
       const key = practiceKey(setup.levelId, setup.cls, layoutCode(w.opts.layout ?? classicLayout()));
       saveStore().update((s) => {
         const old = s.practiceBests[key], r = applyPracticeTime(s.practiceBests, key, e.ticks);
@@ -122,15 +124,15 @@ export const gameSession = {
     }
   },
   flushRunEnds(w: GameWorld): void {
-    for (const ended of w.pendingRunEnds.splice(0)) saveStore().update((s) => { appendHistory(s, ended, saveDate()); s.daily = recordDailyEnd(s.daily, ended); });
+    for (const ended of w.pendingRunEnds.splice(0)) saveStore().update((s) => { appendHistory(s, ended, saveDate()); if (!recordsOff()) s.daily = recordDailyEnd(s.daily, ended); });
   },
   endRun(w: GameWorld, result: RunRecord['result'], cause: string | null = null): void {
     const ended = captureRunEnd(w, result, cause); if (!ended) return;
     w.run.endRecorded = true;
     saveStore().update((s) => {
       appendHistory(s, ended, saveDate());
-      s.daily = recordDailyEnd(s.daily, ended);
-      if (result === 'complete' && w.run.challenge && !isAssisted(w.run)) { const r = recordSeedBest(s.seedBests, w.run.seedText, w.run.runTicks); s.seedBests = r.bests; if (r.isNew) w.events.push({ t: 'pbSaved' }); }
+      if (!recordsOff()) s.daily = recordDailyEnd(s.daily, ended);
+      if (!recordsOff() && result === 'complete' && w.run.challenge && !isAssisted(w.run)) { const r = recordSeedBest(s.seedBests, w.run.seedText, w.run.runTicks); s.seedBests = r.bests; if (r.isNew) w.events.push({ t: 'pbSaved' }); }
       if (result === 'death') s.stats.deaths++;
       if (result === 'complete') s.stats.runsCompleted++;
     });

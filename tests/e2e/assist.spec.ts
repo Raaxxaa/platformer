@@ -6,7 +6,7 @@ const g = (page: Page, fn: string, ...a: unknown[]) => page.evaluate(([fn, a]) =
 
 test('the Assist page sets 70% speed and 50% damage; the run shows ASSIST, takes half damage and writes no best', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1');
+  await page.goto('/?debug=1&records=1');
   await page.waitForFunction(() => (window as any).__game?.ready);
   await g(page, 'titleChoose', 3);
   await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().screen)).toBe('settings');
@@ -16,7 +16,7 @@ test('the Assist page sets 70% speed and 50% damage; the run shows ASSIST, takes
   await g(page, 'screenAction', 'down'); await g(page, 'screenAction', 'right'); await g(page, 'screenAction', 'right');   // damage 50%
   await frames(page); await page.screenshot({ path: 'test-results/m14-assist-page.png' });
   expect((await g(page, 'save')).settings.assist).toMatchObject({ speed: 0.7, damageTaken: 0.5 });
-  await page.goto('/?debug=1&start=plains&seed=ASSIST&kit=swordsman:greatsword');
+  await page.goto('/?debug=1&records=1&start=plains&seed=ASSIST&kit=swordsman:greatsword');
   await page.waitForFunction(() => (window as any).__game?.ready === true);
   await page.waitForTimeout(500);
   const hp = (await g(page, 'runState')).assist;

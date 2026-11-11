@@ -17,7 +17,7 @@ test('P and gamepad Start pause an open road choice and resume the same popup', 
     const pad = { connected: true, mapping: 'standard', axes: [0, 0], buttons: Array.from({ length: 16 }, () => ({ pressed: false, value: 0 })) };
     (window as any).__testPad = pad; Object.defineProperty(navigator, 'getGamepads', { value: () => [pad] });
   });
-  await page.goto('/?debug=1&start=crossroads&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
+  await page.goto('/?debug=1&records=1&start=crossroads&kit=tank:war_maul'); await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(1, {}); g.teleport(680, 320); g.step(1, { interact: true }); g.setManual(false); });
   await page.waitForFunction(() => (window as any).__game.routeChoice?.() !== null);
   await page.keyboard.press('p'); await expect.poll(() => page.evaluate(() => (window as any).__game.runState().phase)).toBe('paused');
@@ -40,7 +40,7 @@ test('P and gamepad Start pause an open road choice and resume the same popup', 
 });
 test('Crossroads inn saves the road, sleeps exactly120ticks, and loads the real Forest road', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1&start=crossroads&kit=tank:war_maul');
+  await page.goto('/?debug=1&records=1&start=crossroads&kit=tank:war_maul');
   await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(1, {}); g.setHp(21); g.teleport(680, 320); g.step(1, { interact: true }); });
   await page.waitForFunction(() => (window as any).__game.routeChoice?.() !== null);
@@ -63,7 +63,7 @@ test('Crossroads inn saves the road, sleeps exactly120ticks, and loads the real 
 test('The Rebel Camp inn leads to the castle; the victory summary Home restores the saved starting kit and Crossroads keeps the saved road', async ({ page }) => {
   const saved = defaultSave(); saved.lastKit = { cls: 'tank', weapon: 'war_maul' }; saved.lastRoad = 'forest';
   await page.addInitScript(save => localStorage.setItem('rushblade.save', JSON.stringify(save)), saved);
-  await page.goto('/?debug=1&start=rebel_camp');
+  await page.goto('/?debug=1&records=1&start=rebel_camp');
   await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(1, {}); g.setGold(999); g.teleport(680, 320); g.step(1, { interact: true }); });
   await page.evaluate(() => { const g = (window as any).__game; g.step(60, {}); });
@@ -82,7 +82,7 @@ test('The Rebel Camp inn leads to the castle; the victory summary Home restores 
   await page.waitForFunction(() => (window as any).__game?.ready && (window as any).__game.levelId?.() === 'home');
   await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(120, {}); });
   expect(await page.evaluate(() => ({ phase: (window as any).__game.runState().phase, ticks: (window as any).__game.runState().runTicks, gold: (window as any).__game.loot().gold, kit: (window as any).__game.save().lastKit }))).toEqual({ phase: 'homeVillage', ticks: 0, gold: 0, kit: { cls: 'tank', weapon: 'war_maul' } });
-  await page.goto('/?debug=1&start=crossroads&kit=tank:war_maul');
+  await page.goto('/?debug=1&records=1&start=crossroads&kit=tank:war_maul');
   await page.waitForFunction(() => (window as any).__game?.ready);
   await page.evaluate(() => { const g = (window as any).__game; g.setManual(true); g.step(1, {}); g.teleport(680, 320); g.step(1, { interact: true }); });
   await page.waitForFunction(() => (window as any).__game.routeChoice?.() !== null);

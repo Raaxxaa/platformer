@@ -13,7 +13,7 @@ async function finishFade(page: Page) { await page.evaluate(() => { const g = (w
 
 test('a full saved run: Title, Tank, Plains, Crossroads services, Forest Guardian, Border, Black Knight, Rebel Camp, the Stage 4 castle, the Enemy King and Victory', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/?debug=1'); await page.waitForFunction(() => (window as any).__game?.title);
+  await page.goto('/?debug=1&records=1'); await page.waitForFunction(() => (window as any).__game?.title);
   await page.keyboard.press('Enter'); await expect.poll(() => page.evaluate(() => (window as any).__game.screenState().model.step)).toBe(2);
   await shot(page, 'title'); await page.keyboard.press('Enter'); await level(page, 'home');
   // Let the actual Title→Home fade finish before the first gameplay input.

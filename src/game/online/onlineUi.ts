@@ -1,4 +1,5 @@
 // Browser glue for the leaderboard (06 §14.3, M18): the name prompt, the board's data, the result standing.
+import { recordsOff } from '../debug.ts';
 import { pastDays, dailyDay } from '../../core/run/daily.ts';
 import { validName } from '../../core/run/leaderboard.ts';
 import { ONLINE } from '../../data/online.ts';
@@ -23,12 +24,12 @@ export function boardDeps(onClose: () => void): BoardDeps {
   };
 }
 /** On launch: retry the one queued score. */
-export const retryQueued = (): void => { if (onlineConfigured()) void flushQueue(() => saveStore().data, (fn) => saveStore().update(fn)); };
+export const retryQueued = (): void => { if (onlineConfigured() && !recordsOff()) void flushQueue(() => saveStore().data, (fn) => saveStore().update(fn)); };
 
 /** After an official daily finishes: name (asked the first time), send once, then `#rank of N` and the top 10. */
 export async function afterDailyFinish(day: string, kit: { cls: string; weapon: string }, ticks: number, assist: boolean):
   Promise<{ line: string; rows: Awaited<ReturnType<typeof dailyStanding>> extends infer T ? T extends { top: infer R } ? R : never : never; me: string | null } | null> {
-  if (!onlineConfigured() || !saveStore().data.settings.online.enabled) return null;
+  if (!onlineConfigured() || !saveStore().data.settings.online.enabled || recordsOff()) return null;
   if (!saveStore().data.settings.online.name && !askName()) return null;
   const sent = await submitDaily(day, kit, () => saveStore().data, (fn) => saveStore().update(fn));
   const st = await dailyStanding(day, ticks, assist);
