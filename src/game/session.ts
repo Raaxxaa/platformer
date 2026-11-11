@@ -17,7 +17,8 @@ import type { RunRecord } from '../core/save/schema.ts';
 import { WEAPONS } from '../data/weapons.ts';
 import { STARTING_KITS } from '../data/classes.ts';
 import { WEAPON_NAME } from '../data/uiText.ts';
-import { dailyTwist, recordDailyEnd, recordSeedBest } from '../core/run/daily.ts';
+import { DAILY, dailyTwist, recordSeedBest } from '../core/run/daily.ts';
+import { recordBest, sprintPick } from '../core/run/sprint.ts';
 import type { BossRushAttempt } from '../core/run/bossRush.ts';
 import type { BossRushSetup } from '../ui/screens/bossRush.ts';
 import type { StartKit } from '../core/save/schema.ts';
@@ -28,7 +29,7 @@ export const gameSession = {
   practiceSetup: null as PracticeSetup | null,
   /** 06 §14.1 (M15): set while a Daily challenge is being played (Title → Daily); Play clears it. */
   /** `official` false = a seed challenge (06 §14.1, M18). */
-  daily: null as { day: string; seed: string; kit: StartKit; official?: boolean } | null,
+  daily: null as { day: string; seed: string; kit: StartKit; official?: boolean; format: 'sprint' | 'weekly' } | null,
   /** 06 §14.2 (M15): the Boss Rush attempt being played, and the last setup (for Retry / Change setup). */
   bossRush: null as BossRushAttempt | null,
   bossRushSetup: null as BossRushSetup | null,
@@ -49,7 +50,8 @@ export const gameSession = {
       const f = rush.fights[rush.index];
       dragon = f.boss === 'dragon' && rush.dragonColor ? { present: true, stage: 2, color: rush.dragonColor, outcome: 'absent' } : { present: false, stage: 2, color: 'red', outcome: 'absent' };
     }
-    const daily = !practice && !rush && this.daily && level.kind === 'stage' ? this.daily : null;
+    // 06 §14.1a: the Sprint is a practice-style attempt on one stage; the Weekly is a full run.
+    const daily = !rush && this.daily && level.kind === 'stage' && (this.daily.format === 'sprint') === !!practice ? this.daily : null;
     const seed = carry?.run.seedText ?? (rush ? 'BOSSRUSH' : null) ?? daily?.seed ?? debugSeed ?? save.typedSeed;
     let startKit = practice ? { cls: practice.cls, weapon: practice.weapon } : carry?.run.startKit ?? (rush ? { cls: rush.cls, weapon: rush.weapon } : null) ?? daily?.kit ?? (level.kind !== 'stage' ? save.lastKit : null);
     this.kitNotice = null;
@@ -69,7 +71,7 @@ export const gameSession = {
     // SPEC-GAP: does practice Random pick a new layout on Retry? No: it keeps its layout (its best and ghost belong to it).
     const w = GameWorld.fromLevel(level, { seedText, layout, layoutForced: !!forcedLayout || (!!practice && !!layout), seeded: carry?.run.seeded ?? seed !== null,
       startKit, carry, cosmetics: save.cosmetics, nextRandomSeed: randomSeed, records: save, unlockedBlueprints: save.unlocks.blueprints,
-      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, assist: () => saveStore().data.settings.assist, dragon, practice: !!practice, practiceSetup: practice ?? undefined, daily: daily && daily.official !== false ? daily.day : undefined, challenge: daily?.official === false, bossRush: !!rush, twist: daily ? dailyTwist(daily.seed) : undefined });
+      nextRunUnlocks: () => saveStore().data.unlocks.blueprints, assist: () => saveStore().data.settings.assist, dragon, practice: !!practice, practiceSetup: practice ?? undefined, daily: daily && daily.official !== false ? daily.day : undefined, challenge: daily?.official === false, dailyKind: daily?.format, bossRush: !!rush, twist: daily ? (daily.format === 'sprint' ? sprintPick(daily.seed).twist : dailyTwist(daily.seed)) : undefined });
     if (carry?.run.phase === 'loading') w.completeLoading();
     if (homeTransition) { w.run.transition = homeTransition; w.run.phase = 'loading'; w.completeLoading(); }
     if (level.kind === 'training') for (const id of save.training) w.trainingDone.add(id);
@@ -114,7 +116,9 @@ export const gameSession = {
   practiceEvents(w: GameWorld): void {
     const setup = w.opts.practiceSetup;
     for (const e of [...w.events]) {
-      if (e.t !== 'practiceCleared' || !setup || !w.practiceClear || isAssisted(w.run) || recordsOff()) continue;   // 06 §5.4: assisted practice writes no best
+      if (e.t !== 'practiceCleared' || !setup || !w.practiceClear || recordsOff()) continue;
+      if (w.run.dailyKind === 'sprint') { this.sprintCleared(w, e.ticks); continue; }
+      if (isAssisted(w.run)) continue;   // 06 §5.4: assisted practice writes no best
       const key = practiceKey(setup.levelId, setup.cls, layoutCode(w.opts.layout ?? classicLayout()));
       saveStore().update((s) => {
         const old = s.practiceBests[key], r = applyPracticeTime(s.practiceBests, key, e.ticks);
@@ -123,15 +127,28 @@ export const gameSession = {
       if (w.practiceClear.isNew) w.events.push({ t: 'practiceBestSaved', key, ticks: e.ticks });
     }
   },
+  /** 06 §14.1a: a Sprint clear — the day's best (official), or the seed's best (seed challenge). */
+  sprintCleared(w: GameWorld, ticks: number): void {
+    saveStore().update((s) => {
+      if (w.run.daily) { const r = recordBest(s.daily, w.run.daily, ticks, DAILY.keepDays, isAssisted(w.run)); s.daily = r.book; w.practiceClear!.isNew = r.isNew; w.practiceClear!.best = s.daily[w.run.daily].bestTicks; }
+      else if (w.run.challenge && !isAssisted(w.run)) { const r = recordSeedBest(s.seedBests, w.run.seedText, ticks); s.seedBests = r.bests; w.practiceClear!.isNew = r.isNew; w.practiceClear!.best = s.seedBests[0].ticks; }
+    });
+  },
+  /** Sprint attempts that end without a clear still count as attempts (a restart or a quit). */
   flushRunEnds(w: GameWorld): void {
-    for (const ended of w.pendingRunEnds.splice(0)) saveStore().update((s) => { appendHistory(s, ended, saveDate()); if (!recordsOff()) s.daily = recordDailyEnd(s.daily, ended); });
+    for (const ended of w.pendingRunEnds.splice(0)) saveStore().update((s) => { appendHistory(s, ended, saveDate()); });
   },
   endRun(w: GameWorld, result: RunRecord['result'], cause: string | null = null): void {
     const ended = captureRunEnd(w, result, cause); if (!ended) return;
     w.run.endRecorded = true;
     saveStore().update((s) => {
       appendHistory(s, ended, saveDate());
-      if (!recordsOff()) s.daily = recordDailyEnd(s.daily, ended);
+      // 06 §14.1a: the Weekly keeps the best finished time of the week.
+      if (!recordsOff() && w.run.dailyKind === 'weekly' && w.run.daily) {
+        const r = recordBest(s.weekly, w.run.daily, result === 'complete' ? w.run.runTicks : null, DAILY.weeksKept, isAssisted(w.run)); s.weekly = r.book;
+        // The best finished run keeps its splits, for the share squares of later weeks.
+        if (r.isNew) s.weekly[w.run.daily].official = { result: 'complete', ticks: w.run.runTicks, stageReached: 4, splits: [...w.run.splits], road: w.run.road, assist: isAssisted(w.run) };
+      }
       if (!recordsOff() && result === 'complete' && w.run.challenge && !isAssisted(w.run)) { const r = recordSeedBest(s.seedBests, w.run.seedText, w.run.runTicks); s.seedBests = r.bests; if (r.isNew) w.events.push({ t: 'pbSaved' }); }
       if (result === 'death') s.stats.deaths++;
       if (result === 'complete') s.stats.runsCompleted++;

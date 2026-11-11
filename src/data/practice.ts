@@ -30,7 +30,9 @@ export const PRACTICE_UI = {
   panel: [112, 40, 416, 220] as const, titleY: 52, rowsY: 80, rowStep: 16, labelX: 160, valueX: 480, rowW: 336, hintY: 240,
   rows: ['stage', 'class', 'weapon', 'dragon', 'layout', 's2', 's3', 's4', 's6', 's7', 'seed', 'best', 'start', 'back'] as const,
   labels: { stage: 'Stage', class: 'Class', weapon: 'Weapon', dragon: 'Dragon', layout: 'Layout', s2: '  Section 2', s3: '  Section 3', s4: '  Section 4', s6: '  Section 6', s7: '  Section 7', seed: 'Seed', best: 'Best' },
-  result: { titleY: 100, timeY: 124, bestY: 150, rowsY: 190, rowStep: 16, rowW: 160, rowH: 14, guardSeconds: 0.5, rows: ['Retry', 'Change setup', 'Title'], commands: ['retry', 'setup', 'title'] },
+  result: { titleY: 100, timeY: 124, bestY: 150, rowsY: 190, rowStep: 16, rowW: 160, rowH: 14, guardSeconds: 0.5, rows: ['Retry', 'Change setup', 'Title'], commands: ['retry', 'setup', 'title'],
+    // 06 §14.1a (M19): the Daily Sprint's result.
+    sprintRows: ['Retry', 'Share', 'Title'], sprintCommands: ['retry', 'share', 'title'], sprintTitle: 'DAILY SPRINT', sharedText: 'Copied!' },
 } as const;
 
 /** 06 §14 ghost recording and storage. */

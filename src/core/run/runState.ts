@@ -28,6 +28,8 @@ export interface RunState {
   daily?: string;
   /** 06 §14.1 (M18): a seed challenge (played like a daily, never official). */
   challenge?: boolean;
+  /** 06 §14.1a (M19): which daily format this run is. */
+  dailyKind?: 'sprint' | 'weekly';
   /** 06 §14.1 (M18): the run's twist (dailies and seed challenges). */
   twist?: import('../../data/twists.ts').TwistId;
   phase: RunPhase;

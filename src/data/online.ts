@@ -3,10 +3,10 @@
 export const ONLINE = {
   url: 'https://arnobsqgqyvesqcwmwkg.supabase.co' as string,
   anonKey: 'sb_publishable_3wL1o-s51UM7gpptBL0QKA_eBtk8ET6' as string,
-  table: 'daily_scores', resultTop: 10, listTop: 50, pastDays: 30, timeoutMs: 8000,
+  table: 'daily_scores', resultTop: 10, listTop: 50, pastDays: 30, pastWeeks: 8, timeoutMs: 8000,
   namePrompt: 'Your leaderboard name (3–12 letters, numbers or _)', unavailable: 'Leaderboard unavailable',
 } as const;
 export const BOARD_UI = {
-  panel: [80, 16, 480, 328] as const, titleY: 24, rowsY: 46, rowStep: 14, listY: 128, listStep: 11, listShown: 16, colRank: 120, colName: 150, colTime: 470, colKit: 280, highlightWidth: 400, hintY: 318,
-  rows: ['day', 'list', 'name', 'send', 'back'] as const,
+  panel: [80, 16, 480, 328] as const, titleY: 24, rowsY: 46, rowStep: 14, listY: 140, listStep: 11, listShown: 16, colRank: 120, colName: 150, colTime: 470, colKit: 280, highlightWidth: 400, hintY: 318,
+  rows: ['board', 'day', 'list', 'name', 'send', 'back'] as const,
 } as const;

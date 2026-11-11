@@ -46,6 +46,8 @@ export interface SaveData {
   daily: import('../run/daily.ts').DailyBook;
   /** 06 §14.1 (M18): seed challenge bests, newest first, last 50. */
   seedBests: import('../run/daily.ts').SeedBest[];
+  /** 06 §14.1a (M19): Weekly Run bests by the week's Monday (`YYYYMMDD`). */
+  weekly: import('../run/daily.ts').DailyBook;
   /** 06 §14.3: one score waiting to be sent (offline), retried on the next launch. */
   onlineQueue: import('../run/leaderboard.ts').ScoreRow | null;
   /** 06 §14.2 (M15). */

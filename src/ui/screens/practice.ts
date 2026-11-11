@@ -141,15 +141,17 @@ export class PracticeSetupView extends MenuSurface {
 }
 
 /** 07 §7.4 result screen: `Retry`, `Change setup`, `Title`; confirms are ignored for 0.5 s. */
-export type PracticeResultCommand = (typeof P.result.commands)[number];
+export type PracticeResultCommand = (typeof P.result.commands)[number] | (typeof P.result.sprintCommands)[number];
 export class PracticeResultModel {
   cursor = 0; guardLeft: number = P.result.guardSeconds;
+  readonly rows: readonly string[]; readonly commands: readonly PracticeResultCommand[];
+  constructor(sprint = false) { this.rows = sprint ? P.result.sprintRows : P.result.rows; this.commands = sprint ? P.result.sprintCommands : P.result.commands; }
   get canConfirm(): boolean { return this.guardLeft <= Number.EPSILON; }
   advance(seconds: number): void { this.guardLeft = Math.max(0, this.guardLeft - Math.min(UI_FRAME_SECONDS, Math.max(0, seconds))); }
   action(action: HomePanelAction): PracticeResultCommand | null {
     if (action === 'up') this.cursor = Math.max(0, this.cursor - 1);
-    if (action === 'down') this.cursor = Math.min(P.result.rows.length - 1, this.cursor + 1);
-    return action === 'confirm' && this.canConfirm ? P.result.commands[this.cursor] : null;
+    if (action === 'down') this.cursor = Math.min(this.rows.length - 1, this.cursor + 1);
+    return action === 'confirm' && this.canConfirm ? this.commands[this.cursor] : null;
   }
 }
 /** The line under the time: `★ NEW BEST` or `Best m:ss.cc`. */
@@ -157,25 +159,27 @@ export const practiceBestLine = (clear: { ticks: number; best: number | null; is
   clear.isNew ? { text: '★ NEW BEST', highlight: true } : { text: `Best ${formatTime(clear.best ?? clear.ticks)}`, highlight: false };
 
 export class PracticeResultView extends MenuSurface {
-  readonly model = new PracticeResultModel();
+  readonly model: PracticeResultModel;
   private readonly clear: { ticks: number; best: number | null; isNew: boolean };
   private readonly choose: (command: PracticeResultCommand) => void;
-  constructor(scene: Phaser.Scene, clear: { ticks: number; best: number | null; isNew: boolean }, choose: (command: PracticeResultCommand) => void) {
-    super(scene); this.clear = clear; this.choose = choose; this.render();
+  private readonly sprint: boolean; private shared = false;
+  constructor(scene: Phaser.Scene, clear: { ticks: number; best: number | null; isNew: boolean }, choose: (command: PracticeResultCommand) => void, sprint = false) {
+    super(scene); this.clear = clear; this.choose = choose; this.sprint = sprint; this.model = new PracticeResultModel(sprint); this.render();
   }
   override update(seconds: number): void { this.model.advance(seconds); super.update(seconds); }
   action(action: HomePanelAction): void {
     if (!this.enabled || this.closed) return;
-    const result = this.model.action(action); if (result) this.choose(result);
+    const result = this.model.action(action); if (result === 'share') this.shared = true; if (result) this.choose(result);
     this.render();
   }
   protected render(): void {
-    const m = this.model, R = P.result; if (!this.beginDraw([m.cursor, m.canConfirm])) return;
+    const m = this.model, R = P.result; if (!this.beginDraw([m.cursor, m.canConfirm, this.shared])) return;
     const mid = this.scene.scale.width / 2, line = practiceBestLine(this.clear);
-    this.text(mid, R.titleY, 'STAGE CLEAR', UI_COLOR.text, true);
+    this.text(mid, R.titleY, this.sprint ? R.sprintTitle : 'STAGE CLEAR', UI_COLOR.text, true);
+    if (this.shared) this.text(mid, R.rowsY - 14, R.sharedText, UI_COLOR.highlight);
     this.text(mid, R.timeY, formatTime(this.clear.ticks), UI_COLOR.text, true);
     this.text(mid, R.bestY, line.text, line.highlight ? UI_COLOR.highlight : UI_COLOR.textDim);
-    R.rows.forEach((label, i) => {
+    m.rows.forEach((label, i) => {
       const y = R.rowsY + i * R.rowStep;
       this.text(mid, y, `${m.cursor === i ? '▸ ' : ''}${label}`, m.cursor === i ? UI_COLOR.highlight : UI_COLOR.text);
       this.target(mid - R.rowW / 2, y, R.rowW, R.rowH, () => { m.cursor = i; }, () => this.action('confirm'));

@@ -10,7 +10,8 @@ import { applyBossRushBest, bossDown, bossRushHp, BOSS_RUSH, newBossRush } from 
 import { setupBossRushFight } from '../../core/run/bossRushWorld.ts';
 import { BossRushResultView } from '../../ui/screens/bossRush.ts';
 import { DRAGON_ROLL } from '../../data/run.ts';
-import { dailyShareFor } from '../../core/run/daily.ts';
+import { bestDailySegments, dailyShareText } from '../../core/run/daily.ts';
+import { sprintPick, sprintShareText, weekOf } from '../../core/run/sprint.ts';
 import { shareText, lastShared } from '../../ui/share.ts';
 import { isAssisted } from '../../core/run/runState.ts';
 import { hurtPlayer } from '../../core/combat/health.ts';
@@ -226,6 +227,13 @@ export class StageScene extends WorldScene {
     api.completeLoading = () => this.world.completeLoading();
     api.bossRush = () => gameSession.bossRush ? structuredClone(gameSession.bossRush) : null;
     api.rushResultOpen = () => !!this.rushResult;
+    /** Debug: stand inside the stage's boss arena (it locks next tick). */
+    api.toBossArena = () => {
+      const o = this.world.level?.objects.find((ob) => ob.type === 'arena' && ob.props.kind === 'boss'); if (!o) return false;
+      let y = o.y + 16; while (y < o.y + o.h && !this.world.grid.isSolidPx(o.x + 48, y)) y += 1;
+      this.world.teleportPlayer(o.x + 48, y); return true;
+    };
+    api.practiceResultRows = () => this.practiceResult ? [...this.practiceResult.model.rows] : null;
     api.killAll = () => { for (const e of this.world.enemies) if (!e.dead && !e.dormant && e.spawnInTicks === 0) killEnemy(this.world, e); };
     api.setBossHp = (hp: number) => { const b = this.world.enemies.find((e) => e.boss); if (b) b.hp = hp; };
     api.setEnemyHp = (id: number, hp: number) => { const e = this.world.enemies.find((x) => x.id === id); if (e) { e.hp = hp; if (hp <= 0) killEnemy(this.world, e); } };
@@ -354,9 +362,9 @@ export class StageScene extends WorldScene {
     else if (!this.victory) {                                   // the King's 1.5 s death animation plays first, then the summary opens (06 §2.6)
       this.victoryAt = this.victoryAt < 0 ? this.time.now : this.victoryAt;
       if (this.time.now - this.victoryAt >= VICTORY_UI.deathAnimSeconds * 1000) {
-        this.victory = new RunSoFarView(this, { ...victoryData(w), share: dailyShareFor(saveStore().data.daily, w.run, 'complete', isAssisted(w.run)) ?? undefined }, { onShare: (t) => { void shareText(t); }, onRestart: () => { this.victory?.destroy(); this.victory = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
+        this.victory = new RunSoFarView(this, { ...victoryData(w), share: this.dailyShare(w, 'complete', w.run.runTicks) ?? undefined }, { onShare: (t) => { void shareText(t); }, onRestart: () => { this.victory?.destroy(); this.victory = null; w.restart(); }, onHomeVillage: () => this.requestHome(), onTitle: () => this.toTitle() });
         this.victory.setEnabled(false);                         // inputs are ignored for the first 1.0 s (07 §7.11)
-        this.showDailyStanding(w);
+        this.showDailyStanding(w, w.run.runTicks);
       }
     }
     if (this.victory && this.time.now - this.victoryAt >= (VICTORY_UI.deathAnimSeconds + VICTORY_UI.inputLockSeconds) * 1000 && !this.pause) this.victory.setEnabled(true);
@@ -378,10 +386,13 @@ export class StageScene extends WorldScene {
     if (!clear) { this.practiceResult?.destroy(); this.practiceResult = null; this.practiceAt = -1; return; }
     this.practiceAt = this.practiceAt < 0 ? this.time.now : this.practiceAt;
     if (!this.practiceResult && this.time.now - this.practiceAt >= VICTORY_UI.deathAnimSeconds * 1000) {
+      const sprint = w.run.dailyKind === 'sprint';
       this.practiceResult = new PracticeResultView(this, clear, (command) => {
+        if (command === 'share') { const t = this.dailyShare(w, 'complete', clear.ticks); if (t) void shareText(t); return; }
         this.practiceResult?.destroy(); this.practiceResult = null; this.clearMenuInput();
         if (command === 'retry') w.restart(); else if (command === 'setup') this.onPauseSetup(); else this.onPauseQuit();
-      });
+      }, sprint);
+      if (sprint) this.showDailyStanding(w, clear.ticks);
     }
   }
   /** One ghost sample per 2 stage ticks as drawn; stored when `practiceBestSaved` fires; played back from the stored best. */
@@ -479,14 +490,23 @@ export class StageScene extends WorldScene {
   }
   /** 06 §14.3: an official daily that finished is sent once; its standing shows over the result until closed. */
   private standing: DailyStandingView | null = null;
-  private showDailyStanding(w: GameWorld): void {
-    const day = w.run.daily, kit = w.run.startKit; if (!day || !kit) return;
-    const off = saveStore().data.daily[day]?.official;
-    if (!off || off.result !== 'complete' || off.ticks !== w.run.runTicks) return;      // only the official attempt
-    void afterDailyFinish(day, kit, off.ticks, off.assist).then((r) => {
-      if (!r || this.leaving || !this.victory) return;
+  private showDailyStanding(w: GameWorld, ticks: number): void {
+    const key = w.run.daily, kit = w.run.startKit, kind = w.run.dailyKind; if (!key || !kit || !kind) return;
+    // 06 §14.1a: the best of the day (Sprint) or of the week (Weekly) is sent; the standing shows over the result.
+    void afterDailyFinish(kind === 'sprint' ? 'daily' : 'weekly', key, kit, ticks, isAssisted(w.run), kind === 'sprint' ? sprintPick(w.run.seedText).stage : w.run.road ?? 'forest').then((r) => {
+      if (!r || this.leaving || !(this.victory || this.practiceResult)) return;
       this.standing = new DailyStandingView(this, r.line, r.rows, r.me, () => { this.standing = null; this.clearMenuInput(); });
     });
+  }
+  /** 06 §14.1a share texts: the Sprint's one line, or the Weekly's full-run line with its split squares. */
+  private dailyShare(w: GameWorld, result: 'complete' | 'death', ticks: number): string | null {
+    const key = w.run.daily, kit = w.run.startKit; if (!key || !kit) return null;
+    if (w.run.dailyKind === 'sprint') return result === 'complete' ? sprintShareText(key, sprintPick(w.run.seedText), ticks, isAssisted(w.run)) : null;
+    if (w.run.dailyKind !== 'weekly') return null;
+    const y = Number(key.slice(0, 4)), m = Number(key.slice(4, 6)) - 1, d = Number(key.slice(6, 8));
+    const others = { ...saveStore().data.weekly }; delete others[key];
+    return dailyShareText(key, kit, { result, ticks, stageReached: Math.max(1, w.run.stage), splits: [...w.run.splits], road: w.run.road, assist: isAssisted(w.run) },
+      bestDailySegments(others, w.run.road), { label: weekOf(new Date(Date.UTC(y, m, d))).label, seed: w.run.seedText });
   }
   private openRushResult(isNew: boolean): void {
     const a = gameSession.bossRush!;
@@ -522,8 +542,8 @@ export class StageScene extends WorldScene {
       const offer = !this.deathView && !this.practice && shouldOfferAssist(saveStore().data);
       if (offer) saveStore().update((s) => { s.progress.assistOffered = true; });
       if (!this.deathView) this.deathView = new DeathView(this, { assistOffer: offer, stage: w.run.stage, levelId: this.level.id, section: w.run.sectionReached, runTicks: w.run.runTicks, cause: this.deathCause, seed: w.run.seedText, layout: w.opts.layout ? layoutCodeFull(w.opts.layout, w.opts.layoutForced ? undefined : rollVariety(fnv1a32(w.run.seedText))[this.level.id as StageLevelId]) : undefined,
-        share: dailyShareFor(saveStore().data.daily, w.run, 'death', isAssisted(w.run)) ?? undefined }, (result) => {
-        if (result === 'share') { const t = dailyShareFor(saveStore().data.daily, w.run, 'death', isAssisted(w.run)); if (t) void shareText(t); return; }
+        share: this.dailyShare(w, 'death', w.run.runTicks) ?? undefined }, (result) => {
+        if (result === 'share') { const t = this.dailyShare(w, 'death', w.run.runTicks); if (t) void shareText(t); return; }
         this.deathView?.destroy(); this.deathView = null; this.clearMenuInput();
         if (result === 'restart') w.restart(); else if (result === 'home') this.requestHome(); else this.toTitle();
       });

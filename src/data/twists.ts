@@ -19,7 +19,7 @@ export const TWIST_FX = {
 
 /** Title → Daily menu (06 §14.1, M18). */
 export const DAILY_MENU_UI = {
-  panel: [96, 64, 448, 184] as const, titleY: 76, rowsY: 112, rowStep: 20, rowW: 400, hintY: 228, twistY: 94,
-  rows: ['today', 'past', 'seed', 'leaderboard', 'back'] as const,
+  panel: [56, 40, 528, 240] as const, titleY: 52, rowsY: 92, rowStep: 20, rowW: 480, hintY: 260, twistY: 70,
+  rows: ['today', 'weekly', 'past', 'seed', 'seedWeekly', 'leaderboard', 'back'] as const,
   seedPrompt: 'Type a seed (A–Z, 0–9, up to 12)',
 } as const;

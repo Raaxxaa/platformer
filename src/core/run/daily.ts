@@ -8,7 +8,7 @@ import { deriveSeed, fnv1a32, Rng } from '../rng.ts';
 import type { Road } from '../save/schema.ts';
 import { TWIST_NAME, TWISTS, type TwistId } from '../../data/twists.ts';
 
-export const DAILY = { keepDays: 60, freeRestartTicks: 30 * 120 } as const;
+export const DAILY = { keepDays: 60, weeksKept: 26, freeRestartTicks: 30 * 120 } as const;
 
 /** `YYYYMMDD` of a moment, in UTC. */
 export const dailyDay = (now: Date): string =>
@@ -32,7 +32,11 @@ export function dailyTwist(seedText: string): TwistId {
 export interface DailyResult { result: 'complete' | 'death'; ticks: number; stageReached: number; splits: (number | null)[]; road: Road | null; assist: boolean }
 export interface DailyEntry { official: DailyResult | null; bestTicks: number | null; attempts: number; bestSplits?: Record<string, (number | null)[]>;
   /** 06 §14.3 (M18): the official finished run was sent to the leaderboard. */
-  sent?: boolean }
+  sent?: boolean;
+  /** M19: the best time already on the leaderboard (a faster one is sent again). */
+  sentTicks?: number;
+  /** M19: the best time was assisted (listed apart on the leaderboard). */
+  bestAssist?: boolean }
 export type DailyBook = Record<string, DailyEntry>;
 
 /** Records an attempt (06 §14.1): the first attempt of the day is official, except a restart in its first 30 s. */
@@ -60,7 +64,8 @@ const fmt = (ticks: number): string => {
 
 /** The share text (06 §14.1). One square per split: green if faster than the best daily split on any day with the same road,
  * red if slower, grey if none. */
-export function dailyShareText(day: string, kit: { cls: ClassId; weapon: WeaponId }, r: DailyResult, bestSplits: (number | null)[]): string {
+/** `weekly` (M19): `RUSHBLADE Weekly 2026-W46 · …` with that week's seed for the twist. */
+export function dailyShareText(day: string, kit: { cls: ClassId; weapon: WeaponId }, r: DailyResult, bestSplits: (number | null)[], weekly?: { label: string; seed: string }): string {
   const date = `${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6, 8)}`;
   const road = r.road === 'forest' ? 'Forest' : r.road === 'mountain' ? 'Mountain' : '—';
   const squares = r.splits.map((s, i) => {
@@ -69,7 +74,8 @@ export function dailyShareText(day: string, kit: { cls: ClassId; weapon: WeaponI
     return best === null || best === undefined ? '⬜' : seg <= best ? '🟩' : '🟥';
   }).join('');
   const outcome = r.result === 'complete' ? fmt(r.ticks) : `💀 Stage ${r.stageReached}`;
-  return `RUSHBLADE Daily ${date} · ${TWIST_NAME[dailyTwist(dailySeed(day))]} · ${CLASS_NAME[kit.cls]} (${WEAPON_NAME(kit.weapon)}) · ${road} · ${outcome}${squares ? ` · ${squares}` : ''}${r.assist ? ' (assist)' : ''}`;
+  const head = weekly ? `Weekly ${weekly.label}` : `Daily ${date}`;
+  return `RUSHBLADE ${head} · ${TWIST_NAME[dailyTwist(weekly ? weekly.seed : dailySeed(day))]} · ${CLASS_NAME[kit.cls]} (${WEAPON_NAME(kit.weapon)}) · ${road} · ${outcome}${squares ? ` · ${squares}` : ''}${r.assist ? ' (assist)' : ''}`;
 }
 
 /** The best segment per split across every day with this road (for the share squares). */

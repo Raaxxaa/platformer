@@ -148,7 +148,7 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected get frameEventList(): WorldEvent[] {
     const c = this.eventsCache;
     if (c && c.src === this.frameEvents && c.n === this.frameEvents.length) return c.list;
-    const list = this.frameEventList;
+    const list = this.frameEvents.map((f) => f.e);
     this.eventsCache = { src: this.frameEvents, n: this.frameEvents.length, list };
     return list;
   }

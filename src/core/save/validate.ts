@@ -198,8 +198,9 @@ export function validateSave(raw: unknown): SaveData {
   }
   for (const [key, value] of Object.entries(object(source.practiceBests))) if (practiceKey(key) && integer(value)) result.practiceBests[migratePracticeKey(key)] = value;
   result.daily = validateDaily(source.daily);
+  result.weekly = validateDaily(source.weekly);
   { const q = object(source.onlineQueue); if (typeof q.day === 'string' && /^\d{8}$/.test(q.day) && typeof q.name === 'string' && validName(q.name) && integer(q.ticks) && typeof q.class === 'string' && typeof q.weapon === 'string' && typeof q.road === 'string')
-    result.onlineQueue = { day: q.day, name: q.name, ticks: q.ticks as number, class: q.class, weapon: q.weapon, road: q.road, assist: q.assist === true }; }
+    result.onlineQueue = { kind: q.kind === 'weekly' ? 'weekly' : 'daily', day: q.day, name: q.name, ticks: q.ticks as number, class: q.class, weapon: q.weapon, road: q.road, assist: q.assist === true }; }
   if (Array.isArray(source.seedBests)) result.seedBests = source.seedBests.map(object).filter((b) => typeof b.seed === 'string' && runSeedText(b.seed) && integer(b.ticks)).slice(0, 50).map((b) => ({ seed: b.seed as string, ticks: b.ticks as number }));
   for (const [key, value] of Object.entries(object(source.bossRushBests))) {
     const [c, d] = key.split('|'), v = object(value);
@@ -226,7 +227,7 @@ function validateDaily(v: unknown): import('../run/daily.ts').DailyBook {
     const e = object(raw);
     if (!integer(e.attempts)) continue;
     const official = e.official === null || e.official === undefined ? null : dailyResult(e.official);
-    out[day] = { official, bestTicks: integer(e.bestTicks) ? e.bestTicks as number : null, attempts: e.attempts as number, ...(e.sent === true ? { sent: true } : {}) };
+    out[day] = { official, bestTicks: integer(e.bestTicks) ? e.bestTicks as number : null, attempts: e.attempts as number, ...(e.sent === true ? { sent: true } : {}), ...(integer(e.sentTicks) ? { sentTicks: e.sentTicks as number } : {}), ...(e.bestAssist === true ? { bestAssist: true } : {}) };
   }
   const days = Object.keys(out).sort();
   for (const d of days.slice(0, Math.max(0, days.length - DAILY.keepDays))) delete out[d];

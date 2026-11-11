@@ -1,5 +1,7 @@
 // Two-step Title, Records and Settings (07 §7.3). Debug start URLs skip this scene.
 declare const __BUILD_LABEL__: string;
+import { sprintPick, STAGE_TITLE, weekOf, weeklySeed } from '../../core/run/sprint.ts';
+import { dragonAllowed } from '../../core/run/practice.ts';
 import { onlineConfigured } from '../online/leaderboard.ts';
 import { retryQueued } from '../online/onlineUi.ts';
 import Phaser from 'phaser';
@@ -18,7 +20,7 @@ import { activeHomePad, type HomePanelAction, type HomePanelPad } from '../../ui
 import type { PracticeSetup } from '../../core/run/practice.ts';
 import { MenuSurface } from '../../ui/screens/records.ts';
 import { TitleModel } from '../../ui/screens/front.ts';
-import { challengeSeed, dailyDay, dailyKit, dailySeed, dailyTwist } from '../../core/run/daily.ts';
+import { challengeSeed, dailyDay, dailyKit, dailySeed } from '../../core/run/daily.ts';
 import type { DailyChoice } from '../../ui/screens/dailyMenu.ts';
 import { DAILY_MENU_UI, TWIST_NAME } from '../../data/twists.ts';
 import { bossRushUnlocked, newBossRush } from '../../core/run/bossRush.ts';
@@ -31,9 +33,8 @@ import { formatTime } from '../../core/time.ts';
 export type TitleCommand = typeof U.titleCommands[number];
 /** The Daily row: today's kit and, once played, the official result (06 §14.1). */
 export function dailyRowLabel(now = new Date()): string {
-  const day = dailyDay(now), kit = dailyKit(dailySeed(day)), off = saveStore().data.daily[day]?.official;
-  const result = off ? (off.result === 'complete' ? ` · ${formatTime(off.ticks)}` : ` · Stage ${off.stageReached}`) : '';
-  return `Daily · ${TWIST_NAME[dailyTwist(dailySeed(day))]} · ${CLASS_NAME[kit.cls]} (${WEAPON_NAME(kit.weapon)})${result}`;
+  const day = dailyDay(now), p = sprintPick(dailySeed(day)), best = saveStore().data.daily[day]?.bestTicks;
+  return `Daily · ${STAGE_TITLE[p.stage]} · ${TWIST_NAME[p.twist]} · ${CLASS_NAME[p.cls]} (${WEAPON_NAME(p.weapon)})${best != null ? ` · ${formatTime(best)}` : ''}`;
 }
 class TitleView extends MenuSurface {
   private readonly choose: (cmd: TitleCommand) => void;
@@ -110,21 +111,32 @@ export class TitleScene extends Phaser.Scene {
     }
     this.screens.update(delta / 1000); if (!this.screens.active) this.titleView.update(delta / 1000);
   }
-  /** 06 §14.1: today's daily (official), or a seed challenge; no Home Village, Stage 1 with the seed's kit and twist. */
-  startDaily(seed: string, official: boolean): void {
-    const day = official ? dailyDay(new Date()) : seed.startsWith('DAILY-') ? seed.slice(6) : dailyDay(new Date());
-    gameSession.daily = { day, seed, kit: dailyKit(seed), official }; gameSession.bossRush = null;
+  /** 06 §14.1a: the Daily Sprint (one stage with its practice preset) or the Weekly Run (the full run from Stage 1);
+   * official for today / this week, or a seed challenge. The kit, stage and twist come from the seed. */
+  startDaily(seed: string, official: boolean, format: 'sprint' | 'weekly' = 'sprint'): void {
+    const now = new Date();
+    const day = seed.startsWith('DAILY-') || seed.startsWith('WEEKLY-') ? seed.slice(seed.indexOf('-') + 1) : format === 'weekly' ? weekOf(now).monday : dailyDay(now);
+    gameSession.bossRush = null;
     if (window.__game) window.__game.ready = false;
-    this.scene.start('Stage', { level: 'plains' });
+    if (format === 'weekly') {
+      gameSession.daily = { day, seed, kit: dailyKit(seed), official, format };
+      this.scene.start('Stage', { level: 'plains' }); return;
+    }
+    const p = sprintPick(seed);
+    gameSession.daily = { day, seed, kit: { cls: p.cls, weapon: p.weapon }, official, format };
+    const setup: PracticeSetup = { levelId: p.stage, cls: p.cls, weapon: p.weapon, dragon: p.twist === 'dragon_day' && dragonAllowed(p.stage) ? 'random' : 'off', layout: null };
+    gameSession.practiceSetup = null;
+    this.scene.start('Stage', { level: p.stage, practice: setup });
   }
   private dailyChoice(c: DailyChoice): void {
     if (c.kind === 'leaderboard') { this.screens.openBoard(); return; }
     if (c.kind === 'today') this.startDaily(dailySeed(dailyDay(new Date())), true);
-    else if (c.kind === 'challenge') this.startDaily(c.seed, false);
+    else if (c.kind === 'weekly') this.startDaily(weeklySeed(weekOf(new Date()).monday), true, 'weekly');
+    else if (c.kind === 'challenge') this.startDaily(c.seed, false, c.format);
     else if (c.kind === 'askSeed') {
       // SPEC-GAP 67: the seed is typed in the browser's own text box (works with phone keyboards too).
       const s = challengeSeed(window.prompt(DAILY_MENU_UI.seedPrompt, saveStore().data.typedSeed ?? '') ?? '');
-      if (s) { this.screens.destroy(); this.startDaily(s, false); }
+      if (s) { this.screens.destroy(); this.startDaily(s, false, c.format); }
     }
   }
   /** 06 §14.2: a boss rush attempt starts at the Great Boar's arena. */

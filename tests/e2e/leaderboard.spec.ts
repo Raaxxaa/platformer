@@ -20,18 +20,18 @@ test('Leaderboard: the queued score is sent on launch; Title → Daily → Leade
   });
   await page.addInitScript(([day]) => {
     localStorage.setItem('rushblade.save', JSON.stringify({ v: 1, settings: { online: { name: 'Me_Me', enabled: true } },
-      onlineQueue: { day, name: 'Me_Me', ticks: 61234, class: 'archer', weapon: 'bow', road: 'mountain', assist: false },
-      daily: { [day]: { official: { result: 'complete', ticks: 61234, stageReached: 4, splits: [1, 2, 3, 61234], road: 'mountain', assist: false }, bestTicks: 61234, attempts: 1 } } }));
+      onlineQueue: { kind: 'daily', day, name: 'Me_Me', ticks: 61234, class: 'archer', weapon: 'bow', road: 'mountain', assist: false },
+      daily: { [day]: { official: null, bestTicks: 61234, attempts: 1 } } }));
   }, [day]);
   await page.goto(`/?debug=1&records=1&online=${encodeURIComponent(HOST)}`);
   await page.waitForFunction(() => (window as any).__game?.ready);
   await expect.poll(() => posted.length).toBe(1);
-  expect(posted[0]).toEqual({ day, name: 'Me_Me', ticks: 61234, class: 'archer', weapon: 'bow', road: 'mountain', assist: false });
-  await expect.poll(async () => { const s = await g(page, 'save'); return [s.onlineQueue, s.daily[day].sent]; }).toEqual([null, true]);
+  expect(posted[0]).toEqual({ p_kind: 'daily', p_day: day, p_name: 'Me_Me', p_ticks: 61234, p_class: 'archer', p_weapon: 'bow', p_road: 'mountain', p_assist: false });
+  await expect.poll(async () => { const s = await g(page, 'save'); return [s.onlineQueue, s.daily[day].sentTicks]; }).toEqual([null, 61234]);
   await page.keyboard.press('Space');
   await g(page, 'titleRun', 'daily');
   await expect.poll(async () => (await g(page, 'screenState')).model?.rows).toContain('leaderboard');
-  for (let i = 0; i < 3; i++) await g(page, 'screenAction', 'down');
+  for (let i = 0; i < 5; i++) await g(page, 'screenAction', 'down');
   await g(page, 'screenAction', 'confirm');
   await expect.poll(async () => (await g(page, 'screenState')).model?.rows?.length).toBe(3);
   await page.waitForTimeout(200); await frames(page);

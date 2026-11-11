@@ -1,7 +1,7 @@
 // Title → Daily → Leaderboard (06 §14.3, M18): any of the last 30 days, top 50, assisted runs in their own list.
 // Also the result-screen board: `#rank of N` and the top 10 with your row highlighted.
 import type Phaser from 'phaser';
-import type { BoardRow } from '../../core/run/leaderboard.ts';
+import type { BoardKind, BoardRow } from '../../core/run/leaderboard.ts';
 import { formatTime } from '../../core/time.ts';
 import { BOARD_UI as B, ONLINE } from '../../data/online.ts';
 import { CLASS_NAME } from '../../data/classes.ts';
@@ -11,19 +11,22 @@ import { MenuSurface } from './records.ts';
 import type { ClassId } from '../../core/abilities/types.ts';
 
 type Row = (typeof B.rows)[number];
-export interface BoardDeps { days: string[]; fetch(day: string, assist: boolean): Promise<BoardRow[] | null>; name(): string | null; sending(): boolean;
+export interface BoardDeps { days: string[]; weeks: { monday: string; label: string }[]; fetch(kind: BoardKind, day: string, assist: boolean): Promise<BoardRow[] | null>; name(): string | null; sending(): boolean;
   setName(): void; toggleSending(): void; onClose(): void }
 const date = (day: string) => `${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6, 8)}`;
 
 export class LeaderboardModel {
-  cursor: Row = 'day'; dayIndex = 0; assist = false; rows: BoardRow[] | null | 'loading' = 'loading';
+  cursor: Row = 'board'; dayIndex = 0; assist = false; kind: BoardKind = 'daily'; rows: BoardRow[] | null | 'loading' = 'loading';
+  private readonly maxIndex: (k: BoardKind) => number;
+  constructor(maxIndex: (k: BoardKind) => number = () => ONLINE.pastDays) { this.maxIndex = maxIndex; }
   action(a: HomePanelAction): 'reload' | 'name' | 'send' | 'back' | null {
     const list = B.rows, at = list.indexOf(this.cursor);
     if (a === 'back') return 'back';
     if (a === 'up') this.cursor = list[Math.max(0, at - 1)];
     if (a === 'down') this.cursor = list[Math.min(list.length - 1, at + 1)];
+    if ((a === 'left' || a === 'right' || a === 'confirm') && this.cursor === 'board') { this.kind = this.kind === 'daily' ? 'weekly' : 'daily'; this.dayIndex = 0; return 'reload'; }
     if ((a === 'left' || a === 'right' || a === 'confirm') && this.cursor === 'list') { this.assist = !this.assist; return 'reload'; }
-    if ((a === 'left' || a === 'right') && this.cursor === 'day') { this.dayIndex = Math.max(0, Math.min(ONLINE.pastDays, this.dayIndex + (a === 'left' ? 1 : -1))); return 'reload'; }
+    if ((a === 'left' || a === 'right') && this.cursor === 'day') { this.dayIndex = Math.max(0, Math.min(this.maxIndex(this.kind), this.dayIndex + (a === 'left' ? 1 : -1))); return 'reload'; }
     if (a === 'confirm' && this.cursor === 'name') return 'name';
     if ((a === 'confirm' || a === 'left' || a === 'right') && this.cursor === 'send') return 'send';
     if (a === 'confirm' && this.cursor === 'back') return 'back';
@@ -32,12 +35,15 @@ export class LeaderboardModel {
 }
 
 export class LeaderboardView extends MenuSurface {
-  readonly model = new LeaderboardModel();
+  readonly model: LeaderboardModel;
   private readonly deps: BoardDeps; private gen = 0;
-  constructor(scene: Phaser.Scene, deps: BoardDeps) { super(scene); this.deps = deps; this.load(); }
+  constructor(scene: Phaser.Scene, deps: BoardDeps) {
+    super(scene); this.deps = deps; this.model = new LeaderboardModel((k) => (k === 'daily' ? deps.days.length : deps.weeks.length) - 1); this.load();
+  }
+  private keyAt(): string { return this.model.kind === 'daily' ? this.deps.days[this.model.dayIndex] : this.deps.weeks[this.model.dayIndex].monday; }
   private load(): void {
     const g = ++this.gen; this.model.rows = 'loading'; this.render();
-    void this.deps.fetch(this.deps.days[this.model.dayIndex], this.model.assist).then((rows) => { if (g === this.gen && !this.closed) { this.model.rows = rows; this.render(); } });
+    void this.deps.fetch(this.model.kind, this.keyAt(), this.model.assist).then((rows) => { if (g === this.gen && !this.closed) { this.model.rows = rows; this.render(); } });
   }
   action(action: HomePanelAction): void {
     if (!this.enabled || this.closed) return;
@@ -49,22 +55,23 @@ export class LeaderboardView extends MenuSurface {
     this.render();
   }
   protected render(): void {
-    const m = this.model; if (!this.beginDraw([m.cursor, m.dayIndex, m.assist, m.rows === 'loading' ? 0 : m.rows?.length ?? -1, this.deps.name(), this.deps.sending()])) return;
+    const m = this.model; if (!this.beginDraw([m.cursor, m.dayIndex, m.kind, m.assist, m.rows === 'loading' ? 0 : m.rows?.length ?? -1, this.deps.name(), this.deps.sending()])) return;
     const mid = this.scene.scale.width / 2;
     this.panel([...B.panel]); this.text(mid, B.titleY, 'DAILY LEADERBOARD', UI_COLOR.text, true);
-    const labels: Record<Row, string> = { day: `Day < ${date(this.deps.days[m.dayIndex])} >`, list: `List < ${m.assist ? 'Assisted' : 'Normal'} >`,
+    const labels: Record<Row, string> = { board: `Board < ${m.kind === 'daily' ? 'Daily Sprint' : 'Weekly Run'} >`,
+      day: m.kind === 'daily' ? `Day < ${date(this.deps.days[m.dayIndex])} >` : `Week < ${this.deps.weeks[m.dayIndex].label} >`, list: `List < ${m.assist ? 'Assisted' : 'Normal'} >`,
       name: `Your name: ${this.deps.name() ?? '—'} (change)`, send: `Send my scores: ${this.deps.sending() ? 'On' : 'Off'}`, back: 'Back' };
     B.rows.forEach((row, i) => {
       const y = B.rowsY + i * B.rowStep, sel = m.cursor === row;
       this.text(mid, y, `${sel ? '▸ ' : ''}${labels[row]}`, sel ? UI_COLOR.highlight : UI_COLOR.text);
       this.target(mid - 160, y, 320, B.rowStep, () => { m.cursor = row; }, () => this.action('confirm'));
     });
-    drawBoard(this, m.rows, this.deps.name(), B.listY, ONLINE.listTop);
+    drawBoard(this, m.rows, this.deps.name(), B.listY, ONLINE.listTop, m.kind);
   }
 }
 
 /** The list: rank, name, kit, time; the player's row highlighted. */
-export function drawBoard(s: MenuSurface, rows: BoardRow[] | null | 'loading', me: string | null, y0: number, limit: number): void {
+export function drawBoard(s: MenuSurface, rows: BoardRow[] | null | 'loading', me: string | null, y0: number, limit: number, _kind: BoardKind = 'daily'): void {
   const t = (s as unknown as { text: MenuSurface['text'] }).text.bind(s);
   if (rows === 'loading') { t(320, y0, 'Loading…', UI_COLOR.textDim); return; }
   if (rows === null) { t(320, y0, ONLINE.unavailable, UI_COLOR.bad); return; }
