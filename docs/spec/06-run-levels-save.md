@@ -488,6 +488,8 @@ When 05 §12 says the merchant is present (rolled at stage load), the loader add
 | `exit` (gate) | rect, tiles x 45–46, rows 16–19 | Starts the run (§2.3) if a kit is equipped |
 
 
+- **Arrival help (M19):** on arriving in the Home Village with no kit, a move hint shows, and a bouncing arrow with `Choose your class` sits over the statues until a kit is picked; then the arrow moves to the gate with `Start your run`. Every interactable shows its name on a small plate when the player is within 48 px (`Swordsman statue`, `Mirror`, `Training Yard`, `Records`, `Seed board`, `Gate`).
+
 ### 12.4 Training Yard (tutorial)
 Level `training_yard`, layout and stations in `docs/levels/training-yard.md`. Map about **490 × 40 tiles** (all 17 stations at their listed sizes), `plains` tiles, `village_home` background.
 - **Entry:** the Home Village `training_gate` (from M7); until then the start screen and `?start=training`. The player keeps their kit. If they have none, the 4 class statues at the yard's start work like the Home Village ones (§12.3).
@@ -495,6 +497,7 @@ Level `training_yard`, layout and stations in `docs/levels/training-yard.md`. Ma
 - **Rush works** here (not frozen like villages) and resets to 0 at each checkpoint.
 - **Stations:** zone objects `station` (`id` 1–17, `check` = the rule from the level doc). When the check is met: emit `stationDone {id}`, the check flag turns green, sound `ui_confirm`. Each station has a `checkpoint` point and a `hint` zone with its sign text.
 - **Progress:** the set of done station ids is kept in memory until M7, then saved as `save.training` (a list of ids).
+- **Basics and Advanced (M19):** the first-time question becomes `Learn the basics first? (2 minutes)`. **Basics** = five stations in a row at the start: run and jump (1), dash (3), combo (9), dodge (11), heal (12). After them a sign offers `Start your run` (an exit to the Home Village gate) or `Advanced training →` (all the other stations, in the old order). Finishing **every** station unlocks the `acc_trainer` headband (09 §3).
 - **Leaving** (an `exit` at either end, or the pause menu): the loadout resets to the picked kit (practice items from the armory are removed), and the player returns where they came from.
 
 ---
@@ -665,7 +668,17 @@ One run a day that everyone gets the same: same seed, same class and weapon, sam
 - **What is sent:** only the **official** daily attempt (§14.1), only if it **finished**, and only once. Assisted runs are sent with `assist = true` and listed separately. Nothing else leaves the device (no save data, no email, no ids).
 - **Name:** asked the first time a score could be sent (`Your leaderboard name`), stored in `settings.online.name`; `settings.online.enabled` (default on once a name is chosen; a Settings toggle turns it off).
 - **Screens:** the daily result shows `#rank of N` and the top 10 for the day with your row highlighted; Title → Daily → **Leaderboard** shows any of the last 30 days (top 50). Offline or a failed request: a small `Leaderboard unavailable` and the score is queued and retried on the next launch (only that one row).
+- **M19 changes:** the table gets `kind text not null default 'daily'` (`'daily'` or `'weekly'`; for weekly, `day` is the week's Monday) and the unique index becomes `(kind, day, name)`. Because the best time of the day now counts, a row may be **replaced by a faster one** from the same device: updates go through a database function `submit_score(...)` that only ever lowers `ticks` for that `(kind, day, name)`; direct updates stay forbidden. Runs started with `?debug=1`, or in which any debug helper was used, are never sent and never write any best time. Names are checked against a blocked-word list (`src/data/blockedNames.ts`, case-insensitive, also inside longer names). Where the name is asked, show: `We store this name and your times on the leaderboard. Nothing else is sent.`
 - **Honesty note:** there is no cheat protection beyond the rules above (a determined person could post a fake time). It's meant for friends; a replay check could come later.
+
+
+### 14.1a Daily Sprint and Weekly Run (M19, replaces the full-run daily after the 2026-11 review)
+The full-run daily was too long for most players to ever reach the leaderboard. From M19:
+- **Daily Sprint** (Title → Daily): **one stage**, about 3 minutes. The `daily` stream picks the stage (`['plains','mountains','swamps','kingdom','castle'][floor(r0 × 5)]`, drawn **before** the class and weapon draws), then the kit and the twist as in §14.1. The player starts at the stage's start with the **practice preset loadout** for that stage (§14). Time = `stageTicks` to the boss's death. **Unlimited attempts; the best time of the UTC day counts** and is what the leaderboard shows (the row is updated when you beat it). `dragon_day` and `arsenal` twists apply inside that stage; `elite_patrol` adds its elite to §2.
+- **Weekly Run** (Title → Daily → Weekly): the old full run from Stage 1 on one fixed seed per ISO week (`WEEKLY-YYYYMMDD` of that week's Monday, UTC), kit and twist from the seed. Unlimited attempts; the best **finished** time of the week counts.
+- **Seed challenge** (§14.1) can play either format for any seed.
+- Share text: `RUSHBLADE Daily 2026-11-12 · Mountains · Glass Cannon · Tank (War Maul) · 2:41.07` (weekly: `Weekly 2026-W46 · … · 8:42.13 · 🟩🟩🟥🟩`).
+- Everything else in §14.1 (no PBs, history, unlocks, assist shown) stays.
 
 ### 14.2 Boss rush (M15)
 Every boss back to back, against the clock. **Unlocked** after the Enemy King has been beaten once in a normal or daily run (`save.progress.kingBeaten`; on an old save, true if `stats.runsCompleted > 0`).

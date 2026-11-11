@@ -76,7 +76,7 @@ The **first time the player kills an enemy type**, they get its accessory, alway
 | Enemy King | The fallen crown | head |
 | Dragon (red / white / storm / green) | Dragon-scale cape (in that color) | back |
 
-That is **35 accessories**. Ids: `acc_<enemyId>` (Dragon: `acc_dragon_red`, …).
+That is **35 accessories**, plus **1 reward**: the `acc_trainer` headband (head) for finishing all Training Yard stations (06 §12.4), so 36. Ids: `acc_<enemyId>` (Dragon: `acc_dragon_red`, …).
 
 - On unlock: emit `cosmeticUnlocked {id, source}`; a toast (07 §6.10) `New look: Wolf-pelt hood` with its icon; the save is written at once (06 §15.1).
 - An accessory unlocked during a run can be worn from the next visit to the wardrobe.
@@ -104,7 +104,7 @@ Each village shop (Crossroads, Border Village, Rebel Camp) has **1 cosmetic slot
 
 ## 6. The wardrobe (character creator)
 - The Home Village `mirror_spot` (06 §12.3, tile 25) becomes interactable: **Look** (07 §5.7). It opens the wardrobe popup (phase `homeVillage`, world keeps running, the player gets neutral input, like the class pick 07 §6.7).
-- **First launch:** the wardrobe opens once by itself before the first class pick ("Make your hero"), with Confirm on the first row so a player can skip.
+- **First launch (changed in M19):** the wardrobe does **not** open by itself. A new player starts with the default hero. The first time they stand near the mirror a label shows `Mirror — change your look`, and after their first run a toast says `New looks unlocked? Visit the mirror in the Home Village`.
 - **Layout:** full-screen panel. Left half: a big live preview of the character (3× scale) playing `idle`, with buttons to preview `run`, `jump` and an attack; the class trim shows the currently equipped kit's class (Neutral grey without a kit). Right half: 4 tabs (07 popup skin): **Body** (race, skin, face, hair, hair color, beard), **Clothes** (outfit, color A, color B), **Accessories** (head, back, extra: owned items or None), **Collection**.
 - Each row: left/right (or tap) cycles the options, showing the option's name. Locked colors and items are not in the cycle.
 - Buttons: **Random** (random owned options; uses `Math.random` in the UI layer only, never the core), **Undo changes**, **Confirm** (saves `save.look`).

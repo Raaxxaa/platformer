@@ -190,6 +190,14 @@ The HUD is three **groups** that move as a whole; inside a group everything keep
 - **Layout editor** (Settings → HUD layout, and Pause → Settings): shows the HUD over a dimmed game frame. Pick a group (tab, or tap it); place it with the presets **Top-left, Top-center, Top-right, Bottom-left, Bottom-right**, or move it by 4 px steps with the arrows or by dragging; **Reset** restores the defaults. A group can't leave the 8 px safe area or cover the boss bar's area (bottom-center 320 × 40); overlapping another group shows both outlines in `bad` and Confirm is refused until fixed.
 - Saved per device in `settings.hud: Partial<Record<'vitals' | 'slots' | 'timer', { x: number; y: number }>>` (06 §15; missing = default for the device type).
 
+### 4.1b Readable hints, build banners and small cues (M19, 2026-11 review)
+- **Hints and signs** (§5.9, Training Yard): `rb_small` in `text` on a `panel_9` plate with 4 px padding, centered **20 px above the hero's head** (zone hints) or above the sign post (yard), never at the bottom edge. The "click or press a key for sound" note moves to the top-center under the alerts.
+- **Build banner:** when a Connection bonus or hybrid starts (`classChanged` to a bond or hybrid), a banner (§6.8) shows its name in its color with its blurb (§9.2) for 2.0 s, the sound `class_change` plays (`class_discovered` the first time ever), and the hero's trims flash white for 0.2 s.
+- **Dash-ready cue:** when the dash becomes ready again (cooldown end, refund, air dash refresh after it was used), the hero's trim A flashes `text` for 6 ticks.
+- **Death screen progress:** under the cause line: `Looks n / 60 · Classes discovered n / 10 · Best: Stage s` and, if this run unlocked anything, `New: <names>`.
+- **Speedrun info:** the timer block's info line can show **sum of best** (the 4 best segments added) and, on each split, **possible time save** (this segment's best vs the PB's); setting `Timer info: off / delta / sum of best`. A setting **Input display** (off by default) draws the held actions as small glyphs above the `slots` group.
+- **Grades are not color-only:** every weapon frame, item card and ground-item badge shows the grade letter (F, C, B, A, S) as well as its color.
+
 ### 4.2 HP bar
 - Fill width = `hp <= 0 ? 0 : max(1, round(158 × hp / maxHp))`. The bar width never changes with max HP.
 - Color `hp`. While `hp ≤ 25%` of max, the fill and the HP text pulse between `hp` and `hpLow` at 2 Hz.
@@ -732,6 +740,8 @@ Phones play in **landscape**. Touch controls are an **HTML overlay above the gam
 - **Edit layout** (settings): drag any button to a new place, pinch to resize it (60–150%); `Reset` restores the table above. Saved per device in `settings.touch.layout` (positions as fractions of the screen so rotation and other phones still work).
 - **Vibration** setting (default on where supported): `navigator.vibrate(12)` when the player is hit, 25 on death, 8 on a parry. Never during menus.
 - **Portrait:** when the screen is taller than wide, the game pauses and shows "Turn your phone sideways" with a rotating-phone drawing.
+
+**M19 changes (2026-11 review):** every device shows the same 640 × 360 picture (fairness), so wide phones keep their side bars, and **the controls move into the bars**: with bars at least `1.2u` wide, every button's center shifts outward so it sits over the bar as far as it fits. Idle buttons are drawn at **35%** of the Touch opacity and return to full on touch. On touch the **Pause** button is at the **top-left** (0.7u, 0.7u), so it never covers the weapon and ability bar (§4.1a), and `vitals` starts 1.2u to its right.
 
 **Phone screen scaling:** 00-README's whole-number scaling gives 1× on most phones (390 / 360). On touch devices, and whenever the whole-number scale would be below 2, the game instead **fits the screen with a fractional scale** (nearest-neighbor, `pixelArt` stays on), centered, with the leftover bars in `ink`. Above 2× on desktop nothing changes.
 

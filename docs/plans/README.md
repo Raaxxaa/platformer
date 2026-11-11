@@ -26,6 +26,7 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | M16 | iPhone and Mac app for the user (Capacitor) | `M16-apple-apps.md` | Done (guide: `docs/apple-app.md`; built and installed on the user's Mac with a local Claude Code) |
 | M17 | Playtest fixes: bow vs wolves, easier mountain climb, Dragon nest, cave labyrinth instead of the minecart; key rebinding; movable HUD (weapons/abilities top-right) | `M17-playtest-fixes-controls.md` | Done |
 | M18 | Seed variety (object spots, enemy formations), daily twists, seed challenge, online daily leaderboard | `M18-seeds-daily-leaderboard.md` | Planned (5th, after M15) |
+| **M19** | **Review round: merge the reviewer's fixes; Daily Sprint (one stage, best of the day) and Weekly Run; clearer first minute; touch controls in the side bars; readable hints; teaching Bandit, Great Boar pillars, dash-ready cue, build banners, speedrun info** | `M19-review-round.md` | **Next** |
 
 (M6 and M8 were folded into other milestones: classes moved into M4, and the art pass happens as we go in the ART plans.)
 

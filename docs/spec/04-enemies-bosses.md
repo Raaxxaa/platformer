@@ -96,6 +96,9 @@ special states: spawnIn, hanging, submerged, stone, channel, dazed, perched/pass
 - Interrupts from 02 cancel the current attack (its cooldown still starts, 02 §4.3). Afterwards the enemy goes to engage with its attack-gap timer at 0.
 - Enemy timers (telegraph, active, recovery, cooldowns, gaps, notice) advance by `TICK × timeScale` and pause during the enemy's hit-stop.
 
+- **Can't reach the player (M19):** a ground enemy that has been in `engage` for **4.0 s** without the player being reachable on its own floor (more than 24 px above or below its feet with no walkable path) either **drops down** (enemies with `dropsLedges`, or any melee enemy when the drop is ≤ 3 tiles and lands on solid ground) or, if it can't, **gives up**: it walks back to its spawn point and becomes unaware. Ranged enemies keep shooting as before.
+- **Teaching enemy (M19):** an enemy with the level property `teach: true` (only the first Bandit of Stage 1, all versions) doubles its first attack's Tele (0.9 s for the Bandit's slash) and that hit deals half damage; its hint reads `Dash through the attack!`. After its first attack it is a normal Bandit.
+
 ### 2.6 Choosing and running attacks
 - In engage, when the **attack-gap timer** is 0 (default **0.6 s** regular, **0.8 s** elite; listed per boss) and the enemy is not turning, collect **eligible** attacks: in range and vertical window, off cooldown, required token available, and (for ranged and targeted attacks) the enemy's hurtbox center is **inside the camera view** (bosses exempt) with LOS from the shot spawn point.
 - If several are eligible, pick by `weight` (default 1) with the `enemyAI` RNG stream (README). Roll only when 2 or more are eligible. **Bosses never pick the same attack twice in a row** when another is eligible.
@@ -391,6 +394,8 @@ Giant versions of a biome mob, with 1–2 new attacks. Default vertical window a
 - Preferred band 0–72 (walks toward the player at 70 px/s when nothing is eligible). Charge does not turn and ignores ledges (arena is flat).
 - **Wall crash:** dazed **2.0 s** (enraged **1.4 s**), `camera.shake(4, 0.3)`. Enraged only: 3 rocks fall at x picked from `enemyAI` (uniform in the arena interior, at least 48 px apart), each with a 0.8 s floor marker before it drops.
 - Stomp Quake: the close box and the two waves (one each way, from its feet) come out on the same Act tick.
+
+- **M19 (2026-11 review):** the Great Boar's base HP is raised by **25%** (a bot that stood still and traded hits won in 22 s; the target is 30–60 s). Its arena gets **two stone pillars** (16 × 48, at 25% and 75% of the floor): a Charge that hits a pillar breaks it and leaves the Boar dazed for its wall-crash time **+0.5 s**; pillars don't respawn in that fight and are solid until broken. Confirm both with a real playtest.
 
 ### 10.2 Stone Colossus (giant Rock Golem)
 
