@@ -2,7 +2,8 @@
 import { defaultSettings, type ActionId, type SettingsData } from '../core/save/schema.ts';
 import { KEY_LABELS, LONG_KEYS, PROMPT } from '../data/prompts.ts';
 /** Prompt style `touch` (07 §8.4): the on-screen button each action is on. */
-const TOUCH_LABEL: Record<ActionId, string> = { left: '◂', right: '▸', up: '▴', down: '▾', jump: 'JUMP', dash: 'DASH', attack1: 'ATK', attack2: 'ATK2', ability1: 'AB1', ability2: 'AB2', heal: 'HEAL', interact: 'USE', restart: 'HOLD ❚❚', pause: '❚❚' };
+// Only characters the bitmap fonts hold (arrows ← ↑ → ↓): a missing one is drawn as an empty box.
+const TOUCH_LABEL: Record<ActionId, string> = { left: '←', right: '→', up: '↑', down: '↓', jump: 'JUMP', dash: 'DASH', attack1: 'ATK', attack2: 'ATK2', ability1: 'AB1', ability2: 'AB2', heal: 'HEAL', interact: 'USE', restart: 'HOLD PAUSE', pause: 'PAUSE' };
 let settings = defaultSettings(), lastDevice: 'keyboard' | 'gamepad' | 'touch' = 'keyboard', padId = '';
 let confirmKeys = new Set(['Enter', 'Space', 'KeyE']);
 let layout: ReadonlyMap<string, string> | null = null;

@@ -21,6 +21,14 @@ describe('installable app (M12 Task 6)', () => {
     expect(same).toEqual(a);
     expect(buildPrecache([{ path: 'index.html', size: 11 }, { path: 'assets/a.png', size: 3 }, { path: 'assets/b.js', size: 7 }]).version).not.toBe(a.version);
   });
+  it('the version also changes when a file changes without changing its length (review 2026-11)', () => {
+    // A level file where one number changed ("45" to "50") has the same size. Without this the browser sees the
+    // same worker file, never installs an update, and players keep the old level for good.
+    const before = buildPrecache([{ path: 'index.html', size: 10, hash: 'aaa' }, { path: 'levels/plains.json', size: 500, hash: 'old' }]);
+    const after = buildPrecache([{ path: 'index.html', size: 10, hash: 'aaa' }, { path: 'levels/plains.json', size: 500, hash: 'new' }]);
+    expect(after.version).not.toBe(before.version);
+    expect(buildPrecache([{ path: 'levels/plains.json', size: 500, hash: 'old' }, { path: 'index.html', size: 10, hash: 'aaa' }])).toEqual(before);
+  });
 });
 
 describe('the app build (M16 Task 1)', () => {

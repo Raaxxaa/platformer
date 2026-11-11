@@ -26,7 +26,9 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
   event.respondWith((async () => {
-    const hit = await caches.match(req, { ignoreSearch: req.mode === 'navigate' });
+    // ignoreVary: a host that answers `Vary: Origin` would otherwise never match the page's own script and style
+    // requests (they carry an Origin header, the saved copies don't), and the game would not start offline.
+    const hit = await caches.match(req, { ignoreSearch: req.mode === 'navigate', ignoreVary: true });
     if (hit) return hit;
     try { return await fetch(req); }
     catch (e) {
