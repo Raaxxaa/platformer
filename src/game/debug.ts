@@ -23,7 +23,8 @@ export interface GameDebugApi {
   tick(): number;
   body(): PlayerBody;              // a copy
   camera(): CameraState;           // a copy
-  setManual(on: boolean): void;    // manual: the scene stops stepping by itself and ignores devices
+  setManual(on: boolean, live?: boolean): void;    // manual: the scene stops stepping by itself and ignores devices
+  stepDevices?(n: number): void;   // review C8: n ticks on the real devices (touch too), in manual mode
   step(n: number, spec?: InputSpec): void;  // run n ticks holding `spec` (pressed on the first tick only)
   teleport(x: number, y: number): void;     // fresh body with its feet at (x, y), camera snapped
   world?(): WorldSnapshot;                  // combat scene only
@@ -67,8 +68,9 @@ export function installDebugApi(host: DebugHost): void {
 
 export interface CombatDebugHost {
   readonly world: GameWorld;
-  setManual(on: boolean): void;
+  setManual(on: boolean, live?: boolean): void;
   stepSpec(spec: InputSpec, n: number): void;
+  stepDevices?(n: number): void;
 }
 
 export function snapshotWorld(w: GameWorld): WorldSnapshot {
@@ -95,8 +97,9 @@ export function installCombatDebugApi(host: CombatDebugHost): void {
     tick: () => host.world.tick,
     body: () => structuredClone(host.world.body),
     camera: () => structuredClone(host.world.camera),
-    setManual: (on) => host.setManual(on),
+    setManual: (on, live) => host.setManual(on, live),
     step: (n, spec = {}) => host.stepSpec(spec, n),
+    stepDevices: (n: number) => host.stepDevices?.(n),
     teleport: (x, y) => host.world.teleportPlayer(x, y),
     world: () => snapshotWorld(host.world),
     spawn: (enemyId, x, y, facing = -1) => host.world.spawnExtra({ enemy: enemyId, x, y, facing }).id,

@@ -107,6 +107,8 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   protected readonly stepper = new FixedStepper();
   protected devices!: Devices;
   protected manual = false;
+  /** Manual mode with the devices still read (`stepDevices`, review C8). */
+  protected liveManual = false;
   protected debug = false;
   protected prevSpec: InputSpec = {};
   protected gfx!: Phaser.GameObjects.Graphics;
@@ -285,11 +287,16 @@ export abstract class WorldScene extends Phaser.Scene implements CombatDebugHost
   /** Extra objects made after the shared ones (called in create). */
   protected createExtra(): void {}
 
-  setManual(on: boolean): void {
-    this.manual = on;
-    this.devices.setEnabled(!on);
+  /** `live`: devices stay on in manual mode (read by `stepDevices`); otherwise they are ignored. */
+  setManual(on: boolean, live = false): void {
+    this.manual = on; this.liveManual = on && live;
+    this.devices.setEnabled(!on || live);
   }
 
+  /** Review C8: runs n ticks on the real devices (keyboard, pad, touch) in manual mode, so a test steps exactly. */
+  stepDevices(n: number): void {
+    for (let i = 0; i < n; i++) this.stepWorld(this.swallowHeld(this.readInput().input));
+  }
   /** Runs n ticks holding `spec` (buttons pressed on the first tick only). */
   stepSpec(spec: InputSpec, n: number): void {
     for (let i = 0; i < n; i++) {

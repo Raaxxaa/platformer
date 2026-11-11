@@ -156,26 +156,29 @@ test('Training Yard stations 1 to 3 by touch', async ({ page }) => {
   test.slow();
   const errors = await boot(page, '&start=training&kit=swordsman:greatsword');
   const done = () => page.evaluate(() => (window as any).__game.training().done as number[]);
-  const run = async (station: number, jumpMs: number, extra?: () => Promise<void>) => {
-    await page.evaluate((id) => (window as any).__game.toStation(id), station);
-    await page.waitForTimeout(300);
+  // Review C8: the game is stepped by hand between touches (no wall-clock waits), so the result never depends on load.
+  const tick = (n: number) => page.evaluate((k) => (window as any).__game.stepDevices(k), n);
+  const press = async (b: { x: number; y: number }, ticks: number) => { await finger(page, 'down', 7, b.x, b.y); await tick(ticks); await finger(page, 'up', 7, b.x, b.y); };
+  const run = async (station: number, jumpTicks: number, extra?: () => Promise<void>) => {
+    await page.evaluate((id) => { const g = (window as any).__game; g.setManual(true, true); g.toStation(id); }, station);
+    await tick(36); await frames(page);                       // a drawn frame: the controls are live
     const jump = await btn(page, 'jump');
     await finger(page, 'down', 1, 110, 260); await finger(page, 'move', 1, 200, 260);        // hold the stick right
-    const end = Date.now() + 25000;
-    while (Date.now() < end && !(await done()).includes(station)) {
-      await fingerTap(page, jump.x, jump.y, jumpMs);
+    for (let i = 0; i < 120 && !(await done()).includes(station); i++) {
+      await press(jump, jumpTicks);
       if (extra) await extra();
-      await page.waitForTimeout(220);
+      await tick(26);
     }
     await finger(page, 'up', 1, 200, 260);
+    await page.evaluate(() => (window as any).__game.setManual(false));
   };
-  await run(1, 220);
+  await run(1, 26);
   expect(await done()).toContain(1);
   await page.screenshot({ path: 'test-results/phone-yard-station1.png' });
-  await run(2, 120, async () => { const j = await btn(page, 'jump'); await fingerTap(page, j.x, j.y, 80); });   // a second tap in the air: the double jump
+  await run(2, 14, async () => { await press(await btn(page, 'jump'), 10); });   // a second tap in the air: the double jump
   expect(await done()).toContain(2);
   const dash = await btn(page, 'dash');
-  await run(3, 200, async () => { await fingerTap(page, dash.x, dash.y, 60); });
+  await run(3, 24, async () => { await press(dash, 7); });
   expect(await done()).toContain(3);
   expect(errors).toEqual([]);
 });

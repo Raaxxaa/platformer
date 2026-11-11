@@ -426,7 +426,7 @@ export class StageScene extends WorldScene {
   update(time: number, delta: number): void {
     this.menus?.update(delta / 1000);
     this.deathView?.setEnabled(!this.pause); if (!this.pause) this.deathView?.update(delta / 1000);
-    this.devices?.setEnabled(!this.manual && !this.menus?.active && this.titleFadeLeft === 0);
+    this.devices?.setEnabled((!this.manual || this.liveManual) && !this.menus?.active && this.titleFadeLeft === 0);
     this.titleFadeLeft = Math.max(0, this.titleFadeLeft - Math.min(UI_FRAME_SECONDS, delta / 1000));
     this.timerBlock?.advance(delta / 1000, !!this.pause);
     if (!this.introChecked && this.level.id === 'home' && this.world.run.phase === 'homeVillage' && this.titleFadeLeft === 0) {
