@@ -1,7 +1,13 @@
 // Installable app (M12 Task 6): registers the service worker and shows "Update ready — restart to update" when a newer
 // version is waiting. The page never reloads itself mid-run.
 /** Inside the iPhone/Mac app (M16, Capacitor) the app carries its own files: no service worker, no update notice. */
-export const isNativeApp = (w: { Capacitor?: unknown } = globalThis as { Capacitor?: unknown }): boolean => !!w.Capacitor;
+type CapGlobal = { Capacitor?: { isNativePlatform?: () => boolean } | unknown };
+/** Inside the Capacitor app. The Capacitor library also defines `window.Capacitor` in a plain browser (as a web
+ * shim), so the global alone is not enough: ask it whether it is native. */
+export const isNativeApp = (w: CapGlobal = globalThis as CapGlobal): boolean => {
+  const c = w.Capacitor as { isNativePlatform?: () => boolean } | undefined;
+  return !!c && (typeof c.isNativePlatform === 'function' ? c.isNativePlatform() : true);
+};
 /** Whether this page should register the service worker. Debug pages skip it (tests would cache 20 MB each) unless ?sw=1. */
 export function shouldRegisterSw(w: { Capacitor?: unknown; navigator?: object; location?: { search: string } }): boolean {
   if (isNativeApp(w) || !w.navigator || !('serviceWorker' in w.navigator)) return false;
