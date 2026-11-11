@@ -3,6 +3,7 @@ import { defaultSave, type SaveData } from '../../core/save/schema.ts';
 import { migrateSave, NewerSaveVersionError } from '../../core/save/migrate.ts';
 import { validateSave } from '../../core/save/validate.ts';
 import { decodeSave, encodeSave } from '../../core/save/codec.ts';
+import { afterSaveWrite } from './persist.ts';
 export interface SaveStorage { getItem(key: string): string | null; setItem(key: string, value: string): void }
 export const SAVE_KEY = 'rushblade.save';
 /** Dates belong to the browser save layer, never the deterministic core. */
@@ -46,7 +47,9 @@ export class SaveStore {
         // Preserve the last good backup if a recovered malformed main still cannot be replaced.
         if (valid) this.storage.setItem(`${SAVE_KEY}.bak`, previous);
       }
-      this.storage.setItem(SAVE_KEY, JSON.stringify(this.data));
+      const text = JSON.stringify(this.data);
+      this.storage.setItem(SAVE_KEY, text);
+      if (this.storage === globalThis.localStorage) afterSaveWrite(SAVE_KEY, text);
     } catch { this.fail(); }
   }
   update(change: (save: SaveData) => void): void { change(this.data); this.write(); }
