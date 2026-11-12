@@ -102,12 +102,132 @@ def snag(x, base, h, w, rng):
 
 
 FORMS = ['normal', 'lean', 'twin', 'squat', 'skinny', 'hollow']
+TEMPLATES = FORMS + ['giant', 'banyan', 'willow', 'mangrove', 'triple', 'broken']
+
+
+def _crown(rng, tips, clumps, anchors, wc, p=0.55):
+    for (tx, ty) in tips:
+        anchors.append((tx, ty + 1))
+        if rng.random() < p:
+            r = wc * rng.uniform(0.9, 1.6)
+            clumps.append(ell(tx + rng.normal(0, 1), ty + rng.normal(0, 1), r * rng.uniform(1.0, 1.6), r, rng.uniform(-30, 30), 14))
+            anchors += [(tx + rng.uniform(-r, r), ty + r * 0.6) for _ in range(3)]
+
+
+def giant(x, base, h, w, rng):
+    """A giant: an enormous trunk with great buttress roots spreading wide, thick low limbs, its top out of the frame."""
+    S = [taper([(x - w * 2.2, base + 4), (x - w * 0.8, base - h * 0.15), (x, base - h * 0.6), (x + rng.normal(0, w * 0.3), base - h)],
+               w * 3.2, w * 1.3, 6)]
+    for k in range(7):
+        sd = -1 + k / 3
+        S.append(taper([(x + sd * w * 0.6, base - w * rng.uniform(1.2, 3.0)), (x + sd * w * 1.6, base - w * 0.6),
+                        (x + sd * w * rng.uniform(2.6, 4.2), base + 4)], w * rng.uniform(0.6, 1.0), 3, 6))
+    stubs(S, x, base, h, w, rng, 4)
+    clumps, anchors, tips = [], [], []
+    for k in range(int(rng.integers(4, 7))):
+        y = base - h * rng.uniform(0.45, 1.0)
+        sd = rng.choice([-1, 1])
+        crooked(S, x, y, -math.pi / 2 + sd * rng.uniform(0.7, 1.4), 9 * rng.uniform(4, 8), w * 0.7, 2, rng, tips, 0.3)
+    _crown(rng, tips, clumps, anchors, 9)
+    return S, clumps, anchors, (x, base - w * 1.4, w * 0.7, w * 1.5)
+
+
+def banyan(x, base, h, w, rng):
+    """A banyan: a wide trunk, long level limbs, curtains of aerial roots dropping straight into the water."""
+    S = [taper([(x - w * 1.5, base + 3), (x, base - h * 0.4), (x, base - h * 0.75)], w * 2.6, w * 1.2, 5)]
+    clumps, anchors, tips = [], [], []
+    for sd in (-1, 1):
+        for k in range(2):
+            y = base - h * (0.62 + k * 0.12)
+            ln = w * rng.uniform(5, 8)
+            pts = [(x, y), (x + sd * ln * 0.5, y - ln * 0.08 + rng.normal(0, 3)), (x + sd * ln, y + rng.normal(0, 4))]
+            S.append(taper(pts, w * 0.75, w * 0.3, 5))
+            for j in range(int(rng.integers(4, 8))):              # aerial roots, some reaching the water
+                t = rng.uniform(0.2, 1.0)
+                rx = x + sd * ln * t
+                ry = y - ln * 0.05
+                reach = base + 3 if rng.random() < 0.5 else ry + rng.uniform(20, 60)
+                S.append(taper([(rx, ry), (rx + rng.normal(0, 1.5), (ry + reach) / 2), (rx + rng.normal(0, 2.5), reach)],
+                               rng.uniform(1.4, 3.2), 1.0, 3))
+            crooked(S, pts[-1][0], pts[-1][1], -math.pi / 2 + sd * 0.5, 9 * 3, w * 0.4, 1, rng, tips, 0.3)
+    for k in range(10):                                          # a wide, heavy crown over everything
+        clumps.append(ell(x + rng.uniform(-w * 7, w * 7), base - h * rng.uniform(0.75, 1.0), 9 * rng.uniform(1.4, 2.4), 9 * rng.uniform(1.0, 1.6), 0, 14))
+    _crown(rng, tips, clumps, anchors, 8)
+    anchors += [(x + rng.uniform(-w * 7, w * 7), base - h * 0.72) for _ in range(20)]
+    return S, clumps, anchors, None
+
+
+def willow(x, base, h, w, rng):
+    """A weeping willow: a short leaning trunk, arching limbs, and long hanging curtains of leaves almost to the water."""
+    lean = rng.choice([-1, 1]) * w * 1.5
+    S = [taper([(x - w, base + 3), (x + lean * 0.4, base - h * 0.35), (x + lean, base - h * 0.6)], w * 2.0, w * 0.8, 5)]
+    clumps, anchors, tips = [], [], []
+    for k in range(int(rng.integers(6, 10))):
+        a = -math.pi / 2 + rng.uniform(-1.3, 1.3)
+        crooked(S, x + lean, base - h * 0.6, a, h * rng.uniform(0.25, 0.45), w * 0.45, 1, rng, tips, 0.3)
+    for (tx, ty) in tips:                                        # the arching ends droop: leaf curtains hang from them
+        clumps.append(ell(tx, ty + 4, 9 * rng.uniform(1.2, 1.8), 9 * rng.uniform(0.8, 1.2), 0, 14))
+        anchors += [(tx + rng.uniform(-14, 14), ty + 8) for _ in range(8)]
+    clumps.append(ell(x + lean, base - h * 0.75, w * 4, w * 2.4, 0, 18))
+    return S, clumps, anchors, None
+
+
+def mangrove(x, base, h, w, rng):
+    """A mangrove: the trunk starts above the water on a cage of arched stilt roots, then a round crown."""
+    top = base - h * 0.28
+    S = [taper([(x, top + 4), (x + rng.normal(0, 2), base - h * 0.7), (x + rng.normal(0, 3), base - h)], w * 1.2, w * 0.5, 5)]
+    for k in range(int(rng.integers(7, 11))):                     # prop roots arching out and down
+        sd = rng.uniform(-1, 1)
+        ex = x + sd * w * rng.uniform(3, 6)
+        S.append(taper([(x + sd * w * 0.3, top + rng.uniform(-6, 6)), (x + sd * w * 2.2, top - rng.uniform(4, 14)), (ex, base + 3)],
+                       rng.uniform(2.0, 3.6), 1.4, 5))
+    clumps, anchors, tips = [], [], []
+    for k in range(int(rng.integers(4, 7))):
+        crooked(S, x, base - h * rng.uniform(0.6, 0.95), -math.pi / 2 + rng.uniform(-1.2, 1.2), 9 * rng.uniform(2.5, 4), w * 0.45, 1, rng, tips, 0.3)
+    _crown(rng, tips, clumps, anchors, 8, 0.8)
+    clumps.append(ell(x, base - h, w * 3, w * 2, 0, 16))
+    return S, clumps, anchors, None
+
+
+def triple(x, base, h, w, rng):
+    """Three trunks splaying from one swollen base."""
+    S = [ell(x, base - w, w * 2.2, w * 1.4, 0, 18)]
+    clumps, anchors, tips = [], [], []
+    for k, a in enumerate((-0.35, 0.0, 0.3)):
+        ex = x + math.sin(a) * h * 0.6 + rng.normal(0, 4)
+        hh = h * rng.uniform(0.75, 1.0)
+        S.append(taper([(x + a * w * 2, base), (x + a * w * 2 + (ex - x) * 0.4, base - hh * 0.45), (ex, base - hh)], w * 0.95, w * 0.35, 5))
+        for j in range(3):
+            crooked(S, x + (ex - x) * (0.6 + j * 0.15), base - hh * (0.6 + j * 0.15), -math.pi / 2 + rng.uniform(-1.2, 1.2),
+                    9 * rng.uniform(2, 4), w * 0.35, 1, rng, tips, 0.35)
+    _crown(rng, tips, clumps, anchors, 8)
+    return S, clumps, anchors, None
+
+
+def broken(x, base, h, w, rng):
+    """A storm-broken tree: the trunk snapped half way, a splintered stump, the fallen top leaning into the water."""
+    sh = h * rng.uniform(0.45, 0.6)
+    S = [taper([(x - w * 1.2, base + 3), (x, base - sh * 0.4), (x, base - sh)], w * 2.2, w * 0.9, 5),
+         poly((x - w * 0.5, base - sh + 2), (x - w * 0.3, base - sh - 10), (x, base - sh - 3), (x + w * 0.2, base - sh - 14), (x + w * 0.5, base - sh + 2))]
+    sd = rng.choice([-1, 1])
+    S.append(taper([(x + sd * w, base - sh + 6), (x + sd * h * 0.35, base - sh * 0.5), (x + sd * h * 0.62, base + 4)], w * 0.8, w * 0.4, 5))
+    tips = []
+    for k in range(3):
+        t = 0.4 + k * 0.2
+        crooked(S, x + sd * h * 0.62 * t, base - sh * (1 - t) + 6, -math.pi / 2 + sd * 0.8, 9 * 2.5, w * 0.3, 1, rng, tips, 0.4)
+    stubs(S, x, base, sh, w, rng, 2)
+    return S, [], tips, None
+
+
+SPECIAL = {'giant': giant, 'banyan': banyan, 'willow': willow, 'mangrove': mangrove, 'triple': triple, 'broken': broken}
 
 
 def cypress(x, base, h, w, rng, form=None):
     """An old bald cypress in one of several forms (straight, leaning, split in two, squat and fat, tall and skinny,
     hollow at the base): a trunk flaring at the water, knees, many crooked limbs, a ragged crown, moss everywhere."""
     form = form or rng.choice(FORMS)
+    if form in SPECIAL:
+        return SPECIAL[form](x, base, h, w, rng)
     if form == 'squat':
         w, h = w * 1.5, h * 0.72
     elif form == 'skinny':
@@ -501,8 +621,8 @@ def scene():
     hut(img, 404, WATER - 52, 0.55)
     mist(img, WATER - 8, 20, 0.6, 4)
     # mid cypresses standing in the water
-    items = [(62, WATER + 2, 220, 17, 'squat'), (182, WATER + 2, 250, 6, 'skinny'), (252, WATER + 1, 160, 9, 'lean'),
-             (432, WATER + 2, 240, 20, 'hollow'), (528, WATER + 1, 200, 8, 'twin')]
+    items = [(66, WATER + 2, 210, 12, 'banyan'), (182, WATER + 2, 250, 6, 'skinny'), (262, WATER + 1, 150, 8, 'willow'),
+             (432, WATER + 2, 240, 20, 'hollow'), (530, WATER + 1, 170, 7, 'mangrove'), (606, WATER + 1, 200, 8, 'broken')]
     layer(img, items, 0.52, 21, [0.0, 0.25, 0.75], rim=0.55)
     items = [(x, WATER + 1, rng.uniform(120, 200), 8.5) for x in (30, 300, 360, 470, 610)]
     layer(img, items, 0.6, 23, [0.85, 0.15, 0.0], moss_on=False, rim=0.5)
@@ -531,7 +651,7 @@ def scene():
     fill(img, ripl, mix(SKY_LO, NEAR, 0.4), 0.5)
     img[WATER, :] = mix(img[WATER, :], MIST, 0.35)
     # big cypresses at the sides, in front of the water
-    items = [(104, WATER + 6, 340, 24, 'hollow'), (566, WATER + 8, 320, 11, 'lean')]
+    items = [(96, WATER + 6, 360, 16, 'giant'), (566, WATER + 8, 320, 11, 'triple')]
     layer(img, items, 0.78, 31, [0.0, 0.0, 1.0], rim=0.7)
     # mossy banks and the half-sunken boardwalk between them
     bank(img, [(-20, 300), (-10, 266), (60, 258), (140, 262), (196, 276), (214, 300)], 41, 0.82)
@@ -637,8 +757,38 @@ def near_camera(img):
     fill(img, stump & ~np.roll(stump, 1, 1), rimc, 0.6)
 
 
+SIZES = {'normal': (210, 8), 'lean': (200, 8), 'twin': (210, 8), 'squat': (200, 12), 'skinny': (230, 7), 'hollow': (220, 16),
+         'giant': (300, 14), 'banyan': (200, 11), 'willow': (170, 9), 'mangrove': (180, 8), 'triple': (210, 9), 'broken': (220, 9)}
+
+
+def template_sheet(path):
+    """Every tree template on its own, in the same moonlit mist, so they can be compared."""
+    from PIL import ImageDraw, ImageFont
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 22)
+    cells = []
+    for i, form in enumerate(TEMPLATES):
+        t = np.clip(YY / WATER, 0, 1)
+        img = mix(SKY_HI, SKY_LO * 0.85, (t ** 1.6)[..., None]).astype(np.float32)
+        img += (C('#dce6c4') * 0.4) * (np.clip(1 - np.hypot(XX - 320, YY - 90) / 220, 0, 1) ** 2)[..., None]
+        mist(img, WATER - 10, 24, 0.6, 4)
+        img[YY >= WATER] = img[YY >= WATER] * 0.4 + C('#0a120e') * 0.6
+        h, w = SIZES[form]
+        layer(img, [(320, WATER + 2, h, w, form)], 0.62, 300 + i * 11, [0, 0, 1])
+        im = Image.fromarray(np.clip(img * 255, 0, 255).astype(np.uint8), 'RGB').crop((120, 0, 520, 300)).resize((400 * 2, 300 * 2), Image.NEAREST)
+        cells.append((form, im))
+    cw, ch, pad, lab = 800, 600, 12, 36
+    out = Image.new('RGB', (4 * (cw + pad) + pad, 3 * (ch + lab + pad) + pad), (16, 14, 22))
+    d = ImageDraw.Draw(out)
+    for i, (form, im) in enumerate(cells):
+        x, y = pad + (i % 4) * (cw + pad), pad + (i // 4) * (ch + lab + pad)
+        d.text((x, y + 6), form, font=font, fill=(240, 236, 226))
+        out.paste(im, (x, y + lab))
+    out.save(path)
+
+
 def build():
     docs = os.path.join(ROOT, 'docs', 'art')
+    template_sheet(os.path.join(docs, 'final_example_swamp_trees.png'))
     img = scene()
     im = Image.fromarray(np.clip(img * 255, 0, 255).astype(np.uint8), 'RGB')
     big = im.resize((W * 3, H * 3), Image.NEAREST)
