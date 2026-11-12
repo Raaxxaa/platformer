@@ -101,12 +101,34 @@ def snag(x, base, h, w, rng):
     return S
 
 
-def cypress(x, base, h, w, rng):
-    """An old bald cypress: a trunk flaring wide at the water, knees around it, many crooked limbs and twigs, a ragged
-    crown of clumps with gaps, moss hanging everywhere."""
-    trunk = [taper([(x - w * 1.6, base + 3), (x - w * 0.5, base - h * 0.12), (x, base - h * 0.5), (x + rng.normal(0, w * 0.2), base - h)],
-                   w * 2.6, w * 0.5, 6)]
-    trunk.append(taper([(x + w * 1.6, base + 3), (x + w * 0.4, base - h * 0.14), (x, base - h * 0.4)], w * 1.2, w * 0.4, 4))
+FORMS = ['normal', 'lean', 'twin', 'squat', 'skinny', 'hollow']
+
+
+def cypress(x, base, h, w, rng, form=None):
+    """An old bald cypress in one of several forms (straight, leaning, split in two, squat and fat, tall and skinny,
+    hollow at the base): a trunk flaring at the water, knees, many crooked limbs, a ragged crown, moss everywhere."""
+    form = form or rng.choice(FORMS)
+    if form == 'squat':
+        w, h = w * 1.5, h * 0.72
+    elif form == 'skinny':
+        w, h = w * 0.6, h * 1.12
+    top_dx = rng.normal(0, w * 0.2)
+    if form == 'lean':
+        top_dx = rng.choice([-1, 1]) * w * rng.uniform(2.5, 5)
+    flare = rng.uniform(1.2, 2.2)
+    trunk = [taper([(x - w * flare * 0.6, base + 3), (x - w * 0.4, base - h * 0.12), (x + top_dx * 0.35, base - h * 0.5),
+                    (x + top_dx, base - h)], w * flare, w * rng.uniform(0.35, 0.6), 6)]
+    trunk.append(taper([(x + w * flare * 0.6, base + 3), (x + w * 0.4, base - h * 0.14), (x + top_dx * 0.3, base - h * 0.4)],
+                       w * flare * 0.45, w * 0.4, 4))
+    if form == 'twin':                                           # a second trunk splitting off low down
+        sd = -1 if top_dx > 0 else 1
+        trunk.append(taper([(x, base - h * 0.22), (x + sd * w * 1.6, base - h * 0.55), (x + sd * w * 3.0, base - h * 0.9)],
+                           w * 0.7, w * 0.3, 5))
+        x2 = x + sd * w * 3.0
+    hole = None
+    if form == 'hollow':
+        hole = (x, base - w * 0.9, w * 0.45, w * 1.0)
+    wc = min(w, 8.0)                                             # crowns and limbs keep a normal size on fat trunks
     for k in range(int(rng.integers(2, 5))):                     # cypress knees poking out of the water
         kx = x + rng.uniform(-w * 4, w * 4)
         trunk.append(taper([(kx, base + 3), (kx + rng.normal(0, 0.5), base - rng.uniform(2, 6))], rng.uniform(2, 3.4), 1, 2))
@@ -116,18 +138,21 @@ def cypress(x, base, h, w, rng):
         t = rng.uniform(0.4, 1.0)
         y = base - h * t
         sd = rng.choice([-1, 1])
-        crooked(trunk, x, y, -math.pi / 2 + sd * rng.uniform(0.5, 1.35), w * rng.uniform(3, 7), w * 0.6, 2, rng, tips)
+        bx = x + top_dx * t
+        if form == 'twin' and k % 2:
+            bx = x + (x2 - x) * min(1, t * 1.1)
+        crooked(trunk, bx, y, -math.pi / 2 + sd * rng.uniform(0.5, 1.35), wc * rng.uniform(3, 6), min(w, 12) * 0.6, 2, rng, tips)
     for (tx, ty) in tips:                                        # ragged clumps on some branch ends, bare twigs on others
         anchors.append((tx, ty + 1))
-        if rng.random() < 0.6:
-            r = w * rng.uniform(0.9, 1.8)
+        if rng.random() < 0.55:
+            r = wc * rng.uniform(0.9, 1.6)
             clumps.append(ell(tx + rng.normal(0, 1), ty + rng.normal(0, 1), r * rng.uniform(1.0, 1.6), r, rng.uniform(-30, 30), 14))
             anchors += [(tx + rng.uniform(-r, r), ty + r * 0.6) for _ in range(3)]
     for j in range(int(rng.integers(2, 5))):                     # the broken top: a few ragged clumps
-        cy_ = base - h + j * w * 1.2 - w
-        r = w * rng.uniform(1.0, 1.8) * (0.6 + j * 0.15)
-        clumps.append(ell(x + rng.normal(0, w * 0.8), cy_, r, r * 0.8, 0, 14))
-    return trunk, clumps, anchors
+        cy_ = base - h + j * wc * 1.2 - wc
+        r = wc * rng.uniform(1.0, 1.6) * (0.6 + j * 0.15)
+        clumps.append(ell(x + top_dx + rng.normal(0, w * 0.8), cy_, r, r * 0.8, 0, 14))
+    return trunk, clumps, anchors, hole
 
 
 def old_tree(x, base, h, w, rng, side=1):
@@ -281,11 +306,14 @@ def mist(img, y, thick, a, seed, stretch=70):
 
 
 def layer(img, items, d, seed, kind_weights, moss_on=True, rim=0.6, leaf_tint=C('#2a3e2a')):
-    """One depth layer: a mix of pines, snags and cypresses, all at depth d."""
+    """One depth layer: a mix of pines, snags and cypresses around depth d. Each tree gets its own form and a slightly
+    different shade, so no two look alike. Items: (x, base, h, w) or (x, base, h, w, form)."""
     rng = np.random.default_rng(seed)
-    trunks, clumps, anchors = [], [], []
-    for (x, base, h, w) in items:
-        k = rng.choice(['pine', 'snag', 'cypress'], p=kind_weights)
+    for n_, it in enumerate(items):
+        x, base, h, w = it[:4]
+        form = it[4] if len(it) > 4 else None
+        k = 'cypress' if form else rng.choice(['pine', 'snag', 'cypress'], p=kind_weights)
+        trunks, clumps, anchors, hole = [], [], [], None
         if k == 'pine':
             t, c = pine(x, base, h, w, rng)
             trunks += t
@@ -293,27 +321,31 @@ def layer(img, items, d, seed, kind_weights, moss_on=True, rim=0.6, leaf_tint=C(
         elif k == 'snag':
             trunks += snag(x, base, h, w * 0.9, rng)
         else:
-            t, c, a = cypress(x, base, h, w, rng)
+            t, c, a, hole = cypress(x, base, h, w, rng, form)
             trunks += t
             clumps += c
             anchors += a
-    col = depth_col(d)
-    tm = mask(trunks)
-    if d > 0.4:
-        tm = tm | (leafy(tm, seed + 9, 0.35) & _dilate(tm, 1))            # rough, uneven bark edges
-    cm = leafy(mask(clumps), seed, 1.0) if clumps else np.zeros((H, W), bool)
-    cm &= ~((fbm(XX / 3.5, YY / 3.5, 2, seed + 4) < 0.3) & ~_dilate(~cm, 2))  # gaps in the crowns
-    fill(img, tm, col * 0.95)
-    if d > 0.5:
-        bark_dark(img, tm, col * 1.1, seed)
-    foliage_shade(img, cm, mix(col, leaf_tint, 0.3 * d), seed, d)
-    if d > 0.45:
-        old_details(img, tm, 0, seed + 3, d)
-        climbing_vines(img, tm, mix(col, C('#3a5a30'), 0.5), mix(col, C('#5a7a44'), 0.5), seed + 6, 4)
-    rim_light(img, tm | cm, rim * (1 - d * 0.4))
-    if moss_on and anchors:
-        moss(img, anchors, mix(col, C('#6a7a5a'), 0.35), mix(col, C('#8a9a74'), 0.4), seed, 1.6, int(30 + 70 * d))
-    return tm | cm
+        di = float(np.clip(d + rng.uniform(-0.07, 0.07), 0, 1))
+        col = depth_col(di) * rng.uniform(0.9, 1.1)
+        sd = seed + n_ * 7
+        tm = mask(trunks)
+        if d > 0.4:
+            tm = tm | (leafy(tm, sd + 9, 0.35) & _dilate(tm, 1))         # rough, uneven bark edges
+        cm = leafy(mask(clumps), sd, 1.0) if clumps else np.zeros((H, W), bool)
+        cm &= ~((fbm(XX / 3.5, YY / 3.5, 2, sd + 4) < 0.3) & ~_dilate(~cm, 2))  # gaps in the crowns
+        fill(img, tm, col * 0.95)
+        if d > 0.5:
+            bark_dark(img, tm, col * 1.1, sd)
+        if hole is not None:
+            hx, hy, hrx, hry = hole
+            fill(img, mask([ell(hx, hy, hrx, hry, 0, 16)]) & tm, NEAR * 0.35)
+        foliage_shade(img, cm, mix(col, leaf_tint, 0.3 * di), sd, di)
+        if d > 0.45:
+            old_details(img, tm, 0, sd + 3, di)
+            climbing_vines(img, tm, mix(col, C('#3a5a30'), 0.5), mix(col, C('#5a7a44'), 0.5), sd + 6, 2)
+        rim_light(img, tm | cm, rim * (1 - di * 0.4))
+        if moss_on and anchors:
+            moss(img, anchors, mix(col, C('#6a7a5a'), 0.35), mix(col, C('#8a9a74'), 0.4), sd, 1.6, int(30 + 70 * di))
 
 
 def grass_tufts(img, top, grass_col, seed, density=0.5, hmin=3, hmax=12, d=0.8):
@@ -408,7 +440,8 @@ def scene():
     hut(img, 404, WATER - 52, 0.55)
     mist(img, WATER - 8, 20, 0.6, 4)
     # mid cypresses standing in the water
-    items = [(70, WATER + 2, 200, 8.5), (180, WATER + 2, 230, 9.5), (250, WATER + 1, 150, 7), (430, WATER + 2, 210, 8.5), (530, WATER + 1, 180, 8)]
+    items = [(62, WATER + 2, 220, 17, 'squat'), (182, WATER + 2, 250, 6, 'skinny'), (252, WATER + 1, 160, 9, 'lean'),
+             (432, WATER + 2, 240, 20, 'hollow'), (528, WATER + 1, 200, 8, 'twin')]
     layer(img, items, 0.52, 21, [0.0, 0.25, 0.75], rim=0.55)
     items = [(x, WATER + 1, rng.uniform(120, 200), 8.5) for x in (30, 300, 360, 470, 610)]
     layer(img, items, 0.6, 23, [0.85, 0.15, 0.0], moss_on=False, rim=0.5)
@@ -433,7 +466,7 @@ def scene():
     fill(img, ripl, mix(SKY_LO, NEAR, 0.4), 0.5)
     img[WATER, :] = mix(img[WATER, :], MIST, 0.35)
     # big cypresses at the sides, in front of the water
-    items = [(110, WATER + 6, 330, 14), (560, WATER + 8, 340, 15)]
+    items = [(104, WATER + 6, 340, 24, 'hollow'), (566, WATER + 8, 320, 11, 'lean')]
     layer(img, items, 0.78, 31, [0.0, 0.0, 1.0], rim=0.7)
     # mossy banks and the half-sunken boardwalk between them
     bank(img, [(-20, 300), (-10, 266), (60, 258), (140, 262), (196, 276), (214, 300)], 41, 0.82)
