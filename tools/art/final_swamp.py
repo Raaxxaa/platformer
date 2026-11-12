@@ -595,7 +595,7 @@ def bank(img, pts, seed, d, grass_col=C('#3e5a34')):
 
 # ============================================================================================== the scene
 
-def cabin(img, x, base, fogt):
+def cabin(img, x, base, fogt, lights=True):
     """The witch's cabin on stilts: plank walls, a sagging mossy roof, a lit window, a porch with a lantern, a smoking
     chimney and a rowboat tied below."""
     f = lambda c: mix(c, depth_col(0.0), fogt)
@@ -619,24 +619,53 @@ def cabin(img, x, base, fogt):
     fill(img, roof & (fbm(XX / 4, YY / 4, 2, 8) > 0.55), moss_c)
     moss(img, [(xx, top + 8) for xx in range(x - 30, x + 32, 5)], f(C('#3a4a30')), f(C('#5a6a46')), 5, 1.2, 14)
     fill(img, mask([poly((x + 14, top - 14), (x + 21, top - 14), (x + 22, top - 2), (x + 15, top - 2))]), dark)        # chimney
-    for k in range(5):                                                   # smoke drifting
+    for k in range(5 if lights else 0):                                  # smoke drifting
         glow(img, x + 18 + k * 5, top - 20 - k * 6, 7 + k * 2, f(C('#8a9480')) * 0.5, 0.35)
     wx, wy_ = x - 16, top + 10                                           # the lit window
     img[wy_:wy_ + 9, wx:wx + 9] = C('#ffb84a')
     img[wy_ + 4, wx:wx + 9] = C('#6a3a12')
     img[wy_:wy_ + 9, wx + 4] = C('#6a3a12')
     img[wy_ + 9, wx - 1:wx + 10] = dark
-    glow(img, wx + 4, wy_ + 4, 40, C('#ff9a3a'), 0.4)
+    if lights:
+        glow(img, wx + 4, wy_ + 4, 40, C('#ff9a3a'), 0.4)
     fill(img, mask([poly((x + 4, top + 30), (x + 4, top + 12), (x + 14, top + 12), (x + 14, top + 30))]), dark)     # door
     img[top + 21, x + 12] = C('#a89a74')
     lx, ly = x - 32, top + 14                                            # porch lantern
     fill(img, mask([cap((lx, top + 6), (lx, ly), 0.6)]), dark)
     img[ly:ly + 4, lx - 1:lx + 2] = C('#ffcf6a')
-    glow(img, lx, ly + 2, 22, C('#ff9a3a'), 0.45)
+    if lights:
+        glow(img, lx, ly + 2, 22, C('#ff9a3a'), 0.45)
     boat = mask([poly((x - 40, base - 1), (x - 6, base - 1), (x - 10, base + 3), (x - 36, base + 3))])                 # rowboat
     fill(img, boat, f(C('#3a2a1c')))
     fill(img, boat & ~np.roll(boat, 1, 0), f(C('#6a5236')))
     fill(img, mask([cap((x - 6, base - 1), (x - 2, top + 32), 0.5)]), dark)                                           # rope
+
+
+
+def far_cabin(img, x, base, s, fogt):
+    """The cabin shrunk to distance s (1 = full size): drawn full size off-screen, scaled down, pasted, lights added."""
+    cx, cb = 320, 300
+    blk, wht = np.zeros((H, W, 3), np.float32), np.ones((H, W, 3), np.float32)
+    cabin(blk, cx, cb, fogt, lights=False)
+    cabin(wht, cx, cb, fogt, lights=False)
+    a = np.clip(1 - (wht - blk).mean(axis=2), 0, 1)
+    ys, xs = np.nonzero(a > 0.01)
+    y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+    rgba = np.dstack([blk[y0:y1, x0:x1], a[y0:y1, x0:x1]])
+    sw, sh = max(1, round((x1 - x0) * s)), max(1, round((y1 - y0) * s))
+    chans = [np.asarray(Image.fromarray(rgba[..., k].astype(np.float32), 'F').resize((sw, sh), Image.BOX)) for k in range(4)]
+    col, al = np.dstack(chans[:3]), np.clip(chans[3], 0, 1)
+    al = np.where(al > 0.35, 1.0, 0.0)                                   # keep hard pixel edges
+    col = col / np.maximum(chans[3], 1e-3)[..., None]
+    px, py = int(round(x + (x0 - cx) * s)), int(round(base + (y0 - cb) * s))
+    reg = img[py:py + sh, px:px + sw]
+    reg[:] = reg * (1 - al[..., None]) + np.clip(col, 0, 1) * al[..., None]
+    top = cb - 46
+    wx, wy_ = x + (cx - 16 + 4 - cx) * s, base + (top + 14 - cb) * s
+    glow(img, wx, wy_, 40 * s, C('#ff9a3a'), 0.45)
+    glow(img, x + (-32) * s, base + (top + 16 - cb) * s, 22 * s, C('#ff9a3a'), 0.4)
+    for k in range(5):
+        glow(img, x + (18 + k * 5) * s, base + (top - 20 - k * 6 - cb) * s, (7 + k * 2) * s, mix(C('#8a9480'), depth_col(0), fogt) * 0.5, 0.35)
 
 
 def scene():
@@ -691,13 +720,15 @@ def scene():
     plane(HZ, p0, 0.5)
     mist(img, HZ - 6, 18, 0.8, 3)
     # plane 1: small trees standing in the water far away
-    plane(244, lambda: layer(img, [(x, 244, rng.uniform(50, 100), rng.uniform(3.5, 5.0)) for x in
-                                   (14, 70, 118, 172, 214, 400, 444, 492, 540, 590, 630)], 0.24, 12, [0.4, 0.3, 0.3], rim=0.4))
+    def p1():
+        layer(img, [(x, 244, rng.uniform(50, 100), rng.uniform(3.5, 5.0)) for x in
+                    (14, 70, 118, 172, 214, 424, 464, 504, 548, 590, 630)], 0.24, 12, [0.4, 0.3, 0.3], rim=0.4)
+        far_cabin(img, 372, 244, 0.5, 0.62)                       # the cabin, far across the water
+    plane(244, p1)
     mist(img, 240, 14, 0.7, 4)
     # plane 2: the cabin on stilts in a clearing, a few trees around it, eyes in the dark
     def p2():
         layer(img, [(150, 254, 120, 5.5), (226, 254, 140, 6), (470, 254, 130, 6), (560, 254, 110, 5.5)], 0.38, 13, [0.3, 0.2, 0.5], rim=0.45)
-        cabin(img, 352, 254, 0.42)
     plane(254, p2, 0.6)
     for (x, y, c) in ((198, 232, '#ff3a2a'), (520, 236, '#ffc84a')):
         img[y, x] = img[y, x + 3] = C(c)
