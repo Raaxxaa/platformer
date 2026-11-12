@@ -61,66 +61,177 @@ def pine(x, base, h, w, rng):
     return trunk, clumps
 
 
+def crooked(S, x, y, ang, ln, wd, depth, rng, tips, kink=0.35):
+    """A crooked old branch: bends at every joint, thins out, forks into twigs; records the tips (for clumps, moss)."""
+    pts = [(x, y)]
+    a = ang
+    for k in range(4):
+        a += rng.normal(0, kink)
+        x, y = x + math.cos(a) * ln / 4, y + math.sin(a) * ln / 4
+        pts.append((x, y))
+    S.append(taper(pts, max(1.0, wd), max(0.8, wd * 0.35), 4))
+    tips.append((x, y))
+    if depth > 0:
+        for _ in range(int(rng.integers(2, 4))):
+            j = int(rng.integers(1, 4))
+            crooked(S, pts[j][0], pts[j][1], a + rng.choice([-1, 1]) * rng.uniform(0.35, 1.0) - 0.15, ln * rng.uniform(0.45, 0.7),
+                    wd * 0.55, depth - 1, rng, tips, kink)
+    elif rng.random() < 0.5:                                     # a dead twig flicking off the end
+        S.append(taper([(x, y), (x + math.cos(a + 0.6) * 4, y + math.sin(a + 0.6) * 4)], 1.0, 0.8, 2))
+
+
+def stubs(S, x, base, h, w, rng, n):
+    """Broken-off branch stumps along an old trunk."""
+    for _ in range(n):
+        y = base - h * rng.uniform(0.2, 0.85)
+        sd = rng.choice([-1, 1])
+        ln = w * rng.uniform(0.6, 1.4)
+        S.append(taper([(x, y), (x + sd * ln, y - ln * rng.uniform(0.1, 0.6))], w * rng.uniform(0.25, 0.4), w * 0.18, 2))
+
+
 def snag(x, base, h, w, rng):
-    """A dead tree: a tall bare trunk, a broken top and a few short stubby branches."""
+    """A dead tree: a tall bare trunk, a broken top, crooked dead branches and stumps."""
     S = [taper([(x, base + 2), (x + rng.normal(0, 1.2), base - h * 0.5), (x + rng.normal(0, 2.0), base - h)], w, max(1.0, w * 0.4), 4)]
-    for k in range(int(rng.integers(2, 5))):
-        y = base - h * rng.uniform(0.45, 0.95)
-        s = rng.choice([-1, 1])
-        ln = rng.uniform(4, 12) * (w / 3 + 0.6)
-        S.append(taper([(x, y), (x + s * ln * 0.6, y - ln * 0.3), (x + s * ln, y - ln * rng.uniform(0.2, 0.8))], max(1.0, w * 0.4), 0.8, 3))
+    tips = []
+    for k in range(int(rng.integers(3, 6))):
+        y = base - h * rng.uniform(0.4, 0.95)
+        sd = rng.choice([-1, 1])
+        crooked(S, x, y, -math.pi / 2 + sd * rng.uniform(0.6, 1.3), h * rng.uniform(0.12, 0.25), max(1.2, w * 0.45), 1, rng, tips, 0.5)
+    stubs(S, x, base, h, w, rng, 2)
     return S
 
 
 def cypress(x, base, h, w, rng):
-    """A bald cypress: a trunk flaring wide at the water (buttress), knees around it, a ragged crown of clumps on a few
-    upswept limbs, moss hanging from the clumps."""
+    """An old bald cypress: a trunk flaring wide at the water, knees around it, many crooked limbs and twigs, a ragged
+    crown of clumps with gaps, moss hanging everywhere."""
     trunk = [taper([(x - w * 1.6, base + 3), (x - w * 0.5, base - h * 0.12), (x, base - h * 0.5), (x + rng.normal(0, w * 0.2), base - h)],
                    w * 2.6, w * 0.5, 6)]
     trunk.append(taper([(x + w * 1.6, base + 3), (x + w * 0.4, base - h * 0.14), (x, base - h * 0.4)], w * 1.2, w * 0.4, 4))
     for k in range(int(rng.integers(2, 5))):                     # cypress knees poking out of the water
         kx = x + rng.uniform(-w * 4, w * 4)
         trunk.append(taper([(kx, base + 3), (kx + rng.normal(0, 0.5), base - rng.uniform(2, 6))], rng.uniform(2, 3.4), 1, 2))
-    clumps, anchors = [], []
-    for k in range(int(rng.integers(3, 6))):
-        t = rng.uniform(0.55, 1.0)
+    stubs(trunk, x, base, h, w, rng, int(rng.integers(2, 5)))
+    clumps, anchors, tips = [], [], []
+    for k in range(int(rng.integers(5, 9))):
+        t = rng.uniform(0.4, 1.0)
         y = base - h * t
-        s = rng.choice([-1, 1])
-        ln = w * rng.uniform(2.5, 6)
-        ex, ey = x + s * ln, y - ln * rng.uniform(0.3, 0.8)
-        trunk.append(taper([(x, y + 4), (x + s * ln * 0.5, y - ln * 0.2), (ex, ey)], w * 0.65, 1.8, 4))
-        # an irregular crown: several small clumps scattered along the limb, not one umbrella
-        for j in range(int(rng.integers(3, 6))):
-            tt = rng.uniform(0.35, 1.0)
-            cx_ = x + s * ln * tt + rng.normal(0, w * 0.6)
-            cy_ = y + 2 - ln * (0.2 + 0.4 * tt) + rng.normal(0, w * 0.8)
-            r = w * rng.uniform(1.0, 2.0)
-            clumps.append(ell(cx_, cy_, r * rng.uniform(1.0, 1.5), r, rng.uniform(-30, 30), 14))
-            anchors += [(cx_ + rng.uniform(-r, r), cy_ + r * 0.6) for _ in range(3)]
-    for j in range(int(rng.integers(3, 6))):                     # the top: a ragged spire of clumps
+        sd = rng.choice([-1, 1])
+        crooked(trunk, x, y, -math.pi / 2 + sd * rng.uniform(0.5, 1.35), w * rng.uniform(3, 7), w * 0.6, 2, rng, tips)
+    for (tx, ty) in tips:                                        # ragged clumps on some branch ends, bare twigs on others
+        anchors.append((tx, ty + 1))
+        if rng.random() < 0.6:
+            r = w * rng.uniform(0.9, 1.8)
+            clumps.append(ell(tx + rng.normal(0, 1), ty + rng.normal(0, 1), r * rng.uniform(1.0, 1.6), r, rng.uniform(-30, 30), 14))
+            anchors += [(tx + rng.uniform(-r, r), ty + r * 0.6) for _ in range(3)]
+    for j in range(int(rng.integers(2, 5))):                     # the broken top: a few ragged clumps
         cy_ = base - h + j * w * 1.2 - w
-        r = w * rng.uniform(1.2, 2.0) * (0.6 + j * 0.15)
+        r = w * rng.uniform(1.0, 1.8) * (0.6 + j * 0.15)
         clumps.append(ell(x + rng.normal(0, w * 0.8), cy_, r, r * 0.8, 0, 14))
-    anchors += [(x + rng.uniform(-w * 2, w * 2), base - h + w * 3) for _ in range(4)]
     return trunk, clumps, anchors
 
 
 def old_tree(x, base, h, w, rng, side=1):
-    """A huge old swamp tree right in front: a massive trunk with flared buttress roots and thick limbs."""
+    """A huge old swamp tree right in front: a massive gnarled trunk, flared buttress roots, many crooked limbs."""
     S = [taper([(x, base + 6), (x + side * w * 0.2, base - h * 0.4), (x + side * w * 0.5, base - h)], w * 1.3, w * 0.7, 6)]
     for k in range(5):                                             # buttress roots
         s = [-1, -0.5, 0.3, 0.8, 1][k]
         S.append(taper([(x + s * w * 0.3, base - w * rng.uniform(0.6, 1.4)), (x + s * w * 0.9, base - w * 0.3),
                         (x + s * w * rng.uniform(1.4, 2.4), base + 6)], w * rng.uniform(0.35, 0.55), 3, 5))
-    clumps, anchors = [], []
-    for k in range(3):
-        y = base - h * rng.uniform(0.55, 0.95)
-        ln = w * rng.uniform(2.0, 3.4)
-        ex, ey = x - side * ln, y - ln * 0.5
-        S.append(taper([(x, y), (x - side * ln * 0.5, y - ln * 0.15), (ex, ey)], w * 0.42, w * 0.15, 5))
-        clumps.append(ell(ex, ey, ln * 0.7, ln * 0.4, 0, 18))
-        anchors += [(ex + rng.uniform(-ln * 0.6, ln * 0.6), ey + ln * 0.25) for _ in range(10)]
+    stubs(S, x + side * w * 0.2, base, h, w, rng, 3)
+    clumps, anchors, tips = [], [], []
+    for k in range(5):
+        y = base - h * rng.uniform(0.4, 0.95)
+        crooked(S, x + side * w * 0.3, y, math.pi * (0.5 + side * 0.5) * -1 + (-0.9 if side > 0 else 0.9) + rng.normal(0, 0.25),
+                w * rng.uniform(2.2, 3.6), w * 0.42, 2, rng, tips, 0.3)
+    for (tx, ty) in tips:
+        anchors.append((tx, ty))
+        if rng.random() < 0.55:
+            r = w * rng.uniform(0.5, 0.9)
+            clumps.append(ell(tx, ty, r * 1.4, r, rng.uniform(-20, 20), 16))
+            anchors += [(tx + rng.uniform(-r, r), ty + r * 0.5) for _ in range(5)]
     return S, clumps, anchors
+
+
+def old_details(img, m, x_hint, seed, d):
+    """Signs of age on near trunks: knot holes, burls, shelf mushrooms, pale lichen speckles."""
+    rng = np.random.default_rng(seed)
+    ys, xs = np.nonzero(m & ~_dilate(~m, 3))
+    if not len(xs):
+        return
+    for _ in range(int(len(xs) / 900) + 2):
+        i = rng.integers(len(xs))
+        x, y = xs[i], ys[i]
+        kind = rng.random()
+        if kind < 0.35:                                            # a knot hole
+            fill(img, mask([ell(x, y, rng.uniform(1.5, 3.5), rng.uniform(2.5, 5), 0, 12)]) & m, NEAR * 0.5)
+            img[max(0, y - 4), x] = img[max(0, y - 4), x] * 1.3
+        elif kind < 0.65:                                          # shelf mushrooms, stacked
+            for k in range(int(rng.integers(1, 4))):
+                sh = mask([ell(x + 2, y + k * 4, rng.uniform(3, 5), 1.4, 0, 12)]) & (YY <= y + k * 4)
+                fill(img, sh, mix(C('#a89a74'), NEAR, 0.4 * d))
+                fill(img, sh & ~np.roll(sh, 1, 0), mix(C('#d8ccaa'), SKY_LO, 0.2))
+        else:                                                      # a burl
+            bm = mask([ell(x, y, rng.uniform(3, 6), rng.uniform(3, 5), 0, 14)]) & m
+            fill(img, bm, img[y, x] * 1.15 if 0 <= y < H and 0 <= x < W else NEAR)
+            fill(img, bm & ~np.roll(bm, -1, 0), NEAR * 0.6)
+    lich = m & (fbm(XX / 2, YY / 2, 2, seed + 5) > 0.82)
+    fill(img, lich, mix(C('#7a8a64'), SKY_LO, 0.25), 0.7)
+
+
+def hanging_vines(img, pairs, col, leaf, seed, thick=2):
+    """Lianas sagging between branches: two twisting strands, leaf clusters along them, loose ends dangling."""
+    rng = np.random.default_rng(seed)
+    col, leaf = np.asarray(col), np.asarray(leaf)
+    for (a, b) in pairs:
+        sag = rng.uniform(16, 38)
+        n = int(abs(b[0] - a[0]) + abs(b[1] - a[1])) * 2 + 2
+        for strand in range(2):
+            ph = rng.uniform(0, 6)
+            for k in range(n + 1):
+                t = k / n
+                x = a[0] + (b[0] - a[0]) * t
+                y = a[1] + (b[1] - a[1]) * t + sag * 4 * t * (1 - t) + 1.4 * math.sin(t * 40 + ph) * (strand * 2 - 1)
+                xi, yi = int(x), int(y)
+                for dy in range(thick if strand == 0 else 1):
+                    if 0 <= xi < W and 0 <= yi + dy < H:
+                        img[yi + dy, xi] = col * (0.85 if strand else 1.0)
+        for k in range(int(n / 9)):                               # leaf clusters
+            t = rng.uniform(0.05, 0.95)
+            x = a[0] + (b[0] - a[0]) * t
+            y = a[1] + (b[1] - a[1]) * t + sag * 4 * t * (1 - t)
+            for _ in range(int(rng.integers(3, 7))):
+                lx, ly = int(x + rng.normal(0, 2.2)), int(y + abs(rng.normal(1.5, 2)))
+                if 0 <= lx < W - 1 and 0 <= ly < H:
+                    img[ly, lx:lx + 2] = leaf * rng.uniform(0.85, 1.15)
+        for k in range(int(rng.integers(1, 4))):                   # loose ends hanging down
+            t = rng.uniform(0.15, 0.85)
+            x = int(a[0] + (b[0] - a[0]) * t)
+            y = int(a[1] + (b[1] - a[1]) * t + sag * 4 * t * (1 - t))
+            for j in range(int(rng.uniform(10, 34))):
+                xx = int(x + math.sin(j / 5) * 1.2)
+                if 0 <= xx < W - 1 and 0 <= y + j < H:
+                    img[y + j, xx] = col
+                    if j % 4 == 2:
+                        img[y + j, xx + 1] = leaf
+
+
+def climbing_vines(img, m, col, leaf, seed, n=3):
+    """Ivy winding up a trunk."""
+    rng = np.random.default_rng(seed)
+    ys, xs = np.nonzero(m)
+    if not len(xs):
+        return
+    for _ in range(n):
+        i = rng.integers(len(xs))
+        x0, y0 = xs[i], ys[i]
+        ph = rng.uniform(0, 6)
+        for k in range(int(rng.uniform(30, 90))):
+            y = y0 - k
+            x = int(x0 + 3 * math.sin(k / 6 + ph))
+            if 0 <= y < H and 0 <= x < W and m[y, x]:
+                img[y, x] = col
+                if k % 3 == 0 and x + 1 < W:
+                    img[y, x + 1] = leaf
 
 
 # ============================================================================================== shading
@@ -188,14 +299,20 @@ def layer(img, items, d, seed, kind_weights, moss_on=True, rim=0.6, leaf_tint=C(
             anchors += a
     col = depth_col(d)
     tm = mask(trunks)
-    cm = leafy(mask(clumps), seed) if clumps else np.zeros((H, W), bool)
+    if d > 0.4:
+        tm = tm | (leafy(tm, seed + 9, 0.35) & _dilate(tm, 1))            # rough, uneven bark edges
+    cm = leafy(mask(clumps), seed, 1.0) if clumps else np.zeros((H, W), bool)
+    cm &= ~((fbm(XX / 3.5, YY / 3.5, 2, seed + 4) < 0.3) & ~_dilate(~cm, 2))  # gaps in the crowns
     fill(img, tm, col * 0.95)
     if d > 0.5:
         bark_dark(img, tm, col * 1.1, seed)
     foliage_shade(img, cm, mix(col, leaf_tint, 0.3 * d), seed, d)
+    if d > 0.45:
+        old_details(img, tm, 0, seed + 3, d)
+        climbing_vines(img, tm, mix(col, C('#3a5a30'), 0.5), mix(col, C('#5a7a44'), 0.5), seed + 6, 4)
     rim_light(img, tm | cm, rim * (1 - d * 0.4))
     if moss_on and anchors:
-        moss(img, anchors, mix(col, C('#6a7a5a'), 0.35), mix(col, C('#8a9a74'), 0.4), seed, 1.0, int(18 + 40 * d))
+        moss(img, anchors, mix(col, C('#6a7a5a'), 0.35), mix(col, C('#8a9a74'), 0.4), seed, 1.6, int(30 + 70 * d))
     return tm | cm
 
 
@@ -339,11 +456,20 @@ def scene():
     for (x, side, sd) in ((-8, 1, 61), (650, -1, 62)):
         S, cl_, an = old_tree(x + side * 10, 304, 330, 48, rng2, side)
         tm = mask(S)
+        tm = tm | (leafy(tm, sd + 9, 0.35) & _dilate(tm, 1))
         bark_dark(img, tm, C('#141a14'), sd)
-        cm = leafy(mask(cl_), sd)
+        old_details(img, tm, x, sd + 3, 0.95)
+        climbing_vines(img, tm, C('#1e2e1a'), C('#2e4426'), sd + 6, 6)
+        cm = leafy(mask(cl_), sd, 1.0)
+        cm &= ~((fbm(XX / 3.5, YY / 3.5, 2, sd + 4) < 0.3) & ~_dilate(~cm, 2))
         foliage_shade(img, cm, C('#141e14'), sd, 0.95)
         rim_light(img, tm | cm, 0.35, width=1)
-        moss(img, an, C('#2a3426'), C('#3a4632'), sd, 1.3, 80)
+        moss(img, an, C('#2a3426'), C('#3a4632'), sd, 2.0, 110)
+    # lianas sagging between the trees, near and far
+    hanging_vines(img, [((20, 30), (160, 20)), ((160, 20), (300, 56)), ((420, 40), (560, 18)), ((560, 18), (640, 50)),
+                        ((90, 70), (230, 90))], C('#141e14'), C('#2a3a24'), 71)
+    hanging_vines(img, [((240, 120), (330, 140)), ((400, 110), (480, 130))], mix(depth_col(0.55), C('#3a5030'), 0.3),
+                  mix(depth_col(0.55), C('#5a7044'), 0.3), 72)
     rng4 = np.random.default_rng(23)
     for cxg in (20, 90, 150, 480, 560, 620):                             # dark grass clumps along the bottom corners
         for _ in range(26):
