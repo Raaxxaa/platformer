@@ -50,3 +50,4 @@ Build chats do these **in order**. The design chat writes each detailed plan jus
 | ART11 | New-move poses and streaks for all 19 weapons, juggle effects, Daily and Boss Rush icons, move sounds (`ART11-new-moves.md`) | **On hold** until the new art style is chosen |
 | ART12 | Mountain rework: Dragon nest, labyrinth torches and decor, bigger falling-rock warning (`ART12-mountain-rework.md`) | **On hold** until the new art style is chosen |
 | **ART13** | **New art style. Part 1: the same test scene in 4 styles (HD pixel, dark and moody, bright cartoon, painted storybook) for the user to pick** (`ART13-new-style-exploration.md`). Part 2 (the full redraw) is written after the pick; ART11 and ART12 are then drawn in the new style | **Next** |
+| **ART13b** | **Style tests from the user's sketch: fine pixel, tiny pixel (HD-2D), realistic painted, and a mix** (`ART13b-style-from-sketch.md`) | **Next** |
