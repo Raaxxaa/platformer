@@ -471,6 +471,101 @@ def near_bushes(img, seed, y, alb, xs, r=(14, 26)):
     leaves(img, m, hf * 1.3, alb, 1.0, seed + 1, 5.0, 1.2, ramp=make_ramp(alb, 7, hi_k=0.3) * 0.8)
 
 
+
+# ---------------------------------------------------------------------------------------------- atmosphere and props (round 5)
+
+def haze_band(img, y, thick, a, col, seed, stretch=60, m=None):
+    """A drifting band of mist or haze between two distance layers (as in the swamp), dithered into a few steps."""
+    n = fbm(XX / stretch, YY / 6, 4, seed)
+    band = np.clip(1 - np.abs(YY - y) / thick, 0, 1) ** 1.2
+    v = np.clip(band * (0.35 + n), 0, 1)
+    q = np.floor(v * 5 + BAY * 0.9) / 5 * a
+    if m is not None:
+        q = q * m
+    img[:] = img * (1 - q[..., None]) + C(col) * q[..., None]
+
+
+def light_shafts(img, beams, col, slope, alpha, y0=0, y1=H):
+    """Soft light shafts at an angle: (x at y=0, width, strength) each, quantised in 3 steps."""
+    acc = np.zeros((H, W), np.float32)
+    for (x, wd, k) in beams:
+        acc += np.clip(1 - np.abs(XX - (x + YY * slope)) / wd, 0, 1) * k
+    acc *= (YY >= y0) & (YY < y1)
+    q = np.floor(np.clip(acc, 0, 1) * 3 + BAY * 0.9) / 3
+    img[:] = img + C(col) * (q * alpha)[..., None]
+
+
+def bunting(img, x0, y0, x1, y1, sag, d, seed, cols=('#c83a3a', '#e8b040', '#3a6ac8', '#f0e8d8', '#4a9a5a'), glow_k=0.0, size=1.0):
+    """A string of cloth flags strung across the street, sagging in the middle; backlit cloth glows a little."""
+    rng = np.random.default_rng(seed)
+    n = int(abs(x1 - x0) / (9 * size))
+    pts = [(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t + sag * 4 * t * (1 - t)) for t in np.linspace(0, 1, n * 3 + 1)]
+    fill(img, mask([taper(pts, 0.7 * size, 0.7 * size, len(pts) - 1)]), aerial(C('#2a2020'), d))
+    for k in range(n):
+        t = (k + 0.5) / n
+        x = x0 + (x1 - x0) * t
+        y = y0 + (y1 - y0) * t + sag * 4 * t * (1 - t)
+        sw = rng.uniform(-1, 1)
+        f = mask([poly((x - 3 * size, y), (x + 3 * size, y), (x + sw * size, y + 7 * size))])
+        c = C(cols[k % len(cols)])
+        fill(img, f, aerial(c * (0.75 + glow_k), d))
+        fill(img, f & ~np.roll(f, 1, 0), aerial(mix(c, C('#ffffff'), 0.4), d))
+
+
+def hay_cart(img, x, base, s, d, seed):
+    k = lambda v: v * s
+    body = rect(x - k(20), base - k(14), x + k(18), base - k(7))
+    ramp_fill(img, body, 0.4 + np.where(np.abs((YY - base + k(10)) % max(1, k(2.5))) < 0.6, -0.2, 0), make_ramp(C('#8a5a32'), 6), d)
+    hay, hh = domes([(x - k(8), base - k(16), k(13), k(7), 0), (x + k(6), base - k(17), k(12), k(8), 1)], 0.5, seed)
+    F1, F2, DX, DY, ID = worley(1.2, seed, 0.5, 2.0)
+    ramp_fill(img, hay, 0.25 + macro_light(hh) * 0.6 + (ID - 0.5) * 0.25, make_ramp(C('#d8b048'), 6, hi_k=0.5), d)
+    for wx in (x - k(12), x + k(10)):
+        wm = mask([ell(wx, base - k(5), k(5.5), k(5.5), 0, 20)]) & ~mask([ell(wx, base - k(5), k(4.2), k(4.2), 0, 20)])
+        fill(img, wm, aerial(C('#4a3020'), d))
+        for j in range(6):
+            a = j * math.pi / 3
+            fill(img, mask([cap((wx, base - k(5)), (wx + math.cos(a) * k(4.5), base - k(5) + math.sin(a) * k(4.5)), 0.5)]), aerial(C('#5a3a24'), d))
+    fill(img, mask([cap((x + k(18), base - k(9)), (x + k(34), base - k(4)), 0.8)]), aerial(C('#5a3a24'), d))
+
+
+def lamp_post(img, x, base, h, d, lit_=True):
+    fill(img, rect(x - 1, base - h, x + 1, base), aerial(C('#1e1a1c'), d))
+    fill(img, rect(x - 3, base - 3, x + 3, base), aerial(C('#2a2426'), d))
+    fill(img, mask([cap((x, base - h), (x + 6, base - h), 0.6)]), aerial(C('#1e1a1c'), d))
+    lx, ly = x + 6, base - h + 2
+    fill(img, mask([poly((lx - 3, ly), (lx + 3, ly), (lx + 2, ly + 7), (lx - 2, ly + 7))]), C('#ffd070') if lit_ else aerial(C('#3a3030'), d))
+    fill(img, mask([poly((lx - 4, ly), (lx, ly - 3), (lx + 4, ly))]), aerial(C('#1e1a1c'), d))
+    if lit_:
+        glow(img, lx, ly + 3, 34, C('#ff9a40'), 0.5)
+
+
+def sheep(img, x, y, s, d):
+    b, hb = domes([(x, y - 3 * s, 4 * s, 3 * s, 0), (x - 2 * s, y - 4 * s, 2.5 * s, 2 * s, 1), (x + 2 * s, y - 4 * s, 2.5 * s, 2 * s, 1)], 0.6, int(x))
+    ramp_fill(img, b, 0.4 + macro_light(hb) * 0.5, make_ramp(C('#f0ece0'), 5, hi_k=0.5), d)
+    fill(img, mask([ell(x + 4.5 * s, y - 3.5 * s, 1.4 * s, 1.2 * s, 0, 8)]), aerial(C('#2a2420'), d))
+    for lx in (x - 2 * s, x + 2 * s):
+        fill(img, rect(lx, y - 1, lx + max(1, 0.6 * s), y + 1), aerial(C('#2a2420'), d))
+    ground_shadow(img, x, y + 1, 5 * s, 1.2 * s, 0.25)
+
+
+def backlit(img, before, k):
+    """Everything drawn since `before` stands with the low sun behind it: its faces fall into cool shade (lit windows
+    and lamps keep their glow), and a thin warm rim lights its edges against the sky."""
+    ch = np.abs(img - before).sum(axis=2) > 0.12
+    ch = ch & _dilate(_dilate(ch, 1) & ~np.roll(~ch, 0), 0)
+    mx = img.max(axis=2)
+    bright = (mx > 0.8) & (img[..., 0] > img[..., 2] + 0.2)
+    sh = ch & ~bright
+    img[sh] = img[sh] * np.array([k, k * 0.95, k * 1.12], np.float32)
+    rim = ch & ~np.roll(ch, 1, 0)
+    img[rim] = mix(img[rim], C('#ffc890'), 0.55)
+
+
+def feet_shadows(img, pts, k=0.4):
+    for (x, y, r) in pts:
+        ground_shadow(img, x, y, r, max(1.5, r * 0.22), k)
+
+
 # ============================================================================================== Plains & Forest
 
 def farmhouse(img, x, base, s, d, roof='#b8a060', wall='#e8dcc0', beams='#5a3e2a', seed=0):
@@ -859,6 +954,9 @@ def mountains():
             mist_ = (np.clip(1 - np.abs(YY - (r[None, :] + 14)) / 10, 0, 1) * (fbm(XX / 40, YY / 6, 3, seed) > 0.45))
             a = np.floor(mist_ * 4 + BAY * 0.9) / 4 * 0.35
             img[:] = img * (1 - a[..., None]) + P['haze'] * a[..., None]
+    stream = (np.abs(XX - (240 + 90 * np.sin((YY - 240) / 9.0) + (YY - 240) * 2.2)) < 1.5 + (YY - 240) * 0.15) & (YY > 244) & (YY < 262)
+    fill(img, stream, aerial(C('#9ad0f0'), 0.5))                          # a stream winding down the valley
+    fill(img, stream & (fbm(XX / 2, YY, 1, 3) > 0.6), aerial(C('#ffffff'), 0.5))
     # the cliff with the mine cave on the right
     cliff = mask([spoly((420, 300), (430, 240), (452, 196), (490, 170), (560, 156), (640, 150), (660, 160), (660, 300), n=4)])
     crag(img, cliff, C('#8a8a98'), 0.62, 31, 0.8)
@@ -926,6 +1024,19 @@ def mountains():
     rock = mask([spoly((300, 300), (306, 276), (330, 268), (360, 272), (372, 300), n=4)])
     crag(img, rock, C('#9aa0b4'), 0.85, 51, 0.5)
     fill(img, rock & ~np.roll(rock, 2, 0), lit(C('#5a9a3a'), 0.9, 0.85))
+    for k in range(40):                                                   # grass and roots hanging over the cliff's edge
+        rx_ = 432 + k * 5
+        top_y = int(np.argmax(cliff[:, min(rx_, W - 1)]))
+        ln_ = 3 + (k * 7) % 9
+        fill(img, mask([cap((rx_, top_y + 2), (rx_ + (k % 3 - 1), top_y + 2 + ln_), 0.5)]), aerial(C('#3a6a28') if k % 3 else C('#5a3a24'), 0.62))
+    keep = img.copy()
+    light_shafts(img, [(120, 14, 1.0), (170, 22, 0.7), (230, 10, 0.9)], '#fffaf0', 0.55, 0.12, 40, 300)
+    img[:] = np.where((XX < 420)[..., None], img, keep)
+    for (bx, by) in ((520, 70), (532, 64), (546, 72)):                     # eagles circling
+        img[by, bx - 3:bx] = C('#2a2a3a')
+        img[by - 1, bx - 4] = img[by - 1, bx + 1] = C('#2a2a3a')
+        img[by, bx + 1:bx + 3] = C('#2a2a3a')
+    feet_shadows(img, [(176, int(gy[176]) + 1, 10), (590, 263, 10)], 0.35)
     # characters: the hero on the trail, a ram on the rock, a goblin miner at the cave, bats coming out of it
     key = {'dir': (-0.6, -0.55, 0.6), 'col': (1.05, 1.0, 0.9)}
     amb = (0.44, 0.52, 0.68)
@@ -959,8 +1070,21 @@ def mountains():
             m = mask(S)
             m = m | (_dilate(m, 2) & (np.sin((XX + YY) * 1.6) > 0.1))
             paint(img, m, cylinder(m, 2), C('#2e5a2a'), 1.0, None, 4, 0.1, 0.7, 0.6)
-    motes(img, 40, (0, 120, 640, 300), C('#ffffff'), 8, 0.5)
-    grade(img, 1.12, 1.15)
+    tr = mask([taper([(-14, 362), (-4, 200), (2, -10)], 30, 22, 4)])        # a fir trunk right at the left edge of the camera
+    bark(img, tr, 12, C('#4a3828') * 0.7, 1.0, 91)
+    for (y0_, y1_) in ((40, 70), (110, 136), (190, 210)):                 # drooping boughs off the trunk
+        S = [taper([(4, y0_), (60, y0_ + 12), (100, y1_ + 14)], 3, 1, 4)]
+        for j in range(16):
+            t = j / 16
+            bx_, by_ = 4 + 96 * t, y0_ + (y1_ + 14 - y0_) * t ** 1.3
+            S.append(taper([(bx_, by_), (bx_ - 5, by_ + 9 - 4 * t)], 2.6, 0.7, 2))
+            S.append(taper([(bx_, by_), (bx_ + 4, by_ + 10 - 4 * t)], 2.6, 0.7, 2))
+        bm = mask(S)
+        bm = bm | (_dilate(bm, 2) & (fbm(XX / 1.2, YY / 1.2, 1, y0_) > 0.45))
+        ramp_fill(img, bm, 0.15 + (fbm(XX / 1.3, YY / 2, 2, y0_) - 0.5) * 0.4 + np.where(bm & ~np.roll(bm, 2, 0), 0.3, 0),
+                  make_ramp(C('#1e4a2a'), 6, hi_k=0.3) * 0.75, 1.0)
+    motes(img, 60, (0, 120, 640, 300), C('#ffffff'), 8, 0.5)
+    grade(img, 1.14, 1.05)
     bloom(img, 0.95, 5, 0.4)
     vignette(img, 0.2)
     hud(img)
@@ -1200,7 +1324,16 @@ def city():
     # sunset clouds, lit from below and from the sun's side
     clouds(img, [(110, 70, 200, 22), (420, 96, 260, 20), (620, 150, 120, 12), (250, 150, 160, 12)], 4, alb='#e0a0a8', d=0.3)
     # the castle on its hill, far away, and the city walls in front of it
-    castle_far(img, 200, 190, 1.0, 0.2, 3)
+    before = img.copy()
+    castle_far(img, 200, 190, 1.0, 0.12, 3)
+    ch = np.abs(img - before).sum(axis=2) > 0.01
+    rimc = ch & ~np.roll(ch, -1, 1)
+    img[ch] = mix(img[ch], C('#6a4a6e'), 0.6)
+    img[rimc] = mix(img[rimc], C('#ffd0a0'), 0.7)
+    for (bx, by) in ((470, 120), (480, 114), (492, 122), (430, 140), (442, 136)):                  # birds against the sunset
+        img[by, bx - 2:bx] = C('#3a2030')
+        img[by - 1, bx - 3] = img[by - 1, bx + 1] = C('#3a2030')
+    haze_band(img, 196, 22, 0.55, '#f0a088', 31, 50)
     walls = rect(-10, 196, 660, 214)
     face(img, walls, C('#8a7a7a'), 0.25, 0.2)
     for cx in range(-10, 660, 6):
@@ -1212,6 +1345,7 @@ def city():
             face(img, rect(cx, 171, cx + 3, 176), C('#8a7a7a'), 0.55, 0.2)
         fill(img, mask([cap((tx, 171), (tx, 160), 0.5)]), aerial(C('#2a2028'), 0.2))
         fill(img, mask([poly((tx, 160), (tx + 9, 163), (tx, 166))]), aerial(C('#c82a2a'), 0.3))
+    haze_band(img, 218, 14, 0.45, '#f0a088', 32, 50)
     # far rooftops, a cathedral with a spire and a rose window
     for k in range(26):
         hx = -20 + k * 26 + rng.uniform(-6, 6)
@@ -1238,9 +1372,11 @@ def city():
         wx = cx - 22 + k * 18
         fill(img, rect(wx, 176, wx + 7, 214) & ~((YY < 180) & (np.abs(XX - wx - 3.5) > 2.5)), aerial(C('#ffb050'), 0.4))
     # the middle row of houses
+    before = img.copy()
     for k in range(9):
         hx = -30 + k * 76 + rng.uniform(-8, 8)
         house(img, hx, 262, rng.uniform(34, 46), int(rng.integers(3, 5)), 0.5, 200 + k, fh=16, roof=rng.choice(['gable', 'hip']), lights=0.45, wq=0.32)
+    backlit(img, before, 0.78)
     # a gap of evening haze between the rows
     a = (np.clip(1 - np.abs(YY - 250) / 30, 0, 1) * 0.35)
     a = np.floor(a * 6 + BAY * 0.9) / 6
@@ -1250,8 +1386,10 @@ def city():
     xs = [(-14, 58, 4, True), (48, 62, 3, False), (114, 54, 4, True), (178, 66, 3, True), (380, 60, 4, False), (446, 58, 3, True),
           (508, 70, 4, True), (582, 64, 3, False)]
     tops = {}
+    before_f = img.copy()
     for i, (hx, w, fl, shop) in enumerate(xs):
         tops[hx] = house(img, hx, street - 4, w, fl, 0.84, 300 + i, fh=24, roof='gable' if i % 3 else 'hip', shop=shop, lights=0.45, wq=0.22)
+    backlit(img, before_f, 0.62)
     sun_band(img, 120, 250, '#ff9a50', 0.22)
     # the side street: an arch and a lantern, the far street receding
     fill(img, rect(250, 190, 372, 300), lit(C('#6a5060'), 0.3, 0.5))
@@ -1298,6 +1436,22 @@ def city():
         cr = rect(bx, by - 9, bx + 10, by)
         face(img, cr, C('#a07848'), 0.7, 0.9)
         fill(img, cr & ((np.abs(XX - bx - 5) < 0.5) | (np.abs(YY - by + 4.5) < 0.5) | (XX > bx + 8)), lit(C('#6a4a2a'), 0.5, 0.9))
+    # light from the low sun streaming down the side street through the arch onto the cobbles
+    keep = img.copy()
+    light_shafts(img, [(312 - 290 * 0.25, 30, 1.0)], '#ffc890', 0.25, 0.22, 214, 360)
+    lim = mask([poly((268, 214), (356, 214), (420, 360), (240, 360))])
+    img[~lim] = keep[~lim]
+    for (pg_x, pg_y) in ((160, 186), (168, 187), (430, 178)):                                     # pigeons on a ridge
+        fill(img, mask([ell(pg_x, pg_y, 2.2, 1.4, 0, 8)]), C('#3a3038'))
+        img[pg_y - 1, pg_x + 2] = C('#3a3038')
+    bunting(img, 250, 226, 372, 226, 10, 0.6, 5, glow_k=0.25)                                  # flags across the side street
+    for (lx_, c_) in ((276, '#e8e0d0'), (290, '#8a3a3a'), (304, '#5a7a9a'), (330, '#e8e0d0'), (346, '#c8a040')):   # laundry
+        fill(img, rect(lx_, 247, lx_ + 8, 258), aerial(C(c_) * 0.8, 0.6))
+    fill(img, mask([cap((262, 246), (362, 246), 0.5)]), aerial(C('#2a2020'), 0.6))
+    hay_cart(img, 520, street + 6, 1.1, 0.88, 61)
+    lamp_post(img, 236, street + 8, 40, 0.9)
+    lamp_post(img, 470, street + 8, 40, 0.9)
+    feet_shadows(img, [(176, street + 6, 12), (290, street + 4, 16), (362, street + 4, 10), (422, street + 4, 10), (600, street + 6, 18)], 0.5)
     # characters: soldiers with shields on the street, a crossbowman on the roofs, the hero, a cannon on the wall
     key = {'dir': (0.8, -0.3, 0.5), 'col': (1.1, 0.78, 0.55)}
     amb = (0.36, 0.34, 0.55)
@@ -1325,7 +1479,12 @@ def city():
     glow(img, 50, 163, 60, C('#ff9a40'), 0.45)
     near = mask([ell(-6, 370, 40, 46, 0, 24)])
     paint(img, near, cylinder(near, 16), C('#5a3a22'), 1.0, np.where(np.abs(np.abs(YY - 340) - 10) < 1.2, -0.5, 0), 4, 0.0, 0.7, 0.6)
-    motes(img, 50, (0, 150, 640, 300), C('#ffd8a0'), 6, 0.6)
+    bunting(img, 30, 70, 660, 96, 50, 1.0, 9, glow_k=-0.25, size=2.2)                                      # flags right in front of the camera
+    nb = mask([ell(606, 356, 44, 30, 0, 30), ell(556, 370, 26, 24, 0, 24)])                        # dark barrel and sacks close to the lens
+    fill(img, nb, C('#140c0a'))
+    fill(img, nb & ~np.roll(nb, 2, 0), C('#5a3424'))
+    fill(img, mask([ell(606, 356, 44, 30, 0, 30)]) & (np.abs(np.abs(XX - 606) - 26) < 2), C('#0a0606'))
+    motes(img, 80, (0, 150, 640, 300), C('#ffd8a0'), 6, 0.6)
     grade(img, 1.18, 1.1)
     bloom(img, 0.75)
     vignette(img, 0.25)
@@ -1576,6 +1735,42 @@ def castle():
         a2 = ang + math.radians(5 * j)
         tb = mask([cap((px_ + math.sin(a2) * 150 - 18, py_ + math.cos(a2) * 150), (px_ + math.sin(a2) * 150 + 18, py_ + math.cos(a2) * 150 - 6), 2)])
         fill(img, tb & ~blade, C('#c8d0e0'), 0.25 / j)
+    # torch light pooling on the floor, cold mist creeping along it, dust drifting in the window light
+    for (tx_, ty_) in ((52, floor_y + 6), (222, floor_y + 6), (418, floor_y + 6), (588, floor_y + 6)):
+        dd = np.hypot((XX - tx_) / 2.6, YY - ty_)
+        a = np.floor(np.clip(1 - dd / 22, 0, 1) * 4 + BAY * 0.9) / 4 * 0.35 * (YY > floor_y)
+        img[:] = img + C('#ff9a40') * a[..., None]
+    for wx in (96, 232, 408, 544):                                        # stained-glass colours spilling onto the floor
+        strip = img[60:200, wx - 18:wx + 18].mean(axis=0)
+        for xx in range(36):
+            c = strip[xx] / max(1e-3, strip[xx].max())
+            for yy in range(floor_y + 2, floor_y + 24):
+                x_ = wx - 18 + xx + int((yy - floor_y) * 1.6) + 20
+                if 0 <= x_ < W and (BAY[yy, x_] < 0.55):
+                    img[yy, x_] = img[yy, x_] + c * 0.28
+    haze_band(img, floor_y - 4, 16, 0.4, '#8a7a98', 33, 40)
+    haze_band(img, 212, 30, 0.18, '#6a5a78', 34, 70)
+    rng5 = np.random.default_rng(35)
+    for _ in range(200):
+        x_, y_ = int(rng5.uniform(0, W)), int(rng5.uniform(40, floor_y))
+        if acc[y_, x_] > 0.3:
+            img[y_, x_] = mix(img[y_, x_], C('#e8eeff'), 0.8)
+    for (bx_, by_) in ((330, floor_y + 20), (520, floor_y + 22), (120, floor_y + 18)):           # cracked tiles, rubble
+        cr_ = (np.abs(fbm(XX / 6, YY / 3, 3, bx_) - 0.5) < 0.02) & (np.hypot(XX - bx_, (YY - by_) * 2) < 26) & (YY > floor_y + 3)
+        fill(img, cr_, C('#0e080c'))
+        for j in range(5):
+            rx_, ry_ = bx_ + rng5.uniform(-14, 14), by_ + rng5.uniform(-3, 3)
+            fill(img, mask([ell(rx_, ry_, rng5.uniform(1, 2.4), rng5.uniform(0.8, 1.6), 0, 8)]), lit(C('#8a7a7a'), 0.5, 0.9))
+    for (cx_, cy_) in ((100, floor_y), (540, floor_y)):                                          # tall floor candelabras, dripping wax
+        fill(img, rect(cx_ - 1, cy_ - 46, cx_ + 1, cy_), lit(C('#c8a040'), 0.6, 0.8))
+        fill(img, mask([poly((cx_ - 6, cy_), (cx_ + 6, cy_), (cx_ + 2, cy_ - 4), (cx_ - 2, cy_ - 4))]), lit(C('#c8a040'), 0.6, 0.8))
+        fill(img, mask([cap((cx_ - 9, cy_ - 46), (cx_ + 9, cy_ - 46), 1.0)]), lit(C('#c8a040'), 0.7, 0.8))
+        for j in (-8, 0, 8):
+            fill(img, rect(cx_ + j - 1, cy_ - 56 + (j == 0) * -3, cx_ + j + 2, cy_ - 46), C('#efe6d0'))
+            img[cy_ - 50 + (j == 0) * -3, cx_ + j + 1] = C('#d8cbb0')
+            img[cy_ - 59 + (j == 0) * -3:cy_ - 56 + (j == 0) * -3, cx_ + j] = C('#ffd070')
+            glow(img, cx_ + j, cy_ - 58, 16, C('#ff9a40'), 0.45)
+    feet_shadows(img, [(150, floor_y + 2, 12), (488, floor_y + 2, 12), (572, floor_y + 2, 12)], 0.5)
     # characters: royal guards with halberds, the gargoyle waking up, the hero
     key = {'dir': (-0.3, -0.6, 0.6), 'col': (0.8, 0.85, 1.05)}
     amb = (0.42, 0.3, 0.4)
@@ -1598,6 +1793,17 @@ def castle():
     for j in range(14):
         cy_ = j * 9
         fill(img, mask([ell(586, cy_, 2, 3.4, 0, 10)]) & ~mask([ell(586, cy_, 0.8, 1.8, 0, 8)]), lit(C('#5a5050'), 0.6, 1.0))
+    vault = rect(-10, -10, 660, 14) | (mask([ell(320, 14, 340, 40, 0, 60)]) == False) & (YY < 40)   # a dark vault rib framing the top
+    vault &= YY < 40
+    fill(img, vault, C('#120a10'))
+    fill(img, vault & ~np.roll(vault, -1, 0) & (YY > 10), C('#4a3442'))
+    for (cwx, cwy, sg) in ((40, 30, 1), (600, 30, -1)):                                            # cobwebs in the corners of the vault
+        for k in range(6):
+            a = math.radians(k * 18)
+            fill(img, mask([cap((cwx - sg * 20, cwy - 20), (cwx - sg * 20 + sg * math.cos(a) * 40, cwy - 20 + math.sin(a) * 40), 0.35)]), C('#c8c0d0'), 0.35)
+        for r_ in (10, 20, 30):
+            arc_ = (np.abs(np.hypot(XX - cwx + sg * 20, YY - cwy + 20) - r_) < 0.5) & ((XX - cwx + sg * 20) * sg > 0) & (YY > cwy - 20)
+            fill(img, arc_, C('#c8c0d0'), 0.3)
     rail = rect(-10, 326, 660, 332)                                     # a dark stone balustrade right in front of the camera
     for k in range(-1, 32):
         bx = k * 22 + 6
@@ -1637,14 +1843,15 @@ def cumulus(img, cx, base, w, h, seed, d=0.1, ramp=None, flat=True, lean=0.0):
     m, hf = domes(puffs, 0.15, seed)
     if flat:
         m &= YY < base + 2 + 2 * fbm(XX / 9, YY * 0, 2, seed)
-    nx, ny = _DN['nx'], _DN['ny']
+    nx, ny = _blur(_DN['nx'].astype(np.float32), 2.2), _blur(_DN['ny'].astype(np.float32), 2.2)
     L = P['L']
     nz = np.sqrt(np.clip(1 - nx * nx * 0.8 - ny * ny * 0.8, 0.05, 1))
     puff = np.clip((nx * L[0] + ny * L[1] + nz * L[2] * 0.7) / np.sqrt(nx * nx + ny * ny + nz * nz), 0, 1)
+    puff = puff * 0.6 + macro_light(_blur(np.where(m, hf, 0).astype(np.float32), 3.0) * 0.6) * 0.4
     up = np.clip((base - YY) / max(1.0, h), 0, 1)
     side = np.clip((XX - cx) / (w / 2 + 1) * np.sign(L[0]), -1, 1)
     raw = np.where(m, hf, 0).astype(np.float32)
-    ao = np.clip((_blur(raw, 2.0) - raw) / 3, 0, 1)
+    ao = np.clip((_blur(raw, 2.0) - raw) / 3, 0, 1) * 0.6
     shadow_side = np.clip(0.6 - puff, 0, 1)
     t = 0.2 + puff * 0.5 + up * 0.3 + side * 0.14 - ao * 0.5 * shadow_side - np.clip((YY - base + h * 0.22) / (h * 0.22 + 1), 0, 1) * 0.3
     t = t + (fbm(XX / 3, YY / 3, 2, seed + 1) - 0.5) * 0.08
@@ -1737,7 +1944,9 @@ def plains4():
     # far blue hills, a line of trees, a farm, golden fields rolling toward us
     hz = hills(214, 14, 90, 5)
     land(img, hz, C('#6a9ad8'), 0.05, 5, lo=0.4, rough=3)
+    haze_band(img, 216, 12, 0.5, '#d8ecfa', 41, 80)
     treeline(img, 224, 12, -10, 660, 0.18, 21, C('#2e6a4a'))
+    haze_band(img, 228, 8, 0.35, '#d8ecfa', 42, 80)
     farmhouse(img, 300, 226, 0.7, 0.22, roof='#b84a32', seed=3)
     barn(img, 336, 226, 0.6, 0.22)
     r1 = hills(230, 6, 60, 31)
@@ -1749,6 +1958,14 @@ def plains4():
     F1, F2, DX, DY, ID = worley(1.6, 33, 1.4, 0.7)
     ramp_fill(img, m2, 0.3 + fbm(XX / 30, YY / 6, 3, 33) * 0.45 + (0.5 - DY) * 0.2 + (ID - 0.5) * 0.1, ramp_g, 0.4)
     windmill(img, 410, int(r2[410]) + 4, 1.4, 0.5, 0.5)
+    for (hx, hy) in ((250, 244), (268, 246), (470, 242), (560, 248), (590, 246)):           # hay bales in the cut field
+        bm, bh = domes([(hx, hy - 2, 4, 3, 0)], 0.2, hx)
+        bm &= YY < hy + 1
+        F1, F2, DX, DY, ID = worley(0.9, hx, 0.4, 2.0)
+        ramp_fill(img, bm, 0.2 + macro_light(bh) * 0.7 + (ID - 0.5) * 0.2, make_ramp(C('#d8b048'), 6, hi_k=0.5), 0.4)
+        ground_shadow(img, hx + 2, hy + 1, 5, 1.2, 0.35)
+    for (sx_, sy_) in ((150, 257), (160, 258), (176, 256), (600, 258), (612, 259)):         # sheep grazing on the green strip
+        sheep(img, sx_, sy_, 0.9, 0.42)
     r3 = hills(262, 6, 80, 34)
     m3 = (YY >= r3[None, :]) & (YY < 300)
     wheat_field(img, m3, 0.6, 34, 1.0)
@@ -1772,6 +1989,11 @@ def plains4():
     wheat_field(img, g & (YY > gy[None, :] + 12 + 3 * fbm(XX / 12, YY * 0, 2, 45)), 0.88, 46, 1.2)
     tufts(img, g & ~np.roll(g, 1, 0), (aerial(C('#2e6a28'), 0.86), aerial(C('#5aa83a'), 0.86), aerial(C('#b8e070'), 0.86)),
           42, 1.6, 3, 10, [C('#f4f0e0'), C('#4a7af0'), C('#f6d84a')])
+    keep = img.copy()                                                    # sun shafts through the forest edge
+    light_shafts(img, [(-40, 10, 1.0), (10, 16, 0.8), (60, 8, 1.0), (110, 12, 0.7)], '#fff4c8', 0.75, 0.14, 120, 300)
+    lim = (XX < 240)[..., None]
+    img[:] = np.where(lim, img, keep)
+    feet_shadows(img, [(180, int(gy[180]) + 1, 10), (352, int(gy[352]) + 2, 14), (412, int(gy[412]) + 2, 14), (262, int(gy[262]) + 1, 12)], 0.35)
     # characters
     key = {'dir': (0.55, -0.6, 0.6), 'col': (1.1, 1.0, 0.85)}
     amb = (0.4, 0.48, 0.68)
@@ -1797,7 +2019,7 @@ def plains4():
         img[by, bx - 2:bx] = C('#ffffff')
         img[by - 1, bx - 3] = img[by - 1, bx + 1] = C('#ffffff')
     motes(img, 50, (40, 150, 640, 300), C('#fff8d8'), 5, 0.6)
-    grade(img, 1.12, 1.15)
+    grade(img, 1.14, 1.05)
     bloom(img, 0.95, 5, 0.4)
     vignette(img, 0.15)
     hud(img)
@@ -2276,7 +2498,7 @@ def castle4():
     return img
 
 
-SCENES = {'plains': plains4, 'mountains': mountains, 'city': city4, 'castle': castle4}
+SCENES = {'plains': plains4, 'mountains': mountains, 'city': city, 'castle': castle}
 
 
 def build(only=None):
