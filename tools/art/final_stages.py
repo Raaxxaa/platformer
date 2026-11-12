@@ -79,7 +79,7 @@ def domes(clumps, rough=0.5, seed=0):
     """Leafy masses / cloud puffs: a height field of overlapping domes (cx, cy, rx, ry, z). Returns mask and height."""
     hf = np.full((H, W), -1e3, np.float32)
     NX, NY = np.zeros((H, W), np.float32), np.zeros((H, W), np.float32)
-    nz = fbm(XX / 2.6, YY / 2.6, 2, seed) - 0.5
+    nz = (fbm(XX / 5, YY / 5, 3, seed) - 0.5) * 1.1 + (fbm(XX / 1.8, YY / 1.8, 2, seed + 1) - 0.5) * 0.5
     for (cx, cy, rx, ry, z) in clumps:
         x0, x1 = max(0, int(cx - rx - 2)), min(W, int(cx + rx + 3))
         y0, y1 = max(0, int(cy - ry - 2)), min(H, int(cy + ry + 3))
@@ -93,6 +93,10 @@ def domes(clumps, rough=0.5, seed=0):
         NX[y0:y1, x0:x1] = np.where(win, (X - cx) / rx, NX[y0:y1, x0:x1])
         NY[y0:y1, x0:x1] = np.where(win, (Y - cy) / ry, NY[y0:y1, x0:x1])
     m = hf > -1e2
+    holes = ~m & (_blur(m.astype(np.float32), 1.5) > 0.55)                   # close small holes inside the mass
+    if holes.any():
+        hf = np.where(holes, _blur(np.where(m, hf, 0).astype(np.float32), 1.5) / np.maximum(_blur(m.astype(np.float32), 1.5), 1e-3), hf)
+        m = m | holes
     _DN['nx'], _DN['ny'] = NX, NY
     return m, np.where(m, hf, 0)
 
@@ -174,33 +178,34 @@ def macro_light(hf):
 
 
 def leaves(img, m, hf, base, d, seed, cell=3.0, contrast=1.0, edge=True, ramp=None, crown=None):
-    """Foliage as many small leaf clusters: each cluster shaded as its own little dome (lit side, shadow side), dark
-    gaps between clusters, deep shadow in the hollows of the crown, leaves sticking out along the silhouette."""
-    ramp = make_ramp(base) if ramp is None else ramp
-    F1, F2, DX, DY, ID = worley(cell, seed, 1.25, 0.85)
-    cnx, cny = _DN.get('nx', np.zeros((H, W))), _DN.get('ny', np.zeros((H, W)))
-    if edge:
-        core = m & ~_dilate(~m, max(1, int(cell * 0.6)))
-        out = _dilate(m, max(1, int(cell * 0.7)))
-        m = core | (out & (F1 < 0.48 - 0.12 * (~m)))
-    hs = _blur(np.where(m, hf, 0).astype(np.float32), 1.5) + _blur(m.astype(np.float32), 2.5) * 4
-    macro = macro_light(hs)
+    """Foliage the way a pixel artist paints it: the crown is a few big rounded clumps, each lit on its sun side and
+    in shade on the other; clumps cast shadow on the ones behind them; the surface is broken into small leaf clusters
+    that catch the light only on the lit side; clusters poke out along the outline so the silhouette is never smooth."""
+    ramp = make_ramp(base, 7, deep=mix(P['amb'] * 0.3, np.asarray(base) * 0.32, 0.5), hi_k=0.5) if ramp is None else ramp
     L = P['L']
-    lx, ly = DX / 0.55, DY / 0.55
-    lz = np.sqrt(np.clip(1 - lx * lx - ly * ly, 0, 1))
-    local = np.clip(lx * L[0] + ly * L[1] + lz * L[2], 0, 1)
-    # each clump lit as a dome: its own normal from its centre
-    cnx, cny = _blur(cnx.astype(np.float32), 0.8), _blur(cny.astype(np.float32), 0.8)
-    cnz = np.sqrt(np.clip(1 - cnx * cnx * 0.8 - cny * cny * 0.8, 0.05, 1))
+    F1, F2, DX, DY, ID = worley(cell, seed, 1.15, 0.9)
+    bump = np.clip(1 - F1 / 0.62, 0, 1)
+    if edge:
+        k = max(1, int(cell * 0.8))
+        out = _dilate(m, k) & ~m & (bump > 0.5) & (fbm(XX / 3, YY / 3, 2, seed + 7) > 0.35)
+        bite = m & _dilate(~m, k) & (bump < 0.18)
+        m = (m | out) & ~bite
+    cnx = _blur(_DN.get('nx', np.zeros((H, W))).astype(np.float32), 1.0)
+    cny = _blur(_DN.get('ny', np.zeros((H, W))).astype(np.float32), 1.0)
+    cnz = np.sqrt(np.clip(1 - cnx * cnx * 0.85 - cny * cny * 0.85, 0.05, 1))
     clump = np.clip((cnx * L[0] + cny * L[1] + cnz * L[2]) / np.sqrt(cnx * cnx + cny * cny + cnz * cnz), 0, 1)
-    raw = np.where(m, hf, 0).astype(np.float32)
-    ao = np.clip((_blur(raw, 2.5) - raw) / 3, 0, 1)                   # hollows and where one clump tucks under another
-    t = 0.02 + clump * 0.62 + macro * 0.22 + (local - 0.55) * 0.32 * contrast - ao * 0.6 + (ID - 0.5) * 0.08
+    by, bx = np.gradient(_blur(bump.astype(np.float32), 0.7))
+    small = np.clip(0.5 + (bx * L[0] + by * L[1]) * -2.4 + bump * 0.25, 0, 1)
+    raw = np.where(m, hf, -6).astype(np.float32)
+    sx, sy = int(round(L[0] * 3)), int(round(L[1] * 3))
+    nb = np.roll(raw, (-sy, -sx), (0, 1))
+    shadow = ((nb - raw) > 1.5).astype(np.float32)
+    hollow = np.clip((_blur(raw, 3.0) - raw) / 4, 0, 1)
+    t = 0.12 + clump * 0.55 + (small - 0.5) * 0.4 * (0.3 + clump) * contrast - shadow * 0.18 - hollow * 0.2 + (ID - 0.5) * 0.05
     if crown is not None:
         ccx, ccy, R = crown
-        t = t + ((XX - ccx) / R * L[0] + (YY - ccy) / R * L[1]) * 0.22
-    t = np.where((F2 - F1) < 0.08, t - 0.2 * contrast, t)
-    ramp_fill(img, m, t, ramp, d)
+        t = t + ((XX - ccx) / R * L[0] + (YY - ccy) / R * L[1]) * 0.18
+    ramp_fill(img, m, t, ramp, d, 0.3)
     return m
 
 
@@ -262,7 +267,7 @@ def broadleaf(img, x, base, h, w, d, rng, leaf, bark=C('#5a4632'), kind='oak', t
         cl = crown_clumps(rng, cx, cy, R, n, 0.45 if kind != 'bush' else 0.55, 0.78 if kind != 'bush' else 0.62)
     cl += [(tx + rng.normal(0, 2), ty + rng.normal(0, 2), R * 0.32, R * 0.27, rng.uniform(0, R * 0.4)) for tx, ty in tips]
     m, hf = domes(cl, 0.35, seed + 3)
-    gaps = (fbm(XX / 5, YY / 5, 2, seed + 4) < 0.25) & ~_dilate(~m, 3)
+    gaps = (fbm(XX / 7, YY / 7, 2, seed + 4) < 0.17) & ~_dilate(~m, 5)
     m &= ~gaps
     cell = float(np.clip(1.6 + d * 2.6 * (h / 120) ** 0.4, 1.4, 4.5))
     m = leaves(img, m, hf * 1.3, leaf, d, seed + 5, cell, 0.6 + 0.6 * d, crown=(cx, cy, R))
@@ -273,40 +278,63 @@ def broadleaf(img, x, base, h, w, d, rng, leaf, bark=C('#5a4632'), kind='oak', t
 
 
 def fir(img, x, base, h, w, d, rng, needle=C('#2e5a3a'), snow=0.0, seed=0, bare=0.0):
-    """A conifer: a straight trunk and drooping tiers of needles, sun on one side; snow on the tiers' tops if snow>0."""
-    S = [taper([(x, base + 2), (x + rng.normal(0, 0.5), base - h)], max(1.2, w * 0.18), 0.8, 2)]
-    tm = mask(S)
-    tiers = int(rng.integers(7, 12))
-    shapes = []
+    """A natural conifer: a straight trunk with drooping branch sprays all the way up, each spray lit on its top and sun
+    side, hanging needle tufts on its underside, a shadow on the spray below, gaps where the trunk shows; snow lies on
+    the sprays' tops when snow > 0."""
+    x0, x1 = int(max(0, x - w * 1.5 - 3)), int(min(W, x + w * 1.5 + 4))
+    y0, y1 = int(max(0, base - h - 5)), int(min(H, base + 3))
+    full = np.zeros((H, W), bool)
+    if x1 <= x0 or y1 <= y0:
+        return full
+    X, Y = XX[y0:y1, x0:x1], YY[y0:y1, x0:x1]
+    sub = img[y0:y1, x0:x1]
+    bay = BAY[y0:y1, x0:x1]
+    L = P['L']
+    ramp = make_ramp(needle, 7, hi_k=0.45)
+    sramp = make_ramp(C('#e4ecf8'), 5, deep=C('#3a4a7a'), hi=C('#ffffff'), hi_k=0.8)
+    lean = rng.normal(0, 0.03)
+    trunk = (np.abs(X - x - lean * (base - Y)) < max(0.6, w * 0.09)) & (Y > base - h * 0.95) & (Y < base + 2)
+    sub[trunk] = aerial(make_ramp(C('#4a3828'), 5)[1], d)
+    out = trunk.copy()
+    streak = fbm(X / 0.9, Y / 3.5, 2, seed)
+    edge_n = fbm(X / 2.2, Y / 2.0, 2, seed + 1)
+    tiers = max(5, int(h / 4.5))
     for k in range(tiers):
-        t = k / tiers
-        y = base - h * 0.12 - (h * 0.88) * t
-        r = w * (1 - t * 0.85) * rng.uniform(0.85, 1.15)
-        if rng.random() < bare * (1 - t):
+        tt = k / tiers
+        if rng.random() < bare * (1 - tt):
             continue
-        dy = h / tiers * 1.6
-        pts = [(x + rng.normal(0, 0.4), y - dy)]
-        for j in range(7):                                              # ragged, drooping lower edge
-            u = -1 + j / 3
-            pts.append((x + u * r, y + abs(u) * dy * 0.25 + rng.uniform(-1, 1.5) - (2 if j % 2 else 0)))
-        shapes.append(('poly', [pts[0], (x - r * 1.05, y + dy * 0.28)] + pts[1:] + [(x + r * 1.05, y + dy * 0.28)]))
-    m = mask(shapes) | mask([cap((x, base - h * 0.15), (x, base - h - 2), 0.7)])
-    m = m & ~((fbm(XX / 1.5, YY / 1.5, 1, seed) > 0.78) & ~_dilate(~m, 1))
-    # each tier is lit on its top and its sun side, built of small drooping needle clusters
-    side = np.clip((XX - x) / max(w, 1), -1, 1) * np.sign(P['L'][0])
-    tier_top = _blur(m.astype(np.float32), 1.2)
-    F1, F2, DX, DY, ID = worley(max(1.2, 1.0 + d * 1.6), seed, 1.6, 0.7)
-    top_lit = (m & ~np.roll(m, 2, 0)).astype(np.float32)
-    t = 0.12 + 0.35 * (side * 0.5 + 0.5) + 0.3 * _blur(top_lit, 1.0) * 2 + (0.5 - DY / 0.6 * 0.5) * 0.25 + (ID - 0.5) * 0.15
-    t = t - (1 - tier_top) * 0.2
-    t = np.where((F2 - F1) < 0.1, t - 0.22, t)
-    fill(img, tm & ~m, aerial(make_ramp(C('#4a3828'), 5)[1], d))
-    ramp_fill(img, m, t, make_ramp(needle, 7, hi_k=0.45), d)
-    if snow > 0:
-        cap_ = m & ~np.roll(m, int(1 + 2 * snow), 0) & (fbm(XX / 2.5, YY / 2, 2, seed + 3) < 0.35 + snow * 0.5)
-        sr = make_ramp(C('#e8eef8'), 5, deep=C('#4a5a8a'), hi=C('#ffffff'), hi_k=0.8)
-        ramp_fill(img, cap_, 0.45 + 0.5 * (side * 0.5 + 0.5) + (ID - 0.5) * 0.2, sr, d)
-    return m | tm
+        yk = base - h * 0.08 - h * 0.9 * tt
+        r = (w * (1 - tt * 0.9) + 1.2) * rng.uniform(0.8, 1.15)
+        th = max(2.0, h / tiers * 1.8)
+        droop = th * rng.uniform(0.5, 1.1)
+        cx = x + lean * (base - yk)
+        dx = X - cx
+        u = np.abs(dx) / r
+        top = yk - th * 0.55 + droop * u ** 1.4
+        thick = th * (1 - 0.5 * np.clip(u, 0, 1))
+        bot = top + thick + (streak - 0.5) * 3.5 + 1.0
+        rr = r * (1 + (edge_n - 0.5) * 0.45)
+        inside = (np.abs(dx) < rr) & (Y >= top) & (Y <= bot)
+        if not inside.any():
+            continue
+        below = out & ~inside & (Y > bot) & (Y < bot + 2.5) & (np.abs(dx) < rr)
+        sub[below] = sub[below] * 0.72
+        v = np.clip((Y - top) / np.maximum(1, thick), 0, 1.3)
+        side = np.clip(dx / r, -1, 1) * np.sign(L[0])
+        t = 0.6 - v * 0.5 + side * 0.2 + (streak - 0.5) * 0.35 - u * 0.06
+        idx = np.clip(np.floor(t * 7 + (bay - 0.5) * 0.4), 0, 6).astype(int)
+        col = aerial(ramp[idx], d)
+        sub[inside] = col[inside]
+        if snow > 0:
+            sn = inside & (v < 0.15 + 0.3 * snow) & (edge_n > 0.55 - snow * 0.4)
+            si = np.clip(np.floor((0.55 + side * 0.25 - v) * 5), 0, 4).astype(int)
+            sc = aerial(sramp[si], d)
+            sub[sn] = sc[sn]
+        out |= inside
+    tip = (np.abs(X - x - lean * h) < 0.7) & (Y > base - h - 3) & (Y < base - h * 0.9)
+    sub[tip] = aerial(ramp[2], d)
+    full[y0:y1, x0:x1] = out | tip
+    return full
 
 
 def clouds(img, items, seed, alb='#ffffff', d=0.05, flat_base=True):
@@ -552,7 +580,6 @@ def backlit(img, before, k):
     """Everything drawn since `before` stands with the low sun behind it: its faces fall into cool shade (lit windows
     and lamps keep their glow), and a thin warm rim lights its edges against the sky."""
     ch = np.abs(img - before).sum(axis=2) > 0.12
-    ch = ch & _dilate(_dilate(ch, 1) & ~np.roll(~ch, 0), 0)
     mx = img.max(axis=2)
     bright = (mx > 0.8) & (img[..., 0] > img[..., 2] + 0.2)
     sh = ch & ~bright
@@ -811,42 +838,36 @@ def ridged(x, y, oct_, seed):
 
 
 def crag(img, m, alb, d, seed, scale=1.0, snowline=None, snow_k=0.5, strata=True):
-    """Bare rock as hand-pixelled facets: the big shape is lit from the sun; it is broken into angular facets, each
-    tilted its own way and lit flat, with a bright edge where a facet catches the light and a dark crack under it.
-    Snow lies on the facets that face up, above the snowline."""
+    """Natural rock: one big lit form broken into chunky blocks and ledges by warped ridged noise, a few deep cracks,
+    lichen and moss on the faces that look up; snow on upward faces above the snowline."""
     if not m.any():
         return
-    big = _blur(m.astype(np.float32), 36 * scale) * 200 * scale + _blur(m.astype(np.float32), 8 * scale) * 24 * scale
-    warp = fbm(XX / 40, YY / 40, 2, seed + 7) * 3
-    g = ridged(XX / (12 * scale) + warp, YY / (80 * scale), 3, seed)          # ribs and gullies running down the slope
-    hf = big + g * 5 * scale + fbm(XX / (10 * scale), YY / (7 * scale), 3, seed + 8) * 14 * scale
+    wx = XX + (fbm(XX / 22, YY / 22, 3, seed) - 0.5) * 18 * scale
+    wy = YY + (fbm(XX / 22, YY / 22, 3, seed + 9) - 0.5) * 18 * scale
+    big = _blur(m.astype(np.float32), 26 * scale) * 120 * scale + _blur(m.astype(np.float32), 5 * scale) * 14 * scale
+    F1, F2, DX, DY, ID = worley(max(3.0, 9 * scale), seed, 1.4, 0.8)
+    chunk = -_blur(F1.astype(np.float32), 1.0) * 10 * scale                    # chunky blocks, soft-edged
+    g = ridged(wx / (16 * scale), wy / (11 * scale), 4, seed)
+    hf = big + chunk + g * 7 * scale + fbm(wx / (4 * scale), wy / (4 * scale), 2, seed + 1) * 2.5 * scale
     macro = macro_light(hf)
-    L = P['L']
-    cell = max(2.5, 7.0 * scale * (0.5 + d * 0.7))
-    F1, F2, DX, DY, ID = worley(cell, seed, 1.5, 0.8)
-    nx = (np.modf(ID * 7.13)[0] - 0.5) * 1.3
-    ny = (np.modf(ID * 3.71)[0] - 0.5) * 1.1 - 0.15
-    nz = np.sqrt(np.clip(1 - nx * nx * 0.5 - ny * ny * 0.5, 0.2, 1))
-    facet = np.clip((nx * L[0] + ny * L[1] + nz * L[2]) / np.sqrt(nx * nx + ny * ny + nz * nz), 0, 1)
-    t = 0.0 + macro * 0.8 + (facet - 0.55) * 0.4
+    t = 0.04 + macro * 0.86
     if strata:
-        t = t - np.where(np.sin((YY * 0.8 + XX * 0.15 + fbm(XX / 30, YY / 30, 2, seed + 3) * 24) * 0.7) > 0.95, 0.12, 0)
-    edge = (F2 - F1) < 0.07
-    lit_edge = edge & ((DX * L[0] + DY * L[1]) > 0)
-    t = np.where(edge & ~lit_edge, t - 0.3, t)
-    t = np.where(lit_edge, t + 0.18, t)
+        t = t - np.where(np.sin((wy * 0.8 + wx * 0.1) * 0.55) > 0.95, 0.12, 0)
+    cracks = m & (np.abs(fbm(wx / 8, wy / 4, 3, seed + 4) - 0.5) < 0.006) & (macro < 0.55)
+    t = np.where(cracks, 0.02, t)
     ramp = make_ramp(alb, 7, hi_k=0.5)
-    ramp_fill(img, m, t, ramp, d)
+    ramp_fill(img, m, t, ramp, d, 0.12)
+    gy, gx = np.gradient(_blur(hf, 1.0))
+    upf = -gy / np.sqrt(gx * gx + gy * gy + 1)
+    if d > 0.45:
+        moss = m & (upf > 0.45) & (fbm(XX / 4, YY / 3, 3, seed + 6) > 0.5) & ~np.roll(m, 7, 0)
+        mc = aerial(mix(C('#5a8a3a'), alb, 0.25) * (0.7 + macro[..., None] * 0.5), d)
+        img[moss] = img[moss] * 0.25 + mc[moss] * 0.75
     if snowline is not None:
         sl = snowline + (fbm(XX / 30, YY * 0, 3, seed + 5) - 0.5) * 50
-        blot = fbm(XX / 9, YY / 6, 3, seed + 6)
-        gully = (1 - g) + (blot - 0.5) * 0.5                                   # snow fills the gullies, ribs stay bare
-        depth_k = np.clip((sl - YY) / 80, 0, 1)
-        snow = m & (YY < sl + 50) & (gully + depth_k * snow_k * 0.8 > 0.62 + np.clip((YY - sl) / 50, 0, 1) * 0.3)
+        snow = m & (YY < sl) & (upf + (fbm(XX / 6, YY / 5, 3, seed + 7) - 0.5) * 0.6 > 0.3 - snow_k * 0.3)
         sr = make_ramp(C('#e4ecf8'), 6, deep=C('#2a3a6a'), hi=C('#ffffff'), hi_k=0.9)
-        ramp_fill(img, snow, 0.12 + macro * 0.85 + (facet - 0.5) * 0.15, sr, d)
-        under = m & ~snow & np.roll(snow, 1, 0)
-        fill(img, under, aerial(ramp[0], d))
+        ramp_fill(img, snow, 0.15 + macro * 0.85, sr, d, 0.3)
 
 
 def ridge_mountain(img, summit, base_y, height, d, seed, alb, snowline=None, arms=(150, 30, 100), spread=1.0):
@@ -868,31 +889,33 @@ def ridge_mountain(img, summit, base_y, height, d, seed, alb, snowline=None, arm
     for a in arms:
         grow(sx, sy, 2.0, math.radians(a + rng.normal(0, 6)), height * spread * rng.uniform(0.9, 1.3), 2)
     hf = np.full((H, W), -1e3, np.float32)
+    amp = float(np.clip(height * 0.05, 3.0, 6.0))
+    WX = XX + (fbm(XX / 18, YY / 18, 3, seed + 11) - 0.5) * amp * 2.4             # warp so no ridge is a straight line
+    WY = YY + (fbm(XX / 18, YY / 18, 3, seed + 12) - 0.5) * amp * 1.6
     for (x0, y0, h0, x1, y1, h1) in segs:
         vx, vy = x1 - x0, y1 - y0
         L2 = vx * vx + vy * vy + 1e-6
-        t = np.clip(((XX - x0) * vx + (YY - y0) * vy) / L2, 0, 1)
-        dist = np.hypot(XX - x0 - t * vx, YY - y0 - t * vy)
+        t = np.clip(((WX - x0) * vx + (WY - y0) * vy) / L2, 0, 1)
+        dist = np.hypot(WX - x0 - t * vx, WY - y0 - t * vy)
         hf = np.maximum(hf, h0 + (h1 - h0) * t - dist * 1.0)
-    hf = hf + fbm(XX / 14, YY / 14, 3, seed) * 3
+    hf = hf + ridged(WX / 9, WY / 6, 4, seed + 13) * amp * 0.9 + fbm(XX / 3, YY / 3, 2, seed) * 1.2
     m = np.maximum.accumulate(hf > 0, axis=0) & (YY < base_y)          # solid below its outline
     gy, gx = np.gradient(hf)
     Lv = P['L']
     nrm = np.sqrt(gx * gx + gy * gy + 0.6)
     face_l = np.clip((-gx * Lv[0] - gy * Lv[1] + 0.6 * Lv[2]) / nrm, 0, 1)
-    F1, F2, DX, DY, ID = worley(max(2.0, 5 * (0.4 + d)), seed, 1.6, 0.8)
-    t = 0.05 + face_l * 0.85 + (ID - 0.5) * 0.12
-    crest = np.abs(_blur(hf, 1.0) - hf) > 0.6
-    t = np.where(((F2 - F1) < 0.05) & (d > 0.15), t - 0.1, t)
+    t = 0.04 + face_l * 0.88
     ramp = make_ramp(alb, 7, hi_k=0.45)
-    ramp_fill(img, m, t, ramp, d)
+    ramp_fill(img, m, t, ramp, d, 0.35)
     if snowline is not None:
         conc = _blur(hf, 3) - hf                                        # gullies are concave
         sl = snowline + (fbm(XX / 25, YY * 0, 3, seed + 5) - 0.5) * 40
         hi = np.clip((sl - YY) / 60, 0, 1)
-        snow = m & (YY < sl + 30) & ((conc > 0.6 - hi * 1.2) | ((hi > 0.5) & (fbm(XX / 10, YY / 10, 2, seed + 6) > 0.4)))
+        flat_ = -gy / nrm                                             # snow stays where the slope faces up
+        sn_n = fbm(XX / 5, YY / 4, 3, seed + 6)
+        snow = m & (YY < sl + 30) & ((conc + (sn_n - 0.5) * 1.2 > 0.7 - hi * 1.3) | (hi > 0.45) & (flat_ + (sn_n - 0.5) * 0.8 > 0.0))
         sr = make_ramp(C('#e4ecf8'), 6, deep=C('#2a3a6a'), hi=C('#ffffff'), hi_k=0.9)
-        ramp_fill(img, snow, 0.1 + face_l * 0.9, sr, d)
+        ramp_fill(img, snow, 0.12 + face_l * 0.88, sr, d, 0.35)
     return m
 
 
@@ -931,7 +954,7 @@ def mountains():
     mist_band = np.clip(1 - np.abs(YY - 214) / 14, 0, 1) * (0.5 + fbm(XX / 50, YY / 8, 3, 9) * 0.6)
     a = np.floor(np.clip(mist_band, 0, 1) * 5 + BAY * 0.9) / 5 * 0.7
     img[:] = img * (1 - a[..., None]) + C('#e8f0fc') * a[..., None]
-    ridge_mountain(img, (372, 34), 236, 230, 0.2, 8, C('#5a6cb0'), snowline=175, arms=(140, 40, 92, 118, 66), spread=1.0)
+    ridge_mountain(img, (372, 34), 236, 230, 0.2, 8, C('#5a6cb0'), snowline=140, arms=(140, 40, 92, 118, 66), spread=1.0)
     a = np.floor(np.clip(np.clip(1 - np.abs(YY - 222) / 16, 0, 1) * (0.4 + fbm(XX / 40, YY / 8, 3, 10) * 0.7), 0, 1) * 5 + BAY * 0.9) / 5 * 0.75
     img[:] = img * (1 - a[..., None]) + C('#eef4fe') * a[..., None]
     # forested ridges climbing toward the peak: snowy firs high up, green firs lower
@@ -1256,7 +1279,11 @@ def house(img, x, base, w, floors, d, seed, fh=24, roof='gable', wall=None, roof
     face(img, ch, C('#8a6a5a'), 0.7, d)
     fill(img, ch & (XX > cx + 3), lit(C('#8a6a5a'), 1.0, d))
     for j in range(5):
-        glow(img, cx + 3 - j * 3, ridge_y + (b - a) * 0.15 - 16 - j * 6, 3 + j * 1.5, aerial(C('#a8a0a8'), d) * 0.4, 0.4)
+        args = (cx + 3 - j * 3, ridge_y + (b - a) * 0.15 - 16 - j * 6, 3 + j * 1.5, aerial(C('#a8a0a8'), d) * 0.4, 0.4)
+        if P.get('defer_smoke') is not None:
+            P['defer_smoke'].append(args)                                  # drawn later, after the backlight pass
+        else:
+            glow(img, *args)
     return ridge_y
 
 
@@ -1322,7 +1349,9 @@ def city():
     sun_glow(img, *P['sun'], 22, '#fff4d0', 1.0)
     rng = np.random.default_rng(5)
     # sunset clouds, lit from below and from the sun's side
-    clouds(img, [(110, 70, 200, 22), (420, 96, 260, 20), (620, 150, 120, 12), (250, 150, 160, 12)], 4, alb='#e0a0a8', d=0.3)
+    sunset = ['#4a2e5e', '#6e3a6e', '#9a4a74', '#c86a7a', '#ec9480', '#ffbc8a', '#ffdaa8', '#fff0d0']
+    for (cx_, cy_, w_, h_, sd) in ((150, 70, 230, 34, 4), (450, 92, 300, 30, 5), (610, 150, 120, 16, 6), (290, 150, 150, 14, 7)):
+        cumulus(img, cx_, cy_, w_, h_, sd, 0.3, ramp=sunset)
     # the castle on its hill, far away, and the city walls in front of it
     before = img.copy()
     castle_far(img, 200, 190, 1.0, 0.12, 3)
@@ -1372,11 +1401,15 @@ def city():
         wx = cx - 22 + k * 18
         fill(img, rect(wx, 176, wx + 7, 214) & ~((YY < 180) & (np.abs(XX - wx - 3.5) > 2.5)), aerial(C('#ffb050'), 0.4))
     # the middle row of houses
+    P['defer_smoke'] = []
     before = img.copy()
     for k in range(9):
         hx = -30 + k * 76 + rng.uniform(-8, 8)
         house(img, hx, 262, rng.uniform(34, 46), int(rng.integers(3, 5)), 0.5, 200 + k, fh=16, roof=rng.choice(['gable', 'hip']), lights=0.45, wq=0.32)
     backlit(img, before, 0.78)
+    for a_ in P.pop('defer_smoke'):
+        glow(img, *a_)
+    P['defer_smoke'] = []
     # a gap of evening haze between the rows
     a = (np.clip(1 - np.abs(YY - 250) / 30, 0, 1) * 0.35)
     a = np.floor(a * 6 + BAY * 0.9) / 6
@@ -1390,6 +1423,8 @@ def city():
     for i, (hx, w, fl, shop) in enumerate(xs):
         tops[hx] = house(img, hx, street - 4, w, fl, 0.84, 300 + i, fh=24, roof='gable' if i % 3 else 'hip', shop=shop, lights=0.45, wq=0.22)
     backlit(img, before_f, 0.62)
+    for a_ in P.pop('defer_smoke'):
+        glow(img, *a_)
     sun_band(img, 120, 250, '#ff9a50', 0.22)
     # the side street: an arch and a lantern, the far street receding
     fill(img, rect(250, 190, 372, 300), lit(C('#6a5060'), 0.3, 0.5))
@@ -1826,40 +1861,53 @@ def castle():
 CLOUD_RAMP = ['#4a5aa8', '#6a7cc4', '#90a2d8', '#b8c6ea', '#dce4f6', '#f2f6fe', '#ffffff', '#ffffff']
 
 
+def fill_holes(m):
+    """Fill every hole inside a mask (flood the outside from the frame edge, keep the rest)."""
+    from PIL import ImageDraw
+    pad = np.zeros((H + 2, W + 2), np.uint8)
+    pad[1:-1, 1:-1] = m.astype(np.uint8) * 255
+    im = Image.fromarray(pad, 'L').copy()
+    ImageDraw.floodfill(im, (0, 0), 128)
+    return (np.asarray(im)[1:-1, 1:-1] != 128)
+
+
 def cumulus(img, cx, base, w, h, seed, d=0.1, ramp=None, flat=True, lean=0.0):
-    """A towering cumulus cloud: many round puffs piled wide at the bottom and narrower at the top, each puff lit as
-    its own dome (white where the sun hits, lavender-blue in its shade), a flat shadowed base, a bright silver edge."""
+    """A natural cumulus: billows piled wide at the bottom and narrower at the top with a lumpy, wispy outline. The
+    big form is lit as one soft mass (bright on the sun side, cool blue-lavender in its shade, a flat grey base);
+    the small cauliflower billows only show on the lit side, as they do in real clouds."""
     rng = np.random.default_rng(seed)
     ramp = np.array([C(c) for c in (ramp or CLOUD_RAMP)], np.float32)
     puffs = []
-    n = int(w * h / 140) + 18
+    n = int(w * h / 110) + 16
     for _ in range(n):
-        t = rng.uniform(0, 1) ** 0.75
-        half = w / 2 * (1 - 0.62 * t ** 1.2) * (1 + 0.12 * math.sin(t * 9 + seed))
+        t = rng.uniform(0, 1) ** 0.7
+        half = w / 2 * (1 - 0.6 * t ** 1.2) * (1 + 0.12 * math.sin(t * 9 + seed))
         x = cx + lean * t * h + rng.uniform(-half, half)
         y = base - t * h
-        r = w * rng.uniform(0.07, 0.17) * (1 - 0.3 * t)
-        puffs.append((x, y, r * rng.uniform(1.0, 1.25), r, r * 0.6 + (1 - abs(x - cx) / (w / 2 + 1)) * h * 0.15 + rng.uniform(0, r)))
-    m, hf = domes(puffs, 0.15, seed)
+        r = w * rng.uniform(0.05, 0.15) * (1 - 0.3 * t)
+        puffs.append((x, y, r * rng.uniform(1.0, 1.3), r, r * 0.5 + rng.uniform(0, r)))
+    m, hf = domes(puffs, 0.12, seed)
+    closed = fill_holes(_blur(m.astype(np.float32), 1.5) > 0.4)              # one solid mass, no pin holes
+    hf = np.where(closed & ~m, _blur(np.where(m, hf, 0).astype(np.float32), 2.5) / np.maximum(_blur(m.astype(np.float32), 2.5), 1e-3), hf)
+    m = closed
+    en = fbm(XX / 2.4, YY / 1.8, 2, seed + 3)
+    band = _dilate(m, 2) & _dilate(~m, 2)
+    m = (m & ~(band & (en < 0.3))) | (band & (en > 0.74))
     if flat:
-        m &= YY < base + 2 + 2 * fbm(XX / 9, YY * 0, 2, seed)
-    nx, ny = _blur(_DN['nx'].astype(np.float32), 2.2), _blur(_DN['ny'].astype(np.float32), 2.2)
+        m &= YY < base + 1 + 3 * fbm(XX / 7, YY * 0, 2, seed)
+    raw = np.where(m, hf, 0).astype(np.float32)
+    big = macro_light(_blur(raw, max(2.5, h * 0.12)) * 1.1)
+    nx, ny = _blur(_DN['nx'].astype(np.float32), 1.6), _blur(_DN['ny'].astype(np.float32), 1.6)
     L = P['L']
     nz = np.sqrt(np.clip(1 - nx * nx * 0.8 - ny * ny * 0.8, 0.05, 1))
-    puff = np.clip((nx * L[0] + ny * L[1] + nz * L[2] * 0.7) / np.sqrt(nx * nx + ny * ny + nz * nz), 0, 1)
-    puff = puff * 0.6 + macro_light(_blur(np.where(m, hf, 0).astype(np.float32), 3.0) * 0.6) * 0.4
+    billow = np.clip((nx * L[0] + ny * L[1] + nz * L[2]) / np.sqrt(nx * nx + ny * ny + nz * nz), 0, 1)
     up = np.clip((base - YY) / max(1.0, h), 0, 1)
-    side = np.clip((XX - cx) / (w / 2 + 1) * np.sign(L[0]), -1, 1)
-    raw = np.where(m, hf, 0).astype(np.float32)
-    ao = np.clip((_blur(raw, 2.0) - raw) / 3, 0, 1) * 0.6
-    shadow_side = np.clip(0.6 - puff, 0, 1)
-    t = 0.2 + puff * 0.5 + up * 0.3 + side * 0.14 - ao * 0.5 * shadow_side - np.clip((YY - base + h * 0.22) / (h * 0.22 + 1), 0, 1) * 0.3
-    t = t + (fbm(XX / 3, YY / 3, 2, seed + 1) - 0.5) * 0.08
-    idx = np.clip(np.floor(t * len(ramp)), 0, len(ramp) - 1).astype(int)
-    c = aerial(ramp[idx], d)
-    img[m] = c[m]
-    rim = m & ~np.roll(m, int(np.sign(-L[0]) or 1), 1) | (m & ~np.roll(m, 1, 0) & (up > 0.3))
-    fill(img, rim & (side > -0.3), aerial(C('#ffffff'), d))
+    lit_k = np.clip(big * 1.6 - 0.3, 0, 1)
+    t = 0.1 + big * 0.55 + up * 0.26 + (billow - 0.55) * 0.5 * lit_k - np.clip((YY - base + h * 0.2) / (h * 0.2 + 1), 0, 1) * 0.3
+    ramp_fill(img, m, t, ramp, d, 0.35)
+    L = P['L']
+    rim = m & ~np.roll(m, int(np.sign(-L[0]) or 1), 1) & (up > 0.25)
+    fill(img, rim, aerial(C('#ffffff'), d), 0.8)
     return m
 
 
@@ -1886,25 +1934,48 @@ def wheat_field(img, m, d, seed, scale=1.0):
 
 
 def wheat_stalks(img, y0, y1, x0, x1, n, seed, h=(18, 40), d=1.0, wind=0.25):
-    """Single wheat stalks right in front of the camera: a thin curved stem, a long ear of grains, a few awns."""
+    """Wheat right in front of the camera: thin stems that bend in the wind (more near the top), drooping ears made of
+    plump grains with long awns, back rows lighter and smaller, front rows darker and bigger, drawn back to front."""
     rng = np.random.default_rng(seed)
     ramp = np.array([C(c) for c in WHEAT], np.float32)
-    for _ in range(n):
-        bx, by = rng.uniform(x0, x1), rng.uniform(y0, y1)
-        hh = rng.uniform(*h)
-        lean = wind + rng.normal(0, 0.12)
-        pts = [(bx + lean * hh * (k / 6) ** 1.6, by - hh * k / 6) for k in range(7)]
-        tone_ = rng.uniform(0.3, 0.75)
-        fill(img, mask([taper(pts, 1.0, 0.7, 6)]), aerial(ramp[int(tone_ * 4)], d))
+    items = sorted([(rng.uniform(y0, y1), rng.uniform(x0, x1)) for _ in range(n)])
+    for (by, bx) in items:
+        depth = (by - y0) / max(1, y1 - y0)                                   # 0 = back row, 1 = nearest
+        hh = rng.uniform(*h) * (0.75 + 0.5 * depth)
+        lean = wind * rng.uniform(0.6, 1.3) + rng.normal(0, 0.06)
+        tone_ = rng.uniform(0.45, 0.8) - depth * 0.25
+        pts = []
+        for k in range(9):
+            u = k / 8
+            pts.append((bx + lean * hh * u ** 2.2, by - hh * u))
+        for (a, b) in zip(pts, pts[1:]):                                      # a 1-pixel stem, darker low down
+            steps = int(max(abs(b[0] - a[0]), abs(b[1] - a[1]))) + 1
+            for q in range(steps):
+                x = int(round(a[0] + (b[0] - a[0]) * q / steps))
+                y = int(round(a[1] + (b[1] - a[1]) * q / steps))
+                if 0 <= x < W and 0 <= y < H:
+                    img[y, x] = aerial(ramp[int(np.clip(tone_ * 5 - (y - by + hh) / hh * -1.5, 1, 4))], d)
         ex, ey = pts[-1]
-        el = hh * rng.uniform(0.22, 0.32)
-        for k in range(int(el / 1.6)):                                   # the grains of the ear, in pairs
-            gx, gy = ex + lean * k * 1.2, ey - k * 1.6
+        dx_, dy_ = pts[-1][0] - pts[-2][0], pts[-1][1] - pts[-2][1]
+        ln_ = math.hypot(dx_, dy_) + 1e-6
+        ux, uy = dx_ / ln_, dy_ / ln_                                         # the ear continues the stem's curve
+        ux, uy = ux + lean * 0.6, uy + 0.25                                   # and droops with its weight
+        nrm = math.hypot(ux, uy)
+        ux, uy = ux / nrm, uy / nrm
+        el = max(3, int(hh * rng.uniform(0.18, 0.26)))
+        for k in range(el):
+            gx, gy = ex + ux * k, ey + uy * k
             for sgn in (-1, 1):
-                g = mask([ell(gx + sgn * 1.1, gy, 1.3, 0.9, -30 * sgn, 6)])
-                fill(img, g, aerial(ramp[min(6, int(tone_ * 6) + (1 if sgn > 0 else 0))], d))
-            if rng.random() < 0.4:
-                fill(img, mask([cap((gx, gy), (gx + lean * 3 + sgn * 2, gy - 4), 0.3)]), aerial(ramp[5], d), 0.7)
+                px, py = int(round(gx - uy * sgn)), int(round(gy + ux * sgn))
+                if 0 <= px < W and 0 <= py < H:
+                    lit_ = (sgn * -uy * P['L'][0] + sgn * ux * P['L'][1]) > 0
+                    img[py, px] = aerial(ramp[int(np.clip(tone_ * 6 + (1.5 if lit_ else -0.5), 1, 6))], d)
+            if k % 2 == 0 and rng.random() < 0.8:                            # awns
+                ax, ay = gx - uy * 2.5 + ux * 2.5, gy + ux * 2.5 + uy * 2.5 - 2
+                for q in range(3):
+                    x = int(round(gx + (ax - gx) * q / 3)); y = int(round(gy + (ay - gy) * q / 3) - q)
+                    if 0 <= x < W and 0 <= y < H:
+                        img[y, x] = aerial(ramp[5], d)
 
 
 def cornflowers(img, pts, d=1.0):
@@ -2003,8 +2074,7 @@ def plains4():
     grade_actor(img, quadruped('wolf', 262, int(gy[262]) - 16, -1, 1.3, leap=True), key, amb, '#fff6c8', 0.95, flash='#ff8a2a')
     grade_actor(img, hero(180, int(gy[180]) - 22, 1), key, amb, '#fff6c8', 1.0)
     # right in front of the camera: golden wheat and blue cornflowers, a leafy bough at the top left
-    wheat_stalks(img, 318, 340, -10, 660, 90, 52, (14, 26), 0.92, 0.3)
-    wheat_stalks(img, 344, 368, -10, 660, 110, 51, (24, 50), 1.0, 0.3)
+    wheat_stalks(img, 316, 372, -10, 660, 420, 51, (16, 40), 1.0, 0.3)
     dk = np.clip((YY - 320) / 40, 0, 1) * 0.35                            # the near wheat in a little shade
     img[:] = img * (1 - dk[..., None] * (YY > 312)[..., None])
     cornflowers(img, [(40, 334), (96, 340), (230, 338), (300, 344), (520, 336), (570, 342), (612, 332), (160, 350), (440, 352)], 1.0)
