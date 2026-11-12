@@ -50,7 +50,7 @@ def leafy(m, seed, amount=0.7):
 
 def pine(x, base, h, w, rng):
     """A thin conifer: a straight trunk and ragged tiers of needles getting smaller to the top."""
-    trunk = [taper([(x, base + 2), (x + rng.normal(0, 0.6), base - h)], max(1.2, w * 0.35), 1.0, 2)]
+    trunk = [taper([(x, base + 2), (x + rng.normal(0, 0.6), base - h)], max(1.6, w * 0.55), 1.4, 2)]
     clumps = []
     tiers = int(rng.integers(5, 9))
     for k in range(tiers):
@@ -88,7 +88,7 @@ def cypress(x, base, h, w, rng):
         s = rng.choice([-1, 1])
         ln = w * rng.uniform(2.5, 6)
         ex, ey = x + s * ln, y - ln * rng.uniform(0.3, 0.8)
-        trunk.append(taper([(x, y + 4), (x + s * ln * 0.5, y - ln * 0.2), (ex, ey)], w * 0.45, 1.2, 4))
+        trunk.append(taper([(x, y + 4), (x + s * ln * 0.5, y - ln * 0.2), (ex, ey)], w * 0.65, 1.8, 4))
         # an irregular crown: several small clumps scattered along the limb, not one umbrella
         for j in range(int(rng.integers(3, 6))):
             tt = rng.uniform(0.35, 1.0)
@@ -180,7 +180,7 @@ def layer(img, items, d, seed, kind_weights, moss_on=True, rim=0.6, leaf_tint=C(
             trunks += t
             clumps += c
         elif k == 'snag':
-            trunks += snag(x, base, h, w * 0.6, rng)
+            trunks += snag(x, base, h, w * 0.9, rng)
         else:
             t, c, a = cypress(x, base, h, w, rng)
             trunks += t
@@ -199,6 +199,49 @@ def layer(img, items, d, seed, kind_weights, moss_on=True, rim=0.6, leaf_tint=C(
     return tm | cm
 
 
+def grass_tufts(img, top, grass_col, seed, density=0.5, hmin=3, hmax=12, d=0.8):
+    """Detailed grass: tufts of 4-9 curved blades in three tones (dark base, mid, a moonlit tip), seed heads, little
+    ferns and a few pale flowers."""
+    rng = np.random.default_rng(seed)
+    ys, xs = np.nonzero(top)
+    if not len(xs):
+        return
+    dark = mix(grass_col * 0.55, NEAR, 0.3)
+    midc = grass_col
+    tip = mix(grass_col * 1.35, SKY_LO * 1.1, 0.35)
+    order = rng.permutation(len(xs))
+    for i in order[:int(len(xs) * density / 3)]:
+        bx, by = xs[i], ys[i]
+        n = int(rng.integers(4, 10))
+        base_h = rng.uniform(hmin, hmax)
+        for b in range(n):
+            hgt = base_h * rng.uniform(0.5, 1.1)
+            spread = (b - n / 2) * rng.uniform(0.5, 1.2)
+            curve = rng.uniform(-0.8, 0.8)
+            steps = int(hgt) + 1
+            for k in range(steps):
+                t = k / max(1, steps - 1)
+                x = int(round(bx + spread * t + curve * t * t * hgt * 0.4))
+                y = int(round(by - k))
+                if 0 <= x < W and 0 <= y < H:
+                    img[y, x] = dark if t < 0.35 else (midc if t < 0.8 else tip)
+        r = rng.random()
+        if r < 0.12:                                                # a seed head
+            x, y = int(bx + rng.uniform(-2, 2)), int(by - base_h * 1.2)
+            if 1 <= y < H - 1 and 0 <= x < W:
+                img[y - 1:y + 2, x] = mix(C('#8a7a4a'), SKY_LO, 0.3)
+        elif r < 0.2:                                               # a little fern frond
+            for k in range(6):
+                for side in (-1, 1):
+                    x, y = int(bx + side * (3 - k * 0.4)), int(by - k * 1.4 - 1)
+                    if 0 <= x < W and 0 <= y < H:
+                        img[y, x] = midc * 0.95
+        elif r < 0.25:                                              # a pale flower
+            x, y = int(bx), int(by - base_h * 0.8)
+            if 0 <= x < W and 0 <= y < H:
+                img[y, x] = mix(C('#e8e4c8'), SKY_LO, 0.4)
+
+
 def bank(img, pts, seed, d, grass_col=C('#3e5a34')):
     """A mossy mound of earth at the water's edge: dark sides, a mossy top lit by the sky, grass and roots."""
     m = mask([spoly(*pts, n=6)])
@@ -211,16 +254,11 @@ def bank(img, pts, seed, d, grass_col=C('#3e5a34')):
     fill(img, top2 & (n > 0.35), mix(grass_col, base, 0.35))
     fill(img, top, mix(grass_col * 1.25, SKY_LO, 0.2))
     fill(img, m & (n > 0.7) & ~top2, base * 1.25)
-    rng = np.random.default_rng(seed)
-    ys, xs = np.nonzero(top)
-    for i in range(0, len(xs), 3):                                  # grass blades
-        if rng.random() < 0.5:
-            hgt = int(rng.integers(2, 7))
-            for k in range(hgt):
-                y = ys[i] - k
-                x = xs[i] + (k // 3) * (1 if rng.random() < 0.5 else -1)
-                if 0 <= y < H and 0 <= x < W:
-                    img[y, x] = mix(grass_col * 1.3, SKY_LO, 0.25 if k == hgt - 1 else 0.05)
+    surface = m & ~np.roll(m, 1, 0)
+    grass_tufts(img, surface, grass_col * 0.8, seed + 100, 1.6, 5, 16, d)          # the back row, taller
+    grass_tufts(img, surface, grass_col, seed, 2.4, 3, 11, d)
+    lower = m & ~np.roll(m, 9, 0) & ~surface
+    grass_tufts(img, lower & (fbm(XX / 12, YY / 5, 2, seed) > 0.5), grass_col * 0.7, seed + 200, 0.6, 2, 7, d)
     return m
 
 
@@ -245,17 +283,17 @@ def scene():
     ridge = WATER - 18 - 10 * fbm(XX[0] / 40, np.zeros(W), 3, 3) * 2
     rm = YY > ridge[None, :]
     fill(img, rm, depth_col(0.1))
-    items = [(rng.uniform(-10, W + 10), WATER - 8, rng.uniform(30, 110), rng.uniform(2, 4)) for _ in range(70)]
+    items = [(rng.uniform(-10, W + 10), WATER - 8, rng.uniform(30, 110), rng.uniform(3.5, 6)) for _ in range(52)]
     layer(img, items, 0.12, 11, [0.6, 0.35, 0.05], moss_on=False, rim=0.3)
     mist(img, WATER - 20, 26, 0.75, 3)
-    items = [(rng.uniform(-10, W + 10), WATER - 2, rng.uniform(70, 170), rng.uniform(3, 5)) for _ in range(34)]
+    items = [(rng.uniform(-10, W + 10), WATER - 2, rng.uniform(70, 170), rng.uniform(5.5, 8.5)) for _ in range(26)]
     layer(img, items, 0.3, 12, [0.5, 0.3, 0.2], rim=0.45)
     hut(img, 404, WATER - 52, 0.55)
     mist(img, WATER - 8, 20, 0.6, 4)
     # mid cypresses standing in the water
-    items = [(70, WATER + 2, 200, 5), (180, WATER + 2, 230, 6), (250, WATER + 1, 150, 4), (430, WATER + 2, 210, 5), (530, WATER + 1, 180, 5)]
+    items = [(70, WATER + 2, 200, 8.5), (180, WATER + 2, 230, 9.5), (250, WATER + 1, 150, 7), (430, WATER + 2, 210, 8.5), (530, WATER + 1, 180, 8)]
     layer(img, items, 0.52, 21, [0.0, 0.25, 0.75], rim=0.55)
-    items = [(x, WATER + 1, rng.uniform(120, 200), 5) for x in (30, 300, 360, 470, 610)]
+    items = [(x, WATER + 1, rng.uniform(120, 200), 8.5) for x in (30, 300, 360, 470, 610)]
     layer(img, items, 0.6, 23, [0.85, 0.15, 0.0], moss_on=False, rim=0.5)
     for (x, y, c) in ((214, 214, '#ff3a2a'), (458, 222, '#ffc84a'), (98, 228, '#ff3a2a')):     # eyes in the dark
         img[y, x] = img[y, x + 3] = C(c)
@@ -278,7 +316,7 @@ def scene():
     fill(img, ripl, mix(SKY_LO, NEAR, 0.4), 0.5)
     img[WATER, :] = mix(img[WATER, :], MIST, 0.35)
     # big cypresses at the sides, in front of the water
-    items = [(110, WATER + 6, 330, 9), (560, WATER + 8, 340, 10)]
+    items = [(110, WATER + 6, 330, 14), (560, WATER + 8, 340, 15)]
     layer(img, items, 0.78, 31, [0.0, 0.0, 1.0], rim=0.7)
     # mossy banks and the half-sunken boardwalk between them
     bank(img, [(-20, 300), (-10, 266), (60, 258), (140, 262), (196, 276), (214, 300)], 41, 0.82)
@@ -299,7 +337,7 @@ def scene():
     # front: two huge old trees with buttress roots, cropped by the frame, and grass silhouettes
     rng2 = np.random.default_rng(51)
     for (x, side, sd) in ((-8, 1, 61), (650, -1, 62)):
-        S, cl_, an = old_tree(x + side * 6, 304, 330, 34, rng2, side)
+        S, cl_, an = old_tree(x + side * 10, 304, 330, 48, rng2, side)
         tm = mask(S)
         bark_dark(img, tm, C('#141a14'), sd)
         cm = leafy(mask(cl_), sd)
@@ -312,7 +350,10 @@ def scene():
             bx = cxg + rng4.normal(0, 14)
             hgt = rng4.uniform(8, 26)
             lean = rng4.uniform(-6, 6)
-            fill(img, mask([taper([(bx, H + 1), (bx + lean * 0.5, H - hgt * 0.6), (bx + lean, H - hgt)], 2.2, 0.6, 3)]), NEAR * 0.75)
+            bm = mask([taper([(bx, H + 1), (bx + lean * 0.5, H - hgt * 0.6), (bx + lean, H - hgt)], 2.4, 0.6, 3)])
+            fill(img, bm, NEAR * 0.8)
+            e = bm & ~np.roll(bm, -1 if bx < MOON[0] else 1, 1)
+            fill(img, e & (YY < H - hgt * 0.35), mix(C('#4a6a40'), SKY_LO, 0.3), 0.8)
     # characters: backlit by the moon (dim, with a rim), warmed by the lantern
     key = {'dir': (0.0, -0.7, 0.5), 'col': (0.42, 0.48, 0.4)}
     amb = (0.18, 0.22, 0.2)
