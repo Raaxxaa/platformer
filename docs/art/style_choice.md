@@ -30,3 +30,15 @@ The user's Dragon sketch (`sketch/user_sketch_01–03.png`) still sets the Drago
 ## Next
 
 Round 2: one scene per stage in this look (`stage_test_<stage>.png` at 1920 × 1080, plus phone size). After the user reacts, the design chat writes the full redraw plan and the spec changes (art style rules in 08, the hero's frame size).
+
+## Round 3: one detailed example per stage
+
+After the swamp was approved (`final_example_swamp_v2.png`, `tools/art/final_swamp.py`), the other four stages got the same treatment in `tools/art/final_stages.py`. Each has many distance planes, real light from one main source, near-camera framing and its own enemies. `final_examples_all.png` shows all five together.
+
+| Stage | Mood (the user's words) | Light |
+|---|---|---|
+| Plains & Forest | "nice peaceful long fields sometimes farms forest" | sunny morning, sun upper right |
+| Caves & Mountains | "like a hike: low dense green forest, not dark, then snow and bald mountains" | crisp midday, sun upper left |
+| Dark Forest & Swamps | "foggy dark scary" | moon behind the trees |
+| Enemy Kingdom | "just a medieval city" | sunset behind the town, lit windows |
+| King's Castle | "just castle" | daylight through stained glass, torches |

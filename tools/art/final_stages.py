@@ -1,0 +1,1304 @@
+"""ART13b: detailed example scenes for the other four stages, in the look the user approved on the swamp
+(docs/art/final_example_swamp_v2.png): many distance planes, each further one smaller and hazier; real light from one
+sun or sky; a lot of small detail; a near-camera layer framing the screen; characters lit by the scene's light.
+
+- Plains & Forest: peaceful, long fields, farms, a forest edge, a sunny morning.
+- Caves & Mountains: a hike. Green, bright forest low down; higher up snowy firs; at the top bald, snowy peaks; a cave.
+- Enemy Kingdom: a medieval city at sunset: timber-framed houses, a market street, rooftops, walls, the castle beyond.
+- King's Castle: the great hall: stone arches going back into the dark, tall windows with light shafts, banners.
+
+Light model: a surface's height field gives its normals; colour = albedo * (ambient sky light + sun light * N.L),
+quantised to a few tones with a 4x4 Bayer dither, then mixed into the scene's haze by distance.
+640 x 360 inside, shown at 3x. Only writes docs/art/. Run: python3 tools/art/final_stages.py [plains|mountains|city|castle]"""
+import math
+import os
+import sys
+
+import numpy as np
+from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from art.style_test_sketch import taper, spoly, ell, cap, poly, fbm, _blur, _dilate  # noqa: E402
+from art.stage_test import (W, H, XX, YY, BAY, C, mask, fill, glow, shafts, actor, hud, hero, humanoid_enemy,  # noqa: E402
+                            quadruped, cannon, phone, humanoid)
+from art.final_swamp import mix, crooked, stubs  # noqa: E402
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUT = os.path.join(ROOT, 'docs', 'art')
+
+# the current scene's light (set by setup() at the start of every scene)
+P = {}
+
+
+def setup(sun, sun_col, amb, haze, light, haze_k=0.92):
+    L = np.array(light, np.float32)
+    P.update(sun=sun, sun_col=C(sun_col), amb=C(amb), haze=C(haze), L=L / np.linalg.norm(L), haze_k=haze_k)
+
+
+def aerial(col, d, k=1.0):
+    """Mix a colour into the haze by distance d (0 = the horizon, 1 = right in front)."""
+    t = float(np.clip(1 - d, 0, 1)) ** 1.5 * P['haze_k'] * k
+    return mix(col, P['haze'], t)
+
+
+def tone(hf, tex=None, steps=5, lo=0.0):
+    """Sun light on a height field: N.L, plus texture, quantised with a dither."""
+    gy, gx = np.gradient(hf)
+    ln = np.sqrt(gx * gx + gy * gy + 1)
+    L = P['L']
+    v = np.clip((-gx * L[0] - gy * L[1] + L[2]) / ln, 0, 1)
+    if tex is not None:
+        v = v + tex
+    return np.clip(np.floor(np.clip(v, lo, 1.2) * steps + BAY * 0.9) / steps, 0, 1.2)
+
+
+def lit(alb, q, d, amb_k=1.0, sun_k=1.0):
+    """The colour of a surface with albedo alb lit to level q (0..1) at distance d."""
+    alb = np.asarray(alb, np.float32)
+    q = np.asarray(q, np.float32)
+    c = alb * (P['amb'] * amb_k + P['sun_col'] * sun_k * q[..., None] if q.ndim else P['amb'] * amb_k + P['sun_col'] * sun_k * q)
+    return aerial(np.clip(c, 0, 1.2), d)
+
+
+def paint(img, m, hf, alb, d, tex=None, steps=5, lo=0.0, amb_k=1.0, sun_k=1.0):
+    if not m.any():
+        return
+    q = tone(hf, tex, steps, lo)
+    c = lit(alb, q, d, amb_k, sun_k)
+    img[m] = c[m]
+
+
+def face(img, m, alb, q, d):
+    """A flat face (a wall, a roof plane) lit to a fixed level q, with a dither."""
+    fill(img, m, lit(alb, q, d))
+
+
+# ============================================================================================== shapes with volume
+
+def domes(clumps, rough=0.5, seed=0):
+    """Leafy masses / cloud puffs: a height field of overlapping domes (cx, cy, rx, ry, z). Returns mask and height."""
+    hf = np.full((H, W), -1e3, np.float32)
+    nz = fbm(XX / 2.6, YY / 2.6, 2, seed) - 0.5
+    for (cx, cy, rx, ry, z) in clumps:
+        x0, x1 = max(0, int(cx - rx - 2)), min(W, int(cx + rx + 3))
+        y0, y1 = max(0, int(cy - ry - 2)), min(H, int(cy + ry + 3))
+        if x1 <= x0 or y1 <= y0:
+            continue
+        X, Y = XX[y0:y1, x0:x1], YY[y0:y1, x0:x1]
+        r2 = ((X - cx) / rx) ** 2 + ((Y - cy) / ry) ** 2 + nz[y0:y1, x0:x1] * rough
+        h = np.where(r2 < 1, z + ry * np.sqrt(np.clip(1 - r2, 0, 1)), -1e3)
+        hf[y0:y1, x0:x1] = np.maximum(hf[y0:y1, x0:x1], h)
+    m = hf > -1e2
+    return m, np.where(m, hf, 0)
+
+
+def cylinder(m, r):
+    """A height field that makes a shape look round (trunks, branches, characters' limbs)."""
+    return _blur(m.astype(np.float32), max(0.8, r)) * r * 2.2
+
+
+def crown_clumps(rng, cx, cy, R, n, s=0.42, flat=0.8):
+    """Leaf clumps filling an oval crown: front ones bigger and higher (closer), the edges smaller and lumpy."""
+    out = []
+    for _ in range(n):
+        a = rng.uniform(0, 2 * math.pi)
+        r = R * math.sqrt(rng.uniform(0, 1))
+        x, y = cx + math.cos(a) * r * 1.1, cy + math.sin(a) * r * flat
+        rr = R * s * rng.uniform(0.6, 1.1) * (1.15 - 0.5 * r / R)
+        out.append((x, y, rr * rng.uniform(1.0, 1.3), rr, (R - r) * 0.8 + rng.uniform(0, 3)))
+    return out
+
+
+def broadleaf(img, x, base, h, w, d, rng, leaf, bark=C('#5a4632'), kind='oak', tex_k=1.0, seed=0, fruit=None):
+    """A sunlit leafy tree: a forked trunk with crooked limbs into a lumpy crown of leaf clumps, gaps where limbs and
+    sky show through. kind: oak (wide), birch (pale, narrow), bush (no trunk), poplar (tall narrow)."""
+    S, tips = [], []
+    if kind == 'bush':
+        cx, cy, R = x, base - h * 0.45, h * 0.6
+    elif kind == 'poplar':
+        cx, cy, R = x, base - h * 0.58, h * 0.24
+    else:
+        cx, cy, R = x + rng.normal(0, w), base - h * 0.64, h * (0.36 if kind == 'oak' else 0.26)
+    if kind != 'bush':
+        top = (cx + rng.normal(0, w * 0.5), cy)
+        S.append(taper([(x - w * 0.9, base + 2), (x, base - h * 0.15), ((x + top[0]) / 2, base - h * 0.4), top], w * 1.8, w * 0.6, 4))
+        for k in range(int(rng.integers(3, 6))):
+            t = rng.uniform(0.35, 0.6)
+            sd = rng.choice([-1, 1])
+            crooked(S, x + (cx - x) * t, base - h * t * 0.9, -math.pi / 2 + sd * rng.uniform(0.4, 1.1), R * rng.uniform(0.6, 1.0),
+                    w * 0.7, 1, rng, tips, 0.3)
+        for k in range(2):                                              # root flare
+            sd = (-1, 1)[k]
+            S.append(taper([(x, base - w * 1.5), (x + sd * w * 1.6, base - 1), (x + sd * w * 2.6, base + 2)], w * 0.9, 1, 3))
+    tm = mask(S) if S else np.zeros((H, W), bool)
+    if tm.any():
+        tex = (fbm(XX / 1.2 + fbm(XX / 9, YY / 30, 2, seed) * 3, YY / 9, 2, seed + 1) - 0.5) * 0.5 * tex_k
+        if kind == 'birch':
+            tex = tex + np.where(fbm(XX / 3, YY / 1.3, 2, seed + 2) > 0.66, -0.6, 0)
+        paint(img, tm, cylinder(tm, w), C('#d8d4c8') if kind == 'birch' else bark, d, tex, 4, 0.1)
+    n = {'oak': 26, 'birch': 16, 'bush': 12, 'poplar': 18}[kind]
+    if kind == 'poplar':
+        cl = crown_clumps(rng, cx, cy, R, n, 0.6, 3.2)
+    else:
+        cl = crown_clumps(rng, cx, cy, R, n, 0.45 if kind != 'bush' else 0.55, 0.78 if kind != 'bush' else 0.62)
+    cl += [(tx + rng.normal(0, 2), ty + rng.normal(0, 2), R * 0.32, R * 0.27, rng.uniform(0, R * 0.4)) for tx, ty in tips]
+    m, hf = domes(cl, 0.55, seed + 3)
+    gaps = (fbm(XX / 5, YY / 5, 2, seed + 4) < 0.27) & ~_dilate(~m, 3)
+    m &= ~gaps
+    leaf_tex = (fbm(XX / 1.6, YY / 1.6, 2, seed + 5) - 0.5) * 0.55 * tex_k
+    paint(img, m, hf * 1.4, leaf, d, leaf_tex, 5, 0.05)
+    if fruit is not None:
+        fr = m & (fbm(XX / 1.3, YY / 1.3, 1, seed + 8) > 0.8) & (hf > np.percentile(hf[m], 40) if m.any() else m)
+        fill(img, fr, aerial(C(fruit), d))
+    return m | tm
+
+
+def fir(img, x, base, h, w, d, rng, needle=C('#2e5a3a'), snow=0.0, seed=0, bare=0.0):
+    """A conifer: a straight trunk and drooping tiers of needles, sun on one side; snow on the tiers' tops if snow>0."""
+    S = [taper([(x, base + 2), (x + rng.normal(0, 0.5), base - h)], max(1.2, w * 0.18), 0.8, 2)]
+    tm = mask(S)
+    tiers = int(rng.integers(7, 12))
+    shapes = []
+    for k in range(tiers):
+        t = k / tiers
+        y = base - h * 0.12 - (h * 0.88) * t
+        r = w * (1 - t * 0.85) * rng.uniform(0.85, 1.15)
+        if rng.random() < bare * (1 - t):
+            continue
+        dy = h / tiers * 1.6
+        pts = [(x + rng.normal(0, 0.4), y - dy)]
+        for j in range(7):                                              # ragged, drooping lower edge
+            u = -1 + j / 3
+            pts.append((x + u * r, y + abs(u) * dy * 0.25 + rng.uniform(-1, 1.5) - (2 if j % 2 else 0)))
+        shapes.append(('poly', [pts[0], (x - r * 1.05, y + dy * 0.28)] + pts[1:] + [(x + r * 1.05, y + dy * 0.28)]))
+    m = mask(shapes) | mask([cap((x, base - h * 0.15), (x, base - h - 2), 0.7)])
+    m = m & ~((fbm(XX / 1.5, YY / 1.5, 1, seed) > 0.78) & ~_dilate(~m, 1))
+    hf = (np.clip(x - XX, -w, w) * 0) + _blur(m.astype(np.float32), 1.5) * 3 - (XX - x) * 0.0
+    hf = hf + np.sign(XX - x) * 0 + ((XX - x) / max(w, 1)) * -2.5 * np.sign(P['L'][0]) * -1
+    # each tier is lit on its top and its sun side
+    tops = m & ~np.roll(m, 2, 0)
+    tex = (fbm(XX / 1.2, YY / 2.2, 2, seed + 1) - 0.5) * 0.7
+    paint(img, tm & ~m, cylinder(tm, 1), C('#4a3828'), d, None, 3)
+    paint(img, m, hf, needle, d, tex, 4, 0.0)
+    fill(img, tops & (fbm(XX / 2, YY / 2, 1, seed + 2) > 0.45), lit(needle * 1.15, 0.9, d))
+    if snow > 0:
+        cap_ = m & ~np.roll(m, int(1 + 2 * snow), 0) & (fbm(XX / 2.5, YY / 2, 2, seed + 3) < 0.35 + snow * 0.5)
+        fill(img, cap_, lit(C('#f4f8ff'), 0.9, d))
+        sh = cap_ & (XX < x if P['L'][0] > 0 else XX > x)
+        fill(img, sh, lit(C('#c8d8f0'), 0.5, d))
+    return m | tm
+
+
+def clouds(img, items, seed, alb='#ffffff', d=0.05, flat_base=True):
+    """Cumulus clouds: puffs as domes, flat-ish bottoms, sunlit tops, bluish undersides."""
+    rng = np.random.default_rng(seed)
+    for (cx, cy, wd, ht) in items:
+        cl = []
+        for _ in range(int(wd / 6) + 6):
+            px = cx + rng.uniform(-wd / 2, wd / 2)
+            r = ht * rng.uniform(0.35, 0.75) * (1 - abs(px - cx) / wd)
+            cl.append((px, cy - r * 0.4 + rng.normal(0, ht * 0.08), r * 1.3, r, r))
+        m, hf = domes(cl, 0.25, seed + int(cx))
+        if flat_base:
+            m &= YY < cy + ht * 0.12
+        paint(img, m, hf * 0.8, C(alb), d, (fbm(XX / 6, YY / 4, 2, seed) - 0.5) * 0.2, 5, 0.25, 1.15, 0.7)
+
+
+def ground_tex(seed, k=0.4):
+    return (fbm(XX / 3, YY / 2, 3, seed) - 0.5) * k
+
+
+def tufts(img, top, cols, seed, density=0.5, hmin=3, hmax=10, flowers=None):
+    """Grass tufts of curved blades in three tones (dark root, mid, sunlit tip), seed heads and flowers."""
+    rng = np.random.default_rng(seed)
+    ys, xs = np.nonzero(top)
+    if not len(xs):
+        return
+    dark, midc, tip = cols
+    order = rng.permutation(len(xs))
+    for i in order[:int(len(xs) * density / 3)]:
+        bx, by = xs[i], ys[i]
+        n = int(rng.integers(3, 8))
+        base_h = rng.uniform(hmin, hmax)
+        for b in range(n):
+            hgt = base_h * rng.uniform(0.5, 1.1)
+            spread = (b - n / 2) * rng.uniform(0.4, 1.0)
+            curve = rng.uniform(-0.8, 0.8)
+            steps = int(hgt) + 1
+            for k in range(steps):
+                t = k / max(1, steps - 1)
+                x = int(round(bx + spread * t + curve * t * t * hgt * 0.4))
+                y = int(round(by - k))
+                if 0 <= x < W and 0 <= y < H:
+                    img[y, x] = dark if t < 0.35 else (midc if t < 0.75 else tip)
+        if flowers and rng.random() < 0.18:
+            c = flowers[int(rng.integers(len(flowers)))]
+            x, y = int(bx + rng.uniform(-2, 2)), int(by - base_h * rng.uniform(0.7, 1.2))
+            if 1 <= x < W - 1 and 1 <= y < H - 1:
+                img[y, x] = c
+                if rng.random() < 0.5:
+                    img[y, x - 1] = img[y, x + 1] = c * 0.85
+
+
+def motes(img, n, box, col, seed, k=0.5):
+    rng = np.random.default_rng(seed)
+    x0, y0, x1, y1 = box
+    for _ in range(n):
+        x, y = int(rng.uniform(x0, x1)), int(rng.uniform(y0, y1))
+        if 0 <= x < W and 0 <= y < H:
+            img[y, x] = mix(img[y, x], col, k)
+
+
+def sun_glow(img, x, y, r, col, k):
+    dd = np.hypot(XX - x, YY - y)
+    a = np.clip(1 - dd / r, 0, 1) ** 2 * k
+    img[:] = img + C(col) * a[..., None]
+
+
+def vignette(img, k=0.35):
+    v = np.hypot((XX - W / 2) / W, (YY - H / 2) / H)
+    img *= (1 - np.clip(v - 0.3, 0, 1) * k * 2.2)[..., None]
+
+
+def sky(stops):
+    """A vertical sky gradient from (t, hex) stops, banded with a dither like pixel art."""
+    img = np.zeros((H, W, 3), np.float32)
+    t = YY / H
+    for (t0, c0), (t1, c1) in zip(stops, stops[1:]):
+        m = (t >= t0) & (t <= t1)
+        u = np.clip((t - t0) / max(1e-6, t1 - t0), 0, 1)
+        img[m] = mix(C(c0), C(c1), u[..., None])[m]
+    return np.floor(img * 28 + BAY[..., None] * 0.9) / 28
+
+
+def hills(y0, amp, scale, seed, oct_=3):
+    """A rolling skyline y(x)."""
+    return y0 - amp * fbm(XX[0] / scale, np.full(W, seed * 1.7), oct_, seed)
+
+
+def land(img, ytop, alb, d, seed, k=1.0, tex=None, steps=5, lo=0.2, rough=6.0):
+    """A band of land below the skyline ytop(x): rounded, lit from the sun, with a soft texture."""
+    m = YY >= ytop[None, :]
+    hf = -np.clip(YY - ytop[None, :], 0, 30) * 0.12 * k + fbm(XX / 18, YY / 10, 3, seed) * rough
+    paint(img, m, hf, alb, d, ground_tex(seed, 0.25) if tex is None else tex, steps, lo)
+    return m
+
+
+def grade_actor(img, parts, key, amb, rim, d=0.9, flash=None, pts=(), glow_hex=None, outline='#141018'):
+    """Draw a character lit by the scene, then mix in a touch of the scene's haze so it sits in the picture."""
+    before = img.copy()
+    actor(img, parts, key, amb, pts, rim=rim, outline=outline, flash=flash, glow_hex=glow_hex)
+    ch = np.abs(img - before).sum(axis=2) > 0.01
+    img[ch] = aerial(img[ch], d)
+
+
+def framed(img, path, scale=3):
+    out = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).resize((W * scale, H * scale), Image.NEAREST)
+    out.save(path)
+    return out
+
+
+def near_bushes(img, seed, y, alb, xs, r=(14, 26)):
+    """Leafy bushes right in front of the camera along the bottom edge, darker and bigger than anything else."""
+    rng = np.random.default_rng(seed)
+    cl = []
+    for x in xs:
+        rr = rng.uniform(*r)
+        cl += crown_clumps(rng, x, y + rr * 0.3, rr, 9, 0.5, 0.6)
+    m, hf = domes(cl, 0.6, seed)
+    paint(img, m, hf * 1.3, alb, 1.0, (fbm(XX / 1.7, YY / 1.7, 2, seed + 1) - 0.5) * 0.5, 4, 0.0, 0.7, 0.65)
+
+
+# ============================================================================================== Plains & Forest
+
+def farmhouse(img, x, base, s, d, roof='#b8a060', wall='#e8dcc0', beams='#5a3e2a', seed=0):
+    """A small farmhouse: whitewashed timber-framed walls, a thatched roof, a chimney with smoke, a lit door."""
+    k = lambda v: v * s
+    wl = mask([poly((x - k(16), base), (x - k(16), base - k(12)), (x + k(16), base - k(12)), (x + k(16), base))])
+    face(img, wl, C(wall), 0.85, d)
+    side = mask([poly((x + k(16), base), (x + k(16), base - k(12)), (x + k(24), base - k(15)), (x + k(24), base - k(3)))])
+    face(img, side, C(wall), 0.45, d)
+    for bx in (-16, -6, 6, 16):
+        fill(img, wl & (np.abs(XX - (x + k(bx))) < max(0.5, k(0.6))), lit(C(beams), 0.6, d))
+    fill(img, wl & (np.abs(YY - (base - k(6))) < max(0.5, k(0.5))), lit(C(beams), 0.6, d))
+    rf = mask([poly((x - k(19), base - k(11)), (x - k(4), base - k(24)), (x + k(4), base - k(26)), (x + k(27), base - k(14)),
+                    (x + k(21), base - k(10)))])
+    th = rf & (fbm(XX / 1.2, YY / 3, 2, seed) > 0.5)
+    face(img, rf, C(roof), 0.75, d)
+    fill(img, th, lit(C(roof), 1.0, d))
+    fill(img, rf & ~np.roll(rf, -2, 0), lit(C(roof), 0.3, d))
+    fill(img, mask([poly((x - k(3), base), (x - k(3), base - k(7)), (x + k(3), base - k(7)), (x + k(3), base))]), lit(C('#3a281c'), 0.5, d))
+    for wx in (-11, 9):
+        fill(img, mask([poly((x + k(wx), base - k(5)), (x + k(wx), base - k(9)), (x + k(wx + 3), base - k(9)), (x + k(wx + 3), base - k(5)))]),
+             aerial(C('#3a3040'), d))
+    fill(img, mask([poly((x + k(10), base - k(20)), (x + k(10), base - k(28)), (x + k(14), base - k(28)), (x + k(14), base - k(18)))]),
+         lit(C('#8a7a6a'), 0.7, d))
+    for j in range(6):
+        glow(img, x + k(12) + j * k(3), base - k(31) - j * k(5), k(3 + j), aerial(C('#e8ecf0'), d) * 0.35, 0.4)
+
+
+def barn(img, x, base, s, d, seed=0):
+    k = lambda v: v * s
+    body = mask([poly((x - k(18), base), (x - k(18), base - k(16)), (x, base - k(27)), (x + k(18), base - k(16)), (x + k(18), base))])
+    face(img, body, C('#a8402e'), 0.8, d)
+    for bx in range(-18, 19, 3):
+        fill(img, body & (np.abs(XX - (x + k(bx))) < 0.5), lit(C('#7a2a1e'), 0.6, d))
+    rf = mask([poly((x - k(21), base - k(15)), (x, base - k(29)), (x + k(21), base - k(15)), (x + k(19), base - k(14)),
+                    (x, base - k(26)), (x - k(19), base - k(14)))])
+    face(img, rf, C('#5a5048'), 0.9, d)
+    door = mask([poly((x - k(6), base), (x - k(6), base - k(11)), (x + k(6), base - k(11)), (x + k(6), base))])
+    face(img, door, C('#5a2a1e'), 0.5, d)
+    fill(img, door & ((np.abs(XX - YY - (x - base)) < 0.6) | (np.abs(XX + YY - (x + base - k(11))) < 0.6)), lit(C('#e8dcc0'), 0.8, d))
+
+
+def windmill(img, x, base, s, d, ang=0.4):
+    k = lambda v: v * s
+    tw = mask([poly((x - k(7), base), (x - k(4), base - k(30)), (x + k(4), base - k(30)), (x + k(7), base))])
+    face(img, tw, C('#e0d4bc'), 0.85, d)
+    fill(img, tw & (XX > x + k(1.5)), lit(C('#e0d4bc'), 0.45, d))
+    face(img, mask([poly((x - k(6), base - k(29)), (x, base - k(36)), (x + k(6), base - k(29)))]), C('#6a5040'), 0.7, d)
+    hx, hy = x, base - k(30)
+    for j in range(4):
+        a = ang + j * math.pi / 2
+        ex, ey = hx + math.cos(a) * k(26), hy + math.sin(a) * k(26)
+        fill(img, mask([cap((hx, hy), (ex, ey), max(0.6, k(0.8)))]), lit(C('#4a3828'), 0.6, d))
+        px, py = -math.sin(a), math.cos(a)
+        sail = mask([poly((hx + math.cos(a) * k(6), hy + math.sin(a) * k(6)), (ex, ey), (ex + px * k(5), ey + py * k(5)),
+                          (hx + math.cos(a) * k(6) + px * k(5), hy + math.sin(a) * k(6) + py * k(5)))])
+        face(img, sail, C('#efe6d0'), 0.8, d)
+        fill(img, sail & (fbm(XX / 1, YY / 1, 1, j) > 0.7), lit(C('#a89a80'), 0.6, d))
+
+
+def fields(img, ytop, y_bot, d, seed, palette):
+    """Patchwork farm fields over rolling land: slanted strips in crop colours with furrows, hedgerows on the borders."""
+    rng = np.random.default_rng(seed)
+    m = (YY >= ytop[None, :]) & (YY < y_bot)
+    bounds = np.cumsum(rng.uniform(40, 110, 14)) - 60
+    slant = rng.uniform(-0.8, 0.8, len(bounds))
+    idx = np.zeros((H, W), np.int32)
+    for i, (b, sl) in enumerate(zip(bounds, slant)):
+        idx += (XX + (YY - y_bot) * sl > b).astype(np.int32)
+    rows = np.clip(((YY - ytop[None, :]) / max(1, (y_bot - ytop.min())) * 3).astype(np.int32), 0, 3)
+    cid = (idx * 3 + rows * 5 + seed) % len(palette)
+    hf = -(YY - ytop[None, :]) * 0.08 + fbm(XX / 30, YY / 12, 3, seed) * 8
+    q = tone(hf, None, 5, 0.3)
+    for i, c in enumerate(palette):
+        mm = m & (cid == i)
+        alb = C(c)
+        col = lit(alb, q, d)
+        img[mm] = col[mm]
+        furrow = mm & (np.sin((XX + (YY - y_bot) * slant[0] * 0.5) * 1.3 + YY * 3.1 * (i % 2)) > 0.6 + 0.3 * (i % 3 == 0))
+        img[furrow] = lit(alb * 0.82, q, d)[furrow]
+    # hedgerows: little rounded bushes along the field borders and between rows
+    edge = m & ((idx != np.roll(idx, 1, 1)) | (rows != np.roll(rows, 1, 0)))
+    ys, xs = np.nonzero(edge)
+    cl = []
+    for i in rng.permutation(len(xs))[:len(xs) // 2]:
+        r = rng.uniform(1.2, 2.4) * (0.6 + d)
+        cl.append((xs[i], ys[i] - r * 0.5, r * 1.2, r, rng.uniform(0, 1)))
+    mm, hh = domes(cl, 0.3, seed + 5)
+    paint(img, mm & m | mm & (YY < y_bot), hh * 1.2, C('#3e6a32'), d, (fbm(XX / 1.5, YY / 1.5, 1, seed) - 0.5) * 0.4, 4, 0.1)
+    return m
+
+
+def soil_ground(img, ytop, d, seed, grass='#5a9a3a', soil='#6a4a32', path=None):
+    """The playfield ground seen from the side: a sunlit grassy lip, dark earth below with stones and roots."""
+    m = YY >= ytop[None, :]
+    dep = YY - ytop[None, :]
+    hf = -np.clip(dep, 0, 6) * 0.6 + fbm(XX / 6, YY / 4, 3, seed) * 3
+    paint(img, m & (dep > 4), hf - dep * 0.05, C(soil), d, ground_tex(seed, 0.5), 4, 0.15)
+    stones = m & (dep > 8) & (fbm(XX / 5, YY / 4, 2, seed + 1) > 0.76)
+    hs = _blur(stones.astype(np.float32), 1.5) * 4
+    paint(img, stones, hs, C('#8a8478'), d, None, 4, 0.2)
+    roots = m & (dep > 6) & (np.abs(fbm(XX / 14, YY / 6, 3, seed + 2) - 0.5) < 0.02)
+    fill(img, roots, lit(C('#4a3424'), 0.3, d))
+    lip = m & (dep <= 5 + 2 * fbm(XX / 5, YY, 1, seed + 3))
+    paint(img, lip, hf, C(grass), d, ground_tex(seed + 4, 0.5), 5, 0.3)
+    hang = m & (dep > 4) & (dep < 9) & (fbm(XX / 1.5, np.full_like(YY, 1.0), 1, seed + 5) > 0.55)
+    fill(img, hang, lit(C(grass) * 0.7, 0.4, d))
+    if path is not None:
+        p0, p1 = path
+        pm = lip & (XX > p0) & (XX < p1) & (fbm(XX / 4, YY / 2, 2, seed + 6) > 0.35)
+        paint(img, pm, hf, C('#b89a6a'), d, ground_tex(seed + 7, 0.4), 4, 0.3)
+    return m
+
+
+def plains():
+    setup(sun=(500, 64), sun_col='#fff0c8', amb='#6a86b0', haze='#b8d4e6', light=(0.6, -0.55, 0.6), haze_k=0.72)
+    img = sky([(0, '#4e8ed0'), (0.32, '#8ec0e6'), (0.55, '#d8ead8'), (0.62, '#f6ecc8'), (1, '#f6ecc8')])
+    sun_glow(img, *P['sun'], 260, '#fff4d0', 0.5)
+    sun_glow(img, *P['sun'], 26, '#ffffff', 0.9)
+    clouds(img, [(120, 70, 150, 34), (330, 48, 110, 24), (600, 100, 140, 30), (240, 132, 90, 16), (470, 150, 120, 14)], 3)
+    # far mountains, then far fields, a farm on a hill, a windmill
+    rng = np.random.default_rng(1)
+    mt = hills(206, 60, 70, 4, 4)
+    mm = YY >= mt[None, :]
+    hf = fbm(XX / 20, YY / 14, 4, 7) * 30 - (YY - mt[None, :]) * 0.3
+    paint(img, mm, hf, C('#8a9ab8'), 0.0, None, 4, 0.2)
+    hz = hills(212, 14, 60, 5)
+    fields(img, hz, 240, 0.12, 11, ['#b8c060', '#88a850', '#d8c070', '#9ab858', '#c8b080', '#a8c060'])
+    for (tx, h_) in ((60, 10), (88, 13), (200, 9), (380, 12), (560, 11), (604, 14)):
+        broadleaf(img, tx, hz[tx] + 2, h_, 0.6, 0.14, rng, C('#3e6a32'), kind='oak', seed=tx)
+    windmill(img, 470, int(hz[470]) + 2, 0.55, 0.15, 0.3)
+    farmhouse(img, 420, int(hz[420]) + 3, 0.6, 0.15, seed=1)
+    h2 = hills(236, 16, 80, 6)
+    fields(img, h2, 290, 0.3, 13, ['#d8b860', '#7aa848', '#c89a58', '#b8c868', '#e0c878', '#8ab850'])
+    # the farm in the middle distance: a barn, a farmhouse, a fence, haystacks, an orchard
+    barn(img, 352, int(h2[352]) + 4, 0.9, 0.34)
+    farmhouse(img, 300, int(h2[300]) + 4, 1.0, 0.34, seed=2)
+    for hx in (396, 410, 424):
+        m, hf_ = domes([(hx, h2[hx] + 1, 5, 4, 0)], 0.2, hx)
+        paint(img, m & (YY < h2[hx] + 3), hf_, C('#e0c070'), 0.36, (fbm(XX / 1, YY / 2, 1, 3) - 0.5) * 0.4, 4, 0.2)
+    for tx in range(440, 520, 13):
+        broadleaf(img, tx, h2[tx] + 3, 16, 0.8, 0.36, rng, C('#4a7a34'), kind='oak', seed=tx, fruit='#d84030')
+    for fx in range(250, 400, 6):
+        y = int(h2[fx]) + 6
+        fill(img, mask([cap((fx, y), (fx, y - 4), 0.5)]), lit(C('#7a5a3a'), 0.7, 0.36))
+    fill(img, mask([cap((250, int(h2[250]) + 3), (400, int(h2[400]) + 3), 0.4)]), lit(C('#7a5a3a'), 0.7, 0.36))
+    # the forest edge on the left, a copse on the right
+    for (tx, b, h_, w, kd) in ((-8, 270, 150, 4.5, 'oak'), (30, 266, 120, 3.5, 'birch'), (62, 272, 160, 5, 'oak'), (110, 268, 110, 3.2, 'poplar'),
+                               (140, 274, 130, 4.0, 'oak'), (186, 276, 90, 3, 'birch'), (214, 278, 60, 3, 'bush'),
+                               (590, 270, 120, 3.6, 'oak'), (626, 266, 140, 4, 'poplar'), (548, 276, 70, 3, 'bush')):
+        broadleaf(img, tx, b, h_, w, 0.55, rng, C('#3e7a34') if kd != 'birch' else C('#6a9a3a'), kind=kd, seed=tx + 100)
+    keep = img.copy()
+    shafts(img, [(250, 12, 1.0), (300, 18, 0.8), (350, 9, 1.0), (420, 14, 0.7)], C('#fff2c0'), -0.8, 0.16)
+    lim = np.clip((YY - 110) / 60, 0, 1) * (XX < 260)
+    img[:] = keep + (img - keep) * lim[..., None]
+    # the playfield: a meadow with a dirt path, a rock ledge on the right
+    gy = 298 - 4 * fbm(XX[0] / 50, np.zeros(W), 2, 21)
+    grass_far = YY >= (gy[None, :] - 18 + 6 * fbm(XX / 40, YY * 0, 2, 22))
+    land(img, gy - 18 + 6 * fbm(XX[0] / 40, np.zeros(W), 2, 22), C('#6aa83e'), 0.6, 23, lo=0.35)
+    tufts(img, grass_far & ~np.roll(grass_far, 1, 0), (lit(C('#3a6a28'), 0.4, 0.6), lit(C('#6aa83e'), 0.7, 0.6), lit(C('#a8d068'), 0.9, 0.6)),
+          24, 1.0, 3, 7, [C('#ffffff'), C('#f0d040'), C('#e05a8a')])
+    rock = mask([spoly((488, 300), (500, 270), (520, 258), (580, 254), (620, 262), (640, 280), (640, 300), n=4)])
+    hr = cylinder(rock, 10) + fbm(XX / 7, YY / 5, 3, 31) * 10
+    paint(img, rock, hr, C('#9a948a'), 0.75, (fbm(XX / 2, YY / 2, 2, 32) - 0.5) * 0.3, 5, 0.15)
+    rtop = rock & ~np.roll(rock, 2, 0)
+    fill(img, rtop, lit(C('#5a9a3a'), 0.9, 0.75))
+    tufts(img, rock & ~np.roll(rock, 1, 0), (lit(C('#3a6a28'), 0.4, 0.75), lit(C('#6aa83e'), 0.7, 0.75), lit(C('#c8f080'), 1, 0.75)),
+          33, 1.2, 3, 8)
+    g = soil_ground(img, gy, 0.85, 41, path=(150, 470))
+    tufts(img, g & ~np.roll(g, 1, 0), (lit(C('#3a6a28'), 0.35, 0.85), lit(C('#5a9a36'), 0.7, 0.85), lit(C('#9ac85a'), 0.95, 0.85)),
+          42, 1.6, 3, 10, [C('#f4f0e0'), C('#f6d84a'), C('#e85a8a'), C('#8a9af0')])
+    # characters
+    key = {'dir': (0.6, -0.55, 0.6), 'col': (1.05, 0.95, 0.78)}
+    amb = (0.42, 0.48, 0.6)
+    grade_actor(img, humanoid_enemy('archer', 570, 255, -1), key, amb, '#fff6c8', 0.85)
+    grade_actor(img, quadruped('wolf', 352, int(gy[352]) + 1, -1, 1.3), key, amb, '#fff6c8', 0.92)
+    grade_actor(img, quadruped('wolf', 412, int(gy[412]) + 1, -1, 1.25), key, amb, '#fff6c8', 0.9)
+    grade_actor(img, quadruped('wolf', 262, int(gy[262]) - 16, -1, 1.3, leap=True), key, amb, '#fff6c8', 0.95, flash='#ff8a2a')
+    grade_actor(img, hero(180, int(gy[180]) - 22, 1), key, amb, '#fff6c8', 1.0)
+    # near the camera: an oak trunk at the left edge, its leaves across the top, tall grass and flowers at the bottom
+    rng2 = np.random.default_rng(77)
+    trunk = mask([taper([(-6, 362), (6, 240), (2, 120), (-10, -10)], 26, 18, 6),
+                  taper([(8, 150), (60, 90), (130, 40), (200, 20)], 10, 4, 5), taper([(4, 60), (80, 18), (150, -6)], 8, 3, 4),
+                  taper([(660, 30), (630, 70), (606, 104)], 7, 2, 4), taper([(642, 52), (612, 50), (590, 70)], 3, 1.5, 3)])
+    paint(img, trunk, cylinder(trunk, 12), C('#4a3a2a'), 1.0, (fbm(XX / 1.5 + fbm(XX / 8, YY / 30, 2, 5) * 4, YY / 12, 2, 6) - 0.5) * 0.6,
+          4, 0.05, 0.7, 0.6)
+    cl = crown_clumps(rng2, 120, 6, 120, 40, 0.3, 0.35) + crown_clumps(rng2, 660, -10, 60, 14, 0.35, 0.5)
+    m, hf = domes(cl, 0.6, 81)
+    m &= ~((fbm(XX / 6, YY / 6, 2, 82) < 0.25) & ~_dilate(~m, 3))
+    paint(img, m, hf * 1.3, C('#2e5a2a'), 1.0, (fbm(XX / 1.7, YY / 1.7, 2, 83) - 0.5) * 0.5, 4, 0.0, 0.75, 0.75)
+    edge = (YY > 352 - 14 * fbm(XX / 26, YY * 0, 2, 90))
+    paint(img, edge, -(YY - 340) * 0.2 + fbm(XX / 5, YY / 3, 2, 92) * 4, C('#3a5a28'), 1.0, None, 4, 0.0, 0.6, 0.5)
+    tufts(img, edge & ~np.roll(edge, 1, 0), (C('#1a2a14'), C('#2e4a22'), C('#4e7a32')), 91, 2.6, 10, 34, [C('#f0e6a0'), C('#e86a8a')])
+    for (fx, fy_) in ((70, 318), (590, 324), (612, 330)):                 # big near flowers (daisies)
+        for j in range(5):
+            a = j * 2 * math.pi / 5
+            fill(img, mask([ell(fx + math.cos(a) * 3, fy_ + math.sin(a) * 3, 2.2, 1.4, math.degrees(a), 8)]), C('#f4f0e4'))
+        fill(img, mask([ell(fx, fy_, 1.6, 1.6, 0, 8)]), C('#f0c040'))
+        fill(img, mask([cap((fx, fy_ + 3), (fx - 2, 362), 0.6)]), C('#2e4a22'))
+    motes(img, 90, (40, 40, 300, 260), C('#fff8d8'), 5, 0.7)
+    for (bx, by, c) in ((300, 230, '#f6f0a0'), (318, 222, '#ffffff'), (440, 200, '#f0a040')):  # butterflies
+        img[by, bx - 1] = img[by, bx + 1] = C(c)
+        img[by + 1, bx] = C('#3a2a1a')
+    for (bx, by) in ((300, 120), (312, 116), (322, 124), (380, 96)):                        # birds
+        img[by, bx - 2:bx] = C('#3a4050')
+        img[by - 1, bx - 3] = img[by - 1, bx + 1] = C('#3a4050')
+        img[by, bx + 1] = C('#3a4050')
+    vignette(img, 0.18)
+    hud(img)
+    return img
+
+
+# ============================================================================================== Caves & Mountains
+
+def ridged(x, y, oct_, seed):
+    return 1 - np.abs(2 * fbm(x, y, oct_, seed) - 1)
+
+
+def crag(img, m, alb, d, seed, scale=1.0, snowline=None, snow_k=0.5, strata=True):
+    """Bare rock: big craggy faces and gullies lit by the sun, a few cracks and rock layers; snow lies only where the
+    surface faces up (ledges, gullies) above the snowline, and thins out below it."""
+    if not m.any():
+        return
+    g = ridged(XX / (22 * scale) + YY / (50 * scale), YY / (14 * scale), 4, seed)
+    big = _blur(m.astype(np.float32), 36 * scale) * 160 * scale + _blur(m.astype(np.float32), 8 * scale) * 24 * scale
+    hf = big + g * 26 * scale + fbm(XX / 8, YY / 8, 2, seed + 1) * 3
+    tex = (fbm(XX / 4, YY / 4, 2, seed + 2) - 0.5) * 0.14
+    if strata:
+        tex = tex + np.where(np.sin((YY * 0.8 + XX * 0.15 + fbm(XX / 30, YY / 30, 2, seed + 3) * 24) * 0.7) > 0.93, -0.12, 0)
+    paint(img, m, hf, alb, d, tex, 5, 0.1)
+    cracks = m & (np.abs(fbm(XX / 9, YY / 4, 3, seed + 4) - 0.5) < 0.006)
+    fill(img, cracks, lit(alb * 0.5, 0.2, d))
+    if snowline is not None:
+        gy, gx = np.gradient(_blur(hf, 1.0))
+        up = -gy / np.sqrt(gx * gx + gy * gy + 1)                          # how much the surface faces up
+        sl = snowline + (fbm(XX / 30, YY * 0, 3, seed + 5) - 0.5) * 50
+        blot = fbm(XX / 7, YY / 5, 3, seed + 6)
+        snow = m & (((YY < sl) & (up + blot * 0.5 > 0.3 - snow_k * 0.25)) | ((YY < sl + 70) & (g > 0.78) & (blot > 0.42)))
+        q = tone(hf, None, 4, 0.3)
+        c = lit(C('#f2f6ff'), q, d)
+        img[snow] = c[snow]
+        under = m & ~snow & np.roll(snow, 1, 0)
+        fill(img, under, lit(alb * 0.6, 0.2, d))
+
+
+def bat(x, y, s=1.0, up=True):
+    wy = -6 if up else 4
+    P = [('#3a2e3a', ('poly', [(x - 2 * s, y), (x - 8 * s, y + wy * s), (x - 13 * s, y + (wy + 2) * s), (x - 11 * s, y + 3 * s),
+                               (x - 7 * s, y + 2 * s), (x - 4 * s, y + 4 * s)])),
+         ('#3a2e3a', ('poly', [(x + 2 * s, y), (x + 8 * s, y + wy * s), (x + 13 * s, y + (wy + 2) * s), (x + 11 * s, y + 3 * s),
+                               (x + 7 * s, y + 2 * s), (x + 4 * s, y + 4 * s)])),
+         ('#4a3a4a', ell(x, y + 1 * s, 3 * s, 3.4 * s, 0, 12)), ('#4a3a4a', poly((x - 2.5 * s, y - 1.5 * s), (x - 1.5 * s, y - 5 * s), (x - 0.5 * s, y - 2 * s))),
+         ('#4a3a4a', poly((x + 2.5 * s, y - 1.5 * s), (x + 1.5 * s, y - 5 * s), (x + 0.5 * s, y - 2 * s))),
+         ('#ff5050', ell(x - 1.2 * s, y, 0.7 * s, 0.7 * s, 0, 6)), ('#ff5050', ell(x + 1.2 * s, y, 0.7 * s, 0.7 * s, 0, 6))]
+    return P
+
+
+def waterfall(img, x, y0, y1, w, d, seed):
+    m = (np.abs(XX - x - fbm(XX * 0, YY / 30, 2, seed) * 4) < w) & (YY > y0) & (YY < y1)
+    streak = fbm(XX / 1.2, YY / 9 - 0, 2, seed + 1)
+    fill(img, m, aerial(C('#cfe6f0'), d))
+    fill(img, m & (streak > 0.55), aerial(C('#ffffff'), d))
+    fill(img, m & (streak < 0.35), aerial(C('#8ab0c8'), d))
+    for k in range(6):
+        glow(img, x + (k - 2.5) * w * 0.8, y1, w * 2.5, aerial(C('#ffffff'), d) * 0.5, 0.4)
+
+
+def mountains():
+    setup(sun=(120, 44), sun_col='#fff6e0', amb='#7090c0', haze='#b4cce4', light=(-0.6, -0.55, 0.6), haze_k=0.8)
+    img = sky([(0, '#2e6ab8'), (0.3, '#5a9ad8'), (0.55, '#a8cce8'), (1, '#d6e6f0')])
+    sun_glow(img, *P['sun'], 240, '#fff8e0', 0.45)
+    sun_glow(img, *P['sun'], 18, '#ffffff', 1.0)
+    rng = np.random.default_rng(3)
+    # far range, then the great bald peak with its snowfield, clouds wrapped around its shoulders
+    far = mask([poly(*([(-10, 220)] + [(x, 150 - 40 * math.sin(x / 47.0 + 1) ** 2 - 25 * fbm(np.array([x / 30.0]), np.array([1.0]), 3, 2)[0])
+                                      for x in range(-10, 660, 8)] + [(660, 220)]))])
+    crag(img, far, C('#7a88a8'), 0.04, 5, 0.9, snowline=140, snow_k=0.5)
+    clouds(img, [(80, 150, 160, 16), (560, 140, 140, 14)], 6, d=0.08)
+    peak = mask([spoly((180, 230), (250, 150), (300, 112), (350, 52), (372, 36), (392, 50), (430, 88), (470, 98), (520, 140),
+                       (600, 170), (660, 196), (660, 230), n=5)])
+    peak = peak & ~((YY < 130) & (fbm(XX / 6, YY / 6, 2, 7) > 0.78) & ~_dilate(~peak, 2))
+    crag(img, peak, C('#7a7468'), 0.2, 8, 1.3, snowline=110, snow_k=0.6)
+    clouds(img, [(300, 128, 120, 12), (470, 116, 90, 10)], 9, d=0.2)
+    # forested ridges climbing toward the peak: snowy firs high up, green firs lower
+    for (y0, amp, d, seed, snow, dens) in ((200, 26, 0.3, 11, 0.8, 0.05), (222, 30, 0.42, 12, 0.35, 0.07), (240, 22, 0.55, 13, 0.0, 0.08)):
+        r = hills(y0, amp, 70, seed, 3)
+        rm = YY >= r[None, :]
+        alb = C('#5a7a4a') if snow < 0.5 else C('#c8d4e0')
+        land(img, r, alb, d, seed, lo=0.25, rough=10)
+        xs = np.arange(-6, W + 6, max(2, int(3 + d * 6)))
+        for x in xs:
+            if rng.random() < 0.85:
+                xi = int(np.clip(x, 0, W - 1))
+                hh = rng.uniform(10, 18) * (0.6 + d)
+                fir(img, x + rng.uniform(-2, 2), r[xi] + rng.uniform(2, 10), hh, hh * 0.3, d, rng,
+                    C('#2e5a3a') if snow < 0.5 else C('#3a5a4a'), snow, seed + int(x))
+        if d < 0.5:
+            mist_ = (np.clip(1 - np.abs(YY - (r[None, :] + 14)) / 10, 0, 1) * (fbm(XX / 40, YY / 6, 3, seed) > 0.45))
+            a = np.floor(mist_ * 4 + BAY * 0.9) / 4 * 0.35
+            img[:] = img * (1 - a[..., None]) + P['haze'] * a[..., None]
+    # the cliff with the mine cave on the right
+    cliff = mask([spoly((420, 300), (430, 240), (452, 196), (490, 170), (560, 156), (640, 150), (660, 160), (660, 300), n=4)])
+    crag(img, cliff, C('#8a7a68'), 0.62, 31, 0.8)
+    top = cliff & ~np.roll(cliff, 3, 0)
+    fill(img, top, lit(C('#5a9a3a'), 0.9, 0.62))
+    tufts(img, cliff & ~np.roll(cliff, 1, 0), (lit(C('#3a6a28'), 0.4, 0.62), lit(C('#5a9a36'), 0.7, 0.62), lit(C('#a8d068'), 0.95, 0.62)),
+          32, 1.5, 2, 6)
+    for (tx, h_) in ((470, 50), (520, 66), (600, 72), (632, 58)):
+        fir(img, tx, int(np.argmax(cliff[:, tx])) + 6, h_, h_ * 0.28, 0.62, rng, C('#2e6a3a'), 0, tx)
+    cave = mask([spoly((500, 262), (504, 236), (520, 222), (540, 220), (556, 232), (560, 262), n=4)])
+    fill(img, cave, C('#140e10'))
+    glow(img, 530, 250, 30, C('#ff9a40'), 0.5)
+    for bx in (500, 558):                                               # timber frame
+        fill(img, mask([cap((bx, 262), (bx + (2 if bx < 530 else -2), 226), 2)]), lit(C('#6a4a2e'), 0.8, 0.65))
+    fill(img, mask([cap((496, 226), (564, 226), 2.2)]), lit(C('#6a4a2e'), 0.9, 0.65))
+    for k in range(9):                                                  # minecart rails into the cave
+        x = 470 + k * 10
+        fill(img, mask([cap((x, 262), (x + 4, 262), 1)]), lit(C('#5a3a24'), 0.7, 0.7))
+    fill(img, mask([cap((462, 260), (560, 260), 0.5)]), lit(C('#6a6a70'), 0.8, 0.7))
+    cart = mask([poly((470, 258), (468, 246), (492, 246), (490, 258))])
+    face(img, cart, C('#6a6058'), 0.7, 0.7)
+    fill(img, mask([ell(474, 259, 2.6, 2.6, 0, 8), ell(486, 259, 2.6, 2.6, 0, 8)]), lit(C('#2a2428'), 0.5, 0.7))
+    m, hf = domes([(476, 245, 5, 3, 0), (484, 244, 5, 3.5, 0)], 0.4, 3)
+    paint(img, m, hf, C('#c8a070'), 0.7, (fbm(XX, YY, 1, 4) - 0.5) * 0.5, 4, 0.2)                      # ore in the cart
+    fill(img, mask([cap((566, 238), (566, 230), 0.6)]), lit(C('#3a2a1e'), 0.6, 0.7))
+    img[231:235, 565:568] = C('#ffd070')
+    glow(img, 566, 233, 16, C('#ff9a40'), 0.5)
+    # the bright green lower forest on the left
+    for (tx, b, h_, w, kd) in ((-6, 286, 130, 4.4, 'oak'), (40, 280, 96, 3.2, 'birch'), (84, 288, 150, 5, 'oak'), (300, 290, 80, 3, 'bush'),
+                               (360, 290, 70, 3, 'birch')):
+        broadleaf(img, tx, b, h_, w, 0.72, rng, C('#4a8a34') if kd != 'birch' else C('#7aaa3a'), kind=kd, seed=tx + 200)
+    for (tx, h_) in ((128, 140), (180, 110), (230, 150), (396, 120)):
+        fir(img, tx, 292, h_, h_ * 0.24, 0.74, rng, C('#2e6a3a'), 0, tx + 300)
+    # the trail: rising ground with stone steps
+    gy = 312 - (np.clip(XX[0] - 180, 0, 300) * 0.06) - 4 * fbm(XX[0] / 40, np.zeros(W), 2, 41)
+    g = soil_ground(img, gy, 0.88, 42, path=(0, 640))
+    for k in range(8):
+        sx = 200 + k * 30
+        st = mask([poly((sx, gy[sx] + 1), (sx + 14, gy[sx + 14] + 1), (sx + 14, gy[sx + 14] + 5), (sx, gy[sx] + 5))])
+        paint(img, st, cylinder(st, 3), C('#a49a8a'), 0.88, None, 4, 0.3)
+    tufts(img, g & ~np.roll(g, 1, 0), (lit(C('#3a6a28'), 0.35, 0.88), lit(C('#5a9a36'), 0.7, 0.88), lit(C('#9ac85a'), 0.95, 0.88)),
+          43, 1.4, 3, 9, [C('#f4f0e0'), C('#8a9af0'), C('#f6d84a')])
+    sp = int(gy[120])
+    fill(img, mask([cap((120, sp + 2), (120, sp - 26), 1.4)]), lit(C('#6a4a2e'), 0.8, 0.88))
+    for (yy_, dx, txt) in ((sp - 24, 1, 0), (sp - 16, -1, 1)):
+        bd = mask([poly((120, yy_), (120 + dx * 20, yy_), (120 + dx * 24, yy_ + 3), (120 + dx * 20, yy_ + 6), (120, yy_ + 6))])
+        face(img, bd, C('#9a7448'), 0.85 if dx > 0 else 0.6, 0.88)
+        fill(img, bd & (np.abs(YY - yy_ - 3) < 0.6) & (np.sin(XX * 1.7) > 0), lit(C('#3a2818'), 0.5, 0.88))
+    rock = mask([spoly((300, 300), (306, 276), (330, 268), (360, 272), (372, 300), n=4)])
+    crag(img, rock, C('#9a948a'), 0.85, 51, 0.5)
+    fill(img, rock & ~np.roll(rock, 2, 0), lit(C('#5a9a3a'), 0.9, 0.85))
+    # characters: the hero on the trail, a ram on the rock, a goblin miner at the cave, bats coming out of it
+    key = {'dir': (-0.6, -0.55, 0.6), 'col': (1.05, 1.0, 0.9)}
+    amb = (0.44, 0.52, 0.68)
+    grade_actor(img, quadruped('ram', 340, 268, 1, 1.35), key, amb, '#ffffff', 0.88)
+    grade_actor(img, humanoid_enemy('goblin', 590, 262, -1, 40), key, amb, '#fff4d8', 0.8)
+    for (bx, by, up) in ((520, 206, True), (548, 190, False), (500, 186, True)):
+        grade_actor(img, bat(bx, by, 1.2, up), key, amb, '#d8e0ff', 0.8)
+    grade_actor(img, hero(176, int(gy[176]) - 1, 1, 'walk'), key, amb, '#fff6e0', 1.0)
+    # near the camera: fir boughs top right, a mossy boulder and ferns at the bottom
+    for (x0, y0, x1, y1) in ((660, 10, 520, 40), (660, 60, 560, 84)):
+        S = [taper([(x0, y0), (x1, y1)], 4, 1.5, 3)]
+        n_ = 14
+        for j in range(n_):
+            t = j / n_
+            bx, by = x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
+            S.append(taper([(bx, by), (bx - 6, by + 10 + 4 * (1 - t))], 3, 0.8, 2))
+            S.append(taper([(bx, by), (bx + 4, by + 12 + 3 * (1 - t))], 3, 0.8, 2))
+        m = mask(S)
+        m = m | (_dilate(m, 2) & (fbm(XX / 1.2, YY / 1.2, 1, x1) > 0.45))
+        paint(img, m, cylinder(m, 3), C('#1e4a2a'), 1.0, (fbm(XX / 1.3, YY / 2, 2, 5) - 0.5) * 0.6, 4, 0.0, 0.7, 0.7)
+    boulder = mask([spoly((-10, 362), (-6, 320), (30, 306), (70, 316), (90, 362), n=4)])
+    crag(img, boulder, C('#6a6a64'), 1.0, 61, 0.6, strata=False)
+    fill(img, boulder & ~np.roll(boulder, 4, 0) & (fbm(XX / 3, YY / 3, 2, 62) > 0.35), lit(C('#4a7a2a'), 0.8, 1.0))
+    near_bushes(img, 71, 346, C('#2e5a2a'), (140, 200, 250, 420, 470, 520), (18, 30))
+    for (fx, fy_) in ((560, 362), (600, 362), (630, 362), (300, 362), (340, 364)):  # ferns
+        for j in range(9):
+            a = math.radians(-160 + j * 17)
+            ln = 30 + 10 * math.sin(j)
+            S = [taper([(fx, fy_), (fx + math.cos(a) * ln * 0.6, fy_ + math.sin(a) * ln * 0.7), (fx + math.cos(a) * ln, fy_ + math.sin(a) * ln * 0.6 + 6)], 2, 0.6, 3)]
+            m = mask(S)
+            m = m | (_dilate(m, 2) & (np.sin((XX + YY) * 1.6) > 0.1))
+            paint(img, m, cylinder(m, 2), C('#2e5a2a'), 1.0, None, 4, 0.1, 0.7, 0.6)
+    motes(img, 40, (0, 120, 640, 300), C('#ffffff'), 8, 0.5)
+    vignette(img, 0.18)
+    hud(img)
+    return img
+
+
+# ============================================================================================== Enemy Kingdom
+
+def rect(x0, y0, x1, y1):
+    return mask([poly((x0, y0), (x1, y0), (x1, y1), (x0, y1))])
+
+
+def window(img, x, y, w, h, d, lit_k, rng, shutters=True, arch=False):
+    """A small window: a frame, glass (dark, or warm-lit from inside), a cross bar, sometimes open shutters."""
+    fr = rect(x - 1, y - 1, x + w + 1, y + h + 1)
+    fill(img, fr, lit(C('#3a2818'), 0.4, d))
+    gl = rect(x, y, x + w, y + h)
+    if arch:
+        gl = gl & ~((YY < y + 2) & (np.abs(XX - x - w / 2) > w / 2 - 1))
+    if lit_k > 0:
+        fill(img, gl, aerial(mix(C('#ffb050'), C('#ffe8a0'), 0.3), d * 0.5 + 0.5))
+        fill(img, gl & (YY > y + h * 0.6), aerial(C('#ff9a3a'), d * 0.5 + 0.5))
+        glow(img, x + w / 2, y + h / 2, w * 3, aerial(C('#ff9a3a'), d), 0.25 * lit_k)
+    else:
+        fill(img, gl, lit(C('#2a3040'), 0.5, d))
+        fill(img, gl & (XX - x + (YY - y) < 2), lit(C('#8aa0c0'), 0.8, d))
+    fill(img, gl & ((np.abs(XX - (x + w / 2)) < 0.5) | (np.abs(YY - (y + h / 2)) < 0.5)), lit(C('#3a2818'), 0.4, d))
+    if shutters and rng.random() < 0.5:
+        sc = C(rng.choice(['#4a6a8a', '#6a8a4a', '#8a4a3a', '#5a4a3a']))
+        face(img, rect(x - 1 - w // 2, y - 1, x - 1, y + h + 1), sc, 0.6, d)
+        face(img, rect(x + w + 1, y - 1, x + w + 1 + w // 2, y + h + 1), sc, 0.85, d)
+
+
+def house(img, x, base, w, floors, d, seed, fh=24, roof='gable', wall=None, rooftile=None, shop=False, lights=0.5, wq=0.62):
+    """A timber-framed town house: a stone ground floor, plastered upper floors that jut out over the street, dark oak
+    beams and braces, windows (some lit), a steep tiled roof with a chimney. Lit by the low sun from the right."""
+    rng = np.random.default_rng(seed)
+    wall = C(wall or rng.choice(['#e8d8b8', '#e0c890', '#d8b8a0', '#c8c8b8', '#e8dcc8', '#d0a878']))
+    rooftile = C(rooftile or rng.choice(['#8a3a2a', '#6a3a30', '#4a4a58', '#7a4a32', '#5a3a3a']))
+    beam = C('#3e2a1e')
+    y = base
+    x0, x1 = x, x + w
+    # ground floor in stone
+    gf = rect(x0, y - fh, x1, y)
+    q = tone(_blur(gf.astype(np.float32), 2) * 4, (fbm(XX / 2, YY / 2, 2, seed) - 0.5) * 0.2, 4, 0.35)
+    stone = lit(C('#a89a88'), q * wq * 1.1, d)
+    img[gf] = stone[gf]
+    joints = gf & ((np.abs(((YY - y) % 5)) < 0.6) | (np.abs(((XX - x0 + 4 * ((YY - y) // 5 % 2)) % 9)) < 0.6))
+    fill(img, joints, lit(C('#6a5e50'), 0.4, d))
+    if shop:
+        dx = x0 + w * 0.12
+        door = rect(dx, y - fh * 0.75, dx + w * 0.22, y)
+        door &= ~((YY < y - fh * 0.75 + 3) & (np.abs(XX - (dx + w * 0.11)) > w * 0.11 - 2))
+        face(img, door, C('#5a3a22'), 0.5, d)
+        fill(img, door & (np.abs(XX - (dx + w * 0.11)) < 0.5), lit(C('#2a1a10'), 0.3, d))
+        sx = x0 + w * 0.45
+        fill(img, rect(sx, y - fh * 0.7, x1 - w * 0.1, y - fh * 0.2), aerial(C('#ffb860'), d))
+        glow(img, (sx + x1) / 2, y - fh * 0.45, w * 0.6, aerial(C('#ff9a40'), d), 0.4 * lights * 2)
+        for k in range(int((x1 - w * 0.1 - sx) // 5)):
+            fill(img, rect(sx + k * 5 + 1, y - fh * 0.62, sx + k * 5 + 3, y - fh * 0.5), aerial(C(rng.choice(['#c84a3a', '#e8b040', '#6a9a3a'])), d))
+        aw = mask([poly((sx - 3, y - fh * 0.78), (x1 - w * 0.06, y - fh * 0.78), (x1 - w * 0.02, y - fh * 0.6), (sx - 7, y - fh * 0.6))])
+        stripes = np.sin((XX - sx) * 0.9) > 0
+        ac = C(rng.choice(['#b83a3a', '#3a6a9a', '#3a8a5a', '#c8a03a']))
+        fill(img, aw & stripes, lit(ac, 0.75, d))
+        fill(img, aw & ~stripes, lit(C('#efe6d0'), 0.75, d))
+        fill(img, aw & ~np.roll(aw, -1, 0), lit(ac * 0.6, 0.4, d))
+    else:
+        dx = x0 + w * rng.uniform(0.2, 0.6)
+        door = rect(dx, y - fh * 0.8, dx + max(5, w * 0.16), y)
+        face(img, door, C('#4a3020'), 0.5, d)
+        window(img, int(x0 + w * 0.1), int(y - fh * 0.7), max(3, int(w * 0.1)), max(4, int(fh * 0.3)), d, 0, rng, False)
+    y -= fh
+    # upper floors, each jutting out a little more
+    for f in range(floors - 1):
+        jut = 2 * (f + 1)
+        a, b = x0 - jut, x1 + jut
+        fl = rect(a, y - fh, b, y)
+        fill(img, fl, lit(wall, wq, d))
+        fill(img, fl & (fbm(XX / 3, YY / 3, 2, seed + f) > 0.66), lit(wall * 0.9, wq * 0.85, d))
+        for bx in np.linspace(a, b, max(3, int(w / 11)) + 1):
+            fill(img, fl & (np.abs(XX - bx) < 1), lit(beam, 0.5, d))
+        fill(img, fl & ((np.abs(YY - (y - 1)) < 1.2) | (np.abs(YY - (y - fh + 1)) < 1)), lit(beam, 0.5, d))
+        cells = np.linspace(a, b, max(3, int(w / 11)) + 1)
+        for i in range(len(cells) - 1):
+            ca, cb = cells[i], cells[i + 1]
+            if (i + f) % 2 == 0:
+                if rng.random() < 0.5:
+                    fill(img, fl & (np.abs((XX - ca) / (cb - ca) * fh - (y - YY)) < 1.1), lit(beam, 0.5, d))
+                else:
+                    fill(img, fl & (np.abs((cb - XX) / (cb - ca) * fh - (y - YY)) < 1.1), lit(beam, 0.5, d))
+            else:
+                ww = max(3, int((cb - ca) * 0.5))
+                window(img, int((ca + cb) / 2 - ww / 2), int(y - fh * 0.75), ww, max(4, int(fh * 0.45)), d,
+                       1 if rng.random() < lights else 0, rng)
+        fill(img, rect(a - 1, y, b + 1, y + 2), lit(beam * 0.7, 0.3, d))            # shadow under the jetty
+        fill(img, fl & (XX > b - 2), lit(wall, 1.0, d))                              # sun on the right edge
+        y -= fh
+    jut = 2 * floors
+    a, b = x0 - jut, x1 + jut
+    # the roof
+    if roof == 'gable':
+        top = y - (b - a) * 0.75
+        rf = mask([poly((a - 3, y + 1), ((a + b) / 2, top), (b + 3, y + 1))])
+        lt = rf & (XX > (a + b) / 2)
+        q = 0.85 if True else 0.6
+        fill(img, rf, lit(rooftile, wq * 0.7, d))
+        fill(img, lt, lit(rooftile, q, d))
+        rows = rf & (np.abs(((YY - y) % 3)) < 0.7)
+        fill(img, rows, lit(rooftile * 0.7, 0.35, d))
+        fill(img, rf & (fbm(XX / 2, YY / 2, 2, seed + 9) > 0.7), lit(rooftile * 1.15, 0.8, d))
+        gab = mask([poly((a + 3, y), ((a + b) / 2, top + 6), (b - 3, y))])
+        fill(img, gab, lit(wall, wq, d))
+        fill(img, gab & ((np.abs(XX - (a + b) / 2) < 1) | (np.abs(YY - (y - 1)) < 1)), lit(beam, 0.5, d))
+        window(img, int((a + b) / 2 - 2), int(y - (b - a) * 0.3), 4, 5, d, 1 if rng.random() < lights else 0, rng, False)
+        ridge_y = top
+    else:
+        top = y - fh * 0.9
+        rf = mask([poly((a - 4, y + 1), (a + 6, top), (b - 6, top), (b + 4, y + 1))])
+        fill(img, rf, lit(rooftile, 0.6, d))
+        fill(img, rf & (np.abs(((YY - y) % 3)) < 0.7), lit(rooftile * 0.7, 0.35, d))
+        fill(img, rf & (XX > b - 8), lit(rooftile, 0.9, d))
+        for k in range(int((b - a) // 22)):                                      # dormers
+            dxx = a + 12 + k * 22
+            dm = rect(dxx, top + 3, dxx + 7, y - 2)
+            fill(img, dm, lit(wall, 0.6, d))
+            fill(img, mask([poly((dxx - 2, top + 4), (dxx + 3.5, top - 2), (dxx + 9, top + 4))]), lit(rooftile, 0.8, d))
+            window(img, dxx + 2, int(top + 5), 3, 4, d, 1 if rng.random() < lights else 0, rng, False)
+        ridge_y = top
+    cx = int(a + (b - a) * rng.uniform(0.6, 0.85))
+    ch = rect(cx, ridge_y + (b - a) * 0.15 - 12, cx + 5, y - 4) & ~rf | rect(cx, ridge_y + (b - a) * 0.15 - 12, cx + 5, ridge_y + (b - a) * 0.2)
+    face(img, ch, C('#8a6a5a'), 0.7, d)
+    fill(img, ch & (XX > cx + 3), lit(C('#8a6a5a'), 1.0, d))
+    for j in range(5):
+        glow(img, cx + 3 - j * 3, ridge_y + (b - a) * 0.15 - 16 - j * 6, 3 + j * 1.5, aerial(C('#a8a0a8'), d) * 0.4, 0.4)
+    return ridge_y
+
+
+def cobbles(img, y0, y1, d, seed, x0=0, x1=W):
+    """A cobbled street: rows of rounded stones, each lit on its sunny side, dark gaps between."""
+    rng = np.random.default_rng(seed)
+    fill(img, rect(x0, y0, x1, y1), lit(C('#4a3a34'), 0.3, d))
+    cl = []
+    y = y0 + 2
+    row = 0
+    while y < y1 + 4:
+        sz = 2.2 + (y - y0) * 0.05
+        x = -sz + (row % 2) * sz
+        while x < W + sz:
+            cl.append((x + rng.normal(0, 0.4), y + rng.normal(0, 0.3), sz * rng.uniform(0.9, 1.15), sz * 0.6, 0))
+            x += sz * 2.1
+        y += sz * 1.15
+        row += 1
+    m, hf = domes(cl, 0.1, seed)
+    m &= (YY >= y0) & (XX >= x0) & (XX < x1)
+    paint(img, m, hf * 1.6, C('#8a7e74'), d, (fbm(XX / 3, YY / 3, 2, seed) - 0.5) * 0.3, 4, 0.15)
+
+
+def castle_far(img, x, base, s, d, seed):
+    """The King's castle on its hill far away: curtain walls, round towers with pointed roofs, the great keep, flags."""
+    rng = np.random.default_rng(seed)
+    hill = mask([spoly((x - 160 * s, base + 30), (x - 90 * s, base - 4), (x, base - 14 * s), (x + 100 * s, base - 2), (x + 170 * s, base + 30), n=4)])
+    fill(img, hill, lit(C('#5a4a50'), 0.4, d))
+    k = lambda v: v * s
+    stone = C('#8a7a80')
+    face(img, rect(x - k(70), base - k(40), x + k(70), base - k(8)), stone, 0.5, d)
+    for cx in np.arange(x - k(70), x + k(70), k(6)):
+        face(img, rect(cx, base - k(44), cx + k(3), base - k(40)), stone, 0.5, d)
+    for (tx, th, tw) in ((-70, 70, 12), (-30, 90, 10), (0, 120, 22), (34, 100, 11), (72, 66, 13)):
+        tx = x + k(tx)
+        tower = rect(tx - k(tw / 2), base - k(th), tx + k(tw / 2), base - k(8))
+        face(img, tower, stone, 0.5, d)
+        fill(img, tower & (XX > tx + k(tw / 4)), lit(stone, 0.95, d))
+        rf = mask([poly((tx - k(tw / 2 + 2), base - k(th)), (tx, base - k(th + tw * 1.6)), (tx + k(tw / 2 + 2), base - k(th)))])
+        face(img, rf, C('#4a3a5a'), 0.5, d)
+        fill(img, rf & (XX > tx), lit(C('#4a3a5a'), 0.9, d))
+        fill(img, mask([cap((tx, base - k(th + tw * 1.6)), (tx, base - k(th + tw * 1.6 + 10)), 0.5)]), aerial(C('#2a2028'), d))
+        fill(img, mask([poly((tx, base - k(th + tw * 1.6 + 10)), (tx + k(8), base - k(th + tw * 1.6 + 8)), (tx, base - k(th + tw * 1.6 + 6)))]),
+             aerial(C('#c82a2a'), d))
+        for j in range(int(th / 18)):
+            if rng.random() < 0.6:
+                wy = int(base - k(th) + k(10 + j * 16))
+                fill(img, rect(tx - 1, wy, tx + 1, wy + max(1, int(k(4)))), aerial(C('#ffc060'), d * 0.6 + 0.3))
+
+
+def city():
+    setup(sun=(560, 196), sun_col='#ffb878', amb='#5a5a90', haze='#e8a080', light=(0.8, 0.35, 0.5), haze_k=0.78)
+    img = sky([(0, '#2a2a5a'), (0.25, '#5a4a7a'), (0.45, '#b8687a'), (0.58, '#f0a070'), (0.7, '#ffd08a'), (1, '#ffd08a')])
+    sun_glow(img, *P['sun'], 300, '#ffb070', 0.5)
+    sun_glow(img, *P['sun'], 22, '#fff4d0', 1.0)
+    rng = np.random.default_rng(5)
+    # sunset clouds, lit from below and from the sun's side
+    clouds(img, [(110, 70, 200, 22), (420, 96, 260, 20), (620, 150, 120, 12), (250, 150, 160, 12)], 4, alb='#e0a0a8', d=0.3)
+    # the castle on its hill, far away, and the city walls in front of it
+    castle_far(img, 200, 190, 1.0, 0.2, 3)
+    walls = rect(-10, 196, 660, 214)
+    face(img, walls, C('#8a7a7a'), 0.5, 0.2)
+    for cx in range(-10, 660, 6):
+        face(img, rect(cx, 192, cx + 3, 196), C('#8a7a7a'), 0.5, 0.2)
+    for tx in (40, 300, 470, 610):
+        face(img, rect(tx - 8, 176, tx + 8, 214), C('#8a7a7a'), 0.55, 0.2)
+        fill(img, rect(tx + 3, 176, tx + 8, 214), lit(C('#8a7a7a'), 0.9, 0.2))
+        for cx in range(tx - 8, tx + 8, 5):
+            face(img, rect(cx, 171, cx + 3, 176), C('#8a7a7a'), 0.55, 0.2)
+        fill(img, mask([cap((tx, 171), (tx, 160), 0.5)]), aerial(C('#2a2028'), 0.2))
+        fill(img, mask([poly((tx, 160), (tx + 9, 163), (tx, 166))]), aerial(C('#c82a2a'), 0.3))
+    # far rooftops, a cathedral with a spire and a rose window
+    for k in range(26):
+        hx = -20 + k * 26 + rng.uniform(-6, 6)
+        house(img, hx, 236, rng.uniform(16, 24), int(rng.integers(2, 4)), 0.26, 100 + k, fh=10, roof=rng.choice(['gable', 'hip']), lights=0.5, wq=0.45)
+    cx = 330
+    cat = rect(cx - 30, 120, cx + 30, 236)
+    face(img, cat, C('#b0a090'), 0.55, 0.32)
+    fill(img, cat & (XX > cx + 14), lit(C('#b0a090'), 0.95, 0.32))
+    fill(img, mask([poly((cx - 34, 122), (cx, 92), (cx + 34, 122))]), lit(C('#4a4a5a'), 0.7, 0.32))
+    sp = mask([poly((cx - 8, 92), (cx, 20), (cx + 8, 92))])
+    face(img, sp, C('#4a4a5a'), 0.55, 0.32)
+    fill(img, sp & (XX > cx), lit(C('#4a4a5a'), 0.95, 0.32))
+    fill(img, mask([cap((cx, 20), (cx, 10), 0.6), cap((cx - 3, 14), (cx + 3, 14), 0.6)]), aerial(C('#e8c060'), 0.4))
+    rose = mask([ell(cx, 146, 13, 13, 0, 24)])
+    fill(img, rose, aerial(C('#3a2a4a'), 0.32))
+    for j in range(8):
+        a = j * math.pi / 4
+        fill(img, rose & mask([cap((cx, 146), (cx + math.cos(a) * 12, 146 + math.sin(a) * 12), 1.6)]), aerial(C('#ffb050'), 0.4))
+    fill(img, mask([ell(cx, 146, 3.5, 3.5, 0, 12)]), aerial(C('#ff6a4a'), 0.4))
+    glow(img, cx, 146, 26, C('#ff9a40'), 0.3)
+    for k in range(3):
+        wx = cx - 22 + k * 18
+        fill(img, rect(wx, 176, wx + 7, 214) & ~((YY < 180) & (np.abs(XX - wx - 3.5) > 2.5)), aerial(C('#ffb050'), 0.4))
+    # the middle row of houses
+    for k in range(9):
+        hx = -30 + k * 76 + rng.uniform(-8, 8)
+        house(img, hx, 262, rng.uniform(34, 46), int(rng.integers(3, 5)), 0.5, 200 + k, fh=16, roof=rng.choice(['gable', 'hip']), lights=0.45, wq=0.32)
+    # a gap of evening haze between the rows
+    a = (np.clip(1 - np.abs(YY - 250) / 30, 0, 1) * 0.35)
+    a = np.floor(a * 6 + BAY * 0.9) / 6
+    img[:] = img * (1 - a[..., None]) + P['haze'] * a[..., None]
+    # the street: front houses with shops, the rooftop route, a side street opening in the middle
+    street = 304
+    xs = [(-14, 58, 4, True), (48, 62, 3, False), (114, 54, 4, True), (178, 66, 3, True), (380, 60, 4, False), (446, 58, 3, True),
+          (508, 70, 4, True), (582, 64, 3, False)]
+    tops = {}
+    for i, (hx, w, fl, shop) in enumerate(xs):
+        tops[hx] = house(img, hx, street - 4, w, fl, 0.84, 300 + i, fh=24, roof='gable' if i % 3 else 'hip', shop=shop, lights=0.45, wq=0.22)
+    # the side street: an arch and a lantern, the far street receding
+    fill(img, rect(250, 190, 372, 300), lit(C('#6a5060'), 0.3, 0.5))
+    for (hx, w, fl, sd) in ((262, 26, 5, 7), (292, 30, 5, 8), (326, 34, 4, 9)):
+        house(img, hx, 286, w, fl, 0.6, 400 + sd, fh=15, roof='gable', shop=sd == 8, lights=0.7, wq=0.28)
+    arch = rect(254, 196, 370, 214) | rect(254, 196, 268, 300) | rect(356, 196, 370, 300)
+    arch &= ~(mask([ell(312, 228, 44, 30, 0, 30)]) & (YY > 214))
+    q = tone(_blur(arch.astype(np.float32), 3) * 6, (fbm(XX / 2, YY / 2, 2, 9) - 0.5) * 0.2, 4, 0.3)
+    img[arch] = lit(C('#a89a88'), q, 0.7)[arch]
+    fill(img, arch & ((np.abs((YY - 196) % 6) < 0.6) | (np.abs(((XX - 254 + 5 * ((YY - 196) // 6 % 2)) % 10)) < 0.6)), lit(C('#6a5e50'), 0.4, 0.7))
+    cobbles(img, 284, 300, 0.6, 2, 268, 356)
+    for (lx, ly) in ((262, 232), (362, 232)):
+        fill(img, mask([cap((lx, ly - 8), (lx, ly), 0.6)]), lit(C('#2a2020'), 0.4, 0.75))
+        fill(img, rect(lx - 2, ly, lx + 2, ly + 5), C('#ffd070'))
+        glow(img, lx, ly + 2, 30, C('#ff9a40'), 0.5)
+    # banners of the enemy kingdom
+    for bx in (150, 470, 560):
+        by = street - 4 - 24 * 2 + 2
+        bn = mask([poly((bx, by), (bx + 12, by), (bx + 12, by + 24), (bx + 6, by + 20), (bx, by + 24))])
+        q = tone(_blur(bn.astype(np.float32), 2) * 3 + np.sin(YY / 3) * 0.6, None, 4, 0.2)
+        img[bn] = lit(C('#a01a22'), q, 0.86)[bn]
+        emb = mask([poly((bx + 6, by + 5), (bx + 9, by + 9), (bx + 6, by + 14), (bx + 3, by + 9))])
+        fill(img, emb, lit(C('#1a1418'), 0.4, 0.86))
+        fill(img, mask([cap((bx - 2, by), (bx + 14, by), 0.7)]), lit(C('#c8a040'), 0.8, 0.86))
+    cobbles(img, street - 4, H, 0.9, 7)
+    for (px, pk) in ((40, 0.5), (150, 0.5), (220, 0.4), (470, 0.5), (540, 0.5), (50, 0.6)):
+        dd = np.hypot((XX - px) / 2.2, (YY - street - 6))
+        a = np.clip(1 - dd / 24, 0, 1) * pk * (YY > street - 4)
+        a = np.floor(a * 4 + BAY * 0.9) / 4
+        img[:] = img + C('#ff9a40')[None, None] * (a * 0.35)[..., None]
+    shade = np.clip((YY - 320) / 40, 0, 1) * 0.45
+    img[:] = img * (1 - shade[..., None])
+    pud = mask([spoly((250, 334), (290, 328), (360, 330), (400, 338), (350, 346), (270, 344), n=4)])
+    pud &= fbm(XX / 6, YY / 3, 2, 12) > 0.3
+    src = np.clip(2 * 300 - YY - 60, 0, H - 1).astype(int)
+    refl = img[src, XX.astype(int)] * 0.7
+    img[pud] = refl[pud]
+    fill(img, pud & (np.sin(XX / 3 + YY * 2) > 0.85), C('#ffc890'), 0.4)
+    # props on the street: barrels, crates, a market stall with fruit
+    for (bx, by) in ((96, street), (104, street - 1), (470, street)):
+        b_ = mask([ell(bx, by - 6, 4.5, 6.5, 0, 16)])
+        paint(img, b_, cylinder(b_, 4), C('#8a5a32'), 0.9, np.where(np.abs(np.abs(YY - (by - 6)) - 3.5) < 0.6, -0.4, 0), 4, 0.2)
+    for (bx, by) in ((520, street), (530, street - 9)):
+        cr = rect(bx, by - 9, bx + 10, by)
+        face(img, cr, C('#a07848'), 0.7, 0.9)
+        fill(img, cr & ((np.abs(XX - bx - 5) < 0.5) | (np.abs(YY - by + 4.5) < 0.5) | (XX > bx + 8)), lit(C('#6a4a2a'), 0.5, 0.9))
+    # characters: soldiers with shields on the street, a crossbowman on the roofs, the hero, a cannon on the wall
+    key = {'dir': (0.8, -0.3, 0.5), 'col': (1.1, 0.78, 0.55)}
+    amb = (0.36, 0.34, 0.55)
+    grade_actor(img, humanoid_enemy('crossbow', 545, int(tops[508]) + 4, -1, 40), key, amb, '#ffc890', 0.85)
+    grade_actor(img, cannon(600, street + 4, -1), key, amb, '#ffc890', 0.9)
+    grade_actor(img, humanoid_enemy('soldier', 360, street + 2, -1, 40), key, amb, '#ffc890', 0.9)
+    grade_actor(img, humanoid_enemy('soldier', 420, street + 2, -1, 40), key, amb, '#ffc890', 0.9)
+    grade_actor(img, quadruped('wolf', 290, street + 2, -1, 1.2), key, amb, '#ffc890', 0.9, flash='#ff8a2a')
+    grade_actor(img, hero(170, street - 20, 1), key, amb, '#ffd8a0', 1.0)
+    # near the camera: a hanging shop sign and a lantern bracket at the top, laundry on a line, a barrel corner
+    fill(img, mask([cap((640, 40), (590, 40), 1.6), cap((640, 52), (600, 40), 1)]), C('#1e1614'))
+    sg = mask([poly((598, 44), (626, 44), (626, 66), (598, 66))])
+    face(img, sg, C('#7a5032'), 0.7, 1.0)
+    fill(img, mask([ell(612, 55, 6, 6, 0, 12)]), lit(C('#d8a840'), 0.9, 1.0))
+    fill(img, sg & ~_dilate(~sg, 1) & ~sg | (sg & ~np.roll(sg, 1, 1)), C('#2a1a12'))
+    corner = rect(-10, -10, 34, H)
+    fill(img, corner, C('#2a1e22'))
+    for yy_ in range(-10, H, 40):
+        fill(img, corner & (np.abs(YY - yy_) < 2), C('#160e10'))
+        fill(img, corner & (np.abs((XX + 10) - (YY - yy_) * 1.1) < 1.5) & (YY > yy_) & (YY < yy_ + 40), C('#160e10'))
+    fill(img, corner & (XX > 31), C('#6a3a2a'))
+    fill(img, mask([cap((34, 150), (52, 150), 1.2), cap((50, 150), (50, 158), 0.5)]), C('#160e10'))
+    fill(img, rect(47, 158, 54, 168), C('#ffd070'))
+    fill(img, rect(46, 157, 55, 158) | rect(46, 168, 55, 169), C('#160e10'))
+    glow(img, 50, 163, 60, C('#ff9a40'), 0.45)
+    near = mask([ell(-6, 370, 40, 46, 0, 24)])
+    paint(img, near, cylinder(near, 16), C('#5a3a22'), 1.0, np.where(np.abs(np.abs(YY - 340) - 10) < 1.2, -0.5, 0), 4, 0.0, 0.7, 0.6)
+    motes(img, 50, (0, 150, 640, 300), C('#ffd8a0'), 6, 0.6)
+    vignette(img, 0.25)
+    hud(img)
+    return img
+
+
+# ============================================================================================== King's Castle
+
+def gothic(cx, top, a, bottom):
+    """A pointed (gothic) arch opening: half-width a, apex at y=top, down to bottom."""
+    ys = top + math.sqrt(3) * a
+    c1 = (XX - (cx - a)) ** 2 + (YY - ys) ** 2 < (2 * a) ** 2
+    c2 = (XX - (cx + a)) ** 2 + (YY - ys) ** 2 < (2 * a) ** 2
+    return ((c1 & c2 & (YY < ys)) | ((np.abs(XX - cx) < a) & (YY >= ys) & (YY < bottom))) & (YY >= top)
+
+
+def blocks(img, m, alb, d, seed, bw=12, bh=6, q0=0.35, qk=0.5, light=None):
+    """Cut stone masonry: staggered blocks, each a little different in tone, mortar lines, chipped edges."""
+    if not m.any():
+        return
+    row = np.floor(YY / bh)
+    col = np.floor((XX + (row % 2) * bw / 2) / bw)
+    rnd = (np.sin(row * 12.9898 + col * 78.233 + seed) * 43758.5453) % 1
+    q = q0 + (rnd - 0.5) * 0.18 + (fbm(XX / 3, YY / 3, 2, seed) - 0.5) * 0.12
+    if light is not None:
+        q = q + light * qk
+    q = np.floor(np.clip(q, 0, 1.2) * 6 + BAY * 0.9) / 6
+    c = lit(alb, q, d)
+    img[m] = c[m]
+    mort = m & ((np.abs(YY - row * bh) < 0.6) | (np.abs((XX + (row % 2) * bw / 2) - col * bw) < 0.6))
+    fill(img, mort, lit(alb * 0.45, q0 * 0.5, d))
+    top = m & (np.abs(YY - row * bh - 1) < 0.6) & ~mort
+    fill(img, top, lit(alb * 1.15, q0 + 0.1, d), 0.5)
+
+
+def stained(img, cx, top, a, bottom, d, seed):
+    """A tall stained-glass window: stone tracery, coloured panes glowing with daylight, lead lines."""
+    rng = np.random.default_rng(seed)
+    win = gothic(cx, top, a, bottom)
+    frame = _dilate(win, 2) & ~win
+    fill(img, frame, lit(C('#6a5a58'), 0.5, d))
+    pal = [C('#2a4aa8')] * 5 + [C('#3a6ad0')] * 3 + [C('#a82a3a')] * 2 + [C('#d8a040'), C('#3a8a5a')]
+    pw, ph = 5, 7
+    cell = (np.floor((XX - cx) / pw) * 7 + np.floor((YY + np.floor((XX - cx) / pw) * 3) / ph) * 13).astype(int)
+    idx = (np.abs(cell) * 2654435761 + seed) % len(pal)
+    glass = np.zeros((H, W, 3), np.float32)
+    for i, c in enumerate(pal):
+        glass[idx == i] = c
+    band = np.abs(XX - cx) < a * 0.35                                    # a red-and-gold central figure band
+    glass[band & (idx % 3 == 0)] = C('#c83a3a')
+    glass[band & (idx % 3 == 1)] = C('#e8b848')
+    bright = 0.6 + 0.3 * np.clip(1 - (YY - top) / max(1, bottom - top), 0, 1)
+    glass = glass * bright[..., None] + 0.08
+    img[win] = glass[win]
+    lead = win & ((np.abs(((XX - cx) % pw)) < 0.6) | (np.abs(((YY + np.floor((XX - cx) / pw) * 3) % ph)) < 0.6))
+    fill(img, lead, C('#140e14'), 0.85)
+    tr = win & ((np.abs(XX - cx) < 1) | (np.abs(YY - (top + (bottom - top) * 0.55)) < 1))
+    fill(img, tr, lit(C('#8a7a70'), 0.6, d))
+    rcx, rcy, rr = cx, top + a * 1.9, a * 0.62
+    rose = mask([ell(rcx, rcy, rr, rr, 0, 20)])
+    fill(img, rose, C('#1a1218'))
+    for k in range(8):
+        an = k * math.pi / 4
+        pet = mask([ell(rcx + math.cos(an) * rr * 0.55, rcy + math.sin(an) * rr * 0.55, rr * 0.38, rr * 0.2, math.degrees(an), 12)])
+        fill(img, pet, C('#c83a4a') if k % 2 else C('#3a6ad0'))
+    fill(img, mask([ell(rcx, rcy, rr * 0.25, rr * 0.25, 0, 12)]), C('#f0c050'))
+    glow(img, cx, (top + bottom) / 2, a * 4, C('#a8c8ff'), 0.25)
+    return win
+
+
+def pillar(img, x, top, base, w, d, seed, torch=None):
+    """A round stone column: a base, a capital, a shaft shaded round, lit by daylight from the windows and a torch."""
+    sh = rect(x - w, top + 8, x + w, base - 6)
+    u = np.clip((XX - x) / w, -1, 1)
+    lightk = np.sqrt(np.clip(1 - u * u, 0, 1)) * (0.55 - 0.3 * u) - 0.05
+    if torch is not None:
+        tx, ty = torch
+        dd = np.hypot(XX - tx, YY - ty)
+        lightk = lightk + np.clip(1 - dd / 90, 0, 1) * np.clip(u * np.sign(tx - x) + 0.3, 0, 1) * 0.9
+    flute = np.where(np.abs(np.sin(u * 6)) < 0.25, -0.12, 0)
+    blocks(img, sh, C('#a89488'), d, seed, bw=400, bh=11, q0=0.12, qk=1.0, light=lightk + flute)
+    for (yy_, hh, ww) in ((top, 8, w + 4), (base - 6, 6, w + 5)):
+        cp = rect(x - ww, yy_, x + ww, yy_ + hh)
+        blocks(img, cp, C('#b8a498'), d, seed + 1, bw=400, bh=3, q0=0.2, qk=0.9, light=lightk)
+    if torch is not None:
+        tx, ty = torch
+        fill(img, mask([cap((x + np.sign(tx - x) * w, ty + 6), (tx, ty + 2), 0.8)]), lit(C('#2a2020'), 0.3, d))
+        fill(img, mask([poly((tx - 2, ty), (tx + 2, ty), (tx + 1, ty + 5), (tx - 1, ty + 5))]), lit(C('#4a3a2a'), 0.5, d))
+        fl = mask([spoly((tx - 2.5, ty), (tx, ty - 8), (tx + 2.5, ty), n=2)])
+        fill(img, fl, C('#ffb040'))
+        fill(img, mask([spoly((tx - 1.2, ty), (tx, ty - 4.5), (tx + 1.2, ty), n=2)]), C('#fff0b0'))
+        glow(img, tx, ty - 3, 70, C('#ff8a30'), 0.55)
+
+
+def gargoyle(x, y, s=1.0, face=1):
+    def T(p):
+        return (x + face * p[0] * s, y + p[1] * s)
+
+    def tp(sh):
+        return ('poly', tuple(T(p) for p in sh[1]))
+    st, dk = '#7a7478', '#5a5458'
+    P = [(dk, tp(spoly((-4, -14), (-16, -26), (-20, -12), (-14, -4), (-6, -6), n=3))),               # folded wing
+         (st, tp(ell(-2, -8, 9, 7, -10, 18))),                                                       # body
+         (dk, tp(cap((-8, -4), (-10, 0), 2.4))), (dk, tp(cap((4, -4), (6, 0), 2.4))),                # legs
+         (st, tp(cap((5, -10), (9, -2), 2))),                                                        # arm
+         (st, tp(ell(7, -16, 5, 4.4, 0, 14))),                                                       # head
+         (dk, tp(poly((4, -19), (1, -26), (6, -20)))), (dk, tp(poly((8, -20), (10, -27), (10, -19)))),  # horns
+         (st, tp(poly((10, -16), (15, -14), (11, -12)))),                                            # snout
+         ('#ff5040', tp(ell(9, -17, 1, 0.8, 0, 8))), (dk, tp(taper([(-10, -6), (-16, 0), (-12, 4)], 1.6, 0.6)))]
+    return P
+
+
+def castle():
+    setup(sun=(320, -40), sun_col='#c8d8ff', amb='#4a3048', haze='#2a1a2a', light=(-0.3, -0.6, 0.6), haze_k=0.6)
+    img = np.zeros((H, W, 3), np.float32) + C('#1a1018')
+    rng = np.random.default_rng(9)
+    floor_y = 300
+    # the back wall in shadow, tall stained-glass windows, banners between them
+    back = rect(0, 0, W, floor_y)
+    wl = np.clip(1 - np.abs(XX - 320) / 420, 0, 1) * 0.15
+    blocks(img, back, C('#6a5a62'), 0.3, 1, 14, 7, 0.16, 1.0, wl)
+    wins = []
+    for wx in (96, 232, 408, 544):
+        wins.append(stained(img, wx, 34, 20, 210, 0.3, wx))
+        fill(img, rect(wx - 26, 210, wx + 26, 216), lit(C('#7a6a68'), 0.5, 0.3))
+    for bx in (164, 476):
+        bn = mask([poly((bx - 14, 40), (bx + 14, 40), (bx + 14, 190), (bx, 176), (bx - 14, 190))])
+        q = tone(_blur(bn.astype(np.float32), 3) * 4 + np.sin(XX / 2.5) * 0.4, None, 4, 0.1) * 0.6
+        img[bn] = lit(C('#a01a28'), q, 0.35)[bn]
+        fill(img, bn & (np.abs(np.abs(XX - bx) - 12) < 1), lit(C('#e8b040'), 0.6, 0.35))
+        crown = mask([poly((bx - 8, 90), (bx - 8, 80), (bx - 4, 85), (bx, 76), (bx + 4, 85), (bx + 8, 80), (bx + 8, 90))])
+        fill(img, crown, lit(C('#e8c050'), 0.8, 0.35))
+        fill(img, mask([cap((bx - 18, 40), (bx + 18, 40), 1.2)]), lit(C('#c8a040'), 0.7, 0.35))
+    # the throne on its dais at the far end, under a great canopy, with candles
+    cx = 320
+    fill(img, mask([poly((cx - 34, 40), (cx + 34, 40), (cx + 40, 60), (cx - 40, 60))]), lit(C('#801820'), 0.5, 0.35))
+    cur = mask([poly((cx - 34, 58), (cx - 26, 58), (cx - 30, 230), (cx - 42, 230))]) | mask([poly((cx + 26, 58), (cx + 34, 58), (cx + 42, 230), (cx + 30, 230))])
+    q = tone(np.sin(XX / 1.8) * 1.2, None, 4, 0.1) * 0.5
+    img[cur] = lit(C('#901a26'), q, 0.35)[cur]
+    for k in range(4):
+        st_ = rect(cx - 70 + k * 8, floor_y - 40 + k * 10 - 30, cx + 70 - k * 8, floor_y - 30 + k * 10 - 30)
+        blocks(img, st_, C('#8a7a78'), 0.38, 5 + k, 400, 10, 0.3, 0.5, None)
+        fill(img, st_ & (np.abs(YY - (floor_y - 40 + k * 10 - 30)) < 1), lit(C('#b0a098'), 0.6, 0.38))
+    carpet = mask([poly((cx - 16, 230), (cx + 16, 230), (cx + 20, floor_y - 30), (cx - 20, floor_y - 30))])
+    fill(img, carpet, lit(C('#a01a28'), 0.5, 0.4))
+    fill(img, carpet & (np.abs(np.abs(XX - cx) - 14 - (YY - 230) * 0.1) < 1), lit(C('#e0b040'), 0.7, 0.4))
+    th = mask([poly((cx - 16, 230), (cx - 16, 150), (cx - 10, 136), (cx - 6, 146), (cx, 126), (cx + 6, 146), (cx + 10, 136), (cx + 16, 150), (cx + 16, 230))])
+    paint(img, th, cylinder(th, 6), C('#d8a840'), 0.4, None, 5, 0.2)
+    fill(img, mask([poly((cx - 10, 150), (cx + 10, 150), (cx + 10, 206), (cx - 10, 206))]), lit(C('#6a1018'), 0.6, 0.4))
+    fill(img, mask([ell(cx, 128, 2.4, 2.4, 0, 10)]), C('#ff5050'))
+    glow(img, cx, 180, 70, C('#ffb050'), 0.25)
+    for (kx, ky) in ((cx - 54, 196), (cx + 54, 196)):
+        fill(img, rect(kx - 2, ky, kx + 2, ky + 36), lit(C('#c8a040'), 0.6, 0.4))
+        for j in (-6, 0, 6):
+            fill(img, rect(kx + j - 1, ky - 8, kx + j + 1, ky), C('#efe6d0'))
+            img[ky - 10:ky - 8, kx + j] = C('#ffd070')
+        fill(img, rect(kx - 8, ky, kx + 8, ky + 2), lit(C('#c8a040'), 0.7, 0.4))
+        glow(img, kx, ky - 10, 26, C('#ff9a40'), 0.5)
+    # light shafts from the windows falling across the hall to the floor
+    keep = img.copy()
+    acc = np.zeros((H, W), np.float32)
+    for wx in (96, 232, 408, 544):
+        xb = wx + (YY - 120) * 0.45
+        acc += np.clip(1 - np.abs(XX - xb) / (20 + (YY - 34) * 0.06), 0, 1) * (YY > 40)
+    acc = np.clip(acc, 0, 1)
+    q = np.floor(acc * 4 + BAY * 0.9) / 4
+    img[:] = keep + C('#b8c8ff')[None, None] * (q * 0.2)[..., None]
+    # the middle colonnade: columns with pointed arches between them, a gargoyle on a ledge, chandeliers
+    for (px, seed_) in ((30, 21), (200, 22), (440, 23), (610, 24)):
+        pillar(img, px, 20, floor_y, 13, 0.55, seed_, torch=(px + 22, 150) if px < 320 else (px - 22, 150))
+    arch_m = rect(0, 0, W, 34)
+    for (a0, a1) in ((30, 200), (440, 610)):
+        arch_m |= rect(a0, 0, a1, 70) & ~gothic((a0 + a1) / 2, 30, (a1 - a0) / 2 - 13, 200)
+    arch_m &= YY < 70
+    blocks(img, arch_m, C('#9a8a82'), 0.55, 31, 12, 6, 0.3, 0.5, None)
+    for (a0, a1) in ((30, 200), (440, 610)):
+        g = gothic((a0 + a1) / 2, 30, (a1 - a0) / 2 - 13, 200)
+        edge = g & ~np.roll(g, 2, 0) & (YY < 70)
+        fill(img, _dilate(edge, 2) & arch_m, lit(C('#c8b4a8'), 0.7, 0.55))
+    for (chx, chy) in ((115, 100), (525, 100)):
+        fill(img, mask([cap((chx, 0), (chx, chy - 6), 0.6)]), lit(C('#3a3030'), 0.3, 0.6))
+        ring = mask([ell(chx, chy, 22, 4, 0, 30)]) & ~mask([ell(chx, chy, 19, 2.4, 0, 30)])
+        fill(img, ring, lit(C('#c8a040'), 0.6, 0.6))
+        for j in range(9):
+            a = j / 9 * 2 * math.pi
+            px_, py_ = chx + math.cos(a) * 21, chy + math.sin(a) * 3.6
+            fill(img, rect(px_ - 0.5, py_ - 5, px_ + 1, py_), C('#efe6d0'))
+            img[int(py_ - 7):int(py_ - 5), int(px_)] = C('#ffd070')
+        glow(img, chx, chy - 6, 60, C('#ff9a40'), 0.45)
+    # the floor: polished stone slabs that mirror the windows and lights; a pit of spikes; a swinging blade
+    fl = rect(0, floor_y, W, H)
+    src = np.clip(2 * floor_y - YY, 0, H - 1).astype(int)
+    refl = img[src, XX.astype(int)]
+    blocks(img, fl, C('#5a4a52'), 0.85, 41, 32, 12, 0.22, 0.5, None)
+    k_ = np.clip(0.5 - (YY - floor_y) / 140, 0, 0.5)[..., None]
+    img[fl] = (img * (1 - k_) + refl * k_)[fl]
+    lip = rect(0, floor_y, W, floor_y + 3)
+    fill(img, lip, lit(C('#a8988e'), 0.7, 0.85))
+    for k in range(16):                                                 # the spike pit
+        sx = 372 + k * 4
+        fill(img, mask([poly((sx, floor_y + 1), (sx + 2, floor_y - 9 - (k % 3)), (sx + 4, floor_y + 1))]), lit(C('#b8c0d0'), 0.8, 0.9))
+        img[floor_y - 9 - (k % 3), sx + 2] = C('#ffffff')
+    fill(img, rect(370, floor_y, 438, floor_y + 6), C('#140c10'))
+    px_, py_ = 300, 0                                                   # the pendulum blade, mid-swing
+    ang = math.radians(24)
+    bx, by = px_ + math.sin(ang) * 150, py_ + math.cos(ang) * 150
+    fill(img, mask([cap((px_, py_), (bx, by), 1.2)]), lit(C('#4a4040'), 0.5, 0.8))
+    blade = mask([spoly((bx - 30 * math.cos(ang), by + 30 * math.sin(ang) - 4), (bx + 6 * math.sin(ang), by + 20 * math.cos(ang)),
+                        (bx + 30 * math.cos(ang), by - 30 * math.sin(ang) - 4), (bx, by + 4), n=4)])
+    paint(img, blade, cylinder(blade, 4), C('#c8d0e0'), 0.85, None, 5, 0.3)
+    for j in range(1, 5):                                               # motion trail
+        a2 = ang + math.radians(5 * j)
+        tb = mask([cap((px_ + math.sin(a2) * 150 - 18, py_ + math.cos(a2) * 150), (px_ + math.sin(a2) * 150 + 18, py_ + math.cos(a2) * 150 - 6), 2)])
+        fill(img, tb & ~blade, C('#c8d0e0'), 0.25 / j)
+    # characters: royal guards with halberds, the gargoyle waking up, the hero
+    key = {'dir': (-0.3, -0.6, 0.6), 'col': (0.8, 0.85, 1.05)}
+    amb = (0.42, 0.3, 0.4)
+    pts = [(222, 150, 80, (1.2, 0.6, 0.25), 1.0), (418, 150, 80, (1.2, 0.6, 0.25), 1.0)]
+    led = mask([poly((418, 112), (462, 112), (456, 120), (424, 120))])
+    blocks(img, led, C('#a89488'), 0.6, 61, 400, 4, 0.3, 0.5, None)
+    grade_actor(img, gargoyle(442, 112, 1.3, -1), key, amb, '#d8e0ff', 0.65, pts=pts)
+    grade_actor(img, humanoid_enemy('guard', 488, floor_y, -1, 42), key, amb, '#ffd890', 0.85, pts=pts)
+    grade_actor(img, humanoid_enemy('guard', 572, floor_y, -1, 42), key, amb, '#ffd890', 0.85, pts=pts)
+    grade_actor(img, hero(150, floor_y - 24, 1), key, amb, '#ffe0a8', 1.0, pts=pts)
+    # near the camera: a great column on the left, a heavy red curtain and a hanging chain on the right
+    near = rect(-10, -10, 26, H)
+    blocks(img, near, C('#4a3e44'), 1.0, 51, 37, 14, 0.15, 0.6, np.clip((XX - 10) / 16, 0, 1) * 0.4)
+    cur = mask([spoly((600, -10), (660, -10), (660, 260), (640, 230), (622, 120), (606, 30), n=4)])
+    q = tone(np.sin(XX / 2.2 + YY / 30) * 1.4, None, 4, 0.05) * 0.55
+    img[cur] = lit(C('#7a1420'), q, 1.0)[cur]
+    fill(img, cur & ~np.roll(cur, -2, 1), lit(C('#e0b040'), 0.6, 1.0))
+    tie = mask([ell(632, 150, 10, 3, -20, 16)])
+    fill(img, tie & cur, lit(C('#d8a840'), 0.8, 1.0))
+    for j in range(14):
+        cy_ = j * 9
+        fill(img, mask([ell(586, cy_, 2, 3.4, 0, 10)]) & ~mask([ell(586, cy_, 0.8, 1.8, 0, 8)]), lit(C('#5a5050'), 0.6, 1.0))
+    rail = rect(-10, 326, 660, 332)                                     # a dark stone balustrade right in front of the camera
+    for k in range(-1, 32):
+        bx = k * 22 + 6
+        rail |= mask([spoly((bx - 4, 362), (bx - 3, 350), (bx - 6, 342), (bx - 2, 334), (bx + 2, 334), (bx + 6, 342), (bx + 3, 350), (bx + 4, 362), n=3)])
+    u = (XX % 22 - 6) / 6
+    qk = np.clip(0.25 - 0.2 * u, 0, 0.6) * 0.5
+    fill(img, rail, C('#140c12'))
+    fill(img, rail & ~np.roll(rail, 1, 0), C('#5a4048'))
+    fill(img, rail & (np.abs(XX % 22 - 4) < 1.2) & (YY > 334), C('#3a2830'))
+    motes(img, 120, (60, 40, 600, 300), C('#d8e0ff'), 7, 0.5)
+    vignette(img, 0.35)
+    hud(img)
+    return img
+
+
+SCENES = {'plains': plains, 'mountains': mountains, 'city': city, 'castle': castle}
+
+
+def build(only=None):
+    for name, fn in SCENES.items():
+        if only and name not in only:
+            continue
+        img = fn()
+        big = framed(img, os.path.join(OUT, f'final_example_{name}.png'))
+        ph = phone(big)
+        ph.save(os.path.join(OUT, f'final_example_{name}_phone.png'))
+        print('wrote', name)
+
+
+def overview():
+    """All five stages side by side (the swamp from final_swamp.py), labelled, for comparing the look."""
+    from PIL import ImageDraw, ImageFont
+    items = [('final_example_plains.png', 'Plains & Forest'), ('final_example_mountains.png', 'Caves & Mountains'),
+             ('final_example_swamp_v2.png', 'Dark Forest & Swamps'), ('final_example_city.png', 'Enemy Kingdom'),
+             ('final_example_castle.png', "King's Castle")]
+    tw, th, pad, lab = 960, 540, 16, 40
+    sheet = Image.new('RGB', (tw * 2 + pad * 3, (th + lab) * 3 + pad * 4), (16, 14, 20))
+    try:
+        font = ImageFont.truetype('DejaVuSans-Bold.ttf', 28)
+    except OSError:
+        font = ImageFont.load_default()
+    dr = ImageDraw.Draw(sheet)
+    for i, (fn, name) in enumerate(items):
+        path = os.path.join(OUT, fn)
+        if not os.path.exists(path):
+            continue
+        im = Image.open(path).convert('RGB').resize((tw, th), Image.LANCZOS)
+        cx, cy = i % 2, i // 2
+        x, y = pad + cx * (tw + pad), pad + cy * (th + lab + pad)
+        if i == 4:
+            x = (sheet.width - tw) // 2
+        dr.text((x, y + 4), f'{["1", "2a", "2b", "3", "4"][i]}. {name}', fill=(232, 220, 190), font=font)
+        sheet.paste(im, (x, y + lab))
+    sheet.save(os.path.join(OUT, 'final_examples_all.png'))
+
+
+if __name__ == '__main__':
+    build(sys.argv[1:] or None)
+    overview()
