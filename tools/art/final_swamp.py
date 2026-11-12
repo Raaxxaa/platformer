@@ -21,6 +21,7 @@ from art.final_example import moss, lily, reeds, lantern, spider, witch, zombie,
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 WATER = 252
+HZ = 236                     # the horizon: where the far shore meets the water
 MOON = (318, 92)
 SKY_HI, SKY_LO, MIST = C('#16201c'), C('#a4b08e'), C('#b8c4a0')
 NEAR = C('#0a110d')
@@ -594,6 +595,50 @@ def bank(img, pts, seed, d, grass_col=C('#3e5a34')):
 
 # ============================================================================================== the scene
 
+def cabin(img, x, base, fogt):
+    """The witch's cabin on stilts: plank walls, a sagging mossy roof, a lit window, a porch with a lantern, a smoking
+    chimney and a rowboat tied below."""
+    f = lambda c: mix(c, depth_col(0.0), fogt)
+    wood, dark, roofc, moss_c = f(C('#4a3e2c')), f(C('#1e1a12')), f(C('#33301e')), f(C('#4e6a3a'))
+    top = base - 46
+    for sx in (x - 30, x - 12, x + 8, x + 28):                          # stilts
+        fill(img, mask([cap((sx, top + 30), (sx + (sx % 3 - 1), base + 2), 2.2)]), dark)
+    fill(img, mask([poly((x - 36, top + 30), (x + 38, top + 30), (x + 38, top + 33), (x - 36, top + 33))]), wood)       # porch floor
+    for k in range(-36, 38, 6):
+        fill(img, mask([cap((x + k, top + 30), (x + k, top + 24), 0.8)]), dark)                                         # railing
+    fill(img, mask([cap((x - 36, top + 24), (x + 38, top + 24), 0.8)]), dark)
+    body = mask([poly((x - 26, top + 30), (x - 25, top + 4), (x + 26, top + 3), (x + 27, top + 30))])
+    fill(img, body, wood)
+    for k in range(-24, 27, 4):                                          # vertical boards
+        fill(img, body & (np.abs(XX - (x + k)) < 0.5), dark)
+    fill(img, body & (fbm(XX / 3, YY / 6, 2, 7) > 0.72), wood * 1.25)
+    roof = mask([poly((x - 34, top + 6), (x - 6, top - 20), (x + 4, top - 18), (x + 36, top + 5), (x + 30, top + 8), (x - 30, top + 9))])
+    fill(img, roof, roofc)
+    for k in range(6):                                                   # shingle rows
+        fill(img, roof & (np.abs(YY - (top - 14 + k * 4)) < 0.5), dark)
+    fill(img, roof & (fbm(XX / 4, YY / 4, 2, 8) > 0.55), moss_c)
+    moss(img, [(xx, top + 8) for xx in range(x - 30, x + 32, 5)], f(C('#3a4a30')), f(C('#5a6a46')), 5, 1.2, 14)
+    fill(img, mask([poly((x + 14, top - 14), (x + 21, top - 14), (x + 22, top - 2), (x + 15, top - 2))]), dark)        # chimney
+    for k in range(5):                                                   # smoke drifting
+        glow(img, x + 18 + k * 5, top - 20 - k * 6, 7 + k * 2, f(C('#8a9480')) * 0.5, 0.35)
+    wx, wy_ = x - 16, top + 10                                           # the lit window
+    img[wy_:wy_ + 9, wx:wx + 9] = C('#ffb84a')
+    img[wy_ + 4, wx:wx + 9] = C('#6a3a12')
+    img[wy_:wy_ + 9, wx + 4] = C('#6a3a12')
+    img[wy_ + 9, wx - 1:wx + 10] = dark
+    glow(img, wx + 4, wy_ + 4, 40, C('#ff9a3a'), 0.4)
+    fill(img, mask([poly((x + 4, top + 30), (x + 4, top + 12), (x + 14, top + 12), (x + 14, top + 30))]), dark)     # door
+    img[top + 21, x + 12] = C('#a89a74')
+    lx, ly = x - 32, top + 14                                            # porch lantern
+    fill(img, mask([cap((lx, top + 6), (lx, ly), 0.6)]), dark)
+    img[ly:ly + 4, lx - 1:lx + 2] = C('#ffcf6a')
+    glow(img, lx, ly + 2, 22, C('#ff9a3a'), 0.45)
+    boat = mask([poly((x - 40, base - 1), (x - 6, base - 1), (x - 10, base + 3), (x - 36, base + 3))])                 # rowboat
+    fill(img, boat, f(C('#3a2a1c')))
+    fill(img, boat & ~np.roll(boat, 1, 0), f(C('#6a5236')))
+    fill(img, mask([cap((x - 6, base - 1), (x - 2, top + 32), 0.5)]), dark)                                           # rope
+
+
 def scene():
     # sky: dark at the top, a pale glow around the low moon
     t = np.clip(YY / WATER, 0, 1)
@@ -608,54 +653,70 @@ def scene():
     fill(img, mm, C('#eef2dc'))
     fill(img, mm & (fbm(XX / 7, YY / 7, 3, 9) > 0.58), C('#d4dcc0'))
     fill(img, clouds & (dm < 60), C('#c8d2b4'), 0.5)
-    # far forest skyline: a low ridge of trees and many thin pines and snags
+    # the water: one still surface from the horizon down, mirroring the sky; every plane below adds its own reflection
+    objs = np.zeros((H, W), bool)
+    wy = YY >= HZ
+    src = np.clip(2 * HZ - YY, 0, H - 1).astype(int)
+    depth = np.clip((YY - HZ) / 120, 0, 1)
+    sky_refl = img[src, XX.astype(int)]
+    img[wy] = (sky_refl * (0.7 - 0.4 * depth[..., None]) + C('#050a08') * (0.3 + 0.4 * depth[..., None]))[wy]
+    wob = fbm(XX / 6, YY / 2, 2, 13)
+    streak = wy & (np.abs(XX - MOON[0] + (wob - 0.5) * 10) < 16 - (YY - HZ) * 0.07) & (fbm(XX / 5, YY / 1.5, 2, 14) > 0.5)
+    fill(img, streak, C('#e0e8cc'), 0.55)
     rng = np.random.default_rng(2)
-    ridge = WATER - 18 - 10 * fbm(XX[0] / 40, np.zeros(W), 3, 3) * 2
-    rm = YY > ridge[None, :]
-    fill(img, rm, depth_col(0.1))
-    items = [(rng.uniform(-10, W + 10), WATER - 8, rng.uniform(30, 110), rng.uniform(3.5, 6)) for _ in range(52)]
-    layer(img, items, 0.12, 11, [0.6, 0.35, 0.05], moss_on=False, rim=0.3)
-    mist(img, WATER - 20, 26, 0.75, 3)
-    items = [(rng.uniform(-10, W + 10), WATER - 2, rng.uniform(70, 170), rng.uniform(5.5, 8.5)) for _ in range(26)]
-    layer(img, items, 0.3, 12, [0.5, 0.3, 0.2], rim=0.45)
-    hut(img, 404, WATER - 52, 0.55)
-    mist(img, WATER - 8, 20, 0.6, 4)
-    # mid cypresses standing in the water
-    items = [(66, WATER + 2, 210, 12, 'banyan'), (182, WATER + 2, 250, 6, 'skinny'), (262, WATER + 1, 150, 8, 'willow'),
-             (432, WATER + 2, 240, 20, 'hollow'), (530, WATER + 1, 170, 7, 'mangrove'), (606, WATER + 1, 200, 8, 'broken')]
-    layer(img, items, 0.52, 21, [0.0, 0.25, 0.75], rim=0.55)
-    items = [(x, WATER + 1, rng.uniform(120, 200), 8.5) for x in (30, 300, 360, 470, 610)]
-    layer(img, items, 0.6, 23, [0.85, 0.15, 0.0], moss_on=False, rim=0.5)
-    dead_tree(img, 340, WATER + 1, 210, 7, 0.5, 81)
-    dead_tree(img, 486, WATER + 1, 150, 5, 0.45, 82)
-    dead_tree(img, 22, WATER + 2, 240, 9, 0.62, 83)
-    for (x, y, c) in ((214, 214, '#ff3a2a'), (458, 222, '#ffc84a'), (98, 228, '#ff3a2a')):     # eyes in the dark
+
+    def plane(base, draw, refl=0.55):
+        """Draw one distance plane, then mirror it in the water about its own waterline."""
+        nonlocal objs
+        before = img.copy()
+        draw()
+        ch = np.abs(img - before).sum(axis=2) > 0.004
+        objs |= ch
+        sy = (2 * base - YY).astype(int)
+        rip = (np.sin(YY * 1.9 + np.sin(XX / 13)) * np.clip(YY - base, 0, None) / 50).astype(int)
+        sx = np.clip(XX.astype(int) + rip, 0, W - 1)
+        ok = (YY > base) & (sy >= 0) & ~ch
+        syc = np.clip(sy, 0, H - 1)
+        hit = ok & ch[syc, sx]
+        dk = np.clip((YY - base) / 140, 0, 1)
+        col = img[syc, sx] * (refl - 0.25 * dk[..., None]) + C('#050a08') * (1 - refl + 0.25 * dk[..., None])
+        img[hit] = col[hit]
+
+    # plane 0: the far shore at the horizon, a ridge of tiny pines and snags
+    def p0():
+        ridge = HZ - 8 - 8 * fbm(XX[0] / 40, np.zeros(W), 3, 3) * 2
+        fill(img, (YY > ridge[None, :]) & (YY <= HZ), depth_col(0.08))
+        layer(img, [(rng.uniform(-10, W + 10), HZ, rng.uniform(22, 60), rng.uniform(2.5, 4)) for _ in range(46)], 0.08, 11,
+              [0.6, 0.35, 0.05], moss_on=False, rim=0.25)
+    plane(HZ, p0, 0.5)
+    mist(img, HZ - 6, 18, 0.8, 3)
+    # plane 1: small trees standing in the water far away
+    plane(244, lambda: layer(img, [(x, 244, rng.uniform(50, 100), rng.uniform(3.5, 5.0)) for x in
+                                   (14, 70, 118, 172, 214, 400, 444, 492, 540, 590, 630)], 0.24, 12, [0.4, 0.3, 0.3], rim=0.4))
+    mist(img, 240, 14, 0.7, 4)
+    # plane 2: the cabin on stilts in a clearing, a few trees around it, eyes in the dark
+    def p2():
+        layer(img, [(150, 254, 120, 5.5), (226, 254, 140, 6), (470, 254, 130, 6), (560, 254, 110, 5.5)], 0.38, 13, [0.3, 0.2, 0.5], rim=0.45)
+        cabin(img, 352, 254, 0.42)
+    plane(254, p2, 0.6)
+    for (x, y, c) in ((198, 232, '#ff3a2a'), (520, 236, '#ffc84a')):
         img[y, x] = img[y, x + 3] = C(c)
         glow(img, x + 1.5, y, 5, C(c), 0.3)
-    mist(img, WATER + 2, 12, 0.5, 6)
-    fallen_log(img, 470, 600, WATER + 4, 9, 91)
-    # the water: a still mirror of the sky and the trees, darker and rippled closer to us
-    above = img.copy()
-    wy = YY >= WATER
-    src = np.clip(2 * WATER - YY, 0, H - 1).astype(int)
-    rip = (np.sin(YY * 1.9 + np.sin(XX / 13)) * (YY - WATER) / 60).astype(int)
-    srcx = np.clip(XX.astype(int) + rip, 0, W - 1)
-    refl = above[src, srcx]
-    depth = np.clip((YY - WATER) / 110, 0, 1)
-    water = refl * (0.78 - 0.4 * depth[..., None]) + C('#050a08') * (0.22 + 0.4 * depth[..., None])
-    img[wy] = water[wy]
-    wob = fbm(XX / 6, YY / 2, 2, 13)
-    streak = wy & (np.abs(XX - MOON[0] + (wob - 0.5) * 10) < 16 - (YY - WATER) * 0.08) & (fbm(XX / 5, YY / 1.5, 2, 14) > 0.5)
-    fill(img, streak, C('#e0e8cc'), 0.55)
-    ripl = wy & (np.sin(XX / 9 + YY * 1.7) > 0.95) & (fbm(XX / 30, YY / 4, 2, 7) > 0.55)
-    fill(img, ripl, mix(SKY_LO, NEAR, 0.4), 0.5)
-    img[WATER, :] = mix(img[WATER, :], MIST, 0.35)
+    mist(img, 250, 12, 0.6, 5)
+    # plane 3: big old trees in the middle distance
+    plane(268, lambda: (layer(img, [(110, 268, 170, 9, 'banyan'), (250, 268, 150, 7, 'willow'), (488, 268, 160, 7, 'broken')], 0.52, 21,
+                                [0, 0, 1], rim=0.55), dead_tree(img, 300, 268, 190, 6, 0.5, 81)), 0.55)
+    mist(img, 264, 10, 0.45, 6)
+    # plane 4: closer trees at the sides, a fallen log
+    plane(286, lambda: (layer(img, [(30, 286, 250, 10, 'hollow'), (196, 286, 230, 6, 'skinny'), (540, 286, 210, 8, 'mangrove')], 0.66, 22,
+                                [0, 0, 1], rim=0.6), dead_tree(img, 612, 286, 230, 8, 0.64, 83), fallen_log(img, 400, 520, 288, 8, 91)), 0.5)
+    ripl = wy & ~objs & (np.sin(XX / 9 + YY * 1.7) > 0.95) & (fbm(XX / 30, YY / 4, 2, 7) > 0.55)
+    fill(img, ripl, mix(SKY_LO, NEAR, 0.4), 0.45)
     # big cypresses at the sides, in front of the water
-    items = [(96, WATER + 6, 360, 16, 'giant'), (566, WATER + 8, 320, 11, 'triple')]
-    layer(img, items, 0.78, 31, [0.0, 0.0, 1.0], rim=0.7)
+    plane(306, lambda: layer(img, [(96, 306, 360, 16, 'giant'), (566, 308, 320, 11, 'triple')], 0.8, 31, [0.0, 0.0, 1.0], rim=0.7), 0.45)
     # mossy banks and the half-sunken boardwalk between them
-    bank(img, [(-20, 300), (-10, 266), (60, 258), (140, 262), (196, 276), (214, 300)], 41, 0.82)
-    bank(img, [(450, 300), (470, 270), (530, 262), (600, 260), (660, 266), (660, 300)], 42, 0.82)
+    plane(300, lambda: (bank(img, [(-20, 300), (-10, 266), (60, 258), (140, 262), (196, 276), (214, 300)], 41, 0.82),
+                        bank(img, [(450, 300), (470, 270), (530, 262), (600, 260), (660, 266), (660, 300)], 42, 0.82)), 0.4)
     from art.final_example import boardwalk
     sub = img.copy()
     boardwalk(sub, 190, 470, 270, broken=(300, 326))
