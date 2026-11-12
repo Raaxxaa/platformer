@@ -348,6 +348,67 @@ def layer(img, items, d, seed, kind_weights, moss_on=True, rim=0.6, leaf_tint=C(
             moss(img, anchors, mix(col, C('#6a7a5a'), 0.35), mix(col, C('#8a9a74'), 0.4), sd, 1.6, int(30 + 70 * di))
 
 
+def dead_tree(img, x, base, h, w, d, seed):
+    """A big dead tree: a bare, cracked trunk with a broken top, crooked leafless limbs, a few rags of moss."""
+    rng = np.random.default_rng(seed)
+    S = [taper([(x - w * 1.2, base + 3), (x, base - h * 0.3), (x + rng.normal(0, w), base - h * 0.75), (x + rng.normal(0, w * 1.5), base - h)],
+               w * 2.0, w * 0.5, 6)]
+    tips = []
+    for k in range(int(rng.integers(5, 8))):
+        t = rng.uniform(0.35, 0.95)
+        sd = rng.choice([-1, 1])
+        crooked(S, x, base - h * t, -math.pi / 2 + sd * rng.uniform(0.6, 1.4), h * rng.uniform(0.14, 0.3), w * 0.5, 2, rng, tips, 0.45)
+    stubs(S, x, base, h, w, rng, 3)
+    m = mask(S)
+    m = m | (leafy(m, seed, 0.3) & _dilate(m, 1))
+    col = depth_col(d) * 1.05
+    fill(img, m, col)
+    if d > 0.45:
+        bark_dark(img, m, col * 1.1, seed)
+        cracks = m & (fbm(XX / 1.5, YY / 25, 2, seed + 2) > 0.7)
+        fill(img, cracks, col * 0.55)
+    # the broken top: a jagged splintered end
+    tx, ty = x, base - h
+    fill(img, mask([poly((tx - w * 0.6, ty + 4), (tx - w * 0.2, ty - 6), (tx + w * 0.1, ty), (tx + w * 0.5, ty - 9), (tx + w * 0.7, ty + 4))]), col)
+    rim_light(img, m, 0.55 * (1 - d * 0.4))
+    moss(img, tips[::3], mix(col, C('#6a7a5a'), 0.3), mix(col, C('#8a9a74'), 0.35), seed, 0.6, 30)
+
+
+def fallen_log(img, x0, x1, y, w, seed):
+    """A dead log lying half sunk in the water, with a broken branch sticking up and moss on top."""
+    rng = np.random.default_rng(seed)
+    S = [taper([(x0, y + 2), ((x0 + x1) / 2, y - 2), (x1, y + 4)], w, w * 0.6, 4),
+         taper([((x0 + x1) / 2 + 10, y - 2), ((x0 + x1) / 2 + 16, y - 16), ((x0 + x1) / 2 + 13, y - 24)], 3, 1, 3)]
+    m = mask(S)
+    bark_dark(img, m, depth_col(0.75) * 1.2, seed)
+    top = m & ~np.roll(m, 2, 0)
+    fill(img, top & (fbm(XX / 4, YY / 4, 2, seed) > 0.4), C('#3e5a34'))
+    fill(img, mask([ell(x0, y + 2, w * 0.35, w * 0.48, 0, 12)]), depth_col(0.75) * 0.6)      # the broken end
+    rim_light(img, m, 0.4)
+
+
+def graded_actor(img, parts, key, amb, pts, rim, flash=None, fog_a=0.22, dim=0.82):
+    """Draw a character, then grade it into the scene: dimmer, a little mist over it, a soft dark-green outline
+    instead of black, colours pulled towards the moonlit greens. Glowing eyes, staffs and the attack flash stay bright."""
+    before = img.copy()
+    actor(img, parts, key, amb, pts, rim=rim, outline='#0e1a12', flash=flash)
+    ch = np.abs(img - before).sum(axis=2) > 0.01
+    mx, mn = img.max(axis=2), img.min(axis=2)
+    glowy = (mx > 0.8) & (mx - mn > 0.3)
+    if flash is not None:
+        glowy |= ch & (img[..., 0] > img[..., 2] + 0.25)
+    g = ch & ~glowy
+    lum = img[g].mean(axis=1, keepdims=True)
+    tinted = lum * np.array([0.9, 1.05, 0.92], np.float32)
+    img[g] = mix(img[g], tinted, 0.35) * dim
+    img[g] = mix(img[g], MIST * 0.7, fog_a)
+    # a soft moonlit edge on the top and moon side, so dark creatures still read against the dark
+    inner = ch & _dilate(ch, 0) & ~(np.roll(ch, 1, 0) & np.roll(ch, -1, 0) & np.roll(ch, 1, 1) & np.roll(ch, -1, 1))
+    side = np.where(XX < MOON[0], ~np.roll(ch, -1, 1), ~np.roll(ch, 1, 1))
+    edge = ch & ~glowy & (~np.roll(ch, 1, 0) | side) & ~inner | (ch & ~glowy & ~np.roll(ch, 1, 0))
+    img[edge] = mix(img[edge], C(rim), 0.45)
+
+
 def grass_tufts(img, top, grass_col, seed, density=0.5, hmin=3, hmax=12, d=0.8):
     """Detailed grass: tufts of 4-9 curved blades in three tones (dark base, mid, a moonlit tip), seed heads, little
     ferns and a few pale flowers."""
@@ -445,10 +506,14 @@ def scene():
     layer(img, items, 0.52, 21, [0.0, 0.25, 0.75], rim=0.55)
     items = [(x, WATER + 1, rng.uniform(120, 200), 8.5) for x in (30, 300, 360, 470, 610)]
     layer(img, items, 0.6, 23, [0.85, 0.15, 0.0], moss_on=False, rim=0.5)
+    dead_tree(img, 340, WATER + 1, 210, 7, 0.5, 81)
+    dead_tree(img, 486, WATER + 1, 150, 5, 0.45, 82)
+    dead_tree(img, 22, WATER + 2, 240, 9, 0.62, 83)
     for (x, y, c) in ((214, 214, '#ff3a2a'), (458, 222, '#ffc84a'), (98, 228, '#ff3a2a')):     # eyes in the dark
         img[y, x] = img[y, x + 3] = C(c)
         glow(img, x + 1.5, y, 5, C(c), 0.3)
     mist(img, WATER + 2, 12, 0.5, 6)
+    fallen_log(img, 470, 600, WATER + 4, 9, 91)
     # the water: a still mirror of the sky and the trees, darker and rippled closer to us
     above = img.copy()
     wy = YY >= WATER
@@ -517,15 +582,16 @@ def scene():
     key = {'dir': (0.0, -0.7, 0.5), 'col': (0.42, 0.48, 0.4)}
     amb = (0.18, 0.22, 0.2)
     pts = [(420, 254, 130, (1.0, 0.62, 0.28), 0.9), (MOON[0], MOON[1], 500, (0.5, 0.55, 0.45), 0.3)]
-    actor(img, witch(540, 262), key, amb, pts, rim='#dce6c4')
+    graded_actor(img, witch(540, 262), key, amb, pts + [(530, 214, 70, (0.5, 1.0, 0.4), 1.4)], '#b8f0a0', fog_a=0.08, dim=1.08)
     glow(img, 532, 212, 30, C('#90ff60'), 0.45)
-    actor(img, spider(150, 150, 1.6), key, amb, pts, rim='#dce6c4')
-    actor(img, zombie(330, 288), key, amb, pts, rim='#dce6c4', flash='#ff8a2a')
+    graded_actor(img, spider(150, 150, 1.6), key, amb, pts, '#c8d8b0', fog_a=0.12, dim=0.95)
+    graded_actor(img, zombie(330, 288), key, amb, pts, '#b8c8a4', flash='#ff8a2a')
     for k in range(3):
         r = 12 + k * 7
         rr = mask([ell(330, 289, r, r * 0.22, 0, 24)]) & ~mask([ell(330, 289, r - 1.4, r * 0.22 - 0.8, 0, 24)])
         fill(img, rr & (YY > 288), C('#9aa88a'), 0.5 - k * 0.13)
-    actor(img, hero(250, 244, 1), key, amb, pts, rim='#eef2dc')
+    graded_actor(img, hero(250, 244, 1), key, amb, pts, '#dce6c4', fog_a=0.1, dim=0.92)
+    near_camera(img)
     rng3 = np.random.default_rng(17)
     for _ in range(14):                                                  # a few fireflies, small and soft
         fx, fy = rng3.uniform(150, 520), rng3.uniform(150, 260)
@@ -536,6 +602,39 @@ def scene():
     img[:] = np.clip(img, 0, 1.15)
     hud(img)
     return img
+
+
+def near_camera(img):
+    """Things right in front of the camera: huge dark branches reaching in from the top corners with vines and moss
+    hanging close, big fern fronds and a broken stump in the bottom corners. Almost black, lit only at the edges."""
+    rng = np.random.default_rng(101)
+    col, rimc = C('#070c09'), mix(C('#4a5e44'), SKY_LO, 0.25)
+    S, tips = [], []
+    crooked(S, -10, 70, -0.25, 300, 22, 2, rng, tips, 0.25)
+    crooked(S, 650, 40, math.pi + 0.35, 240, 20, 2, rng, tips, 0.25)
+    m = mask(S)
+    m = m | (leafy(m, 5, 0.3) & _dilate(m, 1))
+    fill(img, m, col)
+    e = m & ~np.roll(m, 1, 0)
+    fill(img, e, rimc, 0.7)
+    moss(img, tips + [(x, 76 + 6 * math.sin(x / 9)) for x in range(10, 240, 9)] + [(x, 50 + (650 - x) * 0.3) for x in range(470, 640, 9)],
+         C('#0c1610'), C('#18261a'), 103, 0.9, 85)
+    hanging_vines(img, [((0, 20), (210, 60)), ((440, 10), (640, 70))], C('#060a08'), C('#152015'), 104, thick=3)
+    for (x, y, sd) in ((60, 330, 1), (600, 336, -1), (150, 360, 1)):          # big fern fronds
+        for k in range(7):
+            a = -math.pi / 2 + sd * (-0.9 + k * 0.3)
+            ln = rng.uniform(40, 70)
+            fx, fy = x + math.cos(a) * ln, y + math.sin(a) * ln
+            fm = mask([taper([(x, y), ((x + fx) / 2 + sd * 6, (y + fy) / 2 - 8), (fx, fy)], 6, 1, 4)])
+            for j in range(9):                                            # leaflets along the frond
+                t = 0.15 + j * 0.09
+                lx, ly = x + (fx - x) * t, y + (fy - y) * t - 8 * math.sin(math.pi * t)
+                fm |= mask([ell(lx - 3, ly + 2, 4.5, 1.6, 30, 8), ell(lx + 3, ly + 2, 4.5, 1.6, -30, 8)])
+            fill(img, fm, col)
+            fill(img, fm & ~np.roll(fm, 1, 0), rimc, 0.5)
+    stump = mask([spoly((520, 362), (524, 318), (536, 300), (548, 312), (556, 296), (566, 318), (572, 362), n=3)])
+    fill(img, stump, C('#0a100c'))
+    fill(img, stump & ~np.roll(stump, 1, 1), rimc, 0.6)
 
 
 def build():
