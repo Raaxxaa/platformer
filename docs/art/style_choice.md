@@ -42,3 +42,16 @@ After the swamp was approved (`final_example_swamp_v2.png`, `tools/art/final_swa
 | Dark Forest & Swamps | "foggy dark scary" | moon behind the trees |
 | Enemy Kingdom | "just a medieval city" | sunset behind the town, lit windows |
 | King's Castle | "just castle" | daylight through stained glass, torches |
+
+## Round 4: the user's references for each stage
+
+The user sent references per stage (saved as `sketch/ref_<stage>_NN.png`):
+
+| Stage | What the references show | What changed |
+|---|---|---|
+| Plains | deep blue sky, huge towering cumulus, golden wheat fields, a windmill, wheat and blue cornflowers in front | saturated sky, piled-up cumulus clouds, rolling wheat with wind waves, a detailed windmill, wheat stalks and cornflowers near the camera |
+| Mountains | blue-toned snowy peaks, painted cumulus, an alpine meadow with a winding path and boulders | blue rock with white snow, mist in the valley, a green alpine meadow with wildflowers, a winding path, boulders |
+| City | a sunny market square: stone and timber houses, striped stalls, ivy, trees behind the roofs, sun and shade on the street | daytime instead of sunset, stone houses mixed with timber ones, market stalls with produce, ivy, flagstones with moss, the houses' shadow along the street |
+| Castle | a bright gilded palace hall: painted ceilings, tall bright windows, crystal chandeliers, arcades, a patterned marble floor | a bright palace hall instead of a dark gothic one: a ceiling fresco in a gold frame, gilded trellis and scrollwork, round-arched windows, marble columns, a gallery, chandeliers, a diamond marble floor with reflections and sun patches |
+
+`final_examples_vs_references.png` shows each stage next to one of its references.
