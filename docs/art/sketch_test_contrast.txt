@@ -1,0 +1,9 @@
+# ART13b: OKLab distance of the hero and the Dragon from what is around them (FAIL below 0.15)
+A hero vs what is around it: 0.353 PASS
+A dragon head vs what is around it: 0.076 FAIL
+B hero vs what is around it: 0.386 PASS
+B dragon head vs what is around it: 0.071 FAIL
+C hero vs what is around it: 0.448 PASS
+C dragon head vs what is around it: 0.072 FAIL
+D hero vs what is around it: 0.385 PASS
+D dragon head vs what is around it: 0.071 FAIL
