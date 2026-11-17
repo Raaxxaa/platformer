@@ -860,6 +860,10 @@ def crag(img, m, alb, d, seed, scale=1.0, snowline=None, snow_k=0.5, strata=True
     b2 = ref * 0.62 + _zig(seed + 2, step * 1.3, 1.0) * ref * 0.12
     band = (dtop > b1).astype(np.int32) + (dtop > b2).astype(np.int32)        # 0 top, 1 front, 2 base
     t = np.choose(band, [0.84, 0.56, 0.3]).astype(np.float32)
+    l0 = ref * 0.42 + _zig(seed + 6, step * 0.9, 1.0) * ref * 0.08              # a ledge: a second light plane lower down
+    ledge = (dtop > l0) & (dtop < l0 + ref * 0.1 + 1.5) & (ref > 22)
+    t = np.where(ledge, 0.84, t)
+    t = np.where(ledge & ~np.roll(ledge, 1, 0), 0.98, t)
     t = t + (XX - cx) / hw * 0.1 * np.sign(L[0])
     bw = max(10.0, 34.0 * scale)                                              # big slabs across the front
     slab_x = XX + _zig(seed + 3, 9, 1.0)[None, :] * 0 + np.interp(YY[:, 0], np.arange(0, H + 12, 12),
@@ -870,7 +874,7 @@ def crag(img, m, alb, d, seed, scale=1.0, snowline=None, snow_k=0.5, strata=True
     hsh = np.modf(np.abs(np.sin(si * 78.233 + sj * 37.719 + seed) * 43758.5453))[0]
     t = t + np.where(band > 0, (hsh - 0.5) * 0.2, 0)
     seam = (band > 0) & ((si != np.roll(si, 1, 1)) | (sj != np.roll(sj, 1, 0)))
-    t = np.where(seam, t - 0.25, t)
+    t = np.where(seam & ~ledge, t - 0.14, t)
     edge1 = (band == 1) & (np.roll(band, 1, 0) == 0)                             # the top plane's front edge catches light
     t = np.where(edge1, 0.98, t)
     top = m & ~np.roll(m, 1, 0)
@@ -883,51 +887,58 @@ def crag(img, m, alb, d, seed, scale=1.0, snowline=None, snow_k=0.5, strata=True
 
 
 def ridge_mountain(img, summit, base_y, height, d, seed, alb, snowline=None, arms=(150, 30, 100), spread=1.0):
-    """A mountain built from its ridges: sharp crests branching down from the summit, faces between them lit or in
-    shadow depending on which way they turn, snow gathered in the gullies and on the high faces."""
+    """A mountain drawn the pixel-art way (docs/art/sketch/ref_howto_mountains.png): a pointy silhouette, branching
+    ridge lines running down from the summit, and every face flat-shaded by which side of its ridge it is on: light
+    on the sun side, dark on the other, a highlight along the ridge. Snow caps the top: white in light, lavender in shade."""
     rng = np.random.default_rng(seed)
     segs = []
 
     def grow(x, y, h, ang, ln, depth):
-        for k in range(5):
-            ang = float(np.clip(ang + rng.normal(0, 0.18), 0.35, math.pi - 0.35))   # ridges always run downhill
-            nx, ny = x + math.cos(ang) * ln / 5, y + math.sin(ang) * ln / 5
-            nh = h + ln / 5 * rng.uniform(0.12, 0.22)                   # the ridge's flanks widen as it runs down
+        n = 6
+        for k in range(n):
+            ang = float(np.clip(ang + rng.normal(0, 0.3), 0.4, math.pi - 0.4))     # zigzag, always downhill
+            nx, ny = x + math.cos(ang) * ln / n, y + math.sin(ang) * ln / n
+            nh = h + ln / n * rng.uniform(0.1, 0.2)
             segs.append((x, y, h, nx, ny, nh))
-            if depth > 0 and rng.random() < 0.55:
-                grow(nx, ny, nh, ang + rng.choice([-1, 1]) * rng.uniform(0.5, 0.9), ln * rng.uniform(0.35, 0.55), depth - 1)
+            if depth > 0 and rng.random() < 0.6:
+                grow(nx, ny, nh, ang + rng.choice([-1, 1]) * rng.uniform(0.5, 0.9), ln * rng.uniform(0.4, 0.6), depth - 1)
             x, y, h = nx, ny, nh
     sx, sy = summit
     for a in arms:
         grow(sx, sy, 2.0, math.radians(a + rng.normal(0, 6)), height * spread * rng.uniform(0.9, 1.3), 2)
+    for sgn in (-1, 1):                                                       # lower side peaks, so it reads as a range
+        for k in (1, 2):
+            px = sx + sgn * height * (0.45 * k + rng.uniform(-0.08, 0.08))
+            py = sy + height * (0.22 * k + rng.uniform(0.0, 0.1))
+            for a in (140, 90, 40):
+                grow(px, py, 2.0, math.radians(a + rng.normal(0, 8)), height * (0.75 - 0.15 * k) * rng.uniform(0.8, 1.2), 1)
     hf = np.full((H, W), -1e3, np.float32)
-    amp = float(np.clip(height * 0.05, 3.0, 6.0))
-    WX = XX + (fbm(XX / 18, YY / 18, 3, seed + 11) - 0.5) * amp * 2.4             # warp so no ridge is a straight line
-    WY = YY + (fbm(XX / 18, YY / 18, 3, seed + 12) - 0.5) * amp * 1.6
+    side = np.zeros((H, W), np.float32)
     for (x0, y0, h0, x1, y1, h1) in segs:
         vx, vy = x1 - x0, y1 - y0
         L2 = vx * vx + vy * vy + 1e-6
-        t = np.clip(((WX - x0) * vx + (WY - y0) * vy) / L2, 0, 1)
-        dist = np.hypot(WX - x0 - t * vx, WY - y0 - t * vy)
-        hf = np.maximum(hf, h0 + (h1 - h0) * t - dist * 1.0)
-    hf = hf + ridged(WX / 16, WY / 10, 2, seed + 13) * amp * 0.5
-    m = np.maximum.accumulate(hf > 0, axis=0) & (YY < base_y)          # solid below its outline
-    gy, gx = np.gradient(hf)
-    Lv = P['L']
-    nrm = np.sqrt(gx * gx + gy * gy + 0.6)
-    face_l = np.clip((-gx * Lv[0] - gy * Lv[1] + 0.6 * Lv[2]) / nrm, 0, 1)
-    t = 0.04 + face_l * 0.88
-    ramp = make_ramp(alb, 5, deep=mix(P['amb'] * 0.45, np.asarray(alb, np.float32) * 0.35, 0.5), hi_k=0.45)
-    ramp_fill(img, m, t, ramp, d)
+        t = np.clip(((XX - x0) * vx + (YY - y0) * vy) / L2, 0, 1)
+        dist = np.hypot(XX - x0 - t * vx, YY - y0 - t * vy)
+        hh = h0 + (h1 - h0) * t - dist
+        win = hh > hf
+        hf = np.where(win, hh, hf)
+        side = np.where(win, -(vx * (YY - y0) - vy * (XX - x0)), side)          # > 0: to the right of the ridge
+        dist_best = np.where(win, dist, dist_best) if 'dist_best' in dir() else dist.copy()
+    m = np.maximum.accumulate(hf > 0, axis=0) & (YY < base_y)
+    F1, F2, DX, DY, ID = worley(max(2.0, 3.0 + d * 4), seed, 1.0, 1.4)
+    jit = (ID - 0.5)
+    lit_side = (side * np.sign(P['L'][0]) > 0)
+    far = dist_best > (5 + 10 * d) * (1 + jit * 0.8)
+    t = np.where(lit_side, np.where(far, 0.45, 0.62), np.where(far, 0.22, 0.05))
+    t = np.where(lit_side & (dist_best < 1.3), 0.85, t)
+    ramp = make_ramp(np.asarray(alb, np.float32) * 0.8, 5, deep=np.asarray(alb, np.float32) * 0.22, hi_k=0.35)
+    ramp_fill(img, m, t, ramp, d * 0.5 + 0.5)
     if snowline is not None:
-        conc = _blur(hf, 3) - hf                                        # gullies are concave
-        sl = snowline + (fbm(XX / 25, YY * 0, 3, seed + 5) - 0.5) * 40
-        hi = np.clip((sl - YY) / 60, 0, 1)
-        flat_ = -gy / nrm                                             # snow stays where the slope faces up
-        sn_n = fbm(XX / 10, YY / 8, 2, seed + 6)
-        snow = m & (YY < sl + 30) & ((conc + (sn_n - 0.5) * 1.2 > 0.7 - hi * 1.3) | (hi > 0.45) & (flat_ + (sn_n - 0.5) * 0.8 > 0.0))
-        sr = make_ramp(C('#e4ecf8'), 4, deep=C('#5a6aa0'), hi=C('#ffffff'), hi_k=0.9)
-        ramp_fill(img, snow, 0.12 + face_l * 0.88, sr, d)
+        snowline = min(snowline, sy + height * 0.42)
+        snow = m & (YY < snowline - dist_best * 1.6 + jit * 8)
+        fill(img, snow & lit_side, aerial(C('#ffffff'), d))
+        fill(img, snow & lit_side & far, aerial(C('#dfe6f4'), d))
+        fill(img, snow & ~lit_side, aerial(C('#8a84b8'), d * 0.5 + 0.5))
     return m
 
 
